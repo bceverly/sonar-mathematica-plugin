@@ -81,7 +81,8 @@ public class MathematicaCpdTokenizer implements Sensor {
         private int position;
 
         // Patterns for different token types
-        private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*.*?\\*\\)", Pattern.DOTALL);
+        // More robust comment pattern that avoids catastrophic backtracking
+        private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
         private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
         private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*(?:[eE][+-]?\\d+)?");
         private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");

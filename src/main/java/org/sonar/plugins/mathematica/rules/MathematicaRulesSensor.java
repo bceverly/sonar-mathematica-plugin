@@ -27,7 +27,7 @@ import org.sonar.plugins.mathematica.MathematicaLanguage;
  * - All regex patterns are compiled once as static fields to avoid repeated compilation
  * - Comment ranges are cached during the first pass and reused by other detection methods
  * - Single-pass analysis for comments (both commented code and TODO/FIXME in one scan)
- * - File size limits prevent analysis of extremely large files (>10,000 lines or >1MB)
+ * - File size limits prevent analysis of extremely large files (>25,000 lines or >1MB)
  * - Per-rule error handling ensures one failing rule doesn't stop the entire analysis
  * - StackOverflowError protection for complex regex patterns
  */
@@ -36,7 +36,10 @@ public class MathematicaRulesSensor implements Sensor {
     private static final Logger LOG = Loggers.get(MathematicaRulesSensor.class);
 
     // Patterns for different token types (pre-compiled for performance)
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*.*?\\*\\)", Pattern.DOTALL);
+    // More robust comment pattern that avoids catastrophic backtracking
+    // Matches (* followed by any characters (including newlines) then *)
+    // Using [\s\S] instead of . with DOTALL for better performance
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\b\\d+\\.?\\d*(?:[eE][+-]?\\d+)?\\b");
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
         "([a-zA-Z]\\w*)\\s*\\[([^\\]]*)\\]\\s*:=",
@@ -113,9 +116,12 @@ public class MathematicaRulesSensor implements Sensor {
 
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         try {
-            // Skip extremely large files for performance
-            if (inputFile.lines() > 10000) {
-                LOG.info("Skipping large file (>10000 lines): {}", inputFile);
+            // Always check file length first (report violation even for large files)
+            detectLongFile(context, inputFile);
+
+            // Skip further analysis for extremely large files (performance)
+            if (inputFile.lines() > 25000) {
+                LOG.info("Skipping further analysis of large file (>25000 lines): {}", inputFile);
                 return;
             }
 
@@ -123,7 +129,7 @@ public class MathematicaRulesSensor implements Sensor {
 
             // Skip files larger than 1MB
             if (content.length() > 1_000_000) {
-                LOG.info("Skipping large file (>1MB): {}", inputFile);
+                LOG.info("Skipping further analysis of large file (>1MB): {}", inputFile);
                 return;
             }
 
@@ -134,7 +140,6 @@ public class MathematicaRulesSensor implements Sensor {
             detectMagicNumbers(context, inputFile, content, commentRanges);
             detectEmptyBlocks(context, inputFile, content);
             detectLongFunctions(context, inputFile, content);
-            detectLongFile(context, inputFile, content);
             detectEmptyCatchBlocks(context, inputFile, content);
             detectDebugCode(context, inputFile, content);
 
@@ -186,8 +191,12 @@ public class MathematicaRulesSensor implements Sensor {
                         "Track this TODO/FIXME comment.");
                 }
             }
+        } catch (StackOverflowError e) {
+            LOG.warn("Skipping comment analysis due to regex complexity (StackOverflowError) in file: {}. " +
+                    "File will still be analyzed for other rules.", inputFile.filename());
         } catch (Exception e) {
-            LOG.warn("Skipping comment analysis due to error in file: {}", inputFile.filename());
+            LOG.warn("Skipping comment analysis due to error in file: {}. " +
+                    "File will still be analyzed for other rules.", inputFile.filename());
         }
         return commentRanges;
     }
@@ -458,8 +467,9 @@ public class MathematicaRulesSensor implements Sensor {
 
     /**
      * Detects files that are too long.
+     * This check runs even for very large files to ensure they're reported.
      */
-    private void detectLongFile(SensorContext context, InputFile inputFile, String content) {
+    private void detectLongFile(SensorContext context, InputFile inputFile) {
         try {
             // Get threshold from configuration
             int maxLines = context.config()
