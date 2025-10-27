@@ -7,13 +7,13 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | Feature | Rules | Type | Status | Quick UI Path |
 |---------|-------|------|--------|---------------|
 | **Code Duplication Detection** | CPD Engine | Duplication | ✅ Active | Overview → Duplications % → Click |
-| **Code Smells** | 8 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
-| **Security Vulnerabilities** | 8 rules | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Bugs (Reliability)** | 5 rules | Reliability | ✅ Active | Issues → Type: Bug |
-| **Security Hotspots** | 3 rules | Security Review | ✅ Active | Security Hotspots tab |
+| **Code Smells** | 18 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
+| **Security Vulnerabilities** | 12 rules | Security | ✅ Active | Issues → Type: Vulnerability |
+| **Bugs (Reliability)** | 13 rules | Reliability | ✅ Active | Issues → Type: Bug |
+| **Security Hotspots** | 6 rules | Security Review | ✅ Active | Security Hotspots tab |
 | **Complexity Metrics** | Cyclomatic & Cognitive | Complexity | ✅ Active | Code tab → Function details |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | 26 rules + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **51 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -339,7 +339,159 @@ If[$DevelopmentMode,
 
 ---
 
-## 3. Bug Rules - Reliability (5 Total)
+### 2.9 Unused Variables
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Detects variables declared in Module/Block/With but never used.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Module[{x, y, z},
+  x = 5;
+  x + 10
+];  (* y and z are unused *)
+
+(* COMPLIANT *)
+Module[{x},
+  x = 5;
+  x + 10
+];
+```
+
+### 2.10 Duplicate Function Definitions
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Same function redefined with identical pattern signature overwrites previous definition.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+myFunc[x_] := x^2;
+myFunc[y_] := y^3;  (* Overwrites first! *)
+
+(* COMPLIANT *)
+myFuncSquare[x_] := x^2;
+myFuncCube[x_] := x^3;
+```
+
+### 2.11 Too Many Parameters
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Functions with >7 parameters are hard to use and maintain.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+processData[name_, age_, address_, phone_, email_, city_, state_, zip_] := ...
+
+(* COMPLIANT - Use Association *)
+processData[userData_Association] := ...
+```
+
+### 2.12 Deeply Nested Conditionals
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+More than 3 levels of nested If/Which/Switch statements.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+If[a, If[b, If[c, If[d, result]]]]  (* 4 levels *)
+
+(* COMPLIANT *)
+Which[
+  a && b && c && d, result,
+  True, defaultResult
+]
+```
+
+### 2.13 Missing Documentation
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Public functions (starting with uppercase) should have documentation.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+ProcessUserData[data_, options_] := Module[{...}, ...]
+
+(* COMPLIANT *)
+(* ProcessUserData[data, options] processes user data.
+   Returns: Processed data list *)
+ProcessUserData[data_, options_] := Module[{...}, ...]
+```
+
+### 2.14 Inconsistent Naming
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Mixing camelCase, PascalCase, and snake_case in same file.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+ProcessData[x_] := ...     (* PascalCase *)
+calculateResult[y_] := ...  (* camelCase *)
+get_user_name[] := ...     (* snake_case - inconsistent! *)
+
+(* COMPLIANT - Pick one style *)
+ProcessData[x_] := ...
+CalculateResult[y_] := ...
+GetUserName[] := ...
+```
+
+### 2.15 Identical Branches
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+If statement with identical then and else branches.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+If[condition, DoSomething[], DoSomething[]]
+
+(* COMPLIANT *)
+DoSomething[]  (* Condition is useless *)
+```
+
+### 2.16 Expression Too Complex
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Single expression with >20 operators should be split.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = a + b * c - d / e ^ f + g * h - i / j + k * l - m / n + o * p;
+
+(* COMPLIANT *)
+term1 = b * c + a;
+term2 = d / e ^ f;
+result = term1 - term2 + ...;
+```
+
+### 2.17 Deprecated Functions
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Using deprecated Mathematica functions like `$RecursionLimit`.
+
+### 2.18 Empty Statement
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Double semicolons or misplaced semicolons create empty statements.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+x = 5;;  (* Double semicolon *)
+
+(* COMPLIANT *)
+x = 5;
+```
+
+---
+
+## 3. Bug Rules - Reliability (13 Total)
 
 Bug rules detect logic errors and runtime issues that cause program crashes or incorrect behavior.
 
@@ -477,7 +629,177 @@ process[x_] := defaultProcess[x];  (* Catch-all last *)
 
 ---
 
-## 4. Security Vulnerability Rules (8 Total)
+### 3.6 Floating Point Equality
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-1077](https://cwe.mitre.org/data/definitions/1077.html)
+
+Using == or === to compare floating point numbers is unreliable due to rounding errors.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+If[0.1 + 0.2 == 0.3, ...]  (* May be False due to rounding! *)
+result = (x == 0.5);
+
+(* COMPLIANT - Use tolerance-based comparison *)
+If[Abs[(0.1 + 0.2) - 0.3] < 10^-10, ...]
+If[Chop[x - 0.5] == 0, ...]
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Search: `floating` or `equality`
+3. → Shows floating point comparison issues
+4. These can cause subtle correctness bugs in numerical code
+
+---
+
+### 3.7 Function Without Return
+**Severity:** MAJOR | **Type:** BUG
+
+Functions that appear to compute a result but don't return it properly.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+calculateTotal[items_] := Module[{total},
+  total = Total[items];
+  (* total is computed but not returned! *)
+];
+
+(* COMPLIANT *)
+calculateTotal[items_] := Module[{total},
+  total = Total[items];
+  total  (* Return the result *)
+];
+```
+
+---
+
+### 3.8 Variable Before Assignment
+**Severity:** MAJOR | **Type:** BUG
+
+Using a variable before it has been assigned a value.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Module[{x, y},
+  y = x + 5;  (* x not yet assigned! *)
+  x = 10;
+];
+
+(* COMPLIANT *)
+Module[{x, y},
+  x = 10;
+  y = x + 5;
+];
+```
+
+---
+
+### 3.9 Off-by-One Errors
+**Severity:** MAJOR | **Type:** BUG
+
+Common indexing mistakes in loops and list operations.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Do[process[list[[i]]], {i, 0, Length[list]}]  (* 0 is invalid, Length+1 too! *)
+
+(* COMPLIANT - Mathematica uses 1-based indexing *)
+Do[process[list[[i]]], {i, 1, Length[list]}]
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Search: `off-by-one` or `index`
+3. → Shows potential indexing errors
+4. Critical to fix: these cause out-of-bounds crashes
+
+---
+
+### 3.10 Infinite Loop
+**Severity:** CRITICAL | **Type:** BUG
+
+While loops with conditions that never become false.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+While[True, doSomething[]]  (* Runs forever! *)
+
+(* COMPLIANT *)
+While[condition && counter < maxIterations,
+  doSomething[];
+  counter++;
+]
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Filter **"Severity"** → Check **"Critical"**
+3. Search: `infinite` or `While`
+4. → Shows `While[True, ...]` patterns
+5. These cause program hangs - CRITICAL severity
+
+---
+
+### 3.11 Mismatched Matrix Dimensions
+**Severity:** MAJOR | **Type:** BUG
+
+Matrix operations with incompatible dimensions.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = matrix1 . matrix2;  (* No dimension check! *)
+
+(* COMPLIANT *)
+If[Dimensions[matrix1][[2]] == Dimensions[matrix2][[1]],
+  result = matrix1 . matrix2,
+  $Failed
+]
+```
+
+---
+
+### 3.12 Type Mismatch
+**Severity:** MAJOR | **Type:** BUG
+
+Operations mixing incompatible types (string + number).
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = "Count: " + count;  (* String + Integer - won't work! *)
+
+(* COMPLIANT *)
+result = "Count: " <> ToString[count];  (* Use <> for strings *)
+```
+
+---
+
+### 3.13 Suspicious Pattern Matching
+**Severity:** MAJOR | **Type:** BUG
+
+Pattern definitions that likely don't work as intended.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+func[x__] := Length[x];  (* x__ is a sequence, not a list! *)
+
+(* COMPLIANT *)
+func[x__] := Length[{x}];  (* Wrap sequence in {} to get list *)
+(* Or better: *)
+func[x_List] := Length[x];
+```
+
+---
+
+## 4. Security Vulnerability Rules (12 Total)
 
 ### 4.1 Hardcoded Credentials
 **Severity:** BLOCKER | **Type:** VULNERABILITY
@@ -764,7 +1086,128 @@ If[Hash[Import[file, "String"], "SHA256"] === expectedHash, Get[file], $Failed];
 
 ---
 
-## 5. Security Hotspot Rules (3 Total)
+### 4.9 Unsafe Symbol/ToExpression
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-94](https://cwe.mitre.org/data/definitions/94.html) | **OWASP:** A03:2021
+
+Using Symbol[] or ToExpression[] to dynamically create symbols from user input allows code injection.
+
+**Examples:**
+```mathematica
+(* VIOLATIONS *)
+Symbol[userInput];  (* User can access any symbol in memory! *)
+ToExpression[userFunction <> "[data]"];  (* User controls what function runs *)
+
+(* COMPLIANT *)
+allowedSymbols = {"Mean", "Median", "Total"};
+If[MemberQ[allowedSymbols, userInput],
+  Symbol[userInput],
+  $Failed
+]
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Vulnerability"**
+2. Filter **"Severity"** → Check **"Critical"**
+3. Search: `Symbol` or `ToExpression`
+4. → Shows dynamic symbol creation vulnerabilities
+5. These allow arbitrary code execution - CRITICAL severity
+
+---
+
+### 4.10 XML External Entity (XXE)
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-611](https://cwe.mitre.org/data/definitions/611.html) | **OWASP:** A05:2021
+
+Importing XML files without disabling external entity processing can lead to information disclosure or DoS.
+
+**Examples:**
+```mathematica
+(* VIOLATION *)
+Import[userFile, "XML"];  (* May contain malicious external entities *)
+
+(* COMPLIANT - Use safe import formats *)
+Import[userFile, "JSON"];  (* JSON doesn't support external entities *)
+
+(* Or validate XML before importing *)
+xmlContent = Import[file, "String"];
+If[StringContainsQ[xmlContent, "<!ENTITY"],
+  $Failed,  (* Reject XML with entities *)
+  Import[file, "XML"]
+]
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Vulnerability"**
+2. Search: `XML` or `XXE`
+3. → Shows "Validate XML imports to prevent XXE attacks"
+4. Review all Import[..., "XML"] calls for proper validation
+
+---
+
+### 4.11 Missing Input Sanitization
+**Severity:** HIGH | **Type:** VULNERABILITY
+**CWE:** [CWE-20](https://cwe.mitre.org/data/definitions/20.html) | **OWASP:** A03:2021
+
+User input used in file operations, URLs, or commands without validation.
+
+**Examples:**
+```mathematica
+(* VIOLATIONS *)
+Export[fileName, data];  (* fileName from user - path traversal! *)
+URLFetch["https://api.com/" <> userEndpoint];  (* SSRF! *)
+
+(* COMPLIANT *)
+(* Whitelist allowed values *)
+allowedFiles = {"output.csv", "report.txt"};
+If[MemberQ[allowedFiles, fileName],
+  Export[fileName, data],
+  $Failed
+];
+
+(* Sanitize input *)
+safeFileName = StringReplace[fileName,
+  RegularExpression["[^a-zA-Z0-9_.-]"] -> ""
+];
+Export[safeFileName, data];
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Vulnerability"**
+2. Filter **"Severity"** → Check **"High"**
+3. Search: `sanitiz` or `validat`
+4. → Shows operations using unsanitized input
+5. Review each to add proper input validation
+
+---
+
+### 4.12 Insecure Random Number Generation
+**Severity:** HIGH | **Type:** VULNERABILITY
+**CWE:** [CWE-338](https://cwe.mitre.org/data/definitions/338.html) | **OWASP:** A02:2021
+
+Using Random[] instead of RandomInteger[] for security-sensitive operations like tokens or keys.
+
+**Examples:**
+```mathematica
+(* VIOLATIONS *)
+sessionToken = ToString[Random[]];  (* Predictable! *)
+cryptoKey = Table[Random[], {32}];  (* Not cryptographically secure! *)
+
+(* COMPLIANT *)
+sessionToken = IntegerString[RandomInteger[{10^30, 10^31}], 16];
+cryptoKey = RandomInteger[{0, 255}, 32];  (* 256-bit key *)
+```
+
+### 📍 How to View in SonarQube UI
+1. **Issues** tab → Filter **"Type"** → Check **"Vulnerability"**
+2. Search: `Random` or `insecure random`
+3. → Shows "Use RandomInteger instead of Random for security"
+4. Click to see Random[] usage in security contexts
+5. Replace with RandomInteger[] for cryptographic operations
+
+---
+
+## 5. Security Hotspot Rules (6 Total)
 
 Security Hotspots are code locations that require manual security review. Unlike Vulnerabilities (which are definite security issues), Hotspots highlight sensitive operations that **may** be secure if proper safeguards are in place.
 
@@ -913,6 +1356,175 @@ Export["/secure/path/key.bin", aesKey, "Byte"];
    - Keys are stored securely (not in code/logs)
 4. Mark as **Safe** if crypto practices are correct
 5. Mark as **Fix Required** if using weak crypto
+
+---
+
+### 5.4 Network Operations
+**Severity:** MAJOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-918](https://cwe.mitre.org/data/definitions/918.html), [CWE-400](https://cwe.mitre.org/data/definitions/400.html)
+
+Flags network operations (sockets, HTTP requests) for security review.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+socket = SocketConnect[{serverAddress, port}];  (* Check: authentication? encryption? *)
+URLExecute["POST", apiUrl, data];  (* Check: HTTPS? timeout? input validation? *)
+SocketListen[8080];  (* Check: access control? rate limiting? *)
+
+(* GOOD PRACTICES *)
+(* 1. Always use HTTPS for sensitive data *)
+URLFetch["https://api.example.com/endpoint"];  (* Not HTTP! *)
+
+(* 2. Validate remote addresses *)
+allowedServers = {"api.trusted.com", "data.example.org"};
+If[MemberQ[allowedServers, serverAddress],
+  SocketConnect[{serverAddress, 443}],
+  $Failed
+];
+
+(* 3. Add timeouts *)
+TimeConstrained[URLRead[apiUrl], 30];  (* 30 second timeout *)
+
+(* 4. Implement rate limiting *)
+If[requestCount > maxRequestsPerMinute, Pause[60]];
+```
+
+### 📍 How to View in SonarQube UI
+
+**Method 1: Security Hotspots Tab**
+1. **Security Hotspots** tab in left sidebar
+2. Look for "Network Operations" category
+3. Review each network call to ensure:
+   - HTTPS is used (not HTTP)
+   - Timeouts are configured
+   - Remote addresses are validated
+   - Rate limiting is implemented
+4. Mark as **Safe** if all safeguards are present
+
+**Method 2: Filter by Category**
+1. **Security Hotspots** tab
+2. Filter **"Category"** → Select network-related
+3. Review each operation
+4. Mark status: Safe / Fix Required / Acknowledged
+
+---
+
+### 5.5 File System Modifications
+**Severity:** MAJOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-732](https://cwe.mitre.org/data/definitions/732.html), [CWE-434](https://cwe.mitre.org/data/definitions/434.html)
+
+Flags file write, delete, and modification operations for security review.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+Export[fileName, data];  (* Check: path validation? permissions? overwrite protection? *)
+DeleteFile[filePath];  (* Check: authorization? irreversible! *)
+CreateDirectory[dirPath];  (* Check: path traversal? permissions? *)
+
+(* GOOD PRACTICES *)
+(* 1. Validate file paths *)
+If[!StringStartsQ[fileName, "/safe/data/directory/"],
+  $Failed,  (* Reject paths outside allowed directory *)
+  Export[fileName, data]
+];
+
+(* 2. Sanitize file names *)
+safeFileName = FileNameTake[userFileName];  (* Remove directory traversal *)
+safeFileName = StringReplace[safeFileName,
+  RegularExpression["[^a-zA-Z0-9_.-]"] -> ""  (* Remove dangerous chars *)
+];
+
+(* 3. Check before destructive operations *)
+If[FileExistsQ[filePath] && confirmDelete === True,
+  DeleteFile[filePath],
+  Print["File not deleted - confirmation required"]
+];
+
+(* 4. Set restrictive permissions *)
+Export["/secure/data.bin", sensitiveData, "Byte"];
+(* Then use shell to set permissions: chmod 600 /secure/data.bin *)
+```
+
+### 📍 How to View in SonarQube UI
+
+**Method 1: Security Hotspots Tab**
+1. **Security Hotspots** tab
+2. Look for "File System Modifications" category
+3. Review each file operation to ensure:
+   - Paths are validated (no directory traversal)
+   - File names are sanitized
+   - Destructive operations have confirmation
+   - Sensitive files have restrictive permissions
+4. Mark as **Safe** if proper safeguards are in place
+
+**Method 2: High Priority First**
+1. **Security Hotspots** tab
+2. Filter **"Priority"** → **"High"**
+3. → File delete operations typically marked high priority
+4. Review authorization checks
+5. Mark status appropriately
+
+---
+
+### 5.6 Environment Variable Access
+**Severity:** MINOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-526](https://cwe.mitre.org/data/definitions/526.html), [CWE-214](https://cwe.mitre.org/data/definitions/214.html)
+
+Flags Environment[] calls for review of information disclosure risks.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+apiKey = Environment["API_KEY"];  (* Check: logging? error messages? *)
+path = Environment["PATH"];  (* Check: exposed in logs or UI? *)
+
+(* GOOD PRACTICES *)
+(* 1. Don't log environment variables *)
+apiKey = Environment["API_KEY"];
+(* BAD: Print["Using API key: " <> apiKey]; *)
+(* GOOD: If[StringQ[apiKey], Print["API key loaded"], Print["Warning: API key missing"]]; *)
+
+(* 2. Don't expose in error messages *)
+result = Check[
+  APICall[Environment["SECRET_TOKEN"]],
+  (* BAD: Print["Failed with token: " <> $MessageList]; *)
+  Print["API call failed"];  (* GOOD: Generic message *)
+  $Failed
+];
+
+(* 3. Whitelist safe environment variables *)
+publicEnvVars = {"LANG", "TZ", "USER"};
+If[MemberQ[publicEnvVars, varName],
+  Environment[varName],  (* Safe to use/log *)
+  $Failed  (* Don't expose secrets *)
+];
+```
+
+### 📍 How to View in SonarQube UI
+
+**Method 1: Security Hotspots Tab**
+1. **Security Hotspots** tab
+2. Look for "Environment Variable" category
+3. Review each Environment[] call to ensure:
+   - Environment variables are not logged
+   - Secrets are not exposed in error messages
+   - Variables are not displayed in UI or reports
+4. Mark as **Safe** if properly protected
+
+**Method 2: Search and Review**
+1. **Security Hotspots** tab
+2. Search: `Environment`
+3. → Shows all Environment[] calls
+4. Review each for potential information disclosure
+5. Mark status: Safe / Fix Required / Acknowledged
+
+**Workflow Tip:**
+Environment variable hotspots are usually MINOR priority unless they're exposed in logs or UI. Focus on reviewing:
+- Calls in logging/error handling code (high risk)
+- Calls in UI display code (high risk)
+- Calls in internal processing (low risk if not logged)
 
 ---
 

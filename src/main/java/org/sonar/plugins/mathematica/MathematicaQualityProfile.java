@@ -143,6 +143,135 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
             MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY
         );
 
+        // Activate NEW CODE_SMELL rules (Phase 2)
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.UNUSED_VARIABLES_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.DUPLICATE_FUNCTION_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.TOO_MANY_PARAMETERS_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.DEEPLY_NESTED_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.MISSING_DOCUMENTATION_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.INCONSISTENT_NAMING_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.IDENTICAL_BRANCHES_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.EMPTY_STATEMENT_KEY
+        );
+
+        // Activate NEW BUG rules (Phase 2)
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.FLOATING_POINT_EQUALITY_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.FUNCTION_WITHOUT_RETURN_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.VARIABLE_BEFORE_ASSIGNMENT_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.OFF_BY_ONE_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.INFINITE_LOOP_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.MISMATCHED_DIMENSIONS_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.TYPE_MISMATCH_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.SUSPICIOUS_PATTERN_KEY
+        );
+
+        // Activate NEW VULNERABILITY rules (Phase 2)
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.UNSAFE_SYMBOL_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.XXE_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.MISSING_SANITIZATION_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.INSECURE_RANDOM_EXPANDED_KEY
+        );
+
+        // Activate NEW SECURITY_HOTSPOT rules (Phase 2)
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY
+        );
+
         profile.done();
     }
 }
