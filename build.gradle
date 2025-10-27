@@ -45,7 +45,7 @@ jar {
             'Plugin-Description': 'Code analyzer for Wolfram Mathematica',
             'Plugin-Version': project.version,
             'Plugin-Organization': 'Community',
-            'Plugin-OrganizationUrl': 'https://github.com/yourusername/sonar-mathematica-plugin',
+            'Plugin-OrganizationUrl': 'https://github.com/bceverly/sonar-mathematica-plugin',
             'Plugin-License': 'GPL-3.0',
             'Plugin-ChildFirstClassLoader': 'false',
             'Sonar-Version': '9.9',
