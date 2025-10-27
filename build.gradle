@@ -7,8 +7,10 @@ group = 'org.sonar.plugins'
 version = '0.1.0-SNAPSHOT'
 description = 'SonarQube plugin for Wolfram Mathematica'
 
-sourceCompatibility = JavaVersion.VERSION_11
-targetCompatibility = JavaVersion.VERSION_11
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
 
 repositories {
     mavenCentral()
@@ -19,7 +21,7 @@ repositories {
 
 dependencies {
     // SonarQube Plugin API - compile only (provided by SonarQube at runtime)
-    compileOnly 'org.sonarsource.api.plugin:sonar-plugin-api:10.15.0.99917'
+    compileOnly 'org.sonarsource.api.plugin:sonar-plugin-api:10.7.0.2191'
 
     // For logging
     compileOnly 'org.slf4j:slf4j-api:2.0.9'
@@ -29,7 +31,7 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
     testImplementation 'org.assertj:assertj-core:3.24.2'
     testImplementation 'org.mockito:mockito-core:5.5.0'
-    testImplementation 'org.sonarsource.api.plugin:sonar-plugin-api-test-fixtures:10.15.0.99917'
+    testImplementation 'org.sonarsource.api.plugin:sonar-plugin-api-test-fixtures:10.7.0.2191'
 }
 
 test {

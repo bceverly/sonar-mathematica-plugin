@@ -62,6 +62,12 @@ public class MathematicaCpdTokenizer implements Sensor {
 
         } catch (IOException e) {
             LOG.error("Error reading file: {}", inputFile, e);
+        } catch (StackOverflowError e) {
+            // Regex catastrophic backtracking on complex Mathematica syntax - skip this file
+            LOG.warn("Skipping file due to regex complexity (StackOverflowError): {}", inputFile);
+        } catch (Exception e) {
+            // Catch any other tokenization errors and skip the file
+            LOG.warn("Skipping file due to tokenization error: {}", inputFile, e);
         }
     }
 
@@ -87,8 +93,21 @@ public class MathematicaCpdTokenizer implements Sensor {
         public MathematicaTokenizer(String content) {
             this.content = content;
             this.line = 1;
-            this.column = 1;
+            this.column = 0;  // SonarQube uses 0-based column indexing
             this.position = 0;
+        }
+
+        /**
+         * Safely add a token, catching any errors if column tracking gets out of sync.
+         * This prevents the entire scan from failing on edge cases in Mathematica syntax.
+         */
+        private void safeAddToken(NewCpdTokens cpdTokens, int startLine, int startColumn, int endLine, int endColumn, String value) {
+            try {
+                cpdTokens.addToken(startLine, startColumn, endLine, endColumn, value);
+            } catch (IllegalArgumentException e) {
+                // Log but don't fail - column tracking got out of sync, skip this token
+                LOG.debug("Skipping token due to position error at line {}, column {}: {}", startLine, startColumn, e.getMessage());
+            }
         }
 
         public void tokenize(NewCpdTokens cpdTokens) {
@@ -99,7 +118,7 @@ public class MathematicaCpdTokenizer implements Sensor {
                 if (Character.isWhitespace(ch)) {
                     if (ch == '\n') {
                         line++;
-                        column = 1;
+                        column = 0;  // Reset to 0 for new line
                     } else {
                         column++;
                     }
@@ -115,7 +134,7 @@ public class MathematicaCpdTokenizer implements Sensor {
                     for (char c : comment.toCharArray()) {
                         if (c == '\n') {
                             line++;
-                            column = 1;
+                            column = 0;  // Reset to 0 for new line (0-based indexing)
                         } else {
                             column++;
                         }
@@ -129,7 +148,8 @@ public class MathematicaCpdTokenizer implements Sensor {
                 if (stringMatcher.lookingAt()) {
                     String str = stringMatcher.group();
                     // Add normalized token (all strings treated as equivalent for CPD)
-                    cpdTokens.addToken(line, column, line, column + str.length(), "\"STRING\"");
+                    int endColumn = column + str.length();  // End column is exclusive (one past the last char)
+                    safeAddToken(cpdTokens, line, column, line, endColumn, "\"STRING\"");
                     column += str.length();
                     position += str.length();
                     continue;
@@ -140,7 +160,8 @@ public class MathematicaCpdTokenizer implements Sensor {
                 if (numberMatcher.lookingAt()) {
                     String num = numberMatcher.group();
                     // Add normalized token (all numbers treated as equivalent for CPD)
-                    cpdTokens.addToken(line, column, line, column + num.length(), "NUMBER");
+                    int endColumn = column + num.length();  // End column is exclusive (one past the last char)
+                    safeAddToken(cpdTokens, line, column, line, endColumn, "NUMBER");
                     column += num.length();
                     position += num.length();
                     continue;
@@ -151,7 +172,8 @@ public class MathematicaCpdTokenizer implements Sensor {
                 if (identifierMatcher.lookingAt()) {
                     String identifier = identifierMatcher.group();
                     // Keep actual identifier for CPD (so 'Module' differs from 'Block')
-                    cpdTokens.addToken(line, column, line, column + identifier.length(), identifier);
+                    int endColumn = column + identifier.length();  // End column is exclusive (one past the last char)
+                    safeAddToken(cpdTokens, line, column, line, endColumn, identifier);
                     column += identifier.length();
                     position += identifier.length();
                     continue;
@@ -162,7 +184,8 @@ public class MathematicaCpdTokenizer implements Sensor {
                 if (operatorMatcher.lookingAt()) {
                     String operator = operatorMatcher.group();
                     // Keep actual operator
-                    cpdTokens.addToken(line, column, line, column + operator.length(), operator);
+                    int endColumn = column + operator.length();  // End column is exclusive (one past the last char)
+                    safeAddToken(cpdTokens, line, column, line, endColumn, operator);
                     column += operator.length();
                     position += operator.length();
                     continue;
