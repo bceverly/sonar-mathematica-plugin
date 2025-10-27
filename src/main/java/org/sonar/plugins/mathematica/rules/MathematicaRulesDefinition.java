@@ -370,7 +370,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 "<li><a href='https://owasp.org/Top10/A01_2021-Broken_Access_Control/'>OWASP Top 10 2021 A01</a> - Broken Access Control</li>" +
                 "</ul>"
             )
-            .setSeverity("HIGH")
+            .setSeverity("CRITICAL")
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "owasp", "path-traversal", "security");
 
