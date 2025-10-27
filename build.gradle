@@ -1,0 +1,73 @@
+plugins {
+    id 'java'
+    id 'maven-publish'
+}
+
+group = 'org.sonar.plugins'
+version = '0.1.0-SNAPSHOT'
+description = 'SonarQube plugin for Wolfram Mathematica'
+
+sourceCompatibility = JavaVersion.VERSION_11
+targetCompatibility = JavaVersion.VERSION_11
+
+repositories {
+    mavenCentral()
+    maven {
+        url 'https://repo1.maven.org/maven2/'
+    }
+}
+
+dependencies {
+    // SonarQube Plugin API - compile only (provided by SonarQube at runtime)
+    compileOnly 'org.sonarsource.api.plugin:sonar-plugin-api:10.15.0.99917'
+
+    // For logging
+    compileOnly 'org.slf4j:slf4j-api:2.0.9'
+
+    // Testing
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.0'
+    testImplementation 'org.junit.jupiter:junit-jupiter-engine:5.10.0'
+    testImplementation 'org.assertj:assertj-core:3.24.2'
+    testImplementation 'org.mockito:mockito-core:5.5.0'
+    testImplementation 'org.sonarsource.api.plugin:sonar-plugin-api-test-fixtures:10.15.0.99917'
+}
+
+test {
+    useJUnitPlatform()
+}
+
+jar {
+    manifest {
+        attributes(
+            'Plugin-Key': 'mathematica',
+            'Plugin-Class': 'org.sonar.plugins.mathematica.MathematicaPlugin',
+            'Plugin-Name': 'Mathematica',
+            'Plugin-Description': 'Code analyzer for Wolfram Mathematica',
+            'Plugin-Version': project.version,
+            'Plugin-Organization': 'Community',
+            'Plugin-OrganizationUrl': 'https://github.com/yourusername/sonar-mathematica-plugin',
+            'Plugin-License': 'LGPL-3.0',
+            'Plugin-ChildFirstClassLoader': 'false',
+            'Sonar-Version': '9.9',
+            'SonarLint-Supported': 'true'
+        )
+    }
+
+    // Include dependencies in the JAR
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+// Task to copy the built JAR to SonarQube extensions directory
+task installPlugin(type: Copy) {
+    dependsOn jar
+    from jar.archiveFile
+    into "${System.getProperty('user.home')}/.sonar/extensions/plugins"
+    doLast {
+        println "Plugin installed to: ${System.getProperty('user.home')}/.sonar/extensions/plugins"
+        println "Restart SonarQube to activate the plugin"
+    }
+}
