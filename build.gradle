@@ -46,7 +46,7 @@ jar {
             'Plugin-Version': project.version,
             'Plugin-Organization': 'Community',
             'Plugin-OrganizationUrl': 'https://github.com/yourusername/sonar-mathematica-plugin',
-            'Plugin-License': 'LGPL-3.0',
+            'Plugin-License': 'GPL-3.0',
             'Plugin-ChildFirstClassLoader': 'false',
             'Sonar-Version': '9.9',
             'SonarLint-Supported': 'true'
