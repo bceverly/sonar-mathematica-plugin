@@ -5,17 +5,17 @@
    ==================== *)
 
 (* VIOLATION: Hardcoded API key *)
-apiKey = "sk_live_1234567890abcdefghijklmnop";
+apiKey = "sk_live_XXXXXXXXXXXXXXXXXXXXXXXXXXXX";  (* Example only - not a real key *)
 
 (* VIOLATION: Hardcoded password *)
 dbPassword = "SuperSecret123!";
 
 (* VIOLATION: AWS credentials *)
-awsAccessKey = "AKIAIOSFODNN7EXAMPLE";
-awsSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";
+awsAccessKey = "AKIAIOSFODNN7EXAMPLE";  (* AWS example from documentation *)
+awsSecretKey = "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY";  (* AWS example *)
 
 (* VIOLATION: Auth token *)
-authToken = "ghp_1234567890abcdefghijklmnopqrstuvwxyz";
+authToken = "ghp_XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";  (* Example only *)
 
 (* COMPLIANT: Load from environment or secure configuration *)
 apiKeyGood = Environment["API_KEY"];
