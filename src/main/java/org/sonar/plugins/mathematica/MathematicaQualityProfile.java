@@ -101,6 +101,48 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
             MathematicaRulesDefinition.INSECURE_DESERIALIZATION_KEY
         );
 
+        // Activate BUG rules (Reliability)
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITIONAL_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.LIST_INDEX_OUT_OF_BOUNDS_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.INFINITE_RECURSION_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.UNREACHABLE_PATTERN_KEY
+        );
+
+        // Activate Security Hotspot rules
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.FILE_UPLOAD_VALIDATION_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY
+        );
+
+        profile.activateRule(
+            MathematicaRulesDefinition.REPOSITORY_KEY,
+            MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY
+        );
+
         profile.done();
     }
 }

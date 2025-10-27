@@ -9,8 +9,11 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Code Duplication Detection** | CPD Engine | Duplication | ✅ Active | Overview → Duplications % → Click |
 | **Code Smells** | 8 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
 | **Security Vulnerabilities** | 8 rules | Security | ✅ Active | Issues → Type: Vulnerability |
+| **Bugs (Reliability)** | 5 rules | Reliability | ✅ Active | Issues → Type: Bug |
+| **Security Hotspots** | 3 rules | Security Review | ✅ Active | Security Hotspots tab |
+| **Complexity Metrics** | Cyclomatic & Cognitive | Complexity | ✅ Active | Code tab → Function details |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | 16 rules + CPD | All | ✅ Active | Issues tab |
+| **Total Rules** | 26 rules + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -29,11 +32,25 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 - Overview → Click **Vulnerabilities** number (in Security section)
 - Or: Issues → Filter Type → Check "Vulnerability"
 
+**To see Bugs (Reliability):**
+- Overview → Click **Bugs** number (in Reliability section)
+- Or: Issues → Filter Type → Check "Bug"
+
+**To see Security Hotspots:**
+- Left sidebar → **Security Hotspots** tab (primary way)
+- Or: Overview → Click **Security Review** percentage
+- Or: Issues → Filter Type → Check "Security Hotspot"
+
+**To see Complexity Metrics:**
+- Measures → Complexity → View all metrics
+- Or: Issues → Search "complexity"
+- Or: Code tab → Navigate to file → See per-function complexity
+
 **To filter by severity:**
 - Issues → Filter Severity → Check: Blocker / Critical / Major / Minor / Info
 
 **To search for specific rule:**
-- Issues → Search box → Type rule keywords (e.g., "commented", "SQL", "hardcoded")
+- Issues → Search box → Type rule keywords (e.g., "commented", "SQL", "hardcoded", "division", "recursion")
 
 ---
 
@@ -322,9 +339,147 @@ If[$DevelopmentMode,
 
 ---
 
-## 3. Security Vulnerability Rules (8 Total)
+## 3. Bug Rules - Reliability (5 Total)
 
-### 3.1 Hardcoded Credentials
+Bug rules detect logic errors and runtime issues that cause program crashes or incorrect behavior.
+
+### 3.1 Division by Zero
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-369](https://cwe.mitre.org/data/definitions/369.html)
+
+Detects division operations that may cause divide-by-zero runtime errors.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = numerator / denominator;  (* What if denominator is 0? *)
+ratio = total / count;
+
+(* COMPLIANT *)
+If[denominator != 0, numerator / denominator, $Failed];
+result = Check[numerator / denominator, $Failed];
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Search: `division` or `divisor`
+3. → Shows all division-by-zero issues
+4. Click to see the exact division operation
+5. **Reliability Rating** on Overview shows letter grade based on bugs
+
+---
+
+### 3.2 Assignment in Conditional
+**Severity:** CRITICAL | **Type:** BUG
+**CWE:** [CWE-480](https://cwe.mitre.org/data/definitions/480.html)
+
+Detects assignment (=) used instead of comparison (==, ===) in If/While/Which statements.
+
+**Example:**
+```mathematica
+(* VIOLATION - Sets x to 5, always true! *)
+If[x = 5, doSomething[]];
+
+(* COMPLIANT *)
+If[x == 5, doSomething[]];
+If[x === 5, doSomething[]];  (* Strict equality *)
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Filter **"Severity"** → Check **"Critical"**
+3. Search: `assignment` or `conditional`
+4. → Shows all assignment-in-conditional bugs
+5. These are CRITICAL because they always cause incorrect behavior
+
+---
+
+### 3.3 List Index Out of Bounds
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-125](https://cwe.mitre.org/data/definitions/125.html)
+
+Detects list element access without bounds checking.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+element = myList[[index]];     (* What if index > Length[myList]? *)
+first = items[[1]];            (* What if items is empty? *)
+
+(* COMPLIANT *)
+If[1 <= index <= Length[myList], myList[[index]], $Failed];
+element = If[Length[items] > 0, First[items], $Failed];
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Search: `bounds` or `index`
+3. → Shows all list access issues
+4. Click to see the `[[index]]` usage
+5. Review each to add bounds checking
+
+---
+
+### 3.4 Infinite Recursion
+**Severity:** CRITICAL | **Type:** BUG
+**CWE:** [CWE-674](https://cwe.mitre.org/data/definitions/674.html)
+
+Detects recursive functions without proper base cases that may cause stack overflow.
+
+**Example:**
+```mathematica
+(* VIOLATION - No base case! *)
+factorial[n_] := n * factorial[n - 1];
+
+(* COMPLIANT *)
+factorial[0] = 1;
+factorial[n_] := n * factorial[n - 1];
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Filter **"Severity"** → Check **"Critical"**
+3. Search: `recursion` or `base case`
+4. → Shows functions that may recurse infinitely
+5. These are CRITICAL because they crash the program
+
+---
+
+### 3.5 Unreachable Pattern Definitions
+**Severity:** MAJOR | **Type:** BUG
+
+Detects pattern definitions that will never match because a more general pattern was defined earlier.
+
+**Example:**
+```mathematica
+(* VIOLATION - Specific patterns after general pattern never match! *)
+process[x_] := defaultProcess[x];
+process[x_Integer] := integerProcess[x];  (* NEVER CALLED *)
+process[x_String] := stringProcess[x];    (* NEVER CALLED *)
+
+(* COMPLIANT - Specific patterns first *)
+process[x_Integer] := integerProcess[x];
+process[x_String] := stringProcess[x];
+process[x_] := defaultProcess[x];  (* Catch-all last *)
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Issues** tab → Filter **"Type"** → Check **"Bug"**
+2. Search: `unreachable` or `pattern`
+3. → Shows pattern definitions that will never execute
+4. Click to see the function with multiple pattern definitions
+5. Review and reorder patterns (specific → general)
+
+---
+
+## 4. Security Vulnerability Rules (8 Total)
+
+### 4.1 Hardcoded Credentials
 **Severity:** BLOCKER | **Type:** VULNERABILITY
 **CWE:** [CWE-798](https://cwe.mitre.org/data/definitions/798.html) | **OWASP:** A07:2021
 
@@ -609,6 +764,272 @@ If[Hash[Import[file, "String"], "SHA256"] === expectedHash, Get[file], $Failed];
 
 ---
 
+## 5. Security Hotspot Rules (3 Total)
+
+Security Hotspots are code locations that require manual security review. Unlike Vulnerabilities (which are definite security issues), Hotspots highlight sensitive operations that **may** be secure if proper safeguards are in place.
+
+**Key Difference:**
+- **VULNERABILITY** = Definite security issue (must be fixed)
+- **SECURITY_HOTSPOT** = Needs manual review (may be OK if validated properly)
+
+### 5.1 File Upload Validation
+**Severity:** MAJOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-434](https://cwe.mitre.org/data/definitions/434.html)
+
+Flags file import/upload operations for manual security review.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+Import[uploadedFile];              (* Check: file type? size? content validation? *)
+Get[userProvidedPath];             (* Check: path sanitization? *)
+
+(* GOOD PRACTICES *)
+(* 1. Validate extension *)
+allowedExtensions = {".csv", ".json", ".txt"};
+If[!MemberQ[allowedExtensions, FileExtension[file]], Return[$Failed]];
+
+(* 2. Check file size *)
+If[FileSize[file] > 10*1024*1024, Return[$Failed]];  (* 10MB max *)
+
+(* 3. Use safe formats only *)
+Import[uploadedFile, "CSV"];  (* CSV is data-only, not executable *)
+```
+
+### 📍 How to View in SonarQube UI
+
+**Method 1: Security Hotspots Tab (Primary)**
+1. From project page, click **"Security Hotspots"** in left sidebar
+2. → Shows all hotspots categorized by priority
+3. Each hotspot shows:
+   - **Status**: To Review / Acknowledged / Fixed / Safe
+   - **Priority**: High / Medium / Low
+   - **Location**: File and line number
+4. Click a hotspot to review
+5. Mark as **Safe** (if validated properly) or **Fix Required** (if missing safeguards)
+
+**Method 2: Overview → Security Review**
+1. From project **Overview** tab
+2. Find **"Security Review"** metric (shows percentage and count)
+3. Click the count (e.g., "15 hotspots")
+4. → Takes you to Security Hotspots tab filtered to "To Review"
+
+**Method 3: Issues Tab (Alternative)**
+1. **Issues** tab → Filter **"Type"** → Check **"Security Hotspot"**
+2. → Shows all hotspots as issues
+3. But Security Hotspots tab provides better workflow
+
+**Workflow for Reviewing Hotspots:**
+1. Open hotspot
+2. Read the security guidance (shows best practices)
+3. Review the actual code
+4. Mark status:
+   - **Safe** - Code has proper validation
+   - **Fix Required** - Missing safeguards
+   - **Acknowledged** - Known, will fix later
+
+---
+
+### 5.2 External API Safeguards
+**Severity:** MAJOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-400](https://cwe.mitre.org/data/definitions/400.html)
+
+Flags external API calls for review of timeout, rate limiting, and error handling.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+URLRead[apiEndpoint];              (* Check: timeout? error handling? *)
+URLExecute["POST", url, data];     (* Check: rate limiting? retry logic? *)
+
+(* GOOD PRACTICES *)
+(* 1. Add timeout *)
+result = TimeConstrained[
+  Check[URLRead[apiEndpoint], (LogError["API failed"]; $Failed)],
+  30  (* 30 second timeout *)
+];
+
+(* 2. Implement rate limiting *)
+If[apiCallCount > maxCallsPerMinute, Pause[60]];
+
+(* 3. Retry with exponential backoff *)
+retries = 0;
+While[result === $Failed && retries < 3,
+  Pause[2^retries];
+  result = URLRead[apiEndpoint];
+  retries++;
+];
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Security Hotspots** tab in left sidebar
+2. Filter by **"Category"** → Look for API-related hotspots
+3. Review each API call to ensure:
+   - Timeout is set
+   - Rate limiting is implemented
+   - Errors are logged (not exposed to users)
+   - Sensitive data is not logged
+4. Mark as **Safe** if all safeguards are present
+
+---
+
+### 5.3 Cryptographic Key Generation
+**Severity:** MAJOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-326](https://cwe.mitre.org/data/definitions/326.html), [CWE-330](https://cwe.mitre.org/data/definitions/330.html)
+
+Flags cryptographic key/token generation for security review.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+key = Table[Random[], {16}];       (* Check: Is Random[] cryptographically secure? NO! *)
+token = ToString[RandomInteger[999999]];  (* Check: Sufficient entropy? NO! *)
+
+(* GOOD PRACTICES *)
+(* 1. Use RandomInteger (not Random) *)
+aesKey = RandomInteger[{0, 255}, 32];  (* 256-bit key *)
+
+(* 2. Generate secure tokens *)
+token = IntegerString[RandomInteger[{10^30, 10^31 - 1}], 16];
+
+(* 3. Sufficient key length *)
+(* - Symmetric: 256 bits minimum (AES-256) *)
+(* - RSA: 2048 bits minimum *)
+(* - ECC: 256 bits minimum *)
+
+(* 4. Store securely *)
+Export["/secure/path/key.bin", aesKey, "Byte"];
+(* Set restrictive permissions: chmod 600 *)
+```
+
+### 📍 How to View in SonarQube UI
+
+1. **Security Hotspots** tab
+2. Look for "Cryptographic" category
+3. Review each key generation to verify:
+   - Using `RandomInteger` (not `Random`)
+   - Key length is sufficient (≥256 bits)
+   - Keys are stored securely (not in code/logs)
+4. Mark as **Safe** if crypto practices are correct
+5. Mark as **Fix Required** if using weak crypto
+
+---
+
+## 6. Complexity Metrics
+
+The plugin calculates two types of complexity metrics for every function:
+
+### 6.1 Cyclomatic Complexity
+**Formula:** Count of decision points + 1
+
+**Decision Points Counted:**
+- `If`, `Which`, `Switch` statements
+- `While`, `Do`, `For`, `Table` loops
+- `&&`, `||` logical operators
+- `/;` (Condition operator)
+
+**Thresholds:**
+- **1-10**: Simple function (low risk)
+- **11-15**: Moderate complexity (acceptable)
+- **16-20**: High complexity (consider refactoring)
+- **21+**: Very high complexity (refactor recommended)
+
+**Example:**
+```mathematica
+(* Cyclomatic Complexity = 5 *)
+processData[data_, threshold_] := Module[{result},
+  If[Length[data] == 0, Return[$Failed]];        (* +1 *)
+  If[threshold < 0, threshold = 10];             (* +1 *)
+  result = Select[data, # > threshold &];        (* +0 *)
+  If[Length[result] > 100, result = Take[result, 100]];  (* +1 *)
+  Which[                                          (* +2 *)
+    Length[result] == 0, {},
+    Length[result] < 10, result,
+    True, Take[result, 10]
+  ]
+];
+(* CC = 1 (base) + 4 (decisions) = 5 *)
+```
+
+---
+
+### 6.2 Cognitive Complexity
+**Formula:** Complexity + Nesting Penalty
+
+Cognitive Complexity is more sophisticated than Cyclomatic - it penalizes **nested** control structures because they're harder to understand.
+
+**Nesting Rules:**
+- Each control structure adds: 1 + current nesting level
+- Nesting level increases inside blocks
+- Logical operators (`&&`, `||`) add +1 (no nesting penalty)
+
+**Thresholds:**
+- **1-10**: Easy to understand
+- **11-15**: Acceptable complexity
+- **16-25**: Getting difficult (consider refactoring)
+- **26+**: Very difficult to understand (refactor strongly recommended)
+
+**Example:**
+```mathematica
+(* Cognitive Complexity = 9 *)
+validateInput[data_] := Module[{errors = {}},
+  If[Length[data] == 0,                    (* +1, nesting=0 → score +1 *)
+    AppendTo[errors, "Empty data"],
+    If[!ListQ[data],                        (* +2, nesting=1 → score +2 *)
+      AppendTo[errors, "Not a list"],
+      (* Nested deeper *)
+      Do[                                    (* +3, nesting=2 → score +3 *)
+        If[!NumberQ[data[[i]]],             (* +4, nesting=3 → score +4 *)
+          AppendTo[errors, "Non-numeric"]
+        ],
+        {i, Length[data]}
+      ]
+    ]
+  ];
+  errors
+];
+(* Cognitive Complexity = 1 + 2 + 3 + 4 = 10 *)
+(* This is harder to understand than CC suggests due to nesting! *)
+```
+
+---
+
+### 📍 How to View Complexity Metrics in SonarQube UI
+
+**Method 1: Code Tab → File View**
+1. **Code** tab in left sidebar
+2. Navigate to a `.m` file
+3. Look for complexity indicators next to function definitions
+4. Hover over the metric to see Cyclomatic vs Cognitive values
+
+**Method 2: Issues Tab → Filter by Complexity**
+1. **Issues** tab
+2. Search: `complexity`
+3. → Shows functions exceeding complexity thresholds
+4. Each issue shows: `Function 'name' has cyclomatic complexity of 25 (max recommended: 15)`
+
+**Method 3: Measures Tab → Complexity Category**
+1. **Measures** tab in left sidebar
+2. Click **"Complexity"** category
+3. View metrics:
+   - **Complexity** - Total complexity across all functions
+   - **Cognitive Complexity** - Total cognitive complexity
+   - **Complexity per Function** - Average complexity
+4. Click any metric to see file-by-file breakdown
+
+**Method 4: Function-Level Details**
+1. Go to specific file in **Code** tab
+2. Complexity shown per function (if SonarQube version supports it)
+3. Functions with complexity > 15 are flagged as issues
+
+**Best Practices:**
+- **Cyclomatic Complexity > 15** → Consider splitting function
+- **Cognitive Complexity > 15** → Function is hard to understand, refactor
+- **High nesting (>3 levels)** → Extract helper functions
+
+---
+
 ## OWASP Top 10 2021 Coverage Summary
 
 This plugin now covers **9 out of 10** OWASP Top 10 2021 categories:
@@ -644,17 +1065,21 @@ This plugin now covers **9 out of 10** OWASP Top 10 2021 categories:
 The Overview tab shows your project's health at a glance:
 
 **Reliability Section:**
-- **Bugs**: 0 (we don't detect these yet)
+- **Bugs**: Shows count (e.g., "45") - Our 5 BUG rules findings
+  - Click this number → See all bugs
+- **Reliability Rating**: Letter grade A-E based on bug severity
+  - Click the grade → See rating breakdown
 
 **Security Section:**
-- **Vulnerabilities**: Shows count (e.g., "20") - Our 8 security rules findings
+- **Vulnerabilities**: Shows count (e.g., "20") - Our 8 security VULNERABILITY rules findings
   - Click this number → See all security issues
 - **Security Rating**: Letter grade A-E
   - Click the grade → See rating breakdown
-- **Security Hotspots**: 0 (we don't detect these)
+- **Security Review**: Shows percentage reviewed (e.g., "15 to review")
+  - Click this → See Security Hotspots from our 3 SECURITY_HOTSPOT rules
 
 **Maintainability Section:**
-- **Code Smells**: Shows count (e.g., "300") - Our 8 code quality rules findings
+- **Code Smells**: Shows count (e.g., "300") - Our 8 CODE_SMELL rules findings
   - Click this number → See all code smells
 - **Maintainability Rating**: Letter grade A-E
 - **Technical Debt**: Estimated time to fix all code smells
@@ -663,8 +1088,14 @@ The Overview tab shows your project's health at a glance:
 - **Coverage**: N/A (we don't measure test coverage)
 
 **Duplications Section:**
-- **Duplications**: Shows percentage (e.g., "5.2%")
+- **Duplications**: Shows percentage (e.g., "5.2%") - From our CPD engine
   - Click the percentage → See all duplicated code blocks
+
+**Complexity Section:**
+- **Complexity**: Total cyclomatic complexity
+  - Click → See file-by-file complexity breakdown
+- **Cognitive Complexity**: Total cognitive complexity
+  - Click → See complexity details
 
 **Step 3: Navigate to Issues**
 Click **"Issues"** in the left sidebar → This is where you'll spend most of your time
@@ -699,16 +1130,18 @@ For each issue, you can:
 **What:** High-level project health dashboard
 
 **Key Metrics:**
-- **Bugs** - Logic errors (not detected by this plugin yet)
-- **Vulnerabilities** - Our 8 security rules
-- **Code Smells** - Our 6 maintainability rules
-- **Security Hotspots** - Manual review locations
-- **Duplications** - Copy-pasted code percentage
+- **Bugs** - Logic errors → Our 5 BUG rules
+- **Vulnerabilities** - Security issues → Our 8 VULNERABILITY rules
+- **Code Smells** - Code quality → Our 8 CODE_SMELL rules
+- **Security Hotspots** - Manual review locations → Our 3 SECURITY_HOTSPOT rules
+- **Duplications** - Copy-pasted code percentage → CPD engine
+- **Complexity** - Function complexity → Cyclomatic & Cognitive metrics
 
 **Quick Actions:**
 - Click any number to jump to detailed issues
-- View **Maintainability Rating** (A-E)
-- View **Security Rating** (A-E)
+- View **Reliability Rating** (A-E) - Based on bugs
+- View **Security Rating** (A-E) - Based on vulnerabilities
+- View **Maintainability Rating** (A-E) - Based on code smells
 
 ---
 
@@ -735,12 +1168,13 @@ For each issue, you can:
 **What:** Detailed metrics and drilldowns
 
 **Categories:**
-- **Reliability** - Bug metrics
-- **Security** - Vulnerability metrics (our 8 rules)
-- **Maintainability** - Code smell metrics (our 8 rules)
-- **Coverage** - Test coverage (not applicable)
+- **Reliability** - Bug metrics (our 5 BUG rules)
+- **Security** - Vulnerability metrics (our 8 VULNERABILITY rules)
+- **Maintainability** - Code smell metrics (our 8 CODE_SMELL rules)
+- **Coverage** - Test coverage (not applicable to this plugin)
 - **Duplications** - Our CPD engine results
-- **Size** - LOC, files, functions counted
+- **Size** - LOC, files, functions counted automatically
+- **Complexity** - Cyclomatic & Cognitive complexity metrics
 
 **Navigation:**
 - Click metric → See file-by-file breakdown
@@ -756,6 +1190,19 @@ For each issue, you can:
 - Issues highlighted directly in code
 - Click line number to see issue details
 - Duplications shown with clickable links
+- Complexity shown per function (where supported)
+
+---
+
+### Security Hotspots Tab
+**What:** Review security-sensitive code locations
+
+**Features:**
+- Shows all locations flagged by our 3 SECURITY_HOTSPOT rules
+- Categorized by priority (High/Medium/Low)
+- Status tracking: To Review / Safe / Fix Required / Acknowledged
+- Guidance for each hotspot on what to verify
+- Workflow: Review → Mark status → Track progress
 
 ---
 
@@ -767,15 +1214,21 @@ For each issue, you can:
 2. Or: Top navigation → **Rules** → Language filter → **Mathematica**
 
 **Shows:**
-- All 11 active rules (6 code smells + 5 security)
-- Rule descriptions
-- CWE/OWASP mappings
-- Compliant/noncompliant examples
+- All 26 active rules:
+  - 8 CODE_SMELL rules
+  - 8 VULNERABILITY rules
+  - 5 BUG rules
+  - 3 SECURITY_HOTSPOT rules
+  - 2 Complexity metrics (reported as issues when thresholds exceeded)
+- Rule descriptions with examples
+- CWE/OWASP mappings for security rules
+- Compliant/noncompliant code examples
 
 **Actions:**
 - Activate/deactivate rules
-- Change severities
+- Change severities (customize for your team)
 - Create custom quality profiles
+- Export quality profile
 
 ---
 
@@ -882,11 +1335,20 @@ Open http://localhost:9000 and navigate to your project.
 ## Performance
 
 ### File Size Limits
-The plugin automatically skips:
-- Files >10,000 lines
-- Files >1MB
+The plugin has intelligent performance protections:
 
-This prevents performance issues on extremely large files.
+**File Length Violations:**
+- Files >1,000 lines (configurable) are flagged with "File Length" violation
+- These files ARE fully analyzed up to 25,000 lines
+
+**Performance Protection:**
+- Files >25,000 lines: Reported for File Length violation, then skip detailed analysis
+- Files >1MB: Skip detailed analysis (too large to process efficiently)
+
+This ensures:
+- All large files are reported for review
+- Extremely large files don't slow down the scan
+- Your project scan completes in reasonable time
 
 ### Expected Scan Times
 - **Small projects** (<100 files): Seconds

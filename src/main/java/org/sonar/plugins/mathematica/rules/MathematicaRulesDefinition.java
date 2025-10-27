@@ -31,6 +31,18 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String SSRF_KEY = "ServerSideRequestForgery";
     public static final String INSECURE_DESERIALIZATION_KEY = "InsecureDeserialization";
 
+    // Rule keys - Bugs (Reliability)
+    public static final String DIVISION_BY_ZERO_KEY = "DivisionByZero";
+    public static final String ASSIGNMENT_IN_CONDITIONAL_KEY = "AssignmentInConditional";
+    public static final String LIST_INDEX_OUT_OF_BOUNDS_KEY = "ListIndexOutOfBounds";
+    public static final String INFINITE_RECURSION_KEY = "InfiniteRecursion";
+    public static final String UNREACHABLE_PATTERN_KEY = "UnreachablePattern";
+
+    // Rule keys - Security Hotspots
+    public static final String FILE_UPLOAD_VALIDATION_KEY = "FileUploadValidation";
+    public static final String EXTERNAL_API_SAFEGUARDS_KEY = "ExternalApiSafeguards";
+    public static final String CRYPTO_KEY_GENERATION_KEY = "CryptoKeyGeneration";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -500,6 +512,314 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("CRITICAL")
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "owasp", "deserialization", "security");
+
+        // ===== BUG RULES (Reliability) =====
+
+        // Define division by zero rule
+        repository.createRule(DIVISION_BY_ZERO_KEY)
+            .setName("Division operations should check for zero divisors")
+            .setHtmlDescription(
+                "<p>Division by zero causes runtime errors and program crashes.</p>" +
+                "<p>Always validate that divisors are not zero before performing division operations.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\n" +
+                "result = numerator / denominator;\n" +
+                "value = x / (y - 5);  (* What if y == 5? *)\n" +
+                "ratio = total / count;  (* What if count == 0? *)\n" +
+                "</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n" +
+                "(* Check before dividing *)\n" +
+                "If[denominator != 0, numerator / denominator, $Failed];\n" +
+                "\n" +
+                "(* Or use Mathematica's safe division *)\n" +
+                "result = Check[numerator / denominator, $Failed];\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/369.html'>CWE-369</a> - Divide By Zero</li>" +
+                "</ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "error-handling");
+
+        // Define assignment in conditional rule
+        repository.createRule(ASSIGNMENT_IN_CONDITIONAL_KEY)
+            .setName("Assignments should not be used in conditional expressions")
+            .setHtmlDescription(
+                "<p>Using assignment (=) instead of comparison (==, ===) in conditionals is a common bug.</p>" +
+                "<p>This causes unintended assignment and always evaluates to True.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\n" +
+                "(* Assignment instead of comparison *)\n" +
+                "If[x = 5, doSomething[]];  (* Sets x to 5, always True! *)\n" +
+                "\n" +
+                "While[status = \"running\", process[]];  (* Always loops! *)\n" +
+                "</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n" +
+                "(* Use comparison operators *)\n" +
+                "If[x == 5, doSomething[]];\n" +
+                "If[x === 5, doSomething[]];  (* Strict equality *)\n" +
+                "\n" +
+                "While[status == \"running\", process[]];\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/480.html'>CWE-480</a> - Use of Incorrect Operator</li>" +
+                "</ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "logic-error");
+
+        // Define list index out of bounds rule
+        repository.createRule(LIST_INDEX_OUT_OF_BOUNDS_KEY)
+            .setName("List access should be bounds-checked")
+            .setHtmlDescription(
+                "<p>Accessing list elements without bounds checking can cause Part::partw errors at runtime.</p>" +
+                "<p>Always verify index is within valid range before accessing list elements.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\n" +
+                "(* No bounds checking *)\n" +
+                "element = myList[[index]];\n" +
+                "value = data[[userInput]];\n" +
+                "first = items[[1]];  (* What if items is empty? *)\n" +
+                "</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n" +
+                "(* Check bounds before access *)\n" +
+                "If[1 <= index <= Length[myList],\n" +
+                "  myList[[index]],\n" +
+                "  $Failed\n" +
+                "];\n" +
+                "\n" +
+                "(* Use safe accessors *)\n" +
+                "element = If[Length[items] > 0, First[items], $Failed];\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/125.html'>CWE-125</a> - Out-of-bounds Read</li>" +
+                "</ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "error-handling");
+
+        // Define infinite recursion rule
+        repository.createRule(INFINITE_RECURSION_KEY)
+            .setName("Recursive functions must have a base case")
+            .setHtmlDescription(
+                "<p>Recursive functions without proper base cases cause stack overflow errors.</p>" +
+                "<p>Every recursive function must have at least one termination condition.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\n" +
+                "(* No base case - infinite recursion! *)\n" +
+                "factorial[n_] := n * factorial[n - 1];\n" +
+                "\n" +
+                "(* Base case never reached *)\n" +
+                "count[x_] := If[x > 100, x, count[x + 1]];  (* But what if x starts > 100? *)\n" +
+                "</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n" +
+                "(* Proper base case *)\n" +
+                "factorial[0] = 1;\n" +
+                "factorial[n_] := n * factorial[n - 1];\n" +
+                "\n" +
+                "(* Multiple base cases *)\n" +
+                "fibonacci[0] = 0;\n" +
+                "fibonacci[1] = 1;\n" +
+                "fibonacci[n_] := fibonacci[n-1] + fibonacci[n-2];\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/674.html'>CWE-674</a> - Uncontrolled Recursion</li>" +
+                "</ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "stack-overflow");
+
+        // Define unreachable pattern rule
+        repository.createRule(UNREACHABLE_PATTERN_KEY)
+            .setName("Pattern definitions should not be unreachable")
+            .setHtmlDescription(
+                "<p>When multiple patterns are defined for the same function, more specific patterns must come before general ones.</p>" +
+                "<p>Otherwise, the specific patterns will never match because the general pattern catches everything first.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\n" +
+                "(* General pattern first - specific patterns never match! *)\n" +
+                "process[x_] := defaultProcess[x];\n" +
+                "process[x_Integer] := integerProcess[x];  (* NEVER CALLED *)\n" +
+                "process[x_String] := stringProcess[x];    (* NEVER CALLED *)\n" +
+                "\n" +
+                "(* Overlapping patterns *)\n" +
+                "calculate[n_] := n^2;\n" +
+                "calculate[n_?Positive] := n^3;  (* NEVER CALLED - all numbers match n_ first *)\n" +
+                "</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n" +
+                "(* Specific patterns first, general last *)\n" +
+                "process[x_Integer] := integerProcess[x];\n" +
+                "process[x_String] := stringProcess[x];\n" +
+                "process[x_] := defaultProcess[x];  (* Catch-all last *)\n" +
+                "\n" +
+                "(* Most specific first *)\n" +
+                "calculate[n_?Positive] := n^3;\n" +
+                "calculate[n_] := n^2;\n" +
+                "</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "logic-error", "pattern-matching");
+
+        // ===== SECURITY HOTSPOT RULES =====
+
+        // Define file upload validation rule
+        repository.createRule(FILE_UPLOAD_VALIDATION_KEY)
+            .setName("File uploads should be validated")
+            .setHtmlDescription(
+                "<p>File uploads from users should be validated for type, size, and content before processing.</p>" +
+                "<p>Unvalidated file uploads can lead to malicious file execution, denial of service, or data exfiltration.</p>" +
+                "<p><strong>This is a Security Hotspot</strong> - Review this code to ensure proper validation is in place.</p>" +
+                "<h2>What to Review</h2>" +
+                "<p>When you see this issue, verify that:</p>" +
+                "<ul>" +
+                "<li>File extension is validated against whitelist</li>" +
+                "<li>File size is checked and limited</li>" +
+                "<li>File content type is verified (not just extension)</li>" +
+                "<li>Files are scanned for malware if possible</li>" +
+                "<li>Uploaded files are stored outside web root</li>" +
+                "<li>File names are sanitized (no path traversal)</li>" +
+                "</ul>" +
+                "<h2>Example File Operations to Review</h2>" +
+                "<pre>\n" +
+                "(* Review these operations *)\n" +
+                "Import[uploadedFile];  (* What type? Size? Content? *)\n" +
+                "Get[userProvidedPath];  (* Could load malicious code! *)\n" +
+                "Import[formData[\"file\"], \"MX\"];  (* MX files execute code! *)\n" +
+                "</pre>" +
+                "<h2>Secure Validation Example</h2>" +
+                "<pre>\n" +
+                "(* Validate extension *)\n" +
+                "allowedExtensions = {\".csv\", \".json\", \".txt\"};\n" +
+                "ext = FileExtension[uploadedFile];\n" +
+                "If[!MemberQ[allowedExtensions, \".\" <> ext], Return[$Failed]];\n" +
+                "\n" +
+                "(* Check file size *)\n" +
+                "maxSize = 10 * 1024 * 1024;  (* 10MB *)\n" +
+                "If[FileSize[uploadedFile] > maxSize, Return[$Failed]];\n" +
+                "\n" +
+                "(* Use safe import formats only *)\n" +
+                "data = Import[uploadedFile, \"CSV\"];  (* CSV is data-only *)\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/434.html'>CWE-434</a> - Unrestricted Upload of File with Dangerous Type</li>" +
+                "<li><a href='https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload'>OWASP</a> - Unrestricted File Upload</li>" +
+                "</ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .setTags("security", "file-upload", "owasp");
+
+        // Define external API safeguards rule
+        repository.createRule(EXTERNAL_API_SAFEGUARDS_KEY)
+            .setName("External API calls should have proper safeguards")
+            .setHtmlDescription(
+                "<p>Calls to external APIs should have proper error handling, timeouts, and rate limiting.</p>" +
+                "<p>Without safeguards, API calls can cause performance issues, expose sensitive errors, or enable abuse.</p>" +
+                "<p><strong>This is a Security Hotspot</strong> - Review this code to ensure proper safeguards are in place.</p>" +
+                "<h2>What to Review</h2>" +
+                "<p>When you see this issue, verify that:</p>" +
+                "<ul>" +
+                "<li>Timeout is set (don't wait forever)</li>" +
+                "<li>Rate limiting is implemented (prevent abuse)</li>" +
+                "<li>Errors are caught and logged (don't expose stack traces)</li>" +
+                "<li>Sensitive data is not logged (API keys, tokens)</li>" +
+                "<li>Retry logic has exponential backoff</li>" +
+                "<li>Circuit breaker pattern for failing services</li>" +
+                "</ul>" +
+                "<h2>Example API Calls to Review</h2>" +
+                "<pre>\n" +
+                "(* Review these operations *)\n" +
+                "URLRead[apiEndpoint];  (* Timeout? Error handling? *)\n" +
+                "URLExecute[\"POST\", url, data];  (* Rate limiting? *)\n" +
+                "ServiceExecute[service, \"Query\", params];  (* What if service is down? *)\n" +
+                "</pre>" +
+                "<h2>Secure API Call Example</h2>" +
+                "<pre>\n" +
+                "(* Add timeout and error handling *)\n" +
+                "result = TimeConstrained[\n" +
+                "  Check[\n" +
+                "    URLRead[apiEndpoint],\n" +
+                "    (LogError[\"API call failed\"]; $Failed)\n" +
+                "  ],\n" +
+                "  30  (* 30 second timeout *)\n" +
+                "];\n" +
+                "\n" +
+                "(* Implement rate limiting *)\n" +
+                "If[apiCallCount > maxCallsPerMinute,\n" +
+                "  Pause[60];  (* Wait before next call *)\n" +
+                "];\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/400.html'>CWE-400</a> - Uncontrolled Resource Consumption</li>" +
+                "<li><a href='https://owasp.org/www-community/controls/Blocking_Brute_Force_Attacks'>OWASP</a> - Rate Limiting</li>" +
+                "</ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .setTags("security", "api", "availability");
+
+        // Define crypto key generation rule
+        repository.createRule(CRYPTO_KEY_GENERATION_KEY)
+            .setName("Cryptographic keys should be generated securely")
+            .setHtmlDescription(
+                "<p>Cryptographic keys and secrets must be generated using secure methods with sufficient entropy.</p>" +
+                "<p>Weak key generation can compromise the entire security of encrypted data.</p>" +
+                "<p><strong>This is a Security Hotspot</strong> - Review this code to ensure secure key generation.</p>" +
+                "<h2>What to Review</h2>" +
+                "<p>When you see this issue, verify that:</p>" +
+                "<ul>" +
+                "<li>Using RandomInteger (not Random) for cryptographic purposes</li>" +
+                "<li>Key length is sufficient (256 bits minimum for symmetric)</li>" +
+                "<li>Keys are generated with cryptographically secure randomness</li>" +
+                "<li>Keys are stored securely (not in code or logs)</li>" +
+                "<li>Keys are rotated regularly</li>" +
+                "<li>Consider using established crypto libraries</li>" +
+                "</ul>" +
+                "<h2>Example Key Generation to Review</h2>" +
+                "<pre>\n" +
+                "(* Review these operations *)\n" +
+                "key = Table[Random[], {16}];  (* Random is NOT cryptographically secure! *)\n" +
+                "password = ToString[Random[Integer, {1000, 9999}]];  (* Too short! *)\n" +
+                "secret = IntegerString[RandomInteger[999999], 16];  (* Too little entropy! *)\n" +
+                "</pre>" +
+                "<h2>Secure Key Generation Example</h2>" +
+                "<pre>\n" +
+                "(* Use RandomInteger with sufficient length *)\n" +
+                "aesKey = RandomInteger[{0, 255}, 32];  (* 256-bit key *)\n" +
+                "\n" +
+                "(* Generate secure token *)\n" +
+                "token = IntegerString[RandomInteger[{10^30, 10^31 - 1}], 16];\n" +
+                "\n" +
+                "(* Store securely, don't log *)\n" +
+                "Export[\"/secure/path/key.bin\", aesKey, \"Byte\"];\n" +
+                "SystemExecute[\"chmod\", \"600\", \"/secure/path/key.bin\"];\n" +
+                "</pre>" +
+                "<h2>See</h2>" +
+                "<ul>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/326.html'>CWE-326</a> - Inadequate Encryption Strength</li>" +
+                "<li><a href='https://cwe.mitre.org/data/definitions/330.html'>CWE-330</a> - Use of Insufficiently Random Values</li>" +
+                "<li><a href='https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'>OWASP Top 10 2021 A02</a> - Cryptographic Failures</li>" +
+                "</ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .setTags("security", "cryptography", "owasp");
 
         repository.done();
     }

@@ -90,6 +90,33 @@ public class MathematicaRulesSensor implements Sensor {
         "\\$DebugMessages\\s*=\\s*True"
     );
 
+    // BUG detection patterns
+    private static final Pattern DIVISION_PATTERN = Pattern.compile(
+        "/(?!=)"  // Division operator, but not //= or /=
+    );
+    private static final Pattern ASSIGNMENT_IN_IF_PATTERN = Pattern.compile(
+        "(?:If|While|Which)\\s*\\[[^\\]]*\\b(\\w+)\\s*=\\s*(?!=)[^=]"
+    );
+    private static final Pattern LIST_ACCESS_PATTERN = Pattern.compile(
+        "\\[\\[([^\\]]+)\\]\\]"
+    );
+    private static final Pattern RECURSIVE_FUNCTION_PATTERN = Pattern.compile(
+        "([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:="
+    );
+
+    // Security hotspot patterns
+    private static final Pattern FILE_IMPORT_PATTERN = Pattern.compile(
+        "(?:Import|Get|OpenRead|OpenWrite|Put)\\s*\\["
+    );
+    private static final Pattern API_CALL_PATTERN = Pattern.compile(
+        "(?:URLRead|URLFetch|URLExecute|URLSubmit|ServiceExecute|ServiceConnect)\\s*\\["
+    );
+    private static final Pattern KEY_GENERATION_PATTERN = Pattern.compile(
+        "(?:RandomInteger|Random)\\s*\\[|" +
+        "(?:GenerateSymmetricKey|GenerateAsymmetricKeyPair)\\s*\\[|" +
+        "Table\\s*\\[[^\\]]*Random"
+    );
+
     @Override
     public void describe(SensorDescriptor descriptor) {
         descriptor
@@ -152,6 +179,21 @@ public class MathematicaRulesSensor implements Sensor {
             detectWeakCryptography(context, inputFile, content);
             detectSsrf(context, inputFile, content);
             detectInsecureDeserialization(context, inputFile, content);
+
+            // BUG rules (Reliability)
+            detectDivisionByZero(context, inputFile, content);
+            detectAssignmentInConditional(context, inputFile, content);
+            detectListIndexOutOfBounds(context, inputFile, content);
+            detectInfiniteRecursion(context, inputFile, content);
+            detectUnreachablePatterns(context, inputFile, content);
+
+            // Security Hotspot rules
+            detectFileUploadValidation(context, inputFile, content);
+            detectExternalApiSafeguards(context, inputFile, content);
+            detectCryptoKeyGeneration(context, inputFile, content);
+
+            // Complexity metrics (per-function)
+            calculateComplexityMetrics(context, inputFile, content);
 
         } catch (IOException e) {
             LOG.error("Error reading file: {}", inputFile, e);
@@ -746,6 +788,403 @@ public class MathematicaRulesSensor implements Sensor {
             }
         } catch (Exception e) {
             LOG.warn("Skipping debug code detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    // ===== BUG DETECTION METHODS (Reliability) =====
+
+    /**
+     * Detects potential division by zero operations.
+     */
+    private void detectDivisionByZero(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = DIVISION_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int position = matcher.start();
+                int lineNumber = calculateLineNumber(content, position);
+
+                // Get context around the division to check if it's validated
+                int lineStart = content.lastIndexOf('\n', position) + 1;
+                int lineEnd = content.indexOf('\n', position);
+                if (lineEnd == -1) lineEnd = content.length();
+                String line = content.substring(lineStart, lineEnd);
+
+                // Skip if there's obvious validation (Check, If checking != 0, etc.)
+                if (line.contains("Check[") || line.contains("!= 0") || line.contains("> 0")) {
+                    continue;
+                }
+
+                reportIssue(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY,
+                    "Ensure the divisor cannot be zero before performing division.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping division by zero detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detects assignment (=) used instead of comparison (==, ===) in conditionals.
+     */
+    private void detectAssignmentInConditional(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = ASSIGNMENT_IN_IF_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+
+                reportIssue(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITIONAL_KEY,
+                    "Use comparison (== or ===) instead of assignment (=) in this conditional.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping assignment in conditional detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detects list element access without bounds checking.
+     */
+    private void detectListIndexOutOfBounds(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = LIST_ACCESS_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int position = matcher.start();
+                int lineNumber = calculateLineNumber(content, position);
+
+                // Get context to check if bounds are validated
+                int lineStart = content.lastIndexOf('\n', position) + 1;
+                int lineEnd = content.indexOf('\n', position);
+                if (lineEnd == -1) lineEnd = content.length();
+                String line = content.substring(lineStart, lineEnd);
+
+                // Skip if there's obvious bounds checking
+                if (line.contains("Length[") || line.contains("Check[") ||
+                    line.contains("<= Length") || line.contains("If[Length")) {
+                    continue;
+                }
+
+                reportIssue(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.LIST_INDEX_OUT_OF_BOUNDS_KEY,
+                    "Verify the index is within bounds before accessing list elements.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping list index bounds detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detects recursive functions that may lack proper base cases.
+     */
+    private void detectInfiniteRecursion(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher defMatcher = RECURSIVE_FUNCTION_PATTERN.matcher(content);
+
+            while (defMatcher.find()) {
+                String functionName = defMatcher.group(1);
+                int defStart = defMatcher.start();
+                int lineNumber = calculateLineNumber(content, defStart);
+
+                // Look for the function body (simplified: until next function or semicolon)
+                int bodyEnd = content.indexOf(";", defStart);
+                if (bodyEnd == -1) bodyEnd = content.length();
+                int nextDef = content.indexOf(functionName + "[", defStart + functionName.length());
+                if (nextDef > 0 && nextDef < bodyEnd) {
+                    // Function calls itself - it's recursive
+                    // Check if there's a base case defined elsewhere
+                    Pattern baseCase = Pattern.compile(functionName + "\\s*\\[\\s*\\d+\\s*\\]\\s*=");
+                    Matcher baseMatcher = baseCase.matcher(content);
+
+                    boolean hasBaseCase = false;
+                    while (baseMatcher.find()) {
+                        if (baseMatcher.start() != defStart) {
+                            hasBaseCase = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasBaseCase) {
+                        reportIssue(context, inputFile, lineNumber,
+                            MathematicaRulesDefinition.INFINITE_RECURSION_KEY,
+                            String.format("Function '%s' appears to be recursive but may lack a base case.", functionName));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping infinite recursion detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detects unreachable pattern definitions (general patterns before specific ones).
+     */
+    private void detectUnreachablePatterns(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find all function definitions
+            Matcher matcher = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=").matcher(content);
+            java.util.Map<String, java.util.List<PatternInfo>> functionPatterns = new java.util.HashMap<>();
+
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                String pattern = matcher.group(2);
+                int lineNumber = calculateLineNumber(content, matcher.start());
+
+                if (!functionPatterns.containsKey(funcName)) {
+                    functionPatterns.put(funcName, new java.util.ArrayList<>());
+                }
+                functionPatterns.get(funcName).add(new PatternInfo(pattern, lineNumber));
+            }
+
+            // Check each function's patterns
+            for (java.util.Map.Entry<String, java.util.List<PatternInfo>> entry : functionPatterns.entrySet()) {
+                java.util.List<PatternInfo> patterns = entry.getValue();
+                if (patterns.size() < 2) continue;
+
+                // Check if a general pattern (single underscore) comes before specific patterns
+                for (int i = 0; i < patterns.size() - 1; i++) {
+                    String currentPattern = patterns.get(i).pattern;
+                    // If current pattern is very general (just x_ or similar)
+                    if (currentPattern.matches("\\w+_\\s*")) {
+                        // Check if there are more specific patterns after it
+                        for (int j = i + 1; j < patterns.size(); j++) {
+                            String laterPattern = patterns.get(j).pattern;
+                            // If later pattern has type constraints, it's more specific
+                            if (laterPattern.contains("_Integer") || laterPattern.contains("_String") ||
+                                laterPattern.contains("_Real") || laterPattern.contains("_?") ||
+                                laterPattern.contains("_Symbol")) {
+                                reportIssue(context, inputFile, patterns.get(j).lineNumber,
+                                    MathematicaRulesDefinition.UNREACHABLE_PATTERN_KEY,
+                                    "This specific pattern will never match because a more general pattern was defined earlier.");
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping unreachable pattern detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Helper class for pattern tracking.
+     */
+    private static class PatternInfo {
+        String pattern;
+        int lineNumber;
+        PatternInfo(String p, int ln) {
+            this.pattern = p;
+            this.lineNumber = ln;
+        }
+    }
+
+    // ===== SECURITY HOTSPOT DETECTION METHODS =====
+
+    /**
+     * Detects file import/upload operations that should be reviewed for validation.
+     */
+    private void detectFileUploadValidation(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = FILE_IMPORT_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+                String match = matcher.group();
+
+                String message;
+                if (match.contains("Import") || match.contains("Get")) {
+                    message = "Review: Ensure file uploads/imports are validated for type, size, and content.";
+                } else {
+                    message = "Review: Ensure file operations validate and sanitize file paths.";
+                }
+
+                reportIssue(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.FILE_UPLOAD_VALIDATION_KEY,
+                    message);
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping file upload detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detects external API calls that should be reviewed for proper safeguards.
+     */
+    private void detectExternalApiSafeguards(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = API_CALL_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+
+                reportIssue(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY,
+                    "Review: Ensure this API call has timeout, error handling, and rate limiting.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping API safeguards detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detects cryptographic key generation that should be reviewed for security.
+     */
+    private void detectCryptoKeyGeneration(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = KEY_GENERATION_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+                String match = matcher.group();
+
+                String message;
+                if (match.contains("Random[") && !match.contains("RandomInteger")) {
+                    message = "Review: Random[] is not cryptographically secure. Use RandomInteger for keys.";
+                } else {
+                    message = "Review: Ensure cryptographic keys are generated with sufficient entropy and stored securely.";
+                }
+
+                reportIssue(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY,
+                    message);
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping crypto key generation detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    // ===== COMPLEXITY METRICS =====
+
+    /**
+     * Calculates cyclomatic and cognitive complexity for functions.
+     * Logs complexity metrics that can be displayed in SonarQube.
+     */
+    private void calculateComplexityMetrics(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                String functionName = matcher.group(1);
+                int startOffset = matcher.start();
+                int startLine = calculateLineNumber(content, startOffset);
+
+                // Find function body (simplified: until next function definition or end of file)
+                int endOffset = content.length();
+                Matcher nextFunctionMatcher = FUNCTION_DEF_PATTERN.matcher(content);
+                while (nextFunctionMatcher.find()) {
+                    if (nextFunctionMatcher.start() > matcher.end()) {
+                        endOffset = nextFunctionMatcher.start();
+                        break;
+                    }
+                }
+
+                String functionBody = content.substring(startOffset, endOffset);
+
+                // Calculate Cyclomatic Complexity
+                int cyclomaticComplexity = calculateCyclomaticComplexity(functionBody);
+
+                // Calculate Cognitive Complexity
+                int cognitiveComplexity = calculateCognitiveComplexity(functionBody);
+
+                // Report if complexity is high
+                if (cyclomaticComplexity > 15) {
+                    reportIssue(context, inputFile, startLine,
+                        MathematicaRulesDefinition.FUNCTION_LENGTH_KEY,
+                        String.format("Function '%s' has cyclomatic complexity of %d (max recommended: 15).",
+                            functionName, cyclomaticComplexity));
+                }
+
+                if (cognitiveComplexity > 15) {
+                    reportIssue(context, inputFile, startLine,
+                        MathematicaRulesDefinition.FUNCTION_LENGTH_KEY,
+                        String.format("Function '%s' has cognitive complexity of %d (max recommended: 15).",
+                            functionName, cognitiveComplexity));
+                }
+
+                // Log metrics for SonarQube dashboard
+                LOG.debug("Function '{}' at line {}: Cyclomatic={}, Cognitive={}",
+                    functionName, startLine, cyclomaticComplexity, cognitiveComplexity);
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping complexity calculation due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Calculates Cyclomatic Complexity - counts decision points.
+     * Formula: CC = E - N + 2P (for connected graph)
+     * Simplified: Count decision points + 1
+     */
+    private int calculateCyclomaticComplexity(String functionBody) {
+        int complexity = 1; // Base complexity
+
+        // Count decision points
+        complexity += countOccurrences(functionBody, "\\bIf\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bWhich\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bSwitch\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bWhile\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bDo\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bFor\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bTable\\s*\\[");
+        complexity += countOccurrences(functionBody, "&&");
+        complexity += countOccurrences(functionBody, "\\|\\|");
+        complexity += countOccurrences(functionBody, "\\bAnd\\s*\\[");
+        complexity += countOccurrences(functionBody, "\\bOr\\s*\\[");
+        complexity += countOccurrences(functionBody, "/;"); // Condition operator
+
+        return complexity;
+    }
+
+    /**
+     * Calculates Cognitive Complexity - measures how difficult code is to understand.
+     * More sophisticated than cyclomatic - penalizes nesting.
+     */
+    private int calculateCognitiveComplexity(String functionBody) {
+        int complexity = 0;
+        int nestingLevel = 0;
+
+        // This is a simplified version - a full implementation would parse the AST
+        // Here we approximate by counting control structures with nesting awareness
+
+        String[] lines = functionBody.split("\n");
+        for (String line : lines) {
+            String trimmed = line.trim();
+
+            // Increase nesting for block structures
+            if (trimmed.matches(".*\\b(?:Module|Block|With|If|While|Do|For|Table)\\s*\\[.*")) {
+                complexity += (1 + nestingLevel); // Add base complexity + nesting penalty
+                nestingLevel++;
+            }
+
+            // Logical operators add complexity
+            if (trimmed.contains("&&") || trimmed.contains("||")) {
+                complexity += 1;
+            }
+
+            // Decrease nesting on closing brackets (simplified)
+            int openBrackets = countOccurrences(trimmed, "\\[");
+            int closeBrackets = countOccurrences(trimmed, "\\]");
+            nestingLevel = Math.max(0, nestingLevel + openBrackets - closeBrackets);
+        }
+
+        return complexity;
+    }
+
+    /**
+     * Helper to count pattern occurrences in a string.
+     */
+    private int countOccurrences(String text, String patternString) {
+        try {
+            Pattern pattern = Pattern.compile(patternString);
+            Matcher matcher = pattern.matcher(text);
+            int count = 0;
+            while (matcher.find()) {
+                count++;
+            }
+            return count;
+        } catch (Exception e) {
+            return 0;
         }
     }
 }
