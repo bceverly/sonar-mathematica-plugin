@@ -981,6 +981,7 @@ public class MathematicaRulesSensor implements Sensor {
 
     /**
      * Detects potential division by zero operations.
+     * OPTIMIZED: Skips false positives from URLs and string literals.
      */
     private void detectDivisionByZero(SensorContext context, InputFile inputFile, String content) {
         try {
@@ -988,6 +989,20 @@ public class MathematicaRulesSensor implements Sensor {
 
             while (matcher.find()) {
                 int position = matcher.start();
+
+                // Skip URLs (http://, https://, ftp://, etc.)
+                if (position > 0 && content.charAt(position - 1) == ':') {
+                    // Check if it's followed by another slash (://)
+                    if (position + 1 < content.length() && content.charAt(position + 1) == '/') {
+                        continue;
+                    }
+                }
+
+                // Skip if inside a string literal
+                if (isInsideStringLiteral(content, position)) {
+                    continue;
+                }
+
                 int lineNumber = calculateLineNumber(content, position);
 
                 // Get context around the division to check if it's validated
@@ -1008,6 +1023,26 @@ public class MathematicaRulesSensor implements Sensor {
         } catch (Exception e) {
             LOG.warn("Skipping division by zero detection due to error in file: {}", inputFile.filename());
         }
+    }
+
+    /**
+     * Helper method to check if a position is inside a string literal.
+     * PERFORMANCE: Simple check - counts quotes before position.
+     */
+    private boolean isInsideStringLiteral(String content, int position) {
+        int quoteCount = 0;
+        // Count unescaped quotes before this position on the same line
+        int lineStart = content.lastIndexOf('\n', position) + 1;
+        for (int i = lineStart; i < position; i++) {
+            if (content.charAt(i) == '"') {
+                // Check if it's escaped
+                if (i > 0 && content.charAt(i - 1) != '\\') {
+                    quoteCount++;
+                }
+            }
+        }
+        // If odd number of quotes, we're inside a string
+        return quoteCount % 2 == 1;
     }
 
     /**
