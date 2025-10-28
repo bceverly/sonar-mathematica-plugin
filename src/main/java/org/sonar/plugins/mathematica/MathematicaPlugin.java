@@ -36,7 +36,7 @@ public class MathematicaPlugin implements Plugin {
                 .defaultValue(MathematicaLanguage.DEFAULT_FILE_SUFFIXES)
                 .category("Mathematica")
                 .subCategory("General")
-                .type(PropertyType.STRING)
+                .multiValues(true)
                 .build()
         );
 

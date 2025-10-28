@@ -296,15 +296,22 @@ public class BugDetector extends BaseDetector {
 
                 for (String stmt : statements) {
                     for (String var : declaredVars) {
-                        if (!assigned.contains(var) && stmt.matches(".*\\b" + var + "\\b.*") &&
-                            !stmt.matches(".*\\b" + var + "\\s*=.*")) {
-                            int lineNumber = calculateLineNumber(content, bodyStart);
-                            reportIssue(context, inputFile, lineNumber,
-                                MathematicaRulesDefinition.VARIABLE_BEFORE_ASSIGNMENT_KEY,
-                                String.format("Variable '%s' may be used before assignment.", var));
-                        }
-                        if (stmt.matches(".*\\b" + var + "\\s*=.*")) {
-                            assigned.add(var);
+                        // Escape variable name for regex to handle special characters like $
+                        String escapedVar = Pattern.quote(var);
+                        try {
+                            if (!assigned.contains(var) && stmt.matches(".*\\b" + escapedVar + "\\b.*") &&
+                                !stmt.matches(".*\\b" + escapedVar + "\\s*=.*")) {
+                                int lineNumber = calculateLineNumber(content, bodyStart);
+                                reportIssue(context, inputFile, lineNumber,
+                                    MathematicaRulesDefinition.VARIABLE_BEFORE_ASSIGNMENT_KEY,
+                                    String.format("Variable '%s' may be used before assignment.", var));
+                            }
+                            if (stmt.matches(".*\\b" + escapedVar + "\\s*=.*")) {
+                                assigned.add(var);
+                            }
+                        } catch (Exception e) {
+                            // Skip this variable if regex matching fails
+                            LOG.debug("Skipping variable '{}' in pattern matching", var);
                         }
                     }
                 }
