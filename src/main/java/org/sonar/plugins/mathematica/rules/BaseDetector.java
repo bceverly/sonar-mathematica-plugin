@@ -25,6 +25,7 @@ public abstract class BaseDetector {
     protected ThreadLocal<int[]> lineOffsetCache = new ThreadLocal<>();
     protected ThreadLocal<String[]> linesCache = new ThreadLocal<>();
     protected ThreadLocal<String> contentCache = new ThreadLocal<>();
+    protected ThreadLocal<java.util.List<org.sonar.plugins.mathematica.ast.AstNode>> astCache = new ThreadLocal<>();
 
     // Pattern cache for dynamic patterns
     protected static final Map<String, Pattern> PATTERN_CACHE = new ConcurrentHashMap<>();
@@ -35,11 +36,25 @@ public abstract class BaseDetector {
 
     /**
      * Initialize caches for a file.
+     * PERFORMANCE: Parse AST once per file and cache for reuse by multiple rules.
      */
     protected void initializeCaches(String content) {
         contentCache.set(content);
         lineOffsetCache.set(buildLineOffsetArray(content));
         linesCache.set(content.split("\n", -1));
+
+        // PERFORMANCE: Parse AST once and cache (only if content is small enough)
+        if (content.length() <= 2_000_000) {
+            try {
+                org.sonar.plugins.mathematica.ast.MathematicaParser parser =
+                    new org.sonar.plugins.mathematica.ast.MathematicaParser();
+                java.util.List<org.sonar.plugins.mathematica.ast.AstNode> ast = parser.parse(content);
+                astCache.set(ast);
+            } catch (Exception e) {
+                LOG.debug("Failed to cache AST: {}", e.getMessage());
+                astCache.set(null);
+            }
+        }
     }
 
     /**
@@ -49,6 +64,7 @@ public abstract class BaseDetector {
         lineOffsetCache.remove();
         linesCache.remove();
         contentCache.remove();
+        astCache.remove();
     }
 
     /**

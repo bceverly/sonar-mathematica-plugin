@@ -321,9 +321,13 @@ public class BugDetector extends BaseDetector {
      */
     public void detectVariableBeforeAssignment(SensorContext context, InputFile inputFile, String content) {
         try {
-            // Parse content into AST
-            MathematicaParser parser = new MathematicaParser();
-            List<AstNode> ast = parser.parse(content);
+            // PERFORMANCE: Use cached AST instead of parsing again
+            List<AstNode> ast = astCache.get();
+            if (ast == null) {
+                // Fallback: parse if cache not available
+                MathematicaParser parser = new MathematicaParser();
+                ast = parser.parse(content);
+            }
 
             // Use visitor to track initialization
             InitializationTrackingVisitor visitor = new InitializationTrackingVisitor();

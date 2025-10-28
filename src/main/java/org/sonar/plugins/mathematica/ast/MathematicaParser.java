@@ -41,6 +41,9 @@ public class MathematicaParser {
     private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*(?:[eE][+-]?\\d+)?");
     private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");
 
+    // PERFORMANCE: Cache line offsets for O(log n) lookups instead of O(n) scans
+    private int[] lineOffsets;
+
     /**
      * Parse Mathematica source code into an AST.
      *
@@ -50,6 +53,9 @@ public class MathematicaParser {
         List<AstNode> nodes = new ArrayList<>();
 
         try {
+            // PERFORMANCE: Build line offset array once for O(log n) lookups
+            this.lineOffsets = buildLineOffsetArray(content);
+
             // Remove comments for simplified parsing
             String cleanContent = COMMENT_PATTERN.matcher(content).replaceAll("");
 
@@ -221,29 +227,66 @@ public class MathematicaParser {
     }
 
     /**
-     * Calculate line number from position in content.
+     * Build an array of line start offsets for fast O(log n) line number lookup.
+     * PERFORMANCE: This is built once per file, then used for all lookups.
      */
-    private int calculateLine(String content, int position) {
-        int line = 1;
-        for (int i = 0; i < position && i < content.length(); i++) {
+    private int[] buildLineOffsetArray(String content) {
+        // Count lines first
+        int lineCount = 1;
+        for (int i = 0; i < content.length(); i++) {
             if (content.charAt(i) == '\n') {
-                line++;
+                lineCount++;
             }
         }
-        return line;
+
+        // Build offset array
+        int[] offsets = new int[lineCount];
+        offsets[0] = 0;
+        int lineIndex = 1;
+        for (int i = 0; i < content.length(); i++) {
+            if (content.charAt(i) == '\n') {
+                if (lineIndex < offsets.length) {
+                    offsets[lineIndex++] = i + 1;
+                }
+            }
+        }
+        return offsets;
     }
 
     /**
-     * Calculate column number from position in content.
+     * Calculate line number from position using binary search on cached offsets.
+     * PERFORMANCE: O(log n) instead of O(n) linear scan.
+     */
+    private int calculateLine(String content, int position) {
+        if (lineOffsets == null || lineOffsets.length == 0) {
+            return 1;
+        }
+
+        // Binary search to find the line
+        int left = 0;
+        int right = lineOffsets.length - 1;
+        while (left < right) {
+            int mid = (left + right + 1) / 2;
+            if (lineOffsets[mid] <= position) {
+                left = mid;
+            } else {
+                right = mid - 1;
+            }
+        }
+        return left + 1;
+    }
+
+    /**
+     * Calculate column number from position using cached line offsets.
+     * PERFORMANCE: O(1) instead of O(n) backward scan.
      */
     private int calculateColumn(String content, int position) {
-        int column = 0;
-        for (int i = position - 1; i >= 0 && i < content.length(); i--) {
-            if (content.charAt(i) == '\n') {
-                break;
-            }
-            column++;
+        if (lineOffsets == null || lineOffsets.length == 0) {
+            return 0;
         }
-        return column;
+
+        int line = calculateLine(content, position);
+        int lineStartOffset = lineOffsets[line - 1];
+        return position - lineStartOffset;
     }
 }
