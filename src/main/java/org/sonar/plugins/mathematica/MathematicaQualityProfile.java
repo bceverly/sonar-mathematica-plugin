@@ -309,6 +309,30 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNCLOSED_FILE_HANDLE_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY);
 
+        // Symbol Table Analysis Rules (10 rules - 3 BUG, 6 CODE_SMELL, 1 CRITICAL BUG)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNUSED_VARIABLE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.ASSIGNED_BUT_NEVER_READ_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.DEAD_STORE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.USED_BEFORE_ASSIGNMENT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_SHADOWING_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNUSED_PARAMETER_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WRITE_ONLY_VARIABLE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.REDUNDANT_ASSIGNMENT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_IN_WRONG_SCOPE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_ESCAPES_SCOPE_KEY);
+
+        // Advanced Symbol Table Analysis Rules (10 rules - 3 BUG, 6 CODE_SMELL, 1 CRITICAL BUG)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.LIFETIME_EXTENDS_BEYOND_SCOPE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MODIFIED_IN_UNEXPECTED_SCOPE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GLOBAL_VARIABLE_POLLUTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CIRCULAR_VARIABLE_DEPENDENCIES_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.NAMING_CONVENTION_VIOLATIONS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CONSTANT_NOT_MARKED_AS_CONSTANT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.TYPE_INCONSISTENCY_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_REUSE_WITH_DIFFERENT_SEMANTICS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INCORRECT_CLOSURE_CAPTURE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY);
+
         profile.done();
     }
 }

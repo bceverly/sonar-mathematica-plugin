@@ -462,6 +462,30 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String INEFFICIENT_STRING_CONCATENATION_ENHANCED_KEY = "InefficientStringConcatenationEnhanced";
     public static final String LIST_CONCATENATION_IN_LOOP_KEY = "ListConcatenationInLoop";
 
+    // Rule keys - Symbol Table Analysis (Items 326-335 - New advanced rules)
+    public static final String UNUSED_VARIABLE_KEY = "UnusedVariable";
+    public static final String ASSIGNED_BUT_NEVER_READ_KEY = "AssignedButNeverRead";
+    // Note: DEAD_STORE_KEY already defined in Chunk 3 (line 290) - reusing that definition
+    public static final String USED_BEFORE_ASSIGNMENT_KEY = "UsedBeforeAssignment";
+    public static final String VARIABLE_SHADOWING_KEY = "VariableShadowing";
+    public static final String UNUSED_PARAMETER_KEY = "UnusedParameter";
+    public static final String WRITE_ONLY_VARIABLE_KEY = "WriteOnlyVariable";
+    public static final String REDUNDANT_ASSIGNMENT_KEY = "RedundantAssignment";
+    public static final String VARIABLE_IN_WRONG_SCOPE_KEY = "VariableInWrongScope";
+    public static final String VARIABLE_ESCAPES_SCOPE_KEY = "VariableEscapesScope";
+
+    // Rule keys - Advanced Symbol Table Analysis (Items 336-345 - Enhanced rules)
+    public static final String LIFETIME_EXTENDS_BEYOND_SCOPE_KEY = "LifetimeExtendsBeyondScope";
+    public static final String MODIFIED_IN_UNEXPECTED_SCOPE_KEY = "ModifiedInUnexpectedScope";
+    public static final String GLOBAL_VARIABLE_POLLUTION_KEY = "GlobalVariablePollution";
+    public static final String CIRCULAR_VARIABLE_DEPENDENCIES_KEY = "CircularVariableDependencies";
+    public static final String NAMING_CONVENTION_VIOLATIONS_KEY = "NamingConventionViolations";
+    public static final String CONSTANT_NOT_MARKED_AS_CONSTANT_KEY = "ConstantNotMarkedAsConstant";
+    public static final String TYPE_INCONSISTENCY_KEY = "TypeInconsistency";
+    public static final String VARIABLE_REUSE_WITH_DIFFERENT_SEMANTICS_KEY = "VariableReuseWithDifferentSemantics";
+    public static final String INCORRECT_CLOSURE_CAPTURE_KEY = "IncorrectClosureCapture";
+    public static final String SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY = "ScopeLeakThroughDynamicEvaluation";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -6419,6 +6443,260 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("MINOR")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("performance", "lists");
+
+        // ===== SYMBOL TABLE ANALYSIS RULES (10 new rules) =====
+
+        repository.createRule(UNUSED_VARIABLE_KEY)
+            .setName("Variable declared but never used")
+            .setHtmlDescription(
+                "<p>Variable is declared but never referenced anywhere in the code.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x, unused}, x = 5; Print[x]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{x}, x = 5; Print[x]]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "dead-code");
+
+        repository.createRule(ASSIGNED_BUT_NEVER_READ_KEY)
+            .setName("Variable assigned but value never read")
+            .setHtmlDescription(
+                "<p>Variable is assigned a value but that value is never used.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 5; y = 10; Print[x]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5; Print[x]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "dead-code");
+
+        // Note: DEAD_STORE_KEY rule already defined in Chunk 3 section (line ~4297)
+        // Reusing existing definition: "Value assigned but never read"
+
+        repository.createRule(USED_BEFORE_ASSIGNMENT_KEY)
+            .setName("Variable used before being assigned")
+            .setHtmlDescription(
+                "<p>Variable is referenced before it has been assigned a value, leading to potential uninitialized use.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Print[x]; x = 5</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5; Print[x]</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("uninitialized", "logic-error");
+
+        repository.createRule(VARIABLE_SHADOWING_KEY)
+            .setName("Variable shadows outer scope variable")
+            .setHtmlDescription(
+                "<p>Inner scope variable has same name as outer scope variable, potentially causing confusion.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 1; Module[{x}, x = 2; Print[x]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 1; Module[{y}, y = 2; Print[y]]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("confusing", "naming");
+
+        repository.createRule(UNUSED_PARAMETER_KEY)
+            .setName("Function parameter is never used")
+            .setHtmlDescription(
+                "<p>Function parameter is declared but never referenced in the function body.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_, y_] := x * 2</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_] := x * 2</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "parameters");
+
+        repository.createRule(WRITE_ONLY_VARIABLE_KEY)
+            .setName("Variable is only written to, never read")
+            .setHtmlDescription(
+                "<p>Variable has assignments but is never read, making all writes pointless.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = expensive[]; (* x never used *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = expensive[]; Print[x]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "dead-code");
+
+        repository.createRule(REDUNDANT_ASSIGNMENT_KEY)
+            .setName("Variable assigned same value multiple times")
+            .setHtmlDescription(
+                "<p>Variable is assigned the same value repeatedly without changes.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 5; x = 5</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("redundant", "code-smell");
+
+        repository.createRule(VARIABLE_IN_WRONG_SCOPE_KEY)
+            .setName("Variable could be declared in more specific scope")
+            .setHtmlDescription(
+                "<p>Variable is only used within an inner scope and could be declared there instead.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x}, Block[{}, x = 5; Print[x]]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{}, Block[{x}, x = 5; Print[x]]]</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("scope", "best-practice");
+
+        repository.createRule(VARIABLE_ESCAPES_SCOPE_KEY)
+            .setName("Module variable captured in closure may fail")
+            .setHtmlDescription(
+                "<p>Module variable is captured in a closure (function definition). Will fail after Module exits.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x}, x = 5; f[] := x]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>With[{x = 5}, f[] := x]</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("scope", "closure", "logic-error");
+
+        // Advanced Symbol Table Analysis Rules (10 rules)
+
+        repository.createRule(LIFETIME_EXTENDS_BEYOND_SCOPE_KEY)
+            .setName("Variable lifetime extends beyond necessary scope")
+            .setHtmlDescription(
+                "<p>Variable is used in a narrow range but declared in wider scope, wasting memory.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x}, x = 5; (* 100 lines *); Block[{}, Print[x]]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{}, (* 100 lines *); Block[{x}, x = 5; Print[x]]]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("scope", "memory", "maintainability");
+
+        repository.createRule(MODIFIED_IN_UNEXPECTED_SCOPE_KEY)
+            .setName("Variable modified in unexpected scope")
+            .setHtmlDescription(
+                "<p>Variable is read in one scope but modified in unrelated scope, making dataflow hard to track.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x}, x = 5; Block[{}, x = 10]; Print[x]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{x}, x = 5; Block[{y}, y = 10; x = y]; Print[x]]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("scope", "data-flow", "maintainability");
+
+        repository.createRule(GLOBAL_VARIABLE_POLLUTION_KEY)
+            .setName("Too many global variables defined")
+            .setHtmlDescription(
+                "<p>File defines many global variables, polluting global namespace. Use Package or Context instead.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x=1; y=2; z=3; (* ... 20+ globals *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>BeginPackage[\"MyPackage`\"]; x=1; y=2; EndPackage[]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("global", "namespace", "architecture");
+
+        repository.createRule(CIRCULAR_VARIABLE_DEPENDENCIES_KEY)
+            .setName("Circular variable dependencies detected")
+            .setHtmlDescription(
+                "<p>Variables have circular dependencies (A depends on B, B depends on C, C depends on A).</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = y + 1; y = z + 1; z = x + 1</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 0; y = x + 1; z = y + 1</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("circular-dependency", "logic-error");
+
+        repository.createRule(NAMING_CONVENTION_VIOLATIONS_KEY)
+            .setName("Variable naming convention violations")
+            .setHtmlDescription(
+                "<p>Variables should follow consistent naming conventions (descriptive names, avoid single letters).</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x, y, TEMP}, ...]  (* Single letters, all-caps for non-constants *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{result, count, tempValue}, ...]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("naming", "readability");
+
+        repository.createRule(CONSTANT_NOT_MARKED_AS_CONSTANT_KEY)
+            .setName("Variable assigned once should be constant")
+            .setHtmlDescription(
+                "<p>Variable assigned once and read multiple times should use With[] for constants.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{pi}, pi = 3.14159; f[x_] := pi * x; ...]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>With[{pi = 3.14159}, f[x_] := pi * x; ...]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("constants", "best-practice");
+
+        repository.createRule(TYPE_INCONSISTENCY_KEY)
+            .setName("Variable used with inconsistent types")
+            .setHtmlDescription(
+                "<p>Variable used as different types (number, string, list) in different contexts.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 5; x = x + 1; x = \"result: \" <> ToString[x]; x[[1]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>num = 5; num = num + 1; str = \"result: \" <> ToString[num]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type", "logic-error");
+
+        repository.createRule(VARIABLE_REUSE_WITH_DIFFERENT_SEMANTICS_KEY)
+            .setName("Variable reused for different purposes")
+            .setHtmlDescription(
+                "<p>Variable is reused for different purposes (counter, then accumulator), reducing clarity.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 0; Do[x++, {10}]; x = Total[data]; Print[x]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>count = 0; Do[count++, {10}]; sum = Total[data]; Print[sum]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("clarity", "maintainability");
+
+        repository.createRule(INCORRECT_CLOSURE_CAPTURE_KEY)
+            .setName("Loop variable incorrectly captured in closure")
+            .setHtmlDescription(
+                "<p>Loop variable captured in closure will capture final value only, not current iteration value.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[funcs[[i]] = Function[], i -> Range[5], {i, 5}]  (* All capture final i *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Do[With[{j = i}, funcs[[i]] = Function[j]], {i, 5}]  (* Each captures own j *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("closure", "loop", "logic-error");
+
+        repository.createRule(SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY)
+            .setName("Variable scope may leak through dynamic evaluation")
+            .setHtmlDescription(
+                "<p>Module variable used in ToExpression or similar dynamic evaluation may leak scope.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x}, x = 5; ToExpression[\"x + 1\"]]  (* x escapes Module scope *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{x}, x = 5; With[{val = x}, ToExpression[\"val + 1\"]]]</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("scope", "dynamic", "security");
 
         repository.done();
     }

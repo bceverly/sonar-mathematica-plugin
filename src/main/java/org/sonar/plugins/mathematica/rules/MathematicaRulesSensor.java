@@ -18,6 +18,9 @@ import org.sonar.api.rule.RuleKey;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
 import org.sonar.plugins.mathematica.MathematicaLanguage;
+import org.sonar.plugins.mathematica.symboltable.SymbolTable;
+import org.sonar.plugins.mathematica.symboltable.SymbolTableBuilder;
+import org.sonar.plugins.mathematica.symboltable.SymbolTableManager;
 
 /**
  * Main sensor that coordinates analysis of Mathematica files.
@@ -633,6 +636,38 @@ public class MathematicaRulesSensor implements Sensor {
             Chunk67Detector.detectMissingMemoizationOpportunityEnhanced(context, inputFile, content);
             Chunk67Detector.detectInefficientStringConcatenationEnhanced(context, inputFile, content);
             Chunk67Detector.detectListConcatenationInLoop(context, inputFile, content);
+
+            // ===== SYMBOL TABLE ANALYSIS (10 rules) =====
+            // Build symbol table for advanced variable lifetime and scope analysis
+            try {
+                SymbolTable symbolTable = SymbolTableBuilder.build(inputFile, content);
+
+                // Run symbol table-based detectors
+                SymbolTableDetector.detectUnusedVariable(context, inputFile, symbolTable);
+                SymbolTableDetector.detectAssignedButNeverRead(context, inputFile, symbolTable);
+                SymbolTableDetector.detectDeadStore(context, inputFile, symbolTable);
+                SymbolTableDetector.detectUsedBeforeAssignment(context, inputFile, symbolTable);
+                SymbolTableDetector.detectVariableShadowing(context, inputFile, symbolTable);
+                SymbolTableDetector.detectUnusedParameter(context, inputFile, symbolTable);
+                SymbolTableDetector.detectWriteOnlyVariable(context, inputFile, symbolTable);
+                SymbolTableDetector.detectRedundantAssignment(context, inputFile, symbolTable);
+                SymbolTableDetector.detectVariableInWrongScope(context, inputFile, symbolTable);
+                SymbolTableDetector.detectVariableEscapesScope(context, inputFile, symbolTable);
+
+                // Advanced symbol table analysis (10 additional rules)
+                SymbolTableDetector.detectLifetimeExtendsBeyondScope(context, inputFile, symbolTable);
+                SymbolTableDetector.detectModifiedInUnexpectedScope(context, inputFile, symbolTable);
+                SymbolTableDetector.detectGlobalVariablePollution(context, inputFile, symbolTable);
+                SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable);
+                SymbolTableDetector.detectNamingConventionViolations(context, inputFile, symbolTable);
+                SymbolTableDetector.detectConstantNotMarkedAsConstant(context, inputFile, symbolTable);
+                SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable);
+                SymbolTableDetector.detectVariableReuseWithDifferentSemantics(context, inputFile, symbolTable);
+                SymbolTableDetector.detectIncorrectClosureCapture(context, inputFile, symbolTable);
+                SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable);
+            } catch (Exception e) {
+                LOG.debug("Error in symbol table analysis for: {}", inputFile.filename());
+            }
 
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
