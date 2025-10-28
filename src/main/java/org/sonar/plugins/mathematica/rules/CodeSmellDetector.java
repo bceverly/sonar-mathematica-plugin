@@ -102,6 +102,11 @@ public class CodeSmellDetector extends BaseDetector {
                     continue;
                 }
 
+                // Skip if this is an association mapping (enum-like pattern: Key -> Number)
+                if (isAssociationMapping(content, position)) {
+                    continue;
+                }
+
                 int line = calculateLineNumber(content, position);
                 reportIssue(context, inputFile, line, MathematicaRulesDefinition.MAGIC_NUMBER_KEY,
                     "Replace this magic number with a named constant.");
@@ -383,17 +388,35 @@ public class CodeSmellDetector extends BaseDetector {
     /**
      * Detect overly complex expressions.
      */
-    public void detectExpressionTooComplex(SensorContext context, InputFile inputFile, String content) {
+    public void detectExpressionTooComplex(SensorContext context, InputFile inputFile, String content, List<int[]> commentRanges) {
         try {
             String[] lines = content.split("\n");
+            int currentPos = 0;
+
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
-                int operatorCount = countOccurrences(line, "[-+*/^&|<>=!]");
 
-                if (operatorCount > 10) {
-                    reportIssue(context, inputFile, i + 1, MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY,
-                        String.format("Expression has %d operators (max 10 allowed).", operatorCount));
+                // Skip if this line is inside a comment
+                boolean inComment = false;
+                for (int[] range : commentRanges) {
+                    // Check if the start of this line is within a comment range
+                    if (currentPos >= range[0] && currentPos < range[1]) {
+                        inComment = true;
+                        break;
+                    }
                 }
+
+                if (!inComment) {
+                    int operatorCount = countOccurrences(line, "[-+*/^&|<>=!]");
+
+                    if (operatorCount > 10) {
+                        reportIssue(context, inputFile, i + 1, MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY,
+                            String.format("Expression has %d operators (max 10 allowed).", operatorCount));
+                    }
+                }
+
+                // Move position forward (line length + newline character)
+                currentPos += line.length() + 1;
             }
         } catch (Exception e) {
             LOG.warn("Skipping expression complexity detection due to error in file: {}", inputFile.filename());
@@ -723,5 +746,20 @@ public class CodeSmellDetector extends BaseDetector {
         } catch (Exception e) {
             LOG.warn("Skipping missing return detection due to error in file: {}", inputFile.filename());
         }
+    }
+
+    /**
+     * Checks if a number is part of an association mapping (enum-like pattern).
+     * Examples: <| Location -> 1, Boundary -> 2 |>
+     * These are structural indices, not magic numbers.
+     */
+    private boolean isAssociationMapping(String content, int numberPosition) {
+        // Look back up to 50 characters for the -> operator
+        int lookbackStart = Math.max(0, numberPosition - 50);
+        String lookback = content.substring(lookbackStart, numberPosition);
+
+        // Check if there's a -> followed by whitespace before this number
+        // This catches patterns like "Key -> 1" or "PropertyName -> 42"
+        return lookback.matches(".*->\\s*$");
     }
 }

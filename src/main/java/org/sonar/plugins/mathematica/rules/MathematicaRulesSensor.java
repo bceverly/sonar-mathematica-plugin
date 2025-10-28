@@ -112,7 +112,7 @@ public class MathematicaRulesSensor implements Sensor {
             codeSmellDetector.detectMissingDocumentation(context, inputFile, content);
             codeSmellDetector.detectInconsistentNaming(context, inputFile, content);
             codeSmellDetector.detectIdenticalBranches(context, inputFile, content);
-            codeSmellDetector.detectExpressionTooComplex(context, inputFile, content);
+            codeSmellDetector.detectExpressionTooComplex(context, inputFile, content, commentRanges);
             codeSmellDetector.detectDeprecatedFunctions(context, inputFile, content);
             codeSmellDetector.detectEmptyStatement(context, inputFile, content);
 
