@@ -24,8 +24,11 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Dead Code & Reachability** | 15 rules | Control Flow | ✅ Active | Issues → Search "unreachable" |
 | **Taint Analysis Security** | 15 rules | Security | ✅ Active | Issues → Search "taint" or "injection" |
 | **Control Flow Rules** | 5 rules | Code Quality | ✅ Active | Issues → Search "switch" or "return" |
+| **Dependency & Architecture** | 20 rules | Architecture | ✅ Active | Issues → Search "package" or "dependency" |
+| **Unused Export & Dead Code (Cross-File)** | 15 rules | Code Quality | ✅ Active | Issues → Search "unused" or "export" |
+| **Documentation & Consistency** | 5 rules | API Quality | ✅ Active | Issues → Search "usage" or "documentation" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **280 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **320 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -3246,6 +3249,92 @@ Improve control flow clarity and completeness:
 - Taint Analysis Security: 15 rules (injection prevention)
 - Additional Control Flow: 5 rules (code quality)
 - **Total: 35 new rules**
+
+---
+
+## 11. Advanced Rules - Chunk 5 (40 New Rules)
+
+**Introduced:** Chunk 5 from ROADMAP_325.md (Items 211-250)
+**Focus:** Cross-file analysis, package architecture, and dependency management
+
+### 11.1 Dependency & Architecture Rules (20 Rules)
+
+Detect architectural issues and dependency problems:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Circular Package Dependency | Critical Bug | Circular dependencies between packages cause load order issues |
+| Unused Package Import | Code Smell | Package imported via `Needs[]` but symbols never used |
+| Missing Package Import | Bug | Using symbols from package not imported |
+| Transitive Dependency Could Be Direct | Code Smell | Using symbols from transitive dependency without direct import |
+| Diamond Dependency | Bug | Multiple dependencies on same package (version conflicts) |
+| God Package Too Many Dependencies | Code Smell | Package has >10 dependencies (high coupling) |
+| Package Depends On Application Code | Bug | Library package depends on application code (reversed dependency) |
+| Cyclic Call Between Packages | Critical Bug | Mutual function calls between packages |
+| Layer Violation | Bug | UI layer calling Data layer directly (should go through Business) |
+| Unstable Dependency | Code Smell | Stable package depending on unstable package |
+| Package Too Large | Code Smell | Package >2000 lines (consider splitting) |
+| Package Too Small | Info | Package <50 lines (consider merging) |
+| Inconsistent Package Naming | Code Smell | Package names not following PascalCase convention |
+| Package Exports Too Much | Code Smell | Package exports >50 symbols (unclear API surface) |
+| Package Exports Too Little | Info | Package exports <3 symbols (may be over-abstracted) |
+| Incomplete Public API | Bug | API has Create* but no Delete*, or Set* but no Get* |
+| Private Symbol Used Externally | Critical Bug | Using `Private`  context symbols from other packages |
+| Internal Implementation Exposed | Code Smell | Names like "Internal", "Helper" in public API |
+| Missing Package Documentation | Code Smell | Package missing usage documentation |
+| Public API Changed Without Version Bump | Major Bug | API changes without version increment |
+
+**📍 How to View:** Issues → Search "package" or "dependency" → Filter by severity
+
+### 11.2 Unused Export & Dead Code (15 Rules)
+
+Cross-file dead code detection:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Unused Public Function | Code Smell | Exported function never called anywhere |
+| Unused Export | Code Smell | Symbol exported but only used internally |
+| Dead Package | Major Code Smell | Package not used externally (consider removing) |
+| Function Only Called Once | Info | Private function called once (consider inlining) |
+| Over-Abstracted API | Code Smell | Too many private functions per public function (>10:1 ratio) |
+| Orphaned Test File | Bug | Test file with no corresponding implementation |
+| Implementation Without Tests | Code Smell | Package with no test coverage |
+| Deprecated API Still Used Internally | Code Smell | Deprecated functions still used in same package |
+| Internal API Used Like Public | Code Smell | Private symbol used >10 times (consider making public) |
+| Commented Out Package Load | Code Smell | Commented `Needs[]` or `Get[]` (remove if not needed) |
+| Conditional Package Load | Bug | `If[..., Needs[...]]` can cause load order issues |
+| Package Loaded But Not Listed In Metadata | Bug | `Needs[]` call not declared in `BeginPackage` context list |
+| Duplicate Symbol Definition Across Packages | Critical Bug | Same symbol defined in multiple packages |
+| Symbol Redefinition After Import | Bug | Redefining imported symbol (shadowing) |
+| Package Version Mismatch | Critical Bug | Required version != actual version |
+
+**📍 How to View:** Issues → Search "unused" or "dead" → Type: Code Smell
+
+### 11.3 Documentation & Consistency (5 Rules)
+
+API documentation and consistency validation:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Exported Function Missing Usage Message | Info | Package exports without `::usage` messages |
+| Inconsistent Parameter Names Across Overloads | Code Smell | Different parameter names in function overloads |
+| Public Function With Implementation Details In Name | Code Smell | Names like "...Loop", "...Recursive" in public API |
+| Public API Not In Package Context | Bug | Public function defined outside BeginPackage/Begin["Private`"] |
+| Test Function In Production Code | Bug | Test functions (TestID, Assert*, etc.) in non-test files |
+
+**📍 How to View:** Issues → Search "usage" or "documentation" → Filter by type
+
+**Rule Count Summary:**
+- Dependency & Architecture: 20 rules (cross-file dependency analysis)
+- Unused Export & Dead Code: 15 rules (cross-file dead code detection)
+- Documentation & Consistency: 5 rules (API quality)
+- **Total: 40 new rules**
+
+**Key Innovation:** Chunk 5 introduces **cross-file analysis** with a two-phase execution:
+1. **Phase 1:** Build dependency graph, track exports/imports, symbol definitions
+2. **Phase 2:** Run all detectors with full cross-file context
+
+This enables sophisticated architectural analysis previously impossible with single-file analysis.
 
 ---
 

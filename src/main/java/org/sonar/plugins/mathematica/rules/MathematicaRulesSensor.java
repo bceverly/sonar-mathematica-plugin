@@ -47,6 +47,7 @@ public class MathematicaRulesSensor implements Sensor {
     private final Chunk2Detector chunk2Detector = new Chunk2Detector();
     private final Chunk3Detector chunk3Detector = new Chunk3Detector();
     private final Chunk4Detector chunk4Detector = new Chunk4Detector();
+    private final Chunk5Detector chunk5Detector = new Chunk5Detector();
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -77,6 +78,26 @@ public class MathematicaRulesSensor implements Sensor {
         LOG.info("Progress will be reported every 100 files");
 
         long startTime = System.currentTimeMillis();
+
+        // === PHASE 1: Build cross-file analysis data for Chunk5 ===
+        LOG.info("Phase 1: Building cross-file dependency graph...");
+        Chunk5Detector.initializeCaches();
+
+        fileList.parallelStream().forEach(inputFile -> {
+            try {
+                if (inputFile.lines() < 3 || inputFile.lines() > 35000) return;
+                String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
+                if (content.length() > 2_000_000 || content.trim().isEmpty()) return;
+
+                Chunk5Detector.buildCrossFileData(inputFile, content);
+            } catch (Exception e) {
+                LOG.debug("Error building cross-file data for: {}", inputFile.filename());
+            }
+        });
+
+        LOG.info("Phase 1 complete. Starting Phase 2: Rule detection...");
+
+        // === PHASE 2: Run all detectors ===
         java.util.concurrent.atomic.AtomicInteger processedCount = new java.util.concurrent.atomic.AtomicInteger(0);
         int progressInterval = 100; // Log every 100 files
 
@@ -111,6 +132,9 @@ public class MathematicaRulesSensor implements Sensor {
             totalFiles,
             totalTimeMs / 1000,
             String.format("%.1f", avgFilesPerSec));
+
+        // Clean up cross-file analysis caches
+        Chunk5Detector.clearCaches();
     }
 
     /**
@@ -486,6 +510,54 @@ public class MathematicaRulesSensor implements Sensor {
             chunk4Detector.detectTooManyReturnPoints(context, inputFile, content);
             chunk4Detector.detectMissingElseConsideredHarmful(context, inputFile, content);
 
+            // ===== CHUNK 5 DETECTORS (Items 211-250 from ROADMAP_325.md) =====
+
+            // Dependency & Architecture Rules (Items 211-230)
+            Chunk5Detector.detectCircularPackageDependency(context, inputFile, content);
+            Chunk5Detector.detectUnusedPackageImport(context, inputFile, content);
+            Chunk5Detector.detectMissingPackageImport(context, inputFile, content);
+            Chunk5Detector.detectTransitiveDependencyCouldBeDirect(context, inputFile, content);
+            Chunk5Detector.detectDiamondDependency(context, inputFile, content);
+            Chunk5Detector.detectGodPackageTooManyDependencies(context, inputFile, content);
+            Chunk5Detector.detectPackageDependsOnApplicationCode(context, inputFile, content);
+            Chunk5Detector.detectCyclicCallBetweenPackages(context, inputFile, content);
+            Chunk5Detector.detectLayerViolation(context, inputFile, content);
+            Chunk5Detector.detectUnstableDependency(context, inputFile, content);
+            Chunk5Detector.detectPackageTooLarge(context, inputFile, content);
+            Chunk5Detector.detectPackageTooSmall(context, inputFile, content);
+            Chunk5Detector.detectInconsistentPackageNaming(context, inputFile, content);
+            Chunk5Detector.detectPackageExportsTooMuch(context, inputFile, content);
+            Chunk5Detector.detectPackageExportsTooLittle(context, inputFile, content);
+            Chunk5Detector.detectIncompletePublicAPI(context, inputFile, content);
+            Chunk5Detector.detectPrivateSymbolUsedExternally(context, inputFile, content);
+            Chunk5Detector.detectInternalImplementationExposed(context, inputFile, content);
+            Chunk5Detector.detectMissingPackageDocumentation(context, inputFile, content);
+            Chunk5Detector.detectPublicAPIChangedWithoutVersionBump(context, inputFile, content);
+
+            // Unused Export & Dead Code (Items 231-245)
+            Chunk5Detector.detectUnusedPublicFunction(context, inputFile, content);
+            Chunk5Detector.detectUnusedExport(context, inputFile, content);
+            Chunk5Detector.detectDeadPackage(context, inputFile, content);
+            Chunk5Detector.detectFunctionOnlyCalledOnce(context, inputFile, content);
+            Chunk5Detector.detectOverAbstractedAPI(context, inputFile, content);
+            Chunk5Detector.detectOrphanedTestFile(context, inputFile, content);
+            Chunk5Detector.detectImplementationWithoutTests(context, inputFile, content);
+            Chunk5Detector.detectDeprecatedAPIStillUsedInternally(context, inputFile, content);
+            Chunk5Detector.detectInternalAPIUsedLikePublic(context, inputFile, content);
+            Chunk5Detector.detectCommentedOutPackageLoad(context, inputFile, content);
+            Chunk5Detector.detectConditionalPackageLoad(context, inputFile, content);
+            Chunk5Detector.detectPackageLoadedButNotListedInMetadata(context, inputFile, content);
+            Chunk5Detector.detectDuplicateSymbolDefinitionAcrossPackages(context, inputFile, content);
+            Chunk5Detector.detectSymbolRedefinitionAfterImport(context, inputFile, content);
+            Chunk5Detector.detectPackageVersionMismatch(context, inputFile, content);
+
+            // Documentation & Consistency (Items 246-250)
+            Chunk5Detector.detectPublicExportMissingUsageMessage(context, inputFile, content);
+            Chunk5Detector.detectInconsistentParameterNamesAcrossOverloads(context, inputFile, content);
+            Chunk5Detector.detectPublicFunctionWithImplementationDetailsInName(context, inputFile, content);
+            Chunk5Detector.detectPublicAPINotInPackageContext(context, inputFile, content);
+            Chunk5Detector.detectTestFunctionInProductionCode(context, inputFile, content);
+
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
             bugDetector.clearCaches();
@@ -495,6 +567,7 @@ public class MathematicaRulesSensor implements Sensor {
             chunk2Detector.clearCaches();
             chunk3Detector.clearCaches();
             chunk4Detector.clearCaches();
+            // Note: Chunk5Detector uses static caches cleared at end of execute()
 
         } catch (Exception e) {
             LOG.error("Error analyzing file: {}", inputFile, e);
