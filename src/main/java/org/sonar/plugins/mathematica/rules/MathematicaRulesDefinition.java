@@ -175,6 +175,47 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String EXPOSING_SENSITIVE_DATA_KEY = "ExposingSensitiveData";
     public static final String MISSING_FORMFUNCTION_VALIDATION_KEY = "MissingFormFunctionValidation";
 
+    // Rule keys - Chunk 1: Pattern System Rules (Items 16-30 from ROADMAP_325.md)
+    public static final String UNRESTRICTED_BLANK_PATTERN_KEY = "UnrestrictedBlankPattern";
+    public static final String PATTERN_TEST_VS_CONDITION_KEY = "PatternTestVsCondition";
+    public static final String BLANKSEQUENCE_WITHOUT_RESTRICTION_KEY = "BlankSequenceWithoutRestriction";
+    public static final String NESTED_OPTIONAL_PATTERNS_KEY = "NestedOptionalPatterns";
+    public static final String PATTERN_NAMING_CONFLICTS_KEY = "PatternNamingConflicts";
+    public static final String REPEATED_PATTERN_ALTERNATIVES_KEY = "RepeatedPatternAlternatives";
+    public static final String PATTERN_TEST_PURE_FUNCTION_KEY = "PatternTestWithPureFunction";
+    public static final String MISSING_PATTERN_DEFAULTS_KEY = "MissingPatternDefaults";
+    public static final String ORDER_DEPENDENT_PATTERNS_KEY = "OrderDependentPatternDefinitions";
+    public static final String VERBATIM_PATTERN_MISUSE_KEY = "VerbatimPatternMisuse";
+    public static final String HOLDPATTERN_UNNECESSARY_KEY = "HoldPatternUnnecessary";
+    public static final String LONGEST_SHORTEST_WITHOUT_ORDERING_KEY = "LongestShortestWithoutOrdering";
+    public static final String PATTERN_REPEATED_DIFFERENT_TYPES_KEY = "PatternRepeatedWithDifferentTypes";
+    public static final String ALTERNATIVES_TOO_COMPLEX_KEY = "AlternativesTooComplex";
+    public static final String PATTERN_MATCHING_LARGE_LISTS_KEY = "PatternMatchingOnLargeLists";
+
+    // Rule keys - Chunk 1: List/Array Rules (Items 31-40 from ROADMAP_325.md)
+    public static final String EMPTY_LIST_INDEXING_KEY = "EmptyListIndexing";
+    public static final String NEGATIVE_INDEX_WITHOUT_VALIDATION_KEY = "NegativeIndexWithoutValidation";
+    public static final String PART_ASSIGNMENT_TO_IMMUTABLE_KEY = "PartAssignmentToImmutable";
+    public static final String INEFFICIENT_LIST_CONCATENATION_KEY = "InefficientListConcatenation";
+    public static final String UNNECESSARY_FLATTEN_KEY = "UnnecessaryFlatten";
+    public static final String LENGTH_IN_LOOP_CONDITION_KEY = "LengthInLoopCondition";
+    public static final String REVERSE_TWICE_KEY = "ReverseTwice";
+    public static final String SORT_WITHOUT_COMPARISON_KEY = "SortWithoutComparison";
+    public static final String POSITION_VS_SELECT_KEY = "PositionVsSelect";
+    public static final String NESTED_PART_EXTRACTION_KEY = "NestedPartExtraction";
+
+    // Rule keys - Chunk 1: Association Rules (Items 41-50 from ROADMAP_325.md)
+    public static final String MISSING_KEY_CHECK_KEY = "MissingKeyCheck";
+    public static final String ASSOCIATION_VS_LIST_CONFUSION_KEY = "AssociationVsListConfusion";
+    public static final String INEFFICIENT_KEY_LOOKUP_KEY = "InefficientKeyLookup";
+    public static final String QUERY_ON_NON_DATASET_KEY = "QueryOnNonDataset";
+    public static final String ASSOCIATION_UPDATE_PATTERN_KEY = "AssociationUpdatePattern";
+    public static final String MERGE_WITHOUT_CONFLICT_STRATEGY_KEY = "MergeWithoutConflictStrategy";
+    public static final String ASSOCIATETO_ON_NON_SYMBOL_KEY = "AssociateToOnNonSymbol";
+    public static final String KEYDROP_MULTIPLE_TIMES_KEY = "KeyDropMultipleTimes";
+    public static final String LOOKUP_WITH_MISSING_DEFAULT_KEY = "LookupWithMissingDefault";
+    public static final String GROUPBY_WITHOUT_AGGREGATION_KEY = "GroupByWithoutAggregation";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -2712,6 +2753,462 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("MAJOR")
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "validation", "owasp-a03");
+
+        // ===== CHUNK 1 RULES (Items 16-50 from ROADMAP_325.md) =====
+
+        // Pattern System Rules (Items 16-30)
+        repository.createRule(UNRESTRICTED_BLANK_PATTERN_KEY)
+            .setName("Blank patterns should have type restrictions when appropriate")
+            .setHtmlDescription(
+                "<p>Unrestricted blank patterns like <code>f[x_] := ...</code> accept any type, potentially causing runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_] := x^2  (* Fails on non-numeric input *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_?NumericQ] := x^2  (* Type-safe *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "type-safety");
+
+        repository.createRule(PATTERN_TEST_VS_CONDITION_KEY)
+            .setName("PatternTest (?) is more efficient than Condition (/;) for simple tests")
+            .setHtmlDescription(
+                "<p>PatternTest (<code>?</code>) evaluates during pattern matching, while Condition (<code>/;</code>) evaluates after.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_ /; IntegerQ[x]] := x  (* Inefficient *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_?IntegerQ] := x  (* More efficient *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "performance");
+
+        repository.createRule(BLANKSEQUENCE_WITHOUT_RESTRICTION_KEY)
+            .setName("BlankSequence should have type restrictions when possible")
+            .setHtmlDescription(
+                "<p>Unrestricted <code>x__</code> patterns can match inappropriate sequences.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>sum[x__] := Total[{x}]  (* No type check *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>sum[x__?NumericQ] := Total[{x}]  (* Type-safe *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "performance");
+
+        repository.createRule(NESTED_OPTIONAL_PATTERNS_KEY)
+            .setName("Optional pattern defaults should not depend on other parameters")
+            .setHtmlDescription(
+                "<p>Patterns like <code>f[x_:1, y_:x]</code> have evaluation order issues.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_:1, y_:x] := x + y  (* y default depends on x *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_:1, y_:1] := x + y  (* Independent defaults *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "evaluation-order");
+
+        repository.createRule(PATTERN_NAMING_CONFLICTS_KEY)
+            .setName("Pattern names should not have conflicting type restrictions")
+            .setHtmlDescription(
+                "<p>Using the same pattern name with different types creates impossible-to-match patterns.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_Integer, x_Real] := x  (* Impossible to match *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_Integer, y_Real] := x + y  (* Use different names *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns");
+
+        repository.createRule(REPEATED_PATTERN_ALTERNATIVES_KEY)
+            .setName("Pattern alternatives should use correct syntax")
+            .setHtmlDescription(
+                "<p>Redundant pattern names in alternatives should be refactored.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_Integer | x_Real] := x  (* Redundant *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x:(_Integer | _Real)] := x  (* Correct syntax *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "clarity");
+
+        repository.createRule(PATTERN_TEST_PURE_FUNCTION_KEY)
+            .setName("Avoid pure functions in PatternTest for hot code")
+            .setHtmlDescription(
+                "<p>Pure functions in patterns create closures on each match attempt.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_?(# > 0 &)] := x  (* Creates closure each time *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_?Positive] := x  (* Built-in predicate *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "performance");
+
+        repository.createRule(MISSING_PATTERN_DEFAULTS_KEY)
+            .setName("Optional arguments should have sensible defaults")
+            .setHtmlDescription(
+                "<p>Optional parameters without validation can cause issues.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_, opts___] := DoSomething[x, opts]  (* No validation *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_, opts:OptionsPattern[]] := DoSomething[x, opts]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "validation");
+
+        repository.createRule(ORDER_DEPENDENT_PATTERNS_KEY)
+            .setName("Specific patterns should be defined before general ones")
+            .setHtmlDescription(
+                "<p>Pattern matching tries definitions in order, so specific patterns after general ones never match.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nf[x_] := x^2;\nf[0] := 0;  (* Never matches - f[x_] already handles f[0] *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nf[0] := 0;  (* Specific first *)\nf[x_] := x^2;  (* General second *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "unreachable-code");
+
+        repository.createRule(VERBATIM_PATTERN_MISUSE_KEY)
+            .setName("Verbatim should only be used when necessary")
+            .setHtmlDescription(
+                "<p>Verbatim has tricky semantics and is often misused.</p>" +
+                "<h2>Example</h2>" +
+                "<pre>Cases[{1, 2, x, y}, Verbatim[x]]  (* Only matches literal x *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns");
+
+        repository.createRule(HOLDPATTERN_UNNECESSARY_KEY)
+            .setName("HoldPattern should be removed when not needed")
+            .setHtmlDescription(
+                "<p>Unnecessary HoldPattern adds clutter without benefit.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Cases[list, HoldPattern[_Integer]]  (* Unnecessary *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Cases[list, _Integer]  (* HoldPattern not needed *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "clutter");
+
+        repository.createRule(LONGEST_SHORTEST_WITHOUT_ORDERING_KEY)
+            .setName("Longest and Shortest require proper context")
+            .setHtmlDescription(
+                "<p>Longest and Shortest modifiers may not work as expected without proper alternatives.</p>" +
+                "<h2>Example</h2>" +
+                "<pre>StringCases[str, Longest[__]]  (* Needs alternatives to be useful *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns");
+
+        repository.createRule(PATTERN_REPEATED_DIFFERENT_TYPES_KEY)
+            .setName("Use conditions instead of repeated pattern names for equality checks")
+            .setHtmlDescription(
+                "<p>Pattern <code>f[{x_, x_}]</code> matches lists with same symbolic name, not same value.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[{x_, x_}] := x  (* Doesn't check equality *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[{x_, y_} /; x == y] := x  (* Checks equality *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns");
+
+        repository.createRule(ALTERNATIVES_TOO_COMPLEX_KEY)
+            .setName("Pattern alternatives with many options cause backtracking")
+            .setHtmlDescription(
+                "<p>Alternatives with 10+ options can cause exponential backtracking.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x:(a|b|c|d|e|f|g|h|i|j|k|l) := ...  (* Slow matching *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x_ /; MemberQ[{a,b,c,d,e,f,g,h,i,j,k,l}, x] := ...</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "performance");
+
+        repository.createRule(PATTERN_MATCHING_LARGE_LISTS_KEY)
+            .setName("Avoid pattern matching on large lists")
+            .setHtmlDescription(
+                "<p>Pattern matching lists with thousands of elements is inefficient.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Cases[Range[10000], x_ /; x > 100]  (* Slow *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Select[Range[10000], # > 100 &]  (* Much faster *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("patterns", "performance");
+
+        // List/Array Rules (Items 31-40)
+        repository.createRule(EMPTY_LIST_INDEXING_KEY)
+            .setName("Check list length before indexing")
+            .setHtmlDescription(
+                "<p>Indexing empty lists causes runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = list[[1]]  (* Error if list is {} *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[Length[list] > 0, result = list[[1]], result = Missing[]]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("lists", "bounds-check");
+
+        repository.createRule(NEGATIVE_INDEX_WITHOUT_VALIDATION_KEY)
+            .setName("Validate negative indices against list length")
+            .setHtmlDescription(
+                "<p>Negative index <code>list[[-n]]</code> fails if n > Length[list].</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>last = list[[-n]]  (* Error if n too large *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[n <= Length[list], last = list[[-n]], ...]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("lists", "bounds-check");
+
+        repository.createRule(PART_ASSIGNMENT_TO_IMMUTABLE_KEY)
+            .setName("Part assignment requires a variable")
+            .setHtmlDescription(
+                "<p>Assigning to <code>expr[[i]]</code> where expr is not a variable doesn't modify anything.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>{1,2,3}[[1]] = 5  (* Doesn't modify anything *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list = {1,2,3}; list[[1]] = 5  (* Modifies list *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("lists", "mutation");
+
+        repository.createRule(INEFFICIENT_LIST_CONCATENATION_KEY)
+            .setName("Avoid repeated Join operations in loops")
+            .setHtmlDescription(
+                "<p>Using <code>Join[list, {x}]</code> in a loop has O(n²) complexity.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[result = Join[result, {i}], {i, 1000}]  (* Quadratic *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>result = Table[i, {i, 1000}]  (* Linear *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "performance");
+
+        repository.createRule(UNNECESSARY_FLATTEN_KEY)
+            .setName("Don't flatten already-flat lists")
+            .setHtmlDescription(
+                "<p>Flatten on flat lists wastes computation.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Flatten[{a, b, c}]  (* Already flat *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>{a, b, c}  (* No Flatten needed *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "performance");
+
+        repository.createRule(LENGTH_IN_LOOP_CONDITION_KEY)
+            .setName("Cache list length outside loops")
+            .setHtmlDescription(
+                "<p>Recalculating Length in loop conditions is wasteful.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[..., {i, 1, Length[list]}]  (* Recalculates each iteration *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>n = Length[list]; Do[..., {i, 1, n}]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "performance");
+
+        repository.createRule(REVERSE_TWICE_KEY)
+            .setName("Double Reverse is a no-op")
+            .setHtmlDescription(
+                "<p>Reversing a list twice returns the original.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Reverse[Reverse[list]]  (* No-op *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list  (* Remove double Reverse *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "redundant");
+
+        repository.createRule(SORT_WITHOUT_COMPARISON_KEY)
+            .setName("Use Reverse[Sort[list]] instead of Sort with Greater")
+            .setHtmlDescription(
+                "<p>Built-in Sort is optimized; custom comparisons are slower.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Sort[list, Greater]  (* Slower *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Reverse[Sort[list]]  (* Faster *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "performance");
+
+        repository.createRule(POSITION_VS_SELECT_KEY)
+            .setName("Use Select instead of Extract with Position")
+            .setHtmlDescription(
+                "<p>Combining Extract and Position is inefficient and unclear.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Extract[list, Position[list, _?EvenQ]]  (* Complex *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Select[list, EvenQ]  (* Clearer and faster *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "clarity");
+
+        repository.createRule(NESTED_PART_EXTRACTION_KEY)
+            .setName("Use multi-dimensional Part syntax")
+            .setHtmlDescription(
+                "<p>Nested Part extractions should use direct syntax.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list[[i]][[j]]  (* Nested *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list[[i, j]]  (* Cleaner *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("lists", "clarity");
+
+        // Association Rules (Items 41-50)
+        repository.createRule(MISSING_KEY_CHECK_KEY)
+            .setName("Check if association key exists before accessing")
+            .setHtmlDescription(
+                "<p>Accessing non-existent keys returns Missing[\"KeyAbsent\", key].</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>value = assoc[\"key\"]  (* May return Missing *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[KeyExistsQ[assoc, \"key\"], value = assoc[\"key\"], ...]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("associations", "validation");
+
+        repository.createRule(ASSOCIATION_VS_LIST_CONFUSION_KEY)
+            .setName("Don't use list operations on associations")
+            .setHtmlDescription(
+                "<p>Some list operations don't work correctly on associations.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>assoc[[1]]  (* Wrong - associations aren't positional *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>First[Values[assoc]]  (* Correct *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("associations");
+
+        repository.createRule(INEFFICIENT_KEY_LOOKUP_KEY)
+            .setName("Use KeySelect instead of Select on Keys")
+            .setHtmlDescription(
+                "<p>KeySelect is optimized for association key filtering.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Select[Keys[assoc], StringQ]  (* Inefficient *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>KeySelect[assoc, StringQ]  (* Faster *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("associations", "performance");
+
+        repository.createRule(QUERY_ON_NON_DATASET_KEY)
+            .setName("Query requires Dataset wrapper")
+            .setHtmlDescription(
+                "<p>Query syntax only works on Dataset objects.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Query[All, \"name\"][list]  (* Error on plain list *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Query[All, \"name\"][Dataset[list]]  (* Correct *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("associations", "datasets");
+
+        repository.createRule(ASSOCIATION_UPDATE_PATTERN_KEY)
+            .setName("Use AssociateTo or Append for association updates")
+            .setHtmlDescription(
+                "<p>Direct assignment syntax <code>assoc[\"key\"] = value</code> creates confusion.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>assoc[\"key\"] = value  (* Ambiguous *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>AssociateTo[assoc, \"key\" -> value]  (* Clear intent *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("associations", "clarity");
+
+        repository.createRule(MERGE_WITHOUT_CONFLICT_STRATEGY_KEY)
+            .setName("Specify merge function for Merge")
+            .setHtmlDescription(
+                "<p>Merge without a combining function uses List by default, which may not be desired.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Merge[{a1, a2}]  (* Uses List by default *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Merge[{a1, a2}, Total]  (* Explicit strategy *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("associations", "clarity");
+
+        repository.createRule(ASSOCIATETO_ON_NON_SYMBOL_KEY)
+            .setName("AssociateTo requires a symbol")
+            .setHtmlDescription(
+                "<p>AssociateTo modifies in place, so the first argument must be a symbol.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>AssociateTo[<|\"a\"->1|>, \"b\"->2]  (* Doesn't modify anything *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>assoc = <|\"a\"->1|>; AssociateTo[assoc, \"b\"->2]  (* Modifies assoc *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("associations", "mutation");
+
+        repository.createRule(KEYDROP_MULTIPLE_TIMES_KEY)
+            .setName("Drop multiple keys in one call")
+            .setHtmlDescription(
+                "<p>Chained KeyDrop is less efficient than a single call.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>KeyDrop[KeyDrop[assoc, \"a\"], \"b\"]  (* Two passes *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>KeyDrop[assoc, {\"a\", \"b\"}]  (* Single pass *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("associations", "performance");
+
+        repository.createRule(LOOKUP_WITH_MISSING_DEFAULT_KEY)
+            .setName("Don't specify Missing as Lookup default")
+            .setHtmlDescription(
+                "<p>Missing is already the default return value for Lookup.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Lookup[assoc, key, Missing[]]  (* Redundant *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Lookup[assoc, key]  (* Same behavior *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("associations", "redundant");
+
+        repository.createRule(GROUPBY_WITHOUT_AGGREGATION_KEY)
+            .setName("Use GatherBy when not aggregating")
+            .setHtmlDescription(
+                "<p>GroupBy creates associations; GatherBy creates lists and may be clearer without aggregation.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>GroupBy[data, First]  (* No aggregation *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>GatherBy[data, First]  (* Clearer intent *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("associations", "clarity");
 
         repository.done();
     }

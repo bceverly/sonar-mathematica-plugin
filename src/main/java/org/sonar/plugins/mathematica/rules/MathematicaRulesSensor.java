@@ -43,6 +43,7 @@ public class MathematicaRulesSensor implements Sensor {
     private final BugDetector bugDetector = new BugDetector();
     private final VulnerabilityDetector vulnerabilityDetector = new VulnerabilityDetector();
     private final SecurityHotspotDetector securityHotspotDetector = new SecurityHotspotDetector();
+    private final Chunk1Detector chunk1Detector = new Chunk1Detector();
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -100,6 +101,7 @@ public class MathematicaRulesSensor implements Sensor {
             bugDetector.initializeCaches(content);
             vulnerabilityDetector.initializeCaches(content);
             securityHotspotDetector.initializeCaches(content);
+            chunk1Detector.initializeCaches(content);
 
             // Analyze comments once and cache for reuse
             List<int[]> commentRanges = analyzeComments(context, inputFile, content);
@@ -251,11 +253,55 @@ public class MathematicaRulesSensor implements Sensor {
             vulnerabilityDetector.detectExposingSensitiveData(context, inputFile, content);
             vulnerabilityDetector.detectMissingFormFunctionValidation(context, inputFile, content);
 
+            // ===== CHUNK 1 DETECTORS (Items 16-50 from ROADMAP_325.md) =====
+
+            // Pattern System Rules (Items 16-30)
+            chunk1Detector.detectUnrestrictedBlankPattern(context, inputFile, content);
+            chunk1Detector.detectPatternTestVsCondition(context, inputFile, content);
+            chunk1Detector.detectBlankSequenceWithoutRestriction(context, inputFile, content);
+            chunk1Detector.detectNestedOptionalPatterns(context, inputFile, content);
+            chunk1Detector.detectPatternNamingConflicts(context, inputFile, content);
+            chunk1Detector.detectRepeatedPatternAlternatives(context, inputFile, content);
+            chunk1Detector.detectPatternTestWithPureFunction(context, inputFile, content);
+            chunk1Detector.detectMissingPatternDefaults(context, inputFile, content);
+            chunk1Detector.detectOrderDependentPatterns(context, inputFile, content);
+            chunk1Detector.detectVerbatimPatternMisuse(context, inputFile, content);
+            chunk1Detector.detectHoldPatternUnnecessary(context, inputFile, content);
+            chunk1Detector.detectLongestShortestWithoutOrdering(context, inputFile, content);
+            chunk1Detector.detectPatternRepeatedDifferentTypes(context, inputFile, content);
+            chunk1Detector.detectAlternativesTooComplex(context, inputFile, content);
+            chunk1Detector.detectPatternMatchingLargeLists(context, inputFile, content);
+
+            // List/Array Rules (Items 31-40)
+            chunk1Detector.detectEmptyListIndexing(context, inputFile, content);
+            chunk1Detector.detectNegativeIndexWithoutValidation(context, inputFile, content);
+            chunk1Detector.detectPartAssignmentToImmutable(context, inputFile, content);
+            chunk1Detector.detectInefficientListConcatenation(context, inputFile, content);
+            chunk1Detector.detectUnnecessaryFlatten(context, inputFile, content);
+            chunk1Detector.detectLengthInLoopCondition(context, inputFile, content);
+            chunk1Detector.detectReverseTwice(context, inputFile, content);
+            chunk1Detector.detectSortWithoutComparison(context, inputFile, content);
+            chunk1Detector.detectPositionVsSelect(context, inputFile, content);
+            chunk1Detector.detectNestedPartExtraction(context, inputFile, content);
+
+            // Association Rules (Items 41-50)
+            chunk1Detector.detectMissingKeyCheck(context, inputFile, content);
+            chunk1Detector.detectAssociationVsListConfusion(context, inputFile, content);
+            chunk1Detector.detectInefficientKeyLookup(context, inputFile, content);
+            chunk1Detector.detectQueryOnNonDataset(context, inputFile, content);
+            chunk1Detector.detectAssociationUpdatePattern(context, inputFile, content);
+            chunk1Detector.detectMergeWithoutConflictStrategy(context, inputFile, content);
+            chunk1Detector.detectAssociateToOnNonSymbol(context, inputFile, content);
+            chunk1Detector.detectKeyDropMultipleTimes(context, inputFile, content);
+            chunk1Detector.detectLookupWithMissingDefault(context, inputFile, content);
+            chunk1Detector.detectGroupByWithoutAggregation(context, inputFile, content);
+
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
             bugDetector.clearCaches();
             vulnerabilityDetector.clearCaches();
             securityHotspotDetector.clearCaches();
+            chunk1Detector.clearCaches();
 
         } catch (Exception e) {
             LOG.error("Error analyzing file: {}", inputFile, e);

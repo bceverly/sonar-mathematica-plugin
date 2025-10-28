@@ -7,14 +7,17 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | Feature | Rules | Type | Status | Quick UI Path |
 |---------|-------|------|--------|---------------|
 | **Code Duplication Detection** | CPD Engine | Duplication | ✅ Active | Overview → Duplications % → Click |
-| **Code Smells** | 51 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
+| **Code Smells** | 76 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
 | **Security Vulnerabilities** | 21 rules | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Bugs (Reliability)** | 35 rules | Reliability | ✅ Active | Issues → Type: Bug |
+| **Bugs (Reliability)** | 45 rules | Reliability | ✅ Active | Issues → Type: Bug |
 | **Security Hotspots** | 7 rules | Security Review | ✅ Active | Security Hotspots tab |
 | **Complexity Metrics** | Cyclomatic & Cognitive | Complexity | ✅ Active | Code tab → Function details |
-| **Performance Rules** | 18 rules | Performance | ✅ Active | Issues → Search "performance" |
+| **Performance Rules** | 26 rules | Performance | ✅ Active | Issues → Search "performance" |
+| **Pattern System Rules** | 15 rules | Patterns | ✅ Active | Issues → Search "pattern" |
+| **List/Array Rules** | 10 rules | Data Structures | ✅ Active | Issues → Search "list" |
+| **Association Rules** | 10 rules | Data Structures | ✅ Active | Issues → Search "association" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **124 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **159 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -2939,6 +2942,81 @@ validateInput[data_] := Module[{errors = {}},
 - **Cyclomatic Complexity > 15** → Consider splitting function
 - **Cognitive Complexity > 15** → Function is hard to understand, refactor
 - **High nesting (>3 levels)** → Extract helper functions
+
+---
+
+## 7. Advanced Rules - Chunk 1 (35 New Rules)
+
+**Introduced:** Chunk 1 from ROADMAP_325.md (Items 16-50)
+**Focus:** Pattern system optimization, list/array safety, and association best practices
+
+### 7.1 Pattern System Rules (15 Rules)
+
+Advanced pattern matching analysis for better type safety and performance:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Unrestricted Blank Pattern | Code Smell | `f[x_] := x^2` without type restrictions on numeric operations |
+| PatternTest vs Condition | Bug | Inefficient `/;` when `?` would be better |
+| BlankSequence Without Restriction | Code Smell | `x__` without type restrictions |
+| Nested Optional Patterns | Bug | Optional defaults depending on other parameters |
+| Pattern Naming Conflicts | Bug | Same pattern name with conflicting types |
+| Repeated Pattern Alternatives | Code Smell | `x_Integer | x_Real` instead of `x:(_Integer | _Real)` |
+| PatternTest With Pure Function | Performance | Pure functions in `?` creating closures |
+| Missing Pattern Defaults | Bug | Optional arguments without proper validation |
+| Order-Dependent Patterns | Bug | Specific patterns defined after general ones |
+| Verbatim Pattern Misuse | Bug | Incorrect use of `Verbatim` |
+| HoldPattern Unnecessary | Code Smell | Unnecessary `HoldPattern` adding clutter |
+| Longest/Shortest Without Ordering | Bug | `Longest`/`Shortest` without alternatives |
+| Pattern Repeated Different Types | Bug | `{x_, x_}` not checking equality |
+| Alternatives Too Complex | Performance | 10+ alternatives causing backtracking |
+| Pattern Matching Large Lists | Performance | Pattern matching on 1000+ element lists |
+
+**📍 How to View:** Issues → Search "pattern" → Filter by rule name
+
+### 7.2 List/Array Rules (10 Rules)
+
+Safety and performance rules for list operations:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Empty List Indexing | Bug | `list[[1]]` without `Length` check |
+| Negative Index Without Validation | Bug | `list[[-n]]` without bounds check |
+| Part Assignment To Immutable | Bug | `{1,2,3}[[1]] = 5` doesn't modify anything |
+| Inefficient List Concatenation | Performance | `Join` in loops (O(n²) complexity) |
+| Unnecessary Flatten | Performance | `Flatten` on already-flat lists |
+| Length In Loop Condition | Performance | Recalculating `Length` in loop iterator |
+| Reverse Twice | Code Smell | `Reverse[Reverse[...]]` is a no-op |
+| Sort Without Comparison | Performance | `Sort[list, Greater]` vs `Reverse[Sort[list]]` |
+| Position vs Select | Performance | `Extract[..., Position[...]]` vs `Select` |
+| Nested Part Extraction | Code Smell | `list[[i]][[j]]` vs `list[[i, j]]` |
+
+**📍 How to View:** Issues → Search "list" → Filter by rule name
+
+### 7.3 Association Rules (10 Rules)
+
+Best practices for Mathematica's dictionary/map type:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Missing Key Check | Bug | Accessing keys without `KeyExistsQ` |
+| Association vs List Confusion | Bug | Using list operations on associations |
+| Inefficient Key Lookup | Performance | `Select[Keys[...]]` vs `KeySelect` |
+| Query On Non-Dataset | Bug | `Query` without `Dataset` wrapper |
+| Association Update Pattern | Code Smell | Ambiguous direct assignment vs `AssociateTo` |
+| Merge Without Conflict Strategy | Bug | `Merge` without specifying merge function |
+| AssociateTo On Non-Symbol | Bug | `AssociateTo` on literal instead of variable |
+| KeyDrop Multiple Times | Performance | Chained `KeyDrop` vs single call |
+| Lookup With Missing Default | Code Smell | Redundant `Missing[]` default |
+| GroupBy Without Aggregation | Code Smell | `GroupBy` where `GatherBy` clearer |
+
+**📍 How to View:** Issues → Search "association" → Filter by rule name
+
+**Rule Count Summary:**
+- Pattern System: 15 rules (type safety + performance)
+- List/Array: 10 rules (safety + performance)
+- Association: 10 rules (correctness + clarity)
+- **Total: 35 new rules**
 
 ---
 

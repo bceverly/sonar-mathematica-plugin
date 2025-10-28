@@ -39,7 +39,11 @@ public abstract class AstNode {
         OPERATOR,          // +, -, *, /, :=, ->, etc.
         CONTROL_FLOW,      // If, While, Do, For, etc.
         SCOPING,           // Module, Block, With
-        COMPOUND           // Multiple statements
+        COMPOUND,          // Multiple statements
+        LOOP,              // Do, While, For, Table, NestWhile
+        PURE_FUNCTION,     // #1 + #2 &, Function[{x, y}, x + y]
+        PART,              // list[[i]]
+        SPAN               // 1;;10
     }
 
     protected AstNode(NodeType type, int startLine, int startColumn, int endLine, int endColumn) {
