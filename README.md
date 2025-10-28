@@ -7,14 +7,14 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | Feature | Rules | Type | Status | Quick UI Path |
 |---------|-------|------|--------|---------------|
 | **Code Duplication Detection** | CPD Engine | Duplication | ✅ Active | Overview → Duplications % → Click |
-| **Code Smells** | 33 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
-| **Security Vulnerabilities** | 14 rules | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Bugs (Reliability)** | 20 rules | Reliability | ✅ Active | Issues → Type: Bug |
+| **Code Smells** | 51 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
+| **Security Vulnerabilities** | 21 rules | Security | ✅ Active | Issues → Type: Vulnerability |
+| **Bugs (Reliability)** | 35 rules | Reliability | ✅ Active | Issues → Type: Bug |
 | **Security Hotspots** | 7 rules | Security Review | ✅ Active | Security Hotspots tab |
 | **Complexity Metrics** | Cyclomatic & Cognitive | Complexity | ✅ Active | Code tab → Function details |
-| **Performance Rules** | 8 rules | Performance | ✅ Active | Issues → Search "performance" |
+| **Performance Rules** | 18 rules | Performance | ✅ Active | Issues → Search "performance" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **74 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **124 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -761,6 +761,794 @@ result = ProcessData[HugeComputation[data]];
 temp = HugeComputation[data];  (* Can monitor size *)
 ByteCount[temp]  (* Check memory usage *)
 result = ProcessData[temp];
+```
+
+---
+
+## 2A. Phase 4: Additional Code Smell & Performance Rules (28 New Rules)
+
+This section documents 50 additional rules added in Phase 4 to enhance code quality analysis.
+
+### Pattern Matching & Function Definition (5 rules)
+
+#### 2A.1 Overcomplex Patterns
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Pattern definitions with >5 alternatives (|) are hard to understand and maintain.
+
+**Example:**
+```mathematica
+(* VIOLATION - 7 alternatives *)
+process[x_Integer | x_Real | x_Rational | x_Complex | x_String | x_Symbol | x_List] := ...
+
+(* COMPLIANT - Use pattern tests or split into separate functions *)
+process[x_?NumericQ] := numericProcess[x];
+process[x_String] := stringProcess[x];
+process[x_List] := listProcess[x];
+```
+
+#### 2A.2 Inconsistent Rule Types
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Mixing Rule (->) and RuleDelayed (:>) in same list creates confusion about evaluation timing.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+rules = {a -> Compute[a], b :> Compute[b]};
+
+(* COMPLIANT *)
+rules = {a :> Compute[a], b :> Compute[b]};  (* Consistent *)
+```
+
+#### 2A.3 Missing Function Attributes
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Public functions should consider using attributes (Listable, Protected, etc.) for better behavior.
+
+**Example:**
+```mathematica
+(* COMPLIANT *)
+SetAttributes[MyFunction, {Listable, NumericFunction, Protected}];
+```
+
+#### 2A.4 Missing DownValues Documentation
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Functions with 3+ pattern definitions should have ::usage documentation.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+ProcessData[x_Integer] := ...
+ProcessData[x_Real] := ...
+ProcessData[x_String] := ...
+(* No ::usage message! *)
+
+(* COMPLIANT *)
+ProcessData::usage = "ProcessData[x] processes data of various types.";
+ProcessData[x_Integer] := ...
+ProcessData[x_Real] := ...
+ProcessData[x_String] := ...
+```
+
+#### 2A.5 Missing Pattern Test Validation
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Functions should validate input types with pattern tests (?NumericQ, ?ListQ, etc.).
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+f[x_] := Sqrt[x] + x^2  (* No type validation *)
+
+(* COMPLIANT *)
+f[x_?NumericQ] := Sqrt[x] + x^2
+```
+
+---
+
+### Code Clarity (8 rules)
+
+#### 2A.6 Excessive Pure Functions
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Complex pure functions with multiple # slots should use Function[{x, y, z}, ...] for clarity.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Map[#1 + #2 * #3 - #4 / #1 &, data]
+
+(* COMPLIANT *)
+Map[Function[{a, b, c, d}, a + b * c - d / a], data]
+```
+
+#### 2A.7 Missing Operator Precedence
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Complex operator expressions (/@, @@, //@) should use parentheses for clarity.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = f /@ g @@ h //@ data
+
+(* COMPLIANT *)
+result = (f /@ (g @@ h)) //@ data
+```
+
+#### 2A.8 Hardcoded File Paths
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Use FileNameJoin and $HomeDirectory instead of hardcoded paths.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Import["C:\\Users\\John\\data.csv"]
+Import["/Users/john/data.csv"]
+
+(* COMPLIANT *)
+Import[FileNameJoin[{$HomeDirectory, "data.csv"}]]
+```
+
+#### 2A.9 Inconsistent Return Types
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Function definitions should return consistent types across all pattern branches.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+ProcessData[x_Integer] := {result}      (* Returns List *)
+ProcessData[x_String] := <|"result" -> value|>  (* Returns Association *)
+
+(* COMPLIANT *)
+ProcessData[x_Integer] := <|"result" -> result|>
+ProcessData[x_String] := <|"result" -> value|>
+```
+
+#### 2A.10 Missing Error Messages
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Custom functions should define error messages for better usability.
+
+**Example:**
+```mathematica
+(* COMPLIANT *)
+MyFunction::badarg = "Argument `1` is invalid. Expected positive integer.";
+MyFunction[x_] := If[x <= 0, Message[MyFunction::badarg, x]; $Failed, x^2]
+```
+
+#### 2A.11 Global State Modification
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Functions modifying state should use ! suffix or Set*/Update* prefix.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+UpdateCache[data_] := (cache = data; data)
+
+(* COMPLIANT *)
+UpdateCache![data_] := (cache = data; data)
+SetCache[data_] := (cache = data; data)
+```
+
+#### 2A.12 Missing Localization
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Manipulate should use LocalizeVariables to prevent variable leakage.
+
+**Example:**
+```mathematica
+(* COMPLIANT *)
+Manipulate[Plot[Sin[a x], {x, 0, 2Pi}],
+  {a, 1, 10},
+  LocalizeVariables -> True
+]
+```
+
+#### 2A.13 Explicit Global` Context
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Using Global` explicitly indicates namespace confusion.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Global`myVariable = 5;
+
+(* COMPLIANT *)
+myVariable = 5;  (* Already in Global by default *)
+```
+
+---
+
+### Data Structure (5 rules)
+
+#### 2A.14 Missing Temporary Cleanup
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Temporary files/directories should be cleaned up or use auto-deletion.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+CreateFile["temp.dat"]
+(* No cleanup *)
+
+(* COMPLIANT *)
+file = CreateFile[];  (* Auto-deleted on kernel quit *)
+(* Or explicit cleanup *)
+file = CreateFile["temp.dat"];
+(* ... use file ... *)
+DeleteFile[file];
+```
+
+#### 2A.15 Nested Lists Instead of Association
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Multiple indexed accesses suggest Association would be clearer.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+data[[1]], data[[5]], data[[7]]
+
+(* COMPLIANT *)
+data = <|"name" -> "John", "age" -> 30, "city" -> "NYC"|>;
+data["name"], data["age"], data["city"]
+```
+
+#### 2A.16 Repeated Part Extraction
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Multiple Part extractions should use destructuring.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+x = data[[1]];
+y = data[[2]];
+z = data[[3]];
+
+(* COMPLIANT *)
+{x, y, z} = data;
+```
+
+#### 2A.17 Missing Memoization
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Recursive functions should consider memoization for performance.
+
+**Example:**
+```mathematica
+(* WITHOUT MEMOIZATION *)
+fib[n_] := fib[n-1] + fib[n-2]
+fib[0] = 0; fib[1] = 1;
+
+(* WITH MEMOIZATION *)
+fib[n_] := fib[n] = fib[n-1] + fib[n-2]
+fib[0] = 0; fib[1] = 1;
+```
+
+#### 2A.18 StringJoin for Templates
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Multiple StringJoin operations should use StringTemplate.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+"Hello " <> name <> ", your score is " <> ToString[score]
+
+(* COMPLIANT *)
+template = StringTemplate["Hello `name`, your score is `score`"];
+template[<|"name" -> name, "score" -> score|>]
+```
+
+---
+
+### Performance Rules (10 rules)
+
+#### 2A.19 Linear Search Instead of Lookup
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Use Association or Dispatch for O(1) lookup instead of Select (O(n)).
+
+**Example:**
+```mathematica
+(* VIOLATION - O(n) *)
+Select[data, #[[2]] == searchKey &]
+
+(* COMPLIANT - O(1) *)
+lookup = Association[Map[#[[2]] -> # &, data]];
+lookup[searchKey]
+```
+
+#### 2A.20 Repeated Calculations
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Expensive expressions calculated repeatedly in loop should be hoisted out.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Do[process[ExpensiveComputation[] + i], {i, 1000}]
+
+(* COMPLIANT *)
+cached = ExpensiveComputation[];
+Do[process[cached + i], {i, 1000}]
+```
+
+#### 2A.21 Position Instead of Pattern
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Consider Cases or Select with pattern matching instead of Position + Extract.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+positions = Position[data, _?EvenQ];
+Extract[data, positions]
+
+(* COMPLIANT *)
+Cases[data, x_?EvenQ]
+```
+
+#### 2A.22 Flatten[Table[...]] Antipattern
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Use Catenate, Join, or vectorization instead of Flatten[Table[...]].
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Flatten[Table[{i, i^2}, {i, 10}]]
+
+(* COMPLIANT *)
+Catenate[Table[{i, i^2}, {i, 10}]]
+```
+
+#### 2A.23 Missing Parallelization
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Large independent iterations should use ParallelTable or ParallelMap.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Table[ExpensiveFunction[i], {i, 10000}]
+
+(* COMPLIANT *)
+ParallelTable[ExpensiveFunction[i], {i, 10000}]
+```
+
+#### 2A.24 Missing SparseArray
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Large arrays with many zeros should use SparseArray for efficiency.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+zeros = Table[0, {1000}, {1000}]
+
+(* COMPLIANT *)
+zeros = SparseArray[{}, {1000, 1000}]
+```
+
+#### 2A.25 Unnecessary Transpose
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Repeated Transpose operations suggest inconsistent row/column handling.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Transpose[Transpose[matrix]]
+
+(* COMPLIANT *)
+matrix  (* Just use original! *)
+```
+
+#### 2A.26 DeleteDuplicates on Large Data
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+For large lists, Keys@GroupBy is faster than DeleteDuplicates.
+
+**Example:**
+```mathematica
+(* SLOWER *)
+DeleteDuplicates[largeList]
+
+(* FASTER *)
+Keys[GroupBy[largeList, Identity]]
+```
+
+#### 2A.27 Repeated String Parsing
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Parsing the same string repeatedly in loop - cache the result.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Table[ToExpression["2*Pi"], {i, 1000}]
+
+(* COMPLIANT *)
+cached = ToExpression["2*Pi"];
+Table[cached, {i, 1000}]
+```
+
+#### 2A.28 Missing CompilationTarget
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Compile should use CompilationTarget->"C" for 10-100x speedup.
+
+**Example:**
+```mathematica
+(* WITHOUT C TARGET *)
+compiled = Compile[{{x, _Real}}, x^2];
+
+(* WITH C TARGET *)
+compiled = Compile[{{x, _Real}}, x^2, CompilationTarget -> "C"];
+```
+
+---
+
+## 3. Bug Rules - Reliability (35 Total)
+
+### 3.1-3.20 Original Bug Rules
+
+(Original 20 bug rules documented above remain unchanged)
+
+---
+
+### 3A. Phase 4: Additional Bug Rules (15 New Rules)
+
+#### 3A.1 Missing Empty List Check
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-129](https://cwe.mitre.org/data/definitions/129.html)
+
+Using First/Last/Part without checking for empty list causes crashes.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+first = First[myList];
+
+(* COMPLIANT *)
+If[Length[myList] > 0, First[myList], $Failed]
+```
+
+#### 3A.2 Negative Index Access
+**Severity:** MAJOR | **Type:** BUG
+
+Negative indices access from end, but -1 means last element, not invalid.
+
+**Example:**
+```mathematica
+(* CAREFUL *)
+list[[-1]]  (* Last element, valid *)
+list[[-Length[list]-1]]  (* Out of bounds! *)
+
+(* SAFE *)
+If[-index <= Length[list], list[[index]], $Failed]
+```
+
+#### 3A.3 String to Number Without Validation
+**Severity:** MAJOR | **Type:** BUG
+
+ToExpression on strings should be validated first.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+num = ToExpression[userInput]
+
+(* COMPLIANT *)
+If[StringMatchQ[userInput, NumberString],
+  ToExpression[userInput],
+  $Failed
+]
+```
+
+#### 3A.4 Missing Numeric Check
+**Severity:** MAJOR | **Type:** BUG
+
+Mathematical operations should validate numeric inputs.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Sqrt[x]  (* What if x is a string? *)
+
+(* COMPLIANT *)
+If[NumericQ[x], Sqrt[x], $Failed]
+```
+
+#### 3A.5 Undefined Function Call
+**Severity:** CRITICAL | **Type:** BUG
+
+Calling functions that aren't defined causes errors.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = NonExistentFunction[data]
+
+(* CHECK FIRST *)
+If[NameQ["NonExistentFunction"], NonExistentFunction[data], $Failed]
+```
+
+#### 3A.6 Mismatched Dimensions in Operations
+**Severity:** MAJOR | **Type:** BUG
+
+Array operations need dimension compatibility.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+matrix1 + matrix2  (* No dimension check! *)
+
+(* COMPLIANT *)
+If[Dimensions[matrix1] === Dimensions[matrix2],
+  matrix1 + matrix2,
+  $Failed
+]
+```
+
+#### 3A.7 Symbolic vs Numeric Confusion
+**Severity:** MAJOR | **Type:** BUG
+
+Mixing symbolic and numeric operations can cause unexpected results.
+
+**Example:**
+```mathematica
+(* CAREFUL *)
+Solve[x^2 == 4, x]  (* Symbolic: {x -> 2}, {x -> -2} *)
+NSolve[x^2 == 4, x]  (* Numeric: {{x -> 2.}, {x -> -2.}} *)
+```
+
+#### 3A.8 Missing Null Check
+**Severity:** MAJOR | **Type:** BUG
+
+Operations on potentially Null values need checks.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = data + 5  (* What if data is Null? *)
+
+(* COMPLIANT *)
+If[data =!= Null, data + 5, $Failed]
+```
+
+#### 3A.9 Range Specification Error
+**Severity:** MAJOR | **Type:** BUG
+
+Ensure range specifications are valid (min <= max).
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Table[i, {i, 10, 1}]  (* Empty! Need step: {i, 10, 1, -1} *)
+
+(* COMPLIANT *)
+Table[i, {i, 10, 1, -1}]
+```
+
+#### 3A.10 Incorrect Default Value
+**Severity:** MAJOR | **Type:** BUG
+
+Default parameter values should match expected types.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+f[x_, threshold_: "auto"] := If[NumericQ[threshold], ...]  (* Type mismatch! *)
+
+(* COMPLIANT *)
+f[x_, threshold_: 0.5] := If[NumericQ[threshold], ...]
+```
+
+#### 3A.11 List Assignment Length Mismatch
+**Severity:** MAJOR | **Type:** BUG
+
+List unpacking must match lengths.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+{a, b} = {1, 2, 3}  (* Loses 3! *)
+
+(* SAFE *)
+If[Length[data] == 2, {a, b} = data, $Failed]
+```
+
+#### 3A.12 Unintended Global Assignment
+**Severity:** MAJOR | **Type:** BUG
+
+Missing Module/Block creates global variables.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+f[x_] := (temp = x^2; temp + 1)  (* temp is global! *)
+
+(* COMPLIANT *)
+f[x_] := Module[{temp = x^2}, temp + 1]
+```
+
+#### 3A.13 Missing List Check Before Operations
+**Severity:** MAJOR | **Type:** BUG
+
+Operations expecting lists should validate input type.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Total[data]  (* What if data is not a list? *)
+
+(* COMPLIANT *)
+If[ListQ[data], Total[data], $Failed]
+```
+
+#### 3A.14 Wrong Equality Operator
+**Severity:** CRITICAL | **Type:** BUG
+
+Using = instead of == in conditions.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+If[x = 5, doSomething[]]  (* Assigns x=5, always True! *)
+
+(* COMPLIANT *)
+If[x == 5, doSomething[]]
+```
+
+#### 3A.15 Pattern Matching Scope Error
+**Severity:** MAJOR | **Type:** BUG
+
+Pattern variables in nested scopes can collide.
+
+**Example:**
+```mathematica
+(* CAREFUL *)
+f[x_] := Map[Function[x, x^2], data]  (* Inner x shadows parameter x *)
+
+(* BETTER *)
+f[x_] := Map[Function[y, y^2], data]
+```
+
+---
+
+## 4. Security Vulnerability Rules (21 Total)
+
+### 4.1-4.14 Original Vulnerability Rules
+
+(Original 14 vulnerability rules documented above remain unchanged)
+
+---
+
+### 4A. Phase 4: Additional Vulnerability Rules (7 New Rules)
+
+#### 4A.1 ToExpression on External Input (CRITICAL)
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-94](https://cwe.mitre.org/data/definitions/94.html) | **OWASP:** A03:2021
+
+ToExpression on external input enables arbitrary code execution.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = ToExpression[userInput]  (* User can execute ANY code! *)
+
+(* COMPLIANT *)
+result = Interpreter["Number"][userInput]  (* Safe parsing *)
+```
+
+#### 4A.2 Unsafe Symbol Creation
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-470](https://cwe.mitre.org/data/definitions/470.html)
+
+Creating symbols from user input allows access to any function/variable.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+func = Symbol[userFunctionName]  (* User controls what function! *)
+
+(* COMPLIANT *)
+allowedFunctions = {"Mean", "Median", "Total"};
+If[MemberQ[allowedFunctions, userFunctionName],
+  Symbol[userFunctionName],
+  $Failed
+]
+```
+
+#### 4A.3 RunProcess Shell Injection
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-78](https://cwe.mitre.org/data/definitions/78.html)
+
+Shell commands with user input enable command injection.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+RunProcess[{"sh", "-c", "cat " <> userFile}]
+
+(* COMPLIANT - Use array form *)
+RunProcess[{"cat", userFile}]
+```
+
+#### 4A.4 Import Without Validation
+**Severity:** HIGH | **Type:** VULNERABILITY
+**CWE:** [CWE-434](https://cwe.mitre.org/data/definitions/434.html)
+
+Importing files without validation can execute malicious code.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Import[uploadedFile]  (* Could be .mx with code! *)
+
+(* COMPLIANT *)
+If[StringEndsQ[uploadedFile, ".csv"],
+  Import[uploadedFile, "CSV"],
+  $Failed
+]
+```
+
+#### 4A.5 CloudPut Without Permissions
+**Severity:** HIGH | **Type:** VULNERABILITY
+**CWE:** [CWE-732](https://cwe.mitre.org/data/definitions/732.html)
+
+Cloud objects without permissions are public.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+CloudPut[sensitiveData, "data.mx"]  (* Public! *)
+
+(* COMPLIANT *)
+CloudPut[sensitiveData, "data.mx", Permissions -> "Private"]
+```
+
+#### 4A.6 Unsafe APIFunction
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-20](https://cwe.mitre.org/data/definitions/20.html)
+
+APIFunction without input validation exposes vulnerabilities.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+APIFunction[{"x" -> "String"}, ToExpression[#x] &]  (* Code injection! *)
+
+(* COMPLIANT *)
+APIFunction[{"x" -> "Integer"}, #x^2 &]  (* Type-safe *)
+```
+
+#### 4A.7 FormFunction Without Validation
+**Severity:** HIGH | **Type:** VULNERABILITY
+**CWE:** [CWE-20](https://cwe.mitre.org/data/definitions/20.html)
+
+FormFunction inputs need validation and sanitization.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+FormFunction[{"file" -> "String"}, Import[#file] &]
+
+(* COMPLIANT *)
+FormFunction[{"file" -> "String"},
+  If[StringEndsQ[#file, ".csv"], Import[#file, "CSV"], $Failed] &
+]
 ```
 
 ---

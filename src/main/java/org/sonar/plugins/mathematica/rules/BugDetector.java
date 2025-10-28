@@ -544,6 +544,339 @@ public class BugDetector extends BaseDetector {
         }
     }
 
+    // ===== PHASE 4: NEW BUG DETECTORS (15 methods) =====
+
+    /**
+     * Detect missing empty list checks before First/Last/Part.
+     */
+    public void detectMissingEmptyListCheck(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find First[, Last[, Part[ without prior Length check
+            Pattern pattern = Pattern.compile("(?:First|Last)\\s*\\[([a-zA-Z]\\w*)\\]");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                String varName = matcher.group(1);
+                int pos = matcher.start();
+                // Look back for Length check
+                String lookback = content.substring(Math.max(0, pos - 200), pos);
+                if (!lookback.contains("Length[" + varName + "]") && !lookback.contains("!= {}") && !lookback.contains("=!= {}")) {
+                    int line = calculateLineNumber(content, pos);
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_EMPTY_LIST_CHECK_KEY,
+                        String.format("Using First/Last on '%s' without checking for empty list.", varName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing empty list check detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect machine precision in symbolic calculations.
+     */
+    public void detectMachinePrecisionInSymbolic(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Solve, DSolve, etc. with decimal numbers
+            Pattern pattern = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*\\[[^\\]]*\\d+\\.\\d+");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.MACHINE_PRECISION_IN_SYMBOLIC_KEY,
+                    "Machine precision float in symbolic calculation - use exact rationals instead.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping machine precision detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing $Failed checks after Import/Get/URLFetch.
+     */
+    public void detectMissingFailedCheck(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Import/Get followed by usage without $Failed check
+            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*(?:Import|Get|URLFetch)\\s*\\[");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                String varName = matcher.group(1);
+                int pos = matcher.start();
+                // Look ahead for $Failed check
+                String lookahead = content.substring(pos, Math.min(pos + 300, content.length()));
+                if (!lookahead.contains("=== $Failed") && !lookahead.contains("FailureQ[" + varName)) {
+                    int line = calculateLineNumber(content, pos);
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_FAILED_CHECK_KEY,
+                        String.format("Variable '%s' from Import/Get/URLFetch used without $Failed check.", varName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing $Failed check detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect potential zero denominators.
+     */
+    public void detectZeroDenominator(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find division by variables without guards
+            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*/\\s*([a-zA-Z]\\w*)");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                String denominator = matcher.group(2);
+                int pos = matcher.start();
+                // Look back for zero check
+                String lookback = content.substring(Math.max(0, pos - 150), pos);
+                if (!lookback.contains(denominator + " != 0") && !lookback.contains(denominator + " > 0")) {
+                    int line = calculateLineNumber(content, pos);
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.ZERO_DENOMINATOR_KEY,
+                        String.format("Division by '%s' without zero check may produce ComplexInfinity.", denominator));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping zero denominator detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing matrix dimension checks.
+     */
+    public void detectMissingMatrixDimensionCheck(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Dot operations without dimension validation
+            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\.\\s*([a-zA-Z]\\w*)");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                String mat1 = matcher.group(1);
+                String mat2 = matcher.group(2);
+                int pos = matcher.start();
+                String lookback = content.substring(Math.max(0, pos - 200), pos);
+                if (!lookback.contains("Dimensions[" + mat1) && !lookback.contains("MatrixQ[")) {
+                    int line = calculateLineNumber(content, pos);
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_MATRIX_DIMENSION_CHECK_KEY,
+                        String.format("Matrix multiplication %s.%s without dimension compatibility check.", mat1, mat2));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping matrix dimension check detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect incorrect Set in scoping constructs.
+     */
+    public void detectIncorrectSetInScoping(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Module[{x = ...}] pattern (should be Module[{x}, x = ...])
+            Pattern pattern = Pattern.compile("(?:Module|Block)\\s*\\[\\s*\\{[^}]*=");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.INCORRECT_SET_IN_SCOPING_KEY,
+                    "Assignment in Module/Block variable list causes immediate evaluation - use separate statement.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping incorrect Set in scoping detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing Hold attributes.
+     */
+    public void detectMissingHoldAttributes(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find functions that use Unevaluated but don't have Hold attributes
+            if (content.contains("Unevaluated[") && !content.contains("SetAttributes") && !content.contains("HoldAll")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_HOLD_ATTRIBUTES_KEY,
+                    "Functions using Unevaluated should have Hold attributes (HoldAll, HoldFirst, etc.).");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing Hold attributes detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect reliance on evaluation order.
+     */
+    public void detectEvaluationOrderAssumption(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find {i++, i++, i++} patterns
+            Pattern pattern = Pattern.compile("\\{[^}]*\\+\\+[^}]*\\+\\+[^}]*\\}");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EVALUATION_ORDER_ASSUMPTION_KEY,
+                    "Side effects in list construction have undefined evaluation order.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping evaluation order assumption detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect incorrect level specifications.
+     */
+    public void detectIncorrectLevelSpecification(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Map/Apply with explicit levels that might be wrong (heuristic)
+            Pattern pattern = Pattern.compile("(?:Map|Apply|Cases)\\s*\\[[^,]+,\\s*[^,]+,\\s*\\{-?\\d+\\}");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.INCORRECT_LEVEL_SPECIFICATION_KEY,
+                    "Verify level specification is correct - common source of silent failures.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping incorrect level specification detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect operations that unpack packed arrays.
+     */
+    public void detectUnpackingPackedArrays(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Append/Prepend/Delete on arrays in loops
+            if (content.contains("PackedArray") || content.contains("Range[") || content.contains("Table[")) {
+                Pattern pattern = Pattern.compile("(?:Do|While|For)\\s*\\[[^\\[]*(?:Append|Prepend|Delete)\\s*\\[");
+                Matcher matcher = pattern.matcher(content);
+
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.UNPACKING_PACKED_ARRAYS_KEY,
+                        "Append/Delete in loop unpacks packed arrays causing 10-100x slowdown.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping unpacking packed arrays detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing special case handling.
+     */
+    public void detectMissingSpecialCaseHandling(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find functions without handling for 0, Infinity, etc.
+            Pattern funcPattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
+            Matcher matcher = funcPattern.matcher(content);
+
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                int pos = matcher.start();
+                String funcBody = content.substring(pos, Math.min(pos + 500, content.length()));
+
+                if (!funcBody.contains("Which[") && !funcBody.contains("Switch[") &&
+                    !funcBody.contains("=== 0") && !funcBody.contains("=== Infinity")) {
+                    int line = calculateLineNumber(content, pos);
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_SPECIAL_CASE_HANDLING_KEY,
+                        String.format("Function '%s' may not handle special values (0, Infinity, Indeterminate).", funcName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing special case handling detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect incorrect Association operations.
+     */
+    public void detectIncorrectAssociationOperations(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Join on Associations (works differently than Lists)
+            if (content.contains("<|") && content.contains("Join[")) {
+                Pattern pattern = Pattern.compile("Join\\s*\\[\\s*<\\|");
+                Matcher matcher = pattern.matcher(content);
+
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.INCORRECT_ASSOCIATION_OPERATIONS_KEY,
+                        "Join on Associations merges by key (not concatenates) - verify this is intended.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping incorrect Association operations detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect DateObject validation issues.
+     */
+    public void detectDateObjectValidation(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find DateObject with hardcoded dates
+            Pattern pattern = Pattern.compile("DateObject\\s*\\[\\s*\\{(\\d+),\\s*(\\d+),\\s*(\\d+)");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                int month = Integer.parseInt(matcher.group(2));
+                int day = Integer.parseInt(matcher.group(3));
+                if (month > 12 || day > 31) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.DATEOBJECT_VALIDATION_KEY,
+                        "Invalid date in DateObject - validate date components.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping DateObject validation detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect Total/Mean on non-numeric data.
+     */
+    public void detectTotalMeanOnNonNumeric(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Mean/Total without NumericQ checks
+            Pattern pattern = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*\\[([a-zA-Z]\\w*)\\]");
+            Matcher matcher = pattern.matcher(content);
+
+            while (matcher.find()) {
+                String varName = matcher.group(1);
+                int pos = matcher.start();
+                String lookback = content.substring(Math.max(0, pos - 150), pos);
+                if (!lookback.contains("VectorQ[" + varName + ", NumericQ]") && !lookback.contains("NumericQ")) {
+                    int line = calculateLineNumber(content, pos);
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.TOTAL_MEAN_ON_NON_NUMERIC_KEY,
+                        String.format("Statistical function on '%s' without numeric validation.", varName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping Total/Mean detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect Quantity unit mismatches.
+     */
+    public void detectQuantityUnitMismatch(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Quantity operations (basic heuristic)
+            if (content.contains("Quantity[")) {
+                Pattern pattern = Pattern.compile("Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]\\s*[+\\-]\\s*Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]");
+                Matcher matcher = pattern.matcher(content);
+
+                while (matcher.find()) {
+                    String unit1 = matcher.group(1);
+                    String unit2 = matcher.group(2);
+                    if (!unit1.equals(unit2)) {
+                        int line = calculateLineNumber(content, matcher.start());
+                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.QUANTITY_UNIT_MISMATCH_KEY,
+                            String.format("Quantity operation with incompatible units: %s and %s.", unit1, unit2));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping Quantity unit mismatch detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
     /**
      * Helper class for pattern tracking.
      */

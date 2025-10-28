@@ -186,6 +186,66 @@ public class MathematicaRulesSensor implements Sensor {
             securityHotspotDetector.detectEnvironmentVariable(context, inputFile, content);
             securityHotspotDetector.detectImportWithoutFormat(context, inputFile, content);
 
+            // ===== PHASE 4: NEW RULE DETECTORS (50 rules) =====
+
+            // New Code Smell detectors (18 rules)
+            codeSmellDetector.detectOvercomplexPatterns(context, inputFile, content);
+            codeSmellDetector.detectInconsistentRuleTypes(context, inputFile, content);
+            codeSmellDetector.detectMissingFunctionAttributes(context, inputFile, content);
+            codeSmellDetector.detectMissingDownValuesDoc(context, inputFile, content);
+            codeSmellDetector.detectMissingPatternTestValidation(context, inputFile, content);
+            codeSmellDetector.detectExcessivePureFunctions(context, inputFile, content);
+            codeSmellDetector.detectMissingOperatorPrecedence(context, inputFile, content);
+            codeSmellDetector.detectHardcodedFilePaths(context, inputFile, content);
+            codeSmellDetector.detectInconsistentReturnTypes(context, inputFile, content);
+            codeSmellDetector.detectMissingErrorMessages(context, inputFile, content);
+            codeSmellDetector.detectGlobalStateModification(context, inputFile, content);
+            codeSmellDetector.detectMissingLocalization(context, inputFile, content);
+            codeSmellDetector.detectExplicitGlobalContext(context, inputFile, content);
+            codeSmellDetector.detectMissingTemporaryCleanup(context, inputFile, content);
+            codeSmellDetector.detectNestedListsInsteadAssociation(context, inputFile, content);
+            codeSmellDetector.detectRepeatedPartExtraction(context, inputFile, content);
+            codeSmellDetector.detectMissingMemoization(context, inputFile, content);
+            codeSmellDetector.detectStringJoinForTemplates(context, inputFile, content);
+
+            // New Performance detectors (10 rules)
+            codeSmellDetector.detectLinearSearchInsteadLookup(context, inputFile, content);
+            codeSmellDetector.detectRepeatedCalculations(context, inputFile, content);
+            codeSmellDetector.detectPositionInsteadPattern(context, inputFile, content);
+            codeSmellDetector.detectFlattenTableAntipattern(context, inputFile, content);
+            codeSmellDetector.detectMissingParallelization(context, inputFile, content);
+            codeSmellDetector.detectMissingSparseArray(context, inputFile, content);
+            codeSmellDetector.detectUnnecessaryTranspose(context, inputFile, content);
+            codeSmellDetector.detectDeleteDuplicatesOnLargeData(context, inputFile, content);
+            codeSmellDetector.detectRepeatedStringParsing(context, inputFile, content);
+            codeSmellDetector.detectMissingCompilationTarget(context, inputFile, content);
+
+            // New Bug detectors (15 rules)
+            bugDetector.detectMissingEmptyListCheck(context, inputFile, content);
+            bugDetector.detectMachinePrecisionInSymbolic(context, inputFile, content);
+            bugDetector.detectMissingFailedCheck(context, inputFile, content);
+            bugDetector.detectZeroDenominator(context, inputFile, content);
+            bugDetector.detectMissingMatrixDimensionCheck(context, inputFile, content);
+            bugDetector.detectIncorrectSetInScoping(context, inputFile, content);
+            bugDetector.detectMissingHoldAttributes(context, inputFile, content);
+            bugDetector.detectEvaluationOrderAssumption(context, inputFile, content);
+            bugDetector.detectIncorrectLevelSpecification(context, inputFile, content);
+            bugDetector.detectUnpackingPackedArrays(context, inputFile, content);
+            bugDetector.detectMissingSpecialCaseHandling(context, inputFile, content);
+            bugDetector.detectIncorrectAssociationOperations(context, inputFile, content);
+            bugDetector.detectDateObjectValidation(context, inputFile, content);
+            bugDetector.detectTotalMeanOnNonNumeric(context, inputFile, content);
+            bugDetector.detectQuantityUnitMismatch(context, inputFile, content);
+
+            // New Vulnerability detectors (7 rules)
+            vulnerabilityDetector.detectToExpressionOnInput(context, inputFile, content);
+            vulnerabilityDetector.detectUnsanitizedRunProcess(context, inputFile, content);
+            vulnerabilityDetector.detectMissingCloudAuth(context, inputFile, content);
+            vulnerabilityDetector.detectHardcodedApiKeys(context, inputFile, content);
+            vulnerabilityDetector.detectNeedsGetUntrusted(context, inputFile, content);
+            vulnerabilityDetector.detectExposingSensitiveData(context, inputFile, content);
+            vulnerabilityDetector.detectMissingFormFunctionValidation(context, inputFile, content);
+
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
             bugDetector.clearCaches();

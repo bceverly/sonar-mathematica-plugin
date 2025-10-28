@@ -111,6 +111,70 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String UNCLOSED_FILE_HANDLE_KEY = "UnclosedFileHandle";
     public static final String GROWING_DEFINITION_CHAIN_KEY = "GrowingDefinitionChain";
 
+    // Rule keys - Phase 4: Pattern Matching & Function Definition (5 new rules)
+    public static final String OVERCOMPLEX_PATTERNS_KEY = "OvercomplexPatterns";
+    public static final String INCONSISTENT_RULE_TYPES_KEY = "InconsistentRuleTypes";
+    public static final String MISSING_FUNCTION_ATTRIBUTES_KEY = "MissingFunctionAttributes";
+    public static final String MISSING_DOWNVALUES_DOC_KEY = "MissingDownValuesDocumentation";
+    public static final String MISSING_PATTERN_TEST_VALIDATION_KEY = "MissingPatternTestValidation";
+
+    // Rule keys - Phase 4: Code Clarity (8 new rules)
+    public static final String EXCESSIVE_PURE_FUNCTIONS_KEY = "ExcessivePureFunctions";
+    public static final String MISSING_OPERATOR_PRECEDENCE_KEY = "MissingOperatorPrecedence";
+    public static final String HARDCODED_FILE_PATHS_KEY = "HardcodedFilePaths";
+    public static final String INCONSISTENT_RETURN_TYPES_KEY = "InconsistentReturnTypes";
+    public static final String MISSING_ERROR_MESSAGES_KEY = "MissingErrorMessages";
+    public static final String GLOBAL_STATE_MODIFICATION_KEY = "GlobalStateModification";
+    public static final String MISSING_LOCALIZATION_KEY = "MissingLocalization";
+    public static final String EXPLICIT_GLOBAL_CONTEXT_KEY = "ExplicitGlobalContext";
+
+    // Rule keys - Phase 4: Data Structures (5 new rules)
+    public static final String MISSING_TEMPORARY_CLEANUP_KEY = "MissingTemporaryCleanup";
+    public static final String NESTED_LISTS_INSTEAD_ASSOCIATION_KEY = "NestedListsInsteadOfAssociation";
+    public static final String REPEATED_PART_EXTRACTION_KEY = "RepeatedPartExtraction";
+    public static final String MISSING_MEMOIZATION_KEY = "MissingMemoization";
+    public static final String STRINGJOIN_FOR_TEMPLATES_KEY = "StringJoinForTemplates";
+
+    // Rule keys - Phase 4: Type & Value Errors (8 new bugs)
+    public static final String MISSING_EMPTY_LIST_CHECK_KEY = "MissingEmptyListCheck";
+    public static final String MACHINE_PRECISION_IN_SYMBOLIC_KEY = "MachinePrecisionInSymbolic";
+    public static final String MISSING_FAILED_CHECK_KEY = "MissingFailedCheck";
+    public static final String ZERO_DENOMINATOR_KEY = "ZeroDenominator";
+    public static final String MISSING_MATRIX_DIMENSION_CHECK_KEY = "MissingMatrixDimensionCheck";
+    public static final String INCORRECT_SET_IN_SCOPING_KEY = "IncorrectSetInScoping";
+    public static final String MISSING_HOLD_ATTRIBUTES_KEY = "MissingHoldAttributes";
+    public static final String EVALUATION_ORDER_ASSUMPTION_KEY = "EvaluationOrderAssumption";
+
+    // Rule keys - Phase 4: Data Handling Bugs (7 new bugs)
+    public static final String INCORRECT_LEVEL_SPECIFICATION_KEY = "IncorrectLevelSpecification";
+    public static final String UNPACKING_PACKED_ARRAYS_KEY = "UnpackingPackedArrays";
+    public static final String MISSING_SPECIAL_CASE_HANDLING_KEY = "MissingSpecialCaseHandling";
+    public static final String INCORRECT_ASSOCIATION_OPERATIONS_KEY = "IncorrectAssociationOperations";
+    public static final String DATEOBJECT_VALIDATION_KEY = "DateObjectValidation";
+    public static final String TOTAL_MEAN_ON_NON_NUMERIC_KEY = "TotalMeanOnNonNumeric";
+    public static final String QUANTITY_UNIT_MISMATCH_KEY = "QuantityUnitMismatch";
+
+    // Rule keys - Phase 4: Performance (10 new rules)
+    public static final String LINEAR_SEARCH_INSTEAD_LOOKUP_KEY = "LinearSearchInsteadOfLookup";
+    public static final String REPEATED_CALCULATIONS_KEY = "RepeatedCalculations";
+    public static final String POSITION_INSTEAD_PATTERN_KEY = "PositionInsteadOfPattern";
+    public static final String FLATTEN_TABLE_ANTIPATTERN_KEY = "FlattenTableAntipattern";
+    public static final String MISSING_PARALLELIZATION_KEY = "MissingParallelization";
+    public static final String MISSING_SPARSE_ARRAY_KEY = "MissingSparseArray";
+    public static final String UNNECESSARY_TRANSPOSE_KEY = "UnnecessaryTranspose";
+    public static final String DELETEDUPS_ON_LARGE_DATA_KEY = "DeleteDuplicatesOnLargeData";
+    public static final String REPEATED_STRING_PARSING_KEY = "RepeatedStringParsing";
+    public static final String MISSING_COMPILATION_TARGET_KEY = "MissingCompilationTarget";
+
+    // Rule keys - Phase 4: Security (7 new vulnerabilities)
+    public static final String TOEXPRESSION_ON_INPUT_KEY = "ToExpressionOnExternalInput";
+    public static final String UNSANITIZED_RUNPROCESS_KEY = "UnsanitizedRunProcess";
+    public static final String MISSING_CLOUD_AUTH_KEY = "MissingCloudAuthentication";
+    public static final String HARDCODED_API_KEYS_KEY = "HardcodedApiKeys";
+    public static final String NEEDS_GET_UNTRUSTED_KEY = "NeedsGetUntrustedPaths";
+    public static final String EXPOSING_SENSITIVE_DATA_KEY = "ExposingSensitiveData";
+    public static final String MISSING_FORMFUNCTION_VALIDATION_KEY = "MissingFormFunctionValidation";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -2014,6 +2078,640 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("MAJOR")
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("reliability", "memory-leak");
+
+        // ===== PHASE 4: 50 NEW RULES =====
+
+        // Pattern Matching & Function Definition Rules (5 rules)
+
+        repository.createRule(OVERCOMPLEX_PATTERNS_KEY)
+            .setName("Pattern definitions should not be overly complex")
+            .setHtmlDescription(
+                "<p>Patterns with more than 5 alternatives or deeply nested conditions are difficult to understand and maintain.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nf[x_Integer | x_Real | x_Rational | x_String | x_Symbol | x_List] := x  (* 6 alternatives *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nf[x_?AtomQ] := x  (* Simplified using pattern test *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("complexity", "maintainability");
+
+        repository.createRule(INCONSISTENT_RULE_TYPES_KEY)
+            .setName("Rule and RuleDelayed should be used consistently")
+            .setHtmlDescription(
+                "<p>Mixing Rule (->) and RuleDelayed (:>) without clear justification makes code behavior unpredictable.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nrules = {a -> RandomReal[], b :> RandomReal[]}  (* Inconsistent *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nrules = {a :> RandomReal[], b :> RandomReal[]}  (* Both delayed *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("consistency");
+
+        repository.createRule(MISSING_FUNCTION_ATTRIBUTES_KEY)
+            .setName("Public functions should have appropriate attributes")
+            .setHtmlDescription(
+                "<p>Functions should use Listable, HoldAll, Protected, or other attributes where appropriate.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nMyFunction[x_] := x^2  (* Could be Listable *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nSetAttributes[MyFunction, Listable];\nMyFunction[x_] := x^2\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("best-practice");
+
+        repository.createRule(MISSING_DOWNVALUES_DOC_KEY)
+            .setName("Complex pattern-based functions should have documentation")
+            .setHtmlDescription(
+                "<p>Functions with multiple DownValues patterns should include usage messages.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nMyFunc::usage = \"MyFunc[x] computes...\";\nMyFunc[x_Integer] := x;\nMyFunc[x_Real] := x^2;\n</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("documentation");
+
+        repository.createRule(MISSING_PATTERN_TEST_VALIDATION_KEY)
+            .setName("Functions should validate input types with pattern tests")
+            .setHtmlDescription(
+                "<p>Use ?NumericQ, ?ListQ, ?MatrixQ to validate inputs and prevent runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nf[x_] := x^2  (* Accepts anything *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nf[x_?NumericQ] := x^2  (* Only numeric input *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "validation");
+
+        // Code Clarity Rules (8 rules)
+
+        repository.createRule(EXCESSIVE_PURE_FUNCTIONS_KEY)
+            .setName("Complex pure functions should use named parameters")
+            .setHtmlDescription(
+                "<p>Pure functions with #, #2, #3 in complex expressions are hard to read.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nMap[#1^2 + #2*#3 - #1/#2 &, data]  (* Hard to read *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nMap[Function[{x, y, z}, x^2 + y*z - x/y], data]\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("readability");
+
+        repository.createRule(MISSING_OPERATOR_PRECEDENCE_KEY)
+            .setName("Complex operator expressions should use parentheses for clarity")
+            .setHtmlDescription(
+                "<p>Mixing /@, @@, //@, @@ without parentheses makes precedence unclear.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nf /@ g @@ data  (* Unclear precedence *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nf /@ (g @@ data)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("readability");
+
+        repository.createRule(HARDCODED_FILE_PATHS_KEY)
+            .setName("File paths should not be hardcoded")
+            .setHtmlDescription(
+                "<p>Absolute paths like C:\\ or /Users/ are not portable. Use FileNameJoin, $HomeDirectory.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\ndata = Import[\"/Users/john/data.csv\"];\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\ndata = Import[FileNameJoin[{$HomeDirectory, \"data.csv\"}]];\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("portability");
+
+        repository.createRule(INCONSISTENT_RETURN_TYPES_KEY)
+            .setName("Functions should return consistent types")
+            .setHtmlDescription(
+                "<p>A function that returns List in one case and Association in another is confusing.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nf[x_Integer] := {x};\nf[x_Real] := <|\"value\" -> x|>;  (* Inconsistent *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("consistency");
+
+        repository.createRule(MISSING_ERROR_MESSAGES_KEY)
+            .setName("Custom functions should define error messages")
+            .setHtmlDescription(
+                "<p>Use Message[...] definitions to provide helpful error feedback.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nMyFunc::badarg = \"Invalid argument: `1`\";\nMyFunc[x_] := Message[MyFunc::badarg, x] /; x < 0\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("usability");
+
+        repository.createRule(GLOBAL_STATE_MODIFICATION_KEY)
+            .setName("Functions modifying global state should be clearly named")
+            .setHtmlDescription(
+                "<p>Functions with side effects should end with ! to indicate state modification.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nUpdateCounter[n_] := (globalCount = n)  (* No ! suffix *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nUpdateCounter![n_] := (globalCount = n)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("conventions", "side-effects");
+
+        repository.createRule(MISSING_LOCALIZATION_KEY)
+            .setName("Dynamic interfaces should use LocalizeVariables")
+            .setHtmlDescription(
+                "<p>Manipulate and DynamicModule should localize variables properly.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nManipulate[Plot[Sin[a x], {x, 0, 2Pi}], {a, 1, 5}]  (* 'a' may leak *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("scoping");
+
+        repository.createRule(EXPLICIT_GLOBAL_CONTEXT_KEY)
+            .setName("Global` context should not be used explicitly")
+            .setHtmlDescription(
+                "<p>Using Global`symbol explicitly is a code smell indicating namespace confusion.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nGlobal`myVariable = 5;\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nmyVariable = 5;  (* Implicit global *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("conventions");
+
+        // Data Structure Rules (5 rules)
+
+        repository.createRule(MISSING_TEMPORARY_CLEANUP_KEY)
+            .setName("Temporary files and directories should be cleaned up")
+            .setHtmlDescription(
+                "<p>CreateFile, CreateDirectory should use auto-deletion or manual cleanup.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\ntempFile = CreateFile[]  (* Auto-deleted at end of session *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("resource-management");
+
+        repository.createRule(NESTED_LISTS_INSTEAD_ASSOCIATION_KEY)
+            .setName("Use Association instead of nested indexed lists")
+            .setHtmlDescription(
+                "<p>Accessing data[[5]], data[[7]] repeatedly suggests Association would be clearer.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\ndata = {\"John\", 25, \"Engineer\", 50000};\nname = data[[1]]; salary = data[[4]];\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\ndata = <|\"name\" -> \"John\", \"age\" -> 25, \"salary\" -> 50000|>;\nname = data[\"name\"]; salary = data[\"salary\"];\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("readability", "maintainability");
+
+        repository.createRule(REPEATED_PART_EXTRACTION_KEY)
+            .setName("Repeated Part extractions should be destructured")
+            .setHtmlDescription(
+                "<p>Use destructuring to extract multiple parts at once.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nx = data[[1]]; y = data[[2]]; z = data[[3]];\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n{x, y, z} = data[[{1, 2, 3}]];\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("clarity");
+
+        repository.createRule(MISSING_MEMOIZATION_KEY)
+            .setName("Expensive pure computations should use memoization")
+            .setHtmlDescription(
+                "<p>Functions doing expensive calculations should cache results.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nf[x_] := f[x] = ExpensiveComputation[x]  (* Memoized *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance");
+
+        repository.createRule(STRINGJOIN_FOR_TEMPLATES_KEY)
+            .setName("Use StringTemplate instead of repeated StringJoin")
+            .setHtmlDescription(
+                "<p>Multiple <> operations are less readable than StringTemplate.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nmsg = \"User: \" <> name <> \", Age: \" <> ToString[age];\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nmsg = StringTemplate[\"User: `name`, Age: `age`\"][<|\"name\" -> name, \"age\" -> age|>];\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("readability");
+
+        // Type & Value Error Rules (8 new bugs)
+
+        repository.createRule(MISSING_EMPTY_LIST_CHECK_KEY)
+            .setName("First, Last, and Part should check for empty lists")
+            .setHtmlDescription(
+                "<p>Using First, Last, Part on empty lists causes runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nresult = First[data]  (* Crashes if data == {} *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nresult = If[Length[data] > 0, First[data], defaultValue]\n</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "crash");
+
+        repository.createRule(MACHINE_PRECISION_IN_SYMBOLIC_KEY)
+            .setName("Avoid machine precision floats in symbolic calculations")
+            .setHtmlDescription(
+                "<p>Using 1.5 instead of 3/2 in exact calculations loses precision.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nSolve[x^2 == 2.0, x]  (* Machine precision contaminates result *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nSolve[x^2 == 2, x]  (* Exact *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("precision", "correctness");
+
+        repository.createRule(MISSING_FAILED_CHECK_KEY)
+            .setName("Check for $Failed after Import, Get, URLFetch operations")
+            .setHtmlDescription(
+                "<p>Operations like Import can return $Failed on error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\ndata = Import[\"file.csv\"];\nresult = Mean[data]  (* Crashes if Import failed *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\ndata = Import[\"file.csv\"];\nIf[data === $Failed, Return[$Failed]];\nresult = Mean[data]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "error-handling");
+
+        repository.createRule(ZERO_DENOMINATOR_KEY)
+            .setName("Division operations should guard against zero denominators")
+            .setHtmlDescription(
+                "<p>Symbolic division can produce ComplexInfinity if denominator is zero.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nresult = a / b  (* May produce ComplexInfinity *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nresult = If[b != 0, a / b, $Failed]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability");
+
+        repository.createRule(MISSING_MATRIX_DIMENSION_CHECK_KEY)
+            .setName("Matrix operations should validate compatible dimensions")
+            .setHtmlDescription(
+                "<p>Dot, Times on matrices with incompatible dimensions cause errors.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nIf[Dimensions[a][[2]] == Dimensions[b][[1]], a.b, $Failed]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reliability", "linear-algebra");
+
+        repository.createRule(INCORRECT_SET_IN_SCOPING_KEY)
+            .setName("Use proper assignment inside Module and Block")
+            .setHtmlDescription(
+                "<p>Using = instead of := in scoping constructs can cause evaluation issues.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nModule[{x = RandomReal[]}, ...]  (* Evaluated at definition time *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nModule[{x}, x = RandomReal[]; ...]  (* Evaluated at runtime *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("scoping", "evaluation");
+
+        repository.createRule(MISSING_HOLD_ATTRIBUTES_KEY)
+            .setName("Functions delaying evaluation should use Hold attributes")
+            .setHtmlDescription(
+                "<p>Functions that manipulate unevaluated expressions need HoldAll, HoldFirst, etc.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nSetAttributes[MyIf, HoldRest];\nMyIf[test_, true_, false_] := If[test, true, false]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("evaluation");
+
+        repository.createRule(EVALUATION_ORDER_ASSUMPTION_KEY)
+            .setName("Do not rely on implicit evaluation order")
+            .setHtmlDescription(
+                "<p>Mathematica evaluation order is not always left-to-right.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\n{i++, i++, i++}  (* Order not guaranteed *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("undefined-behavior");
+
+        // Data Handling Bug Rules (7 rules)
+
+        repository.createRule(INCORRECT_LEVEL_SPECIFICATION_KEY)
+            .setName("Map, Apply, Cases should use correct level specifications")
+            .setHtmlDescription(
+                "<p>Wrong level specifications cause silent failures or unexpected results.</p>" +
+                "<h2>Example</h2>" +
+                "<pre>\nMap[f, {{1, 2}, {3, 4}}]  (* Level 1 by default *)\nMap[f, {{1, 2}, {3, 4}}, {2}]  (* Level 2 *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("correctness");
+
+        repository.createRule(UNPACKING_PACKED_ARRAYS_KEY)
+            .setName("Avoid operations that unpack packed arrays")
+            .setHtmlDescription(
+                "<p>Operations like Append, Delete on packed arrays cause 10-100x slowdowns.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nDo[data = Append[data, i], {i, 1000}]  (* Unpacks repeatedly *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\ndata = Range[1000]  (* Stays packed *)\n</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("performance", "packed-arrays");
+
+        repository.createRule(MISSING_SPECIAL_CASE_HANDLING_KEY)
+            .setName("Handle special values: 0, Infinity, ComplexInfinity, Indeterminate")
+            .setHtmlDescription(
+                "<p>Functions should handle edge cases like division by zero, limits at infinity.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nf[x_] := f[x] = Which[\n  x === 0, 0,\n  x === Infinity, Infinity,\n  True, NormalComputation[x]\n]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("edge-cases");
+
+        repository.createRule(INCORRECT_ASSOCIATION_OPERATIONS_KEY)
+            .setName("Association operations differ from List operations")
+            .setHtmlDescription(
+                "<p>Join on Associations merges by keys, not concatenates like Lists.</p>" +
+                "<h2>Example</h2>" +
+                "<pre>\nJoin[<|a->1|>, <|a->2|>]  (* Result: <|a->2|>, not <|a->1, a->2|> *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("correctness", "associations");
+
+        repository.createRule(DATEOBJECT_VALIDATION_KEY)
+            .setName("Validate DateObject inputs for invalid dates")
+            .setHtmlDescription(
+                "<p>DateObject can accept invalid dates without errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\ndate = DateObject[{2024, 2, 30}]  (* Invalid date *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("validation");
+
+        repository.createRule(TOTAL_MEAN_ON_NON_NUMERIC_KEY)
+            .setName("Total, Mean should only operate on numeric data")
+            .setHtmlDescription(
+                "<p>Statistical functions on mixed or symbolic data produce unexpected results.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nMean[{1, 2, \"x\"}]  (* Produces symbolic result *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("correctness", "statistics");
+
+        repository.createRule(QUANTITY_UNIT_MISMATCH_KEY)
+            .setName("Quantity operations should have compatible units")
+            .setHtmlDescription(
+                "<p>Adding Quantity[5, \"Meters\"] + Quantity[3, \"Seconds\"] produces errors.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nUnitConvert[Quantity[5, \"Meters\"] + Quantity[3, \"Centimeters\"], \"Meters\"]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("units", "correctness");
+
+        // Performance Rules (10 rules)
+
+        repository.createRule(LINEAR_SEARCH_INSTEAD_LOOKUP_KEY)
+            .setName("Use Association or Dispatch for lookups instead of Select")
+            .setHtmlDescription(
+                "<p>Select[list, #[[1]] == key &] is O(n), Association lookup is O(1).</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nFirst@Select[data, #[[\"id\"]] == targetId &]  (* O(n) *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nassoc = AssociationThread[data[[All, \"id\"]] -> data];\nassoc[targetId]  (* O(1) *)\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "algorithmic");
+
+        repository.createRule(REPEATED_CALCULATIONS_KEY)
+            .setName("Expensive expressions should not be recalculated in loops")
+            .setHtmlDescription(
+                "<p>Hoist invariant calculations out of loops.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nDo[result += data[[i]] * ExpensiveFunc[], {i, n}]  (* Recalculates each time *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nconst = ExpensiveFunc[];\nDo[result += data[[i]] * const, {i, n}]\n</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance");
+
+        repository.createRule(POSITION_INSTEAD_PATTERN_KEY)
+            .setName("Use pattern matching instead of Position when possible")
+            .setHtmlDescription(
+                "<p>Cases is often faster and clearer than Position + Part extraction.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\npositions = Position[data, _?EvenQ];\nresults = Extract[data, positions]\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nresults = Cases[data, _?EvenQ]\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "idiomatic");
+
+        repository.createRule(FLATTEN_TABLE_ANTIPATTERN_KEY)
+            .setName("Avoid Flatten[Table[...]] pattern")
+            .setHtmlDescription(
+                "<p>Use Catenate, Join, or vectorization instead of Flatten@Table.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nFlatten[Table[f[i], {i, n}]]  (* Creates intermediate list *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nCatenate[Table[f[i], {i, n}]]  (* More efficient *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance");
+
+        repository.createRule(MISSING_PARALLELIZATION_KEY)
+            .setName("Large independent iterations should use parallelization")
+            .setHtmlDescription(
+                "<p>Use ParallelTable, ParallelMap for CPU-bound independent tasks.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nParallelTable[ExpensiveFunc[i], {i, 10000}]  (* Uses all cores *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "parallelization");
+
+        repository.createRule(MISSING_SPARSE_ARRAY_KEY)
+            .setName("Use SparseArray for arrays with >80% zeros")
+            .setHtmlDescription(
+                "<p>Dense arrays waste memory and computation on zeros.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nmatrix = SparseArray[{{1,1}->5, {100,100}->3}, {100, 100}]  (* Efficient *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "memory");
+
+        repository.createRule(UNNECESSARY_TRANSPOSE_KEY)
+            .setName("Avoid repeatedly transposing data")
+            .setHtmlDescription(
+                "<p>Work column-wise or row-wise consistently instead of transposing back and forth.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nresult = Transpose[Map[f, Transpose[data]]]  (* Transpose twice *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance");
+
+        repository.createRule(DELETEDUPS_ON_LARGE_DATA_KEY)
+            .setName("DeleteDuplicates on large lists should use alternative methods")
+            .setHtmlDescription(
+                "<p>For lists >10,000 elements, use Association or Dataset for faster deduplication.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nKeys@GroupBy[largeList, Identity]  (* Faster than DeleteDuplicates *)\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance");
+
+        repository.createRule(REPEATED_STRING_PARSING_KEY)
+            .setName("Parsing the same string multiple times should be avoided")
+            .setHtmlDescription(
+                "<p>Cache parsed results instead of re-parsing.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nDo[result += ToExpression[str], {i, 1000}]  (* Parses 1000 times *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nexpr = ToExpression[str];\nDo[result += expr, {i, 1000}]\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance");
+
+        repository.createRule(MISSING_COMPILATION_TARGET_KEY)
+            .setName("Numerical code should use CompilationTarget->C")
+            .setHtmlDescription(
+                "<p>Compiled Mathematica code runs 10-100x faster with C compilation.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nCompile[{{x, _Real}}, x^2 + Sin[x], CompilationTarget -> \"C\"]\n</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "compilation");
+
+        // Security Vulnerability Rules (7 rules)
+
+        repository.createRule(TOEXPRESSION_ON_INPUT_KEY)
+            .setName("ToExpression on external input enables code injection")
+            .setHtmlDescription(
+                "<p>ToExpression[userInput] allows arbitrary code execution.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nresult = ToExpression[input]  (* CRITICAL VULNERABILITY *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nresult = Interpreter[\"Number\"][input]  (* Safe parsing *)\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li></ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "injection", "owasp-a03");
+
+        repository.createRule(UNSANITIZED_RUNPROCESS_KEY)
+            .setName("RunProcess with user input enables command injection")
+            .setHtmlDescription(
+                "<p>Shell command injection via RunProcess or Run with unsanitized input.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nRunProcess[{\"bash\", \"-c\", userInput}]  (* Command injection *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\n(* Validate and sanitize input first *)\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/78.html'>CWE-78</a> - OS Command Injection</li></ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "injection", "owasp-a03");
+
+        repository.createRule(MISSING_CLOUD_AUTH_KEY)
+            .setName("Cloud functions should have authentication and authorization")
+            .setHtmlDescription(
+                "<p>APIFunction and FormFunction without Permissions checks are publicly accessible.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nCloudDeploy[APIFunction[{}, DoSomething[]]]  (* No auth *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nCloudDeploy[APIFunction[{}, DoSomething[], Permissions -> \"Private\"]]\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/306.html'>CWE-306</a> - Missing Authentication</li></ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "authentication", "owasp-a01");
+
+        repository.createRule(HARDCODED_API_KEYS_KEY)
+            .setName("API keys and tokens should not be hardcoded")
+            .setHtmlDescription(
+                "<p>Hardcoded credentials in CloudDeploy, ServiceConnect expose secrets.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nServiceConnect[\"OpenAI\", \"APIKey\" -> \"sk-abc123...\"]  (* Exposed *)\n</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nServiceConnect[\"OpenAI\", \"APIKey\" -> SystemCredential[\"OpenAIKey\"]]\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/798.html'>CWE-798</a> - Hard-coded Credentials</li></ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "credentials", "owasp-a07");
+
+        repository.createRule(NEEDS_GET_UNTRUSTED_KEY)
+            .setName("Needs and Get should not load code from untrusted paths")
+            .setHtmlDescription(
+                "<p>Loading packages from user-controlled paths enables code execution.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nGet[userProvidedPath]  (* Code injection *)\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/829.html'>CWE-829</a> - Untrusted Control Sphere</li></ul>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "code-injection");
+
+        repository.createRule(EXPOSING_SENSITIVE_DATA_KEY)
+            .setName("Cloud functions should not expose sensitive system information")
+            .setHtmlDescription(
+                "<p>Deploying functions that return $UserName, $MachineName, credentials leaks information.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\nCloudDeploy[APIFunction[{}, $UserName]]  (* Leaks username *)\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/200.html'>CWE-200</a> - Information Exposure</li></ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "information-disclosure");
+
+        repository.createRule(MISSING_FORMFUNCTION_VALIDATION_KEY)
+            .setName("FormFunction inputs should be validated and sanitized")
+            .setHtmlDescription(
+                "<p>Cloud forms accepting arbitrary input without validation enable attacks.</p>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\nFormFunction[{\"age\" -> Restricted[\"Integer\", {1, 120}]}, DoSomething]\n</pre>" +
+                "<h2>See</h2>" +
+                "<ul><li><a href='https://cwe.mitre.org/data/definitions/20.html'>CWE-20</a> - Improper Input Validation</li></ul>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .setTags("cwe", "validation", "owasp-a03");
 
         repository.done();
     }

@@ -82,6 +82,33 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern KEYWORD_PATTERN = Pattern.compile("\\b(?:Module|Block|With|Table|Map|Apply|Function|If|While|Do|For|Return|Print|Plot|Solve)\\s*\\[");
     private static final Pattern OPERATOR_PATTERN_OPTIMIZED = Pattern.compile("[-+*/^]\\s*[a-zA-Z0-9]");
 
+    // Phase 4 patterns (performance optimization - pre-compiled)
+    private static final Pattern OVERCOMPLEX_PATTERN_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*(_\\w*\\s*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*)\\]");
+    private static final Pattern MIXED_RULE_TYPES_PATTERN = Pattern.compile("\\{[^}]*->\\s*[^}]*:>[^}]*\\}|\\{[^}]*:>\\s*[^}]*->[^}]*\\}");
+    private static final Pattern DOWNVALUES_FUNC_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*_[^\\]]*\\]\\s*:=");
+    private static final Pattern PATTERN_TEST_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*_[a-zA-Z]\\w*[^\\]]*)\\]\\s*:=");
+    private static final Pattern PURE_FUNC_COMPLEX_PATTERN = Pattern.compile("#\\d+[^&]*#\\d+[^&]*#\\d+[^&]*&");
+    private static final Pattern OPERATOR_PRECEDENCE_PATTERN = Pattern.compile("[a-zA-Z]\\w*\\s*/[@/@]\\s*[a-zA-Z]\\w*\\s*[@/][@/]");
+    private static final Pattern WINDOWS_PATH_PATTERN = Pattern.compile("\"[C-Z]:\\\\\\\\[^\"]+\"");
+    private static final Pattern UNIX_PATH_PATTERN = Pattern.compile("\"/(?:Users|home)/[^\"]+\"");
+    private static final Pattern RETURN_TYPE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=\\s*(\\{|<\\|)");
+    private static final Pattern GLOBAL_MODIFY_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=[^;]*:?=");
+    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*\\[");
+    private static final Pattern GLOBAL_CONTEXT_PATTERN = Pattern.compile("Global`[a-zA-Z]\\w*");
+    private static final Pattern PART_ACCESS_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\[\\[(\\d+)\\]\\]");
+    private static final Pattern REPEATED_PART_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\]");
+    private static final Pattern RECURSIVE_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=[^;]*\\1\\s*\\[");
+    private static final Pattern STRINGJOIN_PATTERN = Pattern.compile("[^<]*<>[^<]*<>[^<]*<>");
+    private static final Pattern SELECT_LINEAR_PATTERN = Pattern.compile("Select\\s*\\[[^,]+,\\s*#\\[\\[[^\\]]+\\]\\]\\s*==");
+    private static final Pattern REPEATED_CALC_PATTERN = Pattern.compile("Do\\s*\\[[^,]*([A-Z][a-zA-Z0-9]+)\\s*\\[[^\\]]*\\][^,]*,\\s*\\{([a-z]\\w*),");
+    private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*\\[[^\\]]+\\]");
+    private static final Pattern FLATTEN_TABLE_PATTERN = Pattern.compile("Flatten\\s*\\[\\s*Table\\s*\\[");
+    private static final Pattern LARGE_TABLE_PATTERN = Pattern.compile("Table\\s*\\[[^,]+,\\s*\\{[^,]+,\\s*\\d{4,}");
+    private static final Pattern ZERO_TABLE_PATTERN = Pattern.compile("Table\\s*\\[\\s*0\\s*,\\s*\\{[^,]+,\\s*(\\d+)");
+    private static final Pattern DOUBLE_TRANSPOSE_PATTERN = Pattern.compile("Transpose\\s*\\[[^\\[]*Transpose\\s*\\[");
+    private static final Pattern TOEXPRESSION_LOOP_PATTERN = Pattern.compile("(?:Do|Table|While)\\s*\\[[^\\[]*ToExpression\\s*\\[");
+    private static final Pattern COMPILE_PATTERN = Pattern.compile("Compile\\s*\\[");
+
     /**
      * Detect magic numbers in code.
      */
@@ -745,6 +772,573 @@ public class CodeSmellDetector extends BaseDetector {
             }
         } catch (Exception e) {
             LOG.warn("Skipping missing return detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    // ===== PHASE 4: NEW CODE SMELL DETECTORS (18 + 10 performance = 28 methods) =====
+
+    /**
+     * Detect overly complex pattern definitions.
+     */
+    public void detectOvercomplexPatterns(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Detect patterns with more than 5 alternatives (|)
+            Matcher matcher = OVERCOMPLEX_PATTERN_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                String patternDef = matcher.group(2);
+                int alternativeCount = patternDef.split("\\|").length;
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.OVERCOMPLEX_PATTERNS_KEY,
+                    String.format("Pattern has %d alternatives (max 5 recommended).", alternativeCount));
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping overcomplex patterns detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect inconsistent use of Rule (->) and RuleDelayed (:>).
+     */
+    public void detectInconsistentRuleTypes(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Look for {} or <||> containing mixed -> and :>
+            Matcher matcher = MIXED_RULE_TYPES_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.INCONSISTENT_RULE_TYPES_KEY,
+                    "Mixing Rule (->) and RuleDelayed (:>) in same list is confusing.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping inconsistent rule types detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing function attributes.
+     */
+    public void detectMissingFunctionAttributes(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Check if there are public functions but no SetAttributes calls
+            if (!content.contains("SetAttributes")) {
+                Matcher matcher = PUBLIC_FUNCTION_PATTERN.matcher(content);
+                int count = 0;
+                while (matcher.find() && count < 5) {  // Report once if multiple functions
+                    count++;
+                }
+                if (count > 0) {
+                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_FUNCTION_ATTRIBUTES_KEY,
+                        "Public functions should consider using attributes (Listable, Protected, etc.).");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing function attributes detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing documentation for complex pattern-based functions.
+     */
+    public void detectMissingDownValuesDoc(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Count functions with multiple definitions (same name appearing multiple times with patterns)
+            if (!content.contains("::usage")) {
+                Matcher matcher = DOWNVALUES_FUNC_PATTERN.matcher(content);
+                Map<String, Integer> funcCounts = new java.util.HashMap<>();
+
+                while (matcher.find()) {
+                    String funcName = matcher.group(1);
+                    funcCounts.put(funcName, funcCounts.getOrDefault(funcName, 0) + 1);
+                }
+
+                for (Map.Entry<String, Integer> entry : funcCounts.entrySet()) {
+                    if (entry.getValue() >= 3) {
+                        reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_DOWNVALUES_DOC_KEY,
+                            String.format("Function '%s' has %d pattern definitions but no ::usage message.",
+                                entry.getKey(), entry.getValue()));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing DownValues documentation detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect functions accepting any input without pattern tests.
+     */
+    public void detectMissingPatternTestValidation(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find functions with generic patterns (x_) but no pattern test (?...Q)
+            Matcher matcher = PATTERN_TEST_FUNC_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                String params = matcher.group(2);
+                // Check if parameters have pattern tests
+                if (!params.contains("?") && !params.contains("_Integer") && !params.contains("_Real") &&
+                    !params.contains("_String") && !params.contains("_List")) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_PATTERN_TEST_VALIDATION_KEY,
+                        String.format("Function '%s' should validate input types with pattern tests (?NumericQ, ?ListQ, etc.).",
+                            matcher.group(1)));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing pattern test validation detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect excessive use of pure functions (#, #2, #3).
+     */
+    public void detectExcessivePureFunctions(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find pure functions with #1, #2, #3 and complex expressions
+            Matcher matcher = PURE_FUNC_COMPLEX_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EXCESSIVE_PURE_FUNCTIONS_KEY,
+                    "Complex pure function with multiple # slots should use Function[{x, y, z}, ...] for clarity.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping excessive pure functions detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing operator precedence clarity.
+     */
+    public void detectMissingOperatorPrecedence(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find expressions with mixed /@, @@, //@ without parentheses
+            Matcher matcher = OPERATOR_PRECEDENCE_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPERATOR_PRECEDENCE_KEY,
+                    "Complex operator expression should use parentheses for clarity.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing operator precedence detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect hardcoded file paths.
+     */
+    public void detectHardcodedFilePaths(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find absolute paths
+            Matcher winMatcher = WINDOWS_PATH_PATTERN.matcher(content);
+            while (winMatcher.find()) {
+                int line = calculateLineNumber(content, winMatcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.HARDCODED_FILE_PATHS_KEY,
+                    "Use FileNameJoin and $HomeDirectory instead of hardcoded paths.");
+            }
+
+            Matcher unixMatcher = UNIX_PATH_PATTERN.matcher(content);
+            while (unixMatcher.find()) {
+                int line = calculateLineNumber(content, unixMatcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.HARDCODED_FILE_PATHS_KEY,
+                    "Use FileNameJoin and $HomeDirectory instead of hardcoded paths.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping hardcoded file paths detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect inconsistent return types (heuristic-based).
+     */
+    public void detectInconsistentReturnTypes(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find functions with same name but different return patterns
+            Matcher matcher = RETURN_TYPE_PATTERN.matcher(content);
+            Map<String, Set<String>> funcReturns = new java.util.HashMap<>();
+
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                String returnType = matcher.group(2).equals("{") ? "List" : "Association";
+                funcReturns.computeIfAbsent(funcName, k -> new HashSet<>()).add(returnType);
+            }
+
+            for (Map.Entry<String, Set<String>> entry : funcReturns.entrySet()) {
+                if (entry.getValue().size() > 1) {
+                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.INCONSISTENT_RETURN_TYPES_KEY,
+                        String.format("Function '%s' returns inconsistent types: %s",
+                            entry.getKey(), entry.getValue()));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping inconsistent return types detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing error messages.
+     */
+    public void detectMissingErrorMessages(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if (!content.contains("::") || !content.contains("Message[")) {
+                // Has public functions but no error messages
+                Matcher matcher = PUBLIC_FUNCTION_PATTERN.matcher(content);
+                if (matcher.find()) {
+                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_ERROR_MESSAGES_KEY,
+                        "Custom functions should define error messages for better usability.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing error messages detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect global state modification without naming convention.
+     */
+    public void detectGlobalStateModification(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find functions that assign to variables outside their parameters but don't end with !
+            Matcher matcher = GLOBAL_MODIFY_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                if (!funcName.endsWith("!") && !funcName.contains("Set") && !funcName.contains("Update")) {
+                    String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 50, content.length()));
+                    if (snippet.contains("=") && !snippet.contains("Module[") && !snippet.contains("Block[")) {
+                        int line = calculateLineNumber(content, matcher.start());
+                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.GLOBAL_STATE_MODIFICATION_KEY,
+                            String.format("Function '%s' modifies state but lacks ! suffix naming convention.", funcName));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping global state modification detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing localization in dynamic interfaces.
+     */
+    public void detectMissingLocalization(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if (content.contains("Manipulate[") && !content.contains("LocalizeVariables")) {
+                Matcher matcher = MANIPULATE_PATTERN.matcher(content);
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_LOCALIZATION_KEY,
+                        "Manipulate should consider using LocalizeVariables to prevent variable leakage.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing localization detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect explicit Global` context usage.
+     */
+    public void detectExplicitGlobalContext(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if (content.contains("Global`")) {
+                Matcher matcher = GLOBAL_CONTEXT_PATTERN.matcher(content);
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.EXPLICIT_GLOBAL_CONTEXT_KEY,
+                        "Using Global` explicitly is a code smell indicating namespace confusion.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping explicit global context detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing temporary file cleanup.
+     */
+    public void detectMissingTemporaryCleanup(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if ((content.contains("CreateFile[") || content.contains("CreateDirectory[")) &&
+                !content.contains("DeleteFile") && !content.contains("DeleteDirectory")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_TEMPORARY_CLEANUP_KEY,
+                    "Temporary files/directories should be cleaned up or use auto-deletion.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing temporary cleanup detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect nested lists where Association would be clearer.
+     */
+    public void detectNestedListsInsteadAssociation(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find repeated indexed access patterns like data[[1]], data[[5]], data[[7]]
+            Matcher matcher = PART_ACCESS_PATTERN.matcher(content);
+            Map<String, Set<Integer>> indexAccess = new java.util.HashMap<>();
+
+            while (matcher.find()) {
+                String varName = matcher.group(1);
+                int index = Integer.parseInt(matcher.group(2));
+                indexAccess.computeIfAbsent(varName, k -> new HashSet<>()).add(index);
+            }
+
+            for (Map.Entry<String, Set<Integer>> entry : indexAccess.entrySet()) {
+                if (entry.getValue().size() >= 3) {
+                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.NESTED_LISTS_INSTEAD_ASSOCIATION_KEY,
+                        String.format("Variable '%s' accessed by multiple indices (%d times) - consider using Association.",
+                            entry.getKey(), entry.getValue().size()));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping nested lists detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect repeated Part extractions.
+     */
+    public void detectRepeatedPartExtraction(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find multiple consecutive [[n]] accesses
+            Matcher matcher = REPEATED_PART_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                if (matcher.group(1).equals(matcher.group(2)) && matcher.group(2).equals(matcher.group(3))) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.REPEATED_PART_EXTRACTION_KEY,
+                        "Multiple Part extractions should use destructuring for clarity.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping repeated Part extraction detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing memoization (simple heuristic).
+     */
+    public void detectMissingMemoization(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Look for recursive functions without memoization pattern f[x_] := f[x] = ...
+            Matcher matcher = RECURSIVE_FUNC_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 100, content.length()));
+                if (!snippet.matches(".*:=.*=.*")) {  // Check for memoization pattern
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_MEMOIZATION_KEY,
+                        String.format("Recursive function '%s' should consider memoization for performance.", matcher.group(1)));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing memoization detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect StringJoin used for templates.
+     */
+    public void detectStringJoinForTemplates(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find multiple <> operations in one expression
+            Matcher matcher = STRINGJOIN_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.STRINGJOIN_FOR_TEMPLATES_KEY,
+                    "Multiple StringJoin operations should use StringTemplate for readability.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping StringJoin for templates detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    // ===== PERFORMANCE DETECTION METHODS (10 methods) =====
+
+    /**
+     * Detect linear search when lookup table would be better.
+     */
+    public void detectLinearSearchInsteadLookup(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Select[list, #[[...]] == ... &] patterns
+            Matcher matcher = SELECT_LINEAR_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.LINEAR_SEARCH_INSTEAD_LOOKUP_KEY,
+                    "Use Association or Dispatch for O(1) lookup instead of Select (O(n) linear search).");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping linear search detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect repeated expensive calculations in loops.
+     */
+    public void detectRepeatedCalculations(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Do/Table/While with function calls that don't depend on loop variable
+            Matcher matcher = REPEATED_CALC_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                String funcCall = matcher.group(1);
+                String loopVar = matcher.group(2);
+                // Check if function call doesn't contain loop variable
+                if (!funcCall.contains(loopVar)) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.REPEATED_CALCULATIONS_KEY,
+                        "Expensive expression calculated repeatedly in loop should be hoisted out.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping repeated calculations detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect Position used instead of pattern matching.
+     */
+    public void detectPositionInsteadPattern(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Position followed by Extract/Part
+            if (content.contains("Position[") && (content.contains("Extract[") || content.contains("Part["))) {
+                Matcher matcher = POSITION_PATTERN.matcher(content);
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.POSITION_INSTEAD_PATTERN_KEY,
+                        "Consider using Cases or Select with pattern matching instead of Position + Extract.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping Position detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect Flatten[Table[...]] antipattern.
+     */
+    public void detectFlattenTableAntipattern(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = FLATTEN_TABLE_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.FLATTEN_TABLE_ANTIPATTERN_KEY,
+                    "Use Catenate, Join, or vectorization instead of Flatten[Table[...]].");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping Flatten Table antipattern detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing parallelization opportunities.
+     */
+    public void detectMissingParallelization(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find large Table operations without Parallel
+            if (!content.contains("Parallel")) {
+                Matcher matcher = LARGE_TABLE_PATTERN.matcher(content);
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_PARALLELIZATION_KEY,
+                        "Large independent iterations should use ParallelTable or ParallelMap.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing parallelization detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing SparseArray usage.
+     */
+    public void detectMissingSparseArray(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Heuristic: large array initialization with mostly zeros
+            Matcher matcher = ZERO_TABLE_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int size = Integer.parseInt(matcher.group(1));
+                if (size > 100) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_SPARSE_ARRAY_KEY,
+                        "Large arrays with many zeros should use SparseArray for efficiency.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing SparseArray detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect unnecessary Transpose operations.
+     */
+    public void detectUnnecessaryTranspose(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find Transpose[...Transpose[...]]
+            Matcher matcher = DOUBLE_TRANSPOSE_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.UNNECESSARY_TRANSPOSE_KEY,
+                    "Repeated Transpose operations detected - work consistently row-wise or column-wise.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping unnecessary Transpose detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect DeleteDuplicates on large data.
+     */
+    public void detectDeleteDuplicatesOnLargeData(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if (content.contains("DeleteDuplicates[")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.DELETEDUPS_ON_LARGE_DATA_KEY,
+                    "For large lists, consider using Keys@GroupBy[list, Identity] instead of DeleteDuplicates.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping DeleteDuplicates detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect repeated string parsing.
+     */
+    public void detectRepeatedStringParsing(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find ToExpression in loops
+            Matcher matcher = TOEXPRESSION_LOOP_PATTERN.matcher(content);
+
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.REPEATED_STRING_PARSING_KEY,
+                    "Parsing the same string repeatedly in loop - cache the result.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping repeated string parsing detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing CompilationTarget in Compile.
+     */
+    public void detectMissingCompilationTarget(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if (content.contains("Compile[") && !content.contains("CompilationTarget")) {
+                Matcher matcher = COMPILE_PATTERN.matcher(content);
+                while (matcher.find()) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_COMPILATION_TARGET_KEY,
+                        "Compile should use CompilationTarget->\"C\" for 10-100x speedup.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping missing compilation target detection due to error in file: {}", inputFile.filename());
         }
     }
 
