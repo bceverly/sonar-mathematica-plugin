@@ -2463,11 +2463,11 @@ The plugin has intelligent performance protections:
 
 **File Length Violations:**
 - Files >1,000 lines (configurable) are flagged with "File Length" violation
-- These files ARE fully analyzed up to 25,000 lines
+- These files ARE fully analyzed up to 35,000 lines
 
 **Performance Protection:**
-- Files >25,000 lines: Reported for File Length violation, then skip detailed analysis
-- Files >1MB: Skip detailed analysis (too large to process efficiently)
+- Files >35,000 lines: Reported for File Length violation, then skip detailed analysis
+- Files >2MB: Skip detailed analysis (too large to process efficiently)
 
 This ensures:
 - All large files are reported for review

@@ -77,16 +77,16 @@ public class MathematicaRulesSensor implements Sensor {
             detectLongFile(context, inputFile);
 
             // Skip further analysis for extremely large files (performance)
-            if (inputFile.lines() > 25000) {
-                LOG.info("Skipping further analysis of large file (>25000 lines): {}", inputFile);
+            if (inputFile.lines() > 35000) {
+                LOG.info("Skipping further analysis of large file (>35000 lines): {}", inputFile);
                 return;
             }
 
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
 
-            // Skip files larger than 1MB
-            if (content.length() > 1_000_000) {
-                LOG.info("Skipping further analysis of large file (>1MB): {}", inputFile);
+            // Skip files larger than 2MB
+            if (content.length() > 2_000_000) {
+                LOG.info("Skipping further analysis of large file (>2MB): {}", inputFile);
                 return;
             }
 
