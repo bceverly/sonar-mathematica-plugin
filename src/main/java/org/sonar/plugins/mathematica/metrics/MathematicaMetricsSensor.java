@@ -73,11 +73,9 @@ public class MathematicaMetricsSensor implements Sensor {
 
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         try {
-            // INCREMENTAL ANALYSIS: Skip unchanged files for performance
-            if (inputFile.status() == InputFile.Status.SAME) {
-                LOG.debug("Skipping metrics for unchanged file: {}", inputFile);
-                return;
-            }
+            // NOTE: Incremental analysis removed. SonarQube's file status doesn't detect
+            // plugin changes, causing metrics to skip files even when calculation logic changes.
+            // Always calculate metrics for consistency and correctness.
 
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
 

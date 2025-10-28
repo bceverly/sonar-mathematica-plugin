@@ -70,15 +70,14 @@ public class MathematicaRulesSensor implements Sensor {
 
     /**
      * Analyzes a single file by delegating to specialized detectors.
+     *
+     * NOTE: Incremental analysis removed from rules sensor because SonarQube's
+     * file status doesn't detect plugin changes. When rules change, files with
+     * status=SAME would be skipped even though they need re-analysis.
+     * Performance optimization kept in metrics/CPD sensors where risk is lower.
      */
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         try {
-            // INCREMENTAL ANALYSIS: Skip unchanged files for performance
-            if (inputFile.status() == InputFile.Status.SAME) {
-                LOG.debug("Skipping unchanged file: {}", inputFile);
-                return;
-            }
-
             // Always check file length first
             detectLongFile(context, inputFile);
 

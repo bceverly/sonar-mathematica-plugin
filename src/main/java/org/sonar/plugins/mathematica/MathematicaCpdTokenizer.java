@@ -51,11 +51,9 @@ public class MathematicaCpdTokenizer implements Sensor {
 
     private void tokenize(SensorContext context, InputFile inputFile) {
         try {
-            // INCREMENTAL ANALYSIS: Skip unchanged files for performance
-            if (inputFile.status() == InputFile.Status.SAME) {
-                LOG.debug("Skipping CPD for unchanged file: {}", inputFile);
-                return;
-            }
+            // NOTE: Incremental analysis removed. SonarQube's file status doesn't detect
+            // plugin changes, causing CPD to skip files even when tokenization logic changes.
+            // This caused duplication detection to silently fail after plugin updates.
 
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
 
