@@ -67,9 +67,50 @@ public class MathematicaRulesSensor implements Sensor {
             )
         );
 
-        for (InputFile inputFile : inputFiles) {
-            analyzeFile(context, inputFile);
-        }
+        // Count total files and log start
+        List<InputFile> fileList = new ArrayList<>();
+        inputFiles.forEach(fileList::add);
+        int totalFiles = fileList.size();
+
+        LOG.info("Starting analysis of {} Mathematica file(s)...", totalFiles);
+        LOG.info("Using parallel processing with {} threads", Runtime.getRuntime().availableProcessors());
+        LOG.info("Progress will be reported every 100 files");
+
+        long startTime = System.currentTimeMillis();
+        java.util.concurrent.atomic.AtomicInteger processedCount = new java.util.concurrent.atomic.AtomicInteger(0);
+        int progressInterval = 100; // Log every 100 files
+
+        // Use parallel stream for faster processing
+        fileList.parallelStream().forEach(inputFile -> {
+            try {
+                analyzeFile(context, inputFile);
+                int count = processedCount.incrementAndGet();
+
+                // Log progress every 100 files (thread-safe)
+                if (count % progressInterval == 0) {
+                    long elapsedMs = System.currentTimeMillis() - startTime;
+                    double filesPerSec = count / (elapsedMs / 1000.0);
+                    int remainingFiles = totalFiles - count;
+                    long estimatedRemainingMs = (long)(remainingFiles / filesPerSec * 1000);
+
+                    LOG.info("Progress: {}/{} files analyzed ({} %) | Speed: {} files/sec | Est. remaining: {} min",
+                        count,
+                        totalFiles,
+                        (int)((count * 100.0) / totalFiles),
+                        String.format("%.1f", filesPerSec),
+                        estimatedRemainingMs / 60000);
+                }
+            } catch (Exception e) {
+                LOG.error("Error processing file: {}", inputFile.filename(), e);
+            }
+        });
+
+        long totalTimeMs = System.currentTimeMillis() - startTime;
+        double avgFilesPerSec = totalFiles / (totalTimeMs / 1000.0);
+        LOG.info("Analysis complete: {} files analyzed in {} seconds ({} files/sec)",
+            totalFiles,
+            totalTimeMs / 1000,
+            String.format("%.1f", avgFilesPerSec));
     }
 
     /**
@@ -82,12 +123,17 @@ public class MathematicaRulesSensor implements Sensor {
      */
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         try {
+            // Skip very small files quickly (likely empty or trivial)
+            if (inputFile.lines() < 3) {
+                return;
+            }
+
             // Always check file length first
             detectLongFile(context, inputFile);
 
             // Skip further analysis for extremely large files (performance)
             if (inputFile.lines() > 35000) {
-                LOG.info("Skipping further analysis of large file (>35000 lines): {}", inputFile);
+                LOG.debug("Skipping further analysis of large file (>35000 lines): {}", inputFile);
                 return;
             }
 
@@ -95,7 +141,12 @@ public class MathematicaRulesSensor implements Sensor {
 
             // Skip files larger than 2MB
             if (content.length() > 2_000_000) {
-                LOG.info("Skipping further analysis of large file (>2MB): {}", inputFile);
+                LOG.debug("Skipping further analysis of large file (>2MB): {}", inputFile);
+                return;
+            }
+
+            // Skip empty or whitespace-only files
+            if (content.trim().isEmpty()) {
                 return;
             }
 
