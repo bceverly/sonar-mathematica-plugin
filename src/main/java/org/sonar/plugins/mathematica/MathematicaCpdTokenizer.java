@@ -51,6 +51,12 @@ public class MathematicaCpdTokenizer implements Sensor {
 
     private void tokenize(SensorContext context, InputFile inputFile) {
         try {
+            // INCREMENTAL ANALYSIS: Skip unchanged files for performance
+            if (inputFile.status() == InputFile.Status.SAME) {
+                LOG.debug("Skipping CPD for unchanged file: {}", inputFile);
+                return;
+            }
+
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
 
             NewCpdTokens cpdTokens = context.newCpdTokens().onFile(inputFile);

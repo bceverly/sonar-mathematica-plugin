@@ -73,6 +73,12 @@ public class MathematicaRulesSensor implements Sensor {
      */
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         try {
+            // INCREMENTAL ANALYSIS: Skip unchanged files for performance
+            if (inputFile.status() == InputFile.Status.SAME) {
+                LOG.debug("Skipping unchanged file: {}", inputFile);
+                return;
+            }
+
             // Always check file length first
             detectLongFile(context, inputFile);
 
