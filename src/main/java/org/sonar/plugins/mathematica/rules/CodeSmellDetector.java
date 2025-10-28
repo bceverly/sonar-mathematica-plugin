@@ -108,6 +108,12 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern DOUBLE_TRANSPOSE_PATTERN = Pattern.compile("Transpose\\s*\\[[^\\[]*Transpose\\s*\\[");
     private static final Pattern TOEXPRESSION_LOOP_PATTERN = Pattern.compile("(?:Do|Table|While)\\s*\\[[^\\[]*ToExpression\\s*\\[");
     private static final Pattern COMPILE_PATTERN = Pattern.compile("Compile\\s*\\[");
+    // Additional patterns for original rules (optimized - pre-compiled for performance)
+    private static final Pattern SIMPLE_CHECK_PATTERN = Pattern.compile("Check\\s*\\[[^,]+,\\s*(?:\\$Failed|Null|None)\\s*\\]");
+    private static final Pattern QUIET_PATTERN = Pattern.compile("Quiet\\s*\\[");
+    private static final Pattern IF_PATTERN = Pattern.compile("If\\s*\\[([^\\[]+),\\s*([^,]+),\\s*([^\\]]+)\\]");
+    private static final Pattern FUNCTION_WITH_IF_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=\\s*(?:Module|Block)?\\s*\\[[^\\]]*If\\[");
+
 
     /**
      * Detect magic numbers in code.
@@ -189,16 +195,16 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectEmptyCatchBlocks(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern simpleCheckPattern = Pattern.compile("Check\\s*\\[[^,]+,\\s*(?:\\$Failed|Null|None)\\s*\\]");
-            Matcher matcher = simpleCheckPattern.matcher(content);
+            Matcher matcher = SIMPLE_CHECK_PATTERN.matcher(content);
+            matcher = SIMPLE_CHECK_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
                     "Empty error handling - consider logging or handling the error.");
             }
 
-            Pattern quietPattern = Pattern.compile("Quiet\\s*\\[");
-            matcher = quietPattern.matcher(content);
+            matcher = QUIET_PATTERN.matcher(content);
+            matcher = QUIET_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
@@ -394,8 +400,8 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectIdenticalBranches(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern ifPattern = Pattern.compile("If\\s*\\[([^\\[]+),\\s*([^,]+),\\s*([^\\]]+)\\]");
-            Matcher matcher = ifPattern.matcher(content);
+            Matcher matcher = IF_PATTERN.matcher(content);
+            matcher = IF_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String trueBranch = matcher.group(2).trim();
@@ -756,8 +762,7 @@ public class CodeSmellDetector extends BaseDetector {
         try {
             // OPTIMIZED: Use contains pre-check
             if (content.contains("If[") || content.contains("Which[")) {
-                Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=\\s*(?:Module|Block)?\\s*\\[[^\\]]*If\\[");
-                Matcher matcher = pattern.matcher(content);
+                Matcher matcher = FUNCTION_WITH_IF_PATTERN.matcher(content);
 
                 while (matcher.find()) {
                     String functionBody = content.substring(matcher.start(),

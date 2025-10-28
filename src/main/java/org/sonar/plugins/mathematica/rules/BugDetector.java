@@ -66,6 +66,26 @@ public class BugDetector extends BaseDetector {
         "(?:Do|While|For)\\s*\\[[^\\]]*?\\w+\\[[^\\]]+\\]\\s*="
     );
 
+    // Phase 4 Bug patterns (optimized - pre-compiled for performance)
+    private static final Pattern OFF_BY_ONE_PATTERN = Pattern.compile(
+        "Do\\s*\\[[^,]+,\\s*\\{\\s*\\w+,\\s*(0|Length\\[[^\\]]+\\]\\s*\\+\\s*1)"
+    );
+    private static final Pattern BLOCK_WITH_ASSIGNMENT_PATTERN = Pattern.compile("Block\\s*\\[\\s*\\{[^}]*=");
+    private static final Pattern FIRST_LAST_PATTERN = Pattern.compile("(?:First|Last)\\s*\\[([a-zA-Z]\\w*)\\]");
+    private static final Pattern SYMBOLIC_WITH_FLOAT_PATTERN = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*\\[[^\\]]*\\d+\\.\\d+");
+    private static final Pattern ASSIGNMENT_FROM_IMPORT_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*(?:Import|Get|URLFetch)\\s*\\[");
+    private static final Pattern DIVISION_VARIABLES_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*/\\s*([a-zA-Z]\\w*)");
+    private static final Pattern DOT_OPERATION_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\.\\s*([a-zA-Z]\\w*)");
+    private static final Pattern SCOPING_WITH_ASSIGNMENT_PATTERN = Pattern.compile("(?:Module|Block)\\s*\\[\\s*\\{[^}]*=");
+    private static final Pattern HOLD_ATTR_PATTERN = Pattern.compile("\\{[^}]*\\+\\+[^}]*\\+\\+[^}]*\\}");
+    private static final Pattern LEVEL_SPEC_PATTERN = Pattern.compile("(?:Map|Apply|Cases)\\s*\\[[^,]+,\\s*[^,]+,\\s*\\{-?\\d+\\}");
+    private static final Pattern LOOP_WITH_MUTATION_PATTERN = Pattern.compile("(?:Do|While|For)\\s*\\[[^\\[]*(?:Append|Prepend|Delete)\\s*\\[");
+    private static final Pattern FUNCTION_DEF_GENERAL_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
+    private static final Pattern ASSOCIATION_JOIN_PATTERN = Pattern.compile("Join\\s*\\[\\s*<\\|");
+    private static final Pattern DATE_OBJECT_PATTERN = Pattern.compile("DateObject\\s*\\[\\s*\\{(\\d+),\\s*(\\d+),\\s*(\\d+)");
+    private static final Pattern STATS_ON_VAR_PATTERN = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*\\[([a-zA-Z]\\w*)\\]");
+    private static final Pattern QUANTITY_MISMATCH_PATTERN = Pattern.compile("Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]\\s*[+\\-]\\s*Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]");
+
     /**
      * Detect potential division by zero.
      */
@@ -326,10 +346,7 @@ public class BugDetector extends BaseDetector {
      */
     public void detectOffByOne(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern doPattern = Pattern.compile(
-                "Do\\s*\\[[^,]+,\\s*\\{\\s*\\w+,\\s*(0|Length\\[[^\\]]+\\]\\s*\\+\\s*1)"
-            );
-            Matcher matcher = doPattern.matcher(content);
+            Matcher matcher = OFF_BY_ONE_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String range = matcher.group(1);
@@ -490,8 +507,7 @@ public class BugDetector extends BaseDetector {
         try {
             // OPTIMIZED: Use contains pre-check
             if (content.contains("Block[{") && content.contains("=")) {
-                Pattern pattern = Pattern.compile("Block\\s*\\[\\s*\\{[^}]*=");
-                Matcher matcher = pattern.matcher(content);
+                Matcher matcher = BLOCK_WITH_ASSIGNMENT_PATTERN.matcher(content);
                 if (matcher.find()) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY,
@@ -552,8 +568,7 @@ public class BugDetector extends BaseDetector {
     public void detectMissingEmptyListCheck(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find First[, Last[, Part[ without prior Length check
-            Pattern pattern = Pattern.compile("(?:First|Last)\\s*\\[([a-zA-Z]\\w*)\\]");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = FIRST_LAST_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String varName = matcher.group(1);
@@ -577,8 +592,7 @@ public class BugDetector extends BaseDetector {
     public void detectMachinePrecisionInSymbolic(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Solve, DSolve, etc. with decimal numbers
-            Pattern pattern = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*\\[[^\\]]*\\d+\\.\\d+");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = SYMBOLIC_WITH_FLOAT_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -596,8 +610,7 @@ public class BugDetector extends BaseDetector {
     public void detectMissingFailedCheck(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Import/Get followed by usage without $Failed check
-            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*(?:Import|Get|URLFetch)\\s*\\[");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = ASSIGNMENT_FROM_IMPORT_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String varName = matcher.group(1);
@@ -621,8 +634,7 @@ public class BugDetector extends BaseDetector {
     public void detectZeroDenominator(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find division by variables without guards
-            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*/\\s*([a-zA-Z]\\w*)");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = DIVISION_VARIABLES_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String denominator = matcher.group(2);
@@ -646,8 +658,7 @@ public class BugDetector extends BaseDetector {
     public void detectMissingMatrixDimensionCheck(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Dot operations without dimension validation
-            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\.\\s*([a-zA-Z]\\w*)");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = DOT_OPERATION_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String mat1 = matcher.group(1);
@@ -671,8 +682,7 @@ public class BugDetector extends BaseDetector {
     public void detectIncorrectSetInScoping(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Module[{x = ...}] pattern (should be Module[{x}, x = ...])
-            Pattern pattern = Pattern.compile("(?:Module|Block)\\s*\\[\\s*\\{[^}]*=");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = SCOPING_WITH_ASSIGNMENT_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -705,8 +715,7 @@ public class BugDetector extends BaseDetector {
     public void detectEvaluationOrderAssumption(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find {i++, i++, i++} patterns
-            Pattern pattern = Pattern.compile("\\{[^}]*\\+\\+[^}]*\\+\\+[^}]*\\}");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = HOLD_ATTR_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -724,8 +733,7 @@ public class BugDetector extends BaseDetector {
     public void detectIncorrectLevelSpecification(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Map/Apply with explicit levels that might be wrong (heuristic)
-            Pattern pattern = Pattern.compile("(?:Map|Apply|Cases)\\s*\\[[^,]+,\\s*[^,]+,\\s*\\{-?\\d+\\}");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = LEVEL_SPEC_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -744,8 +752,7 @@ public class BugDetector extends BaseDetector {
         try {
             // Find Append/Prepend/Delete on arrays in loops
             if (content.contains("PackedArray") || content.contains("Range[") || content.contains("Table[")) {
-                Pattern pattern = Pattern.compile("(?:Do|While|For)\\s*\\[[^\\[]*(?:Append|Prepend|Delete)\\s*\\[");
-                Matcher matcher = pattern.matcher(content);
+            Matcher matcher = LOOP_WITH_MUTATION_PATTERN.matcher(content);
 
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
@@ -764,8 +771,7 @@ public class BugDetector extends BaseDetector {
     public void detectMissingSpecialCaseHandling(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find functions without handling for 0, Infinity, etc.
-            Pattern funcPattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
-            Matcher matcher = funcPattern.matcher(content);
+            Matcher matcher = FUNCTION_DEF_GENERAL_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String funcName = matcher.group(1);
@@ -791,8 +797,7 @@ public class BugDetector extends BaseDetector {
         try {
             // Find Join on Associations (works differently than Lists)
             if (content.contains("<|") && content.contains("Join[")) {
-                Pattern pattern = Pattern.compile("Join\\s*\\[\\s*<\\|");
-                Matcher matcher = pattern.matcher(content);
+                Matcher matcher = ASSOCIATION_JOIN_PATTERN.matcher(content);
 
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
@@ -811,8 +816,7 @@ public class BugDetector extends BaseDetector {
     public void detectDateObjectValidation(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find DateObject with hardcoded dates
-            Pattern pattern = Pattern.compile("DateObject\\s*\\[\\s*\\{(\\d+),\\s*(\\d+),\\s*(\\d+)");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = DATE_OBJECT_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 int month = Integer.parseInt(matcher.group(2));
@@ -834,8 +838,7 @@ public class BugDetector extends BaseDetector {
     public void detectTotalMeanOnNonNumeric(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Mean/Total without NumericQ checks
-            Pattern pattern = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*\\[([a-zA-Z]\\w*)\\]");
-            Matcher matcher = pattern.matcher(content);
+            Matcher matcher = STATS_ON_VAR_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String varName = matcher.group(1);
@@ -859,8 +862,7 @@ public class BugDetector extends BaseDetector {
         try {
             // Find Quantity operations (basic heuristic)
             if (content.contains("Quantity[")) {
-                Pattern pattern = Pattern.compile("Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]\\s*[+\\-]\\s*Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]");
-                Matcher matcher = pattern.matcher(content);
+            Matcher matcher = QUANTITY_MISMATCH_PATTERN.matcher(content);
 
                 while (matcher.find()) {
                     String unit1 = matcher.group(1);
