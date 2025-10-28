@@ -272,6 +272,43 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
             MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY
         );
 
+        // Activate PHASE 3 RULES (25 rules)
+
+        // Performance rules (8 rules - CODE_SMELL)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.APPEND_IN_LOOP_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.LARGE_TEMP_EXPRESSIONS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PLOT_IN_LOOP_KEY);
+
+        // Pattern matching rules (5 rules - 4 BUG, 1 CODE_SMELL)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_PATTERN_TEST_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PATTERN_BLANKS_MISUSE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY);
+
+        // Best practices rules (7 rules - CODE_SMELL)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNPROTECTED_SYMBOLS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_RETURN_KEY);
+
+        // Security & Safety rules (2 VULNERABILITY, 1 SECURITY_HOTSPOT)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNSAFE_CLOUD_DEPLOY_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.DYNAMIC_INJECTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY);
+
+        // Resource management rules (2 BUG)
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNCLOSED_FILE_HANDLE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY);
+
         profile.done();
     }
 }

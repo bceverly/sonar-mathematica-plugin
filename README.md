@@ -7,13 +7,14 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | Feature | Rules | Type | Status | Quick UI Path |
 |---------|-------|------|--------|---------------|
 | **Code Duplication Detection** | CPD Engine | Duplication | ✅ Active | Overview → Duplications % → Click |
-| **Code Smells** | 18 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
-| **Security Vulnerabilities** | 12 rules | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Bugs (Reliability)** | 13 rules | Reliability | ✅ Active | Issues → Type: Bug |
-| **Security Hotspots** | 6 rules | Security Review | ✅ Active | Security Hotspots tab |
+| **Code Smells** | 33 rules | Code Quality | ✅ Active | Issues → Type: Code Smell |
+| **Security Vulnerabilities** | 14 rules | Security | ✅ Active | Issues → Type: Vulnerability |
+| **Bugs (Reliability)** | 20 rules | Reliability | ✅ Active | Issues → Type: Bug |
+| **Security Hotspots** | 7 rules | Security Review | ✅ Active | Security Hotspots tab |
 | **Complexity Metrics** | Cyclomatic & Cognitive | Complexity | ✅ Active | Code tab → Function details |
+| **Performance Rules** | 8 rules | Performance | ✅ Active | Issues → Search "performance" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **51 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **74 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -106,7 +107,7 @@ sonar.exclusions=**/docs/**,**/reference_pages/**
 
 ---
 
-## 2. Code Smell Rules (8 Total)
+## 2. Code Smell Rules (33 Total)
 
 ### 2.1 Commented-Out Code
 **Severity:** MAJOR | **Type:** CODE_SMELL
@@ -491,7 +492,280 @@ x = 5;
 
 ---
 
-## 3. Bug Rules - Reliability (13 Total)
+### 2.19 Append/AppendTo in Loop (Performance)
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Using AppendTo or Append inside loops creates O(n²) performance due to repeated list copying.
+
+**Example:**
+```mathematica
+(* VIOLATION - O(n²) performance! *)
+result = {};
+Do[result = Append[result, f[i]], {i, 1000}]
+
+(* COMPLIANT - O(n) performance *)
+result = Table[f[i], {i, 1000}]
+(* Or use Sow/Reap *)
+result = Reap[Do[Sow[f[i]], {i, 1000}]][[2, 1]]
+```
+
+---
+
+### 2.20 Repeated Function Calls (Performance)
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Calling the same expensive function multiple times with identical arguments wastes computation.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = ExpensiveComputation[data] + ExpensiveComputation[data]
+
+(* COMPLIANT *)
+cached = ExpensiveComputation[data];
+result = cached + cached
+```
+
+---
+
+### 2.21 String Concatenation in Loop (Performance)
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Using `<>` to concatenate strings in loops is O(n²) due to string immutability.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = "";
+Do[result = result <> ToString[i], {i, 1000}]
+
+(* COMPLIANT *)
+result = StringJoin[Table[ToString[i], {i, 1000}]]
+```
+
+---
+
+### 2.22 Uncompiled Numerical Code (Performance)
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Numerical computations in loops can be 10-100x faster when compiled.
+
+**Example:**
+```mathematica
+(* WITHOUT COMPILE - slower *)
+sum = 0; Do[sum += i^2, {i, 10000}]
+
+(* WITH COMPILE - much faster *)
+compiled = Compile[{}, Module[{sum = 0}, Do[sum += i^2, {i, 10000}]; sum]];
+result = compiled[]
+```
+
+---
+
+### 2.23 Nested Map/Table (Performance)
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Nested Map or Table calls can often be replaced with more efficient single operations.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+result = Table[Table[i*j, {j, 10}], {i, 10}]
+
+(* COMPLIANT *)
+result = Table[i*j, {i, 10}, {j, 10}]
+(* Or use Outer *)
+result = Outer[Times, Range[10], Range[10]]
+```
+
+---
+
+### 2.24 Plot in Loop (Performance)
+**Severity:** MAJOR | **Type:** CODE_SMELL
+
+Generating plots in loops is very slow. Collect data first, then plot once.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Do[ListPlot[data[[i]]], {i, 100}]
+
+(* COMPLIANT *)
+ListPlot[data, PlotRange -> All]
+```
+
+---
+
+### 2.25 Generic Variable Names
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Generic names like 'temp', 'data', 'result' provide no context and hurt readability.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+data = Import["file.csv"];
+result = ProcessData[data];
+temp = result[[1]];
+
+(* COMPLIANT *)
+salesData = Import["sales.csv"];
+processedSales = ProcessSalesData[salesData];
+firstQuarterSales = processedSales[[1]];
+```
+
+---
+
+### 2.26 Missing Usage Message
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Public functions (starting with uppercase) should define usage messages for documentation.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+ProcessUserData[data_, options___] := Module[...]
+
+(* COMPLIANT *)
+ProcessUserData::usage = "ProcessUserData[data, options] processes user data.";
+ProcessUserData[data_, options___] := Module[...]
+```
+
+---
+
+### 2.27 Missing OptionsPattern
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Functions with 3+ optional parameters should use OptionsPattern for maintainability.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+PlotData[data_, color_: Blue, size_: 10, style_: Solid] := ...
+
+(* COMPLIANT *)
+Options[PlotData] = {"Color" -> Blue, "Size" -> 10, "Style" -> Solid};
+PlotData[data_, opts: OptionsPattern[]] := Module[
+  {color = OptionValue["Color"], size = OptionValue["Size"]},
+  ...
+]
+```
+
+---
+
+### 2.28 Side Effects Without Clear Naming
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Functions that modify global state should use naming conventions: SetXXX or ending with !.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Process[data_] := (globalCache = data; data)
+
+(* COMPLIANT *)
+SetCache[data_] := (globalCache = data; data)
+(* Or *)
+UpdateCache![data_] := (globalCache = data; data)
+```
+
+---
+
+### 2.29 Complex Boolean Expression
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Boolean expressions with 5+ operators without clear grouping are hard to understand.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+If[a && b || c && d && !e || f && g, ...]
+
+(* COMPLIANT *)
+condition1 = a && b;
+condition2 = c && d && !e;
+condition3 = f && g;
+If[condition1 || condition2 || condition3, ...]
+```
+
+---
+
+### 2.30 Unprotected Public Symbols
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Public functions in packages should be Protected to prevent accidental redefinition.
+
+**Example:**
+```mathematica
+(* At end of package *)
+Protect[PublicFunction1, PublicFunction2, PublicConstant];
+```
+
+---
+
+### 2.31 Missing Return in Complex Function
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Functions with multiple branches should use explicit Return[] for clarity.
+
+**Example:**
+```mathematica
+ProcessData[data_] := Module[{result},
+  If[data === {}, Return[$Failed]];
+  result = ComputeResult[data];
+  If[!ValidQ[result], Return[Default]];
+  Return[result]
+]
+```
+
+---
+
+### 2.32 Packed Array Breaking (Performance)
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Packed arrays are 10x+ faster than unpacked arrays. Avoid operations that unpack them.
+
+**Operations that Unpack Arrays:**
+- Mixing integers and reals in same array
+- Using symbolic values in numerical arrays
+- Applying non-numerical functions to packed arrays
+
+**Example:**
+```mathematica
+(* Check if arrays stay packed *)
+data = Range[1000];
+PackedArrayQ[data]  (* True *)
+
+(* Mixing types unpacks *)
+result = Join[data, {3.5}];  (* Now unpacked! *)
+PackedArrayQ[result]  (* False *)
+
+(* Keep packed by using consistent types *)
+result = Join[data, {3}];  (* Stays packed *)
+PackedArrayQ[result]  (* True *)
+```
+
+---
+
+### 2.33 Large Temporary Expressions (Performance)
+**Severity:** MINOR | **Type:** CODE_SMELL
+
+Large intermediate results (>100MB) that aren't assigned can cause memory issues.
+
+**Example:**
+```mathematica
+(* HARD TO DEBUG - large temp not visible *)
+result = ProcessData[HugeComputation[data]];
+
+(* BETTER - make memory usage explicit *)
+temp = HugeComputation[data];  (* Can monitor size *)
+ByteCount[temp]  (* Check memory usage *)
+result = ProcessData[temp];
+```
+
+---
+
+## 3. Bug Rules - Reliability (20 Total)
 
 Bug rules detect logic errors and runtime issues that cause program crashes or incorrect behavior.
 
@@ -799,7 +1073,155 @@ func[x_List] := Length[x];
 
 ---
 
-## 4. Security Vulnerability Rules (12 Total)
+### 3.14 Missing Pattern Test
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-704](https://cwe.mitre.org/data/definitions/704.html)
+
+Functions expecting numeric arguments should use pattern tests to prevent symbolic evaluation errors.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+f[x_] := Sqrt[x] + x^2  (* Will evaluate symbolically for f[a] *)
+
+(* COMPLIANT *)
+f[x_?NumericQ] := Sqrt[x] + x^2  (* Only evaluates for numbers *)
+(* Or use specific types *)
+f[x_Real] := Sqrt[x] + x^2
+```
+
+---
+
+### 3.15 Pattern Blanks Misuse
+**Severity:** MAJOR | **Type:** BUG
+
+Using __ or ___ creates sequences, not lists. This often causes errors.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+f[x__] := Length[x]  (* ERROR: x is a sequence, Length expects list *)
+
+(* COMPLIANT *)
+f[x__] := Length[{x}]  (* Wrap sequence in list *)
+(* Or use List pattern *)
+f[x_List] := Length[x]
+```
+
+---
+
+### 3.16 Set vs SetDelayed Confusion
+**Severity:** CRITICAL | **Type:** BUG
+
+Using Set (=) instead of SetDelayed (:=) evaluates the right-hand side immediately.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+f[x_] = RandomReal[]  (* Evaluates once, same value always returned! *)
+
+(* COMPLIANT *)
+f[x_] := RandomReal[]  (* Evaluates each time function is called *)
+```
+
+---
+
+### 3.17 Symbol Name Collision
+**Severity:** CRITICAL | **Type:** BUG
+
+Defining functions with single-letter names collides with Mathematica built-ins.
+
+**Example:**
+```mathematica
+(* VIOLATIONS *)
+N[x_] := ...  (* Shadows built-in N[] for numerical evaluation! *)
+D[x_] := ...  (* Shadows built-in D[] for derivatives! *)
+I = 5;  (* Shadows imaginary unit I! *)
+
+(* COMPLIANT *)
+myN[x_] := ...
+derivative[x_] := ...
+index = 5;
+```
+
+**Common built-ins to avoid:** N, D, I, C, O, E, K, Pi, Re, Im, Abs, Min, Max, Log, Sin, Cos
+
+---
+
+### 3.18 Unclosed File Handle
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-772](https://cwe.mitre.org/data/definitions/772.html)
+
+OpenRead/OpenWrite/OpenAppend create file handles that must be closed with Close[].
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+stream = OpenRead["file.txt"];
+data = Read[stream, String];
+(* Missing Close[stream]! *)
+
+(* COMPLIANT *)
+stream = OpenRead["file.txt"];
+data = Read[stream, String];
+Close[stream];
+
+(* Or use Import which handles cleanup automatically *)
+data = Import["file.txt", "String"];
+```
+
+---
+
+### 3.19 Growing Definition Chain
+**Severity:** MAJOR | **Type:** BUG
+**CWE:** [CWE-401](https://cwe.mitre.org/data/definitions/401.html)
+
+Repeatedly adding definitions (e.g., memoization in loop) without clearing causes memory leaks.
+
+**Example:**
+```mathematica
+(* VIOLATION - Memory leak! *)
+Do[f[i] = ExpensiveComputation[i], {i, 1, 100000}]
+(* Creates 100k definitions, never cleared! *)
+
+(* COMPLIANT - Use temporary memoization *)
+Block[{f},
+  Do[f[i] = ExpensiveComputation[i], {i, 1, 100000}];
+  (* Use f here *)
+]  (* Definitions cleared when Block exits *)
+
+(* Or use Association *)
+cache = Association[];
+Do[cache[i] = ExpensiveComputation[i], {i, 1, 100000}];
+```
+
+---
+
+### 3.20 Block/Module Misuse
+**Severity:** MAJOR | **Type:** BUG
+
+Block provides dynamic scope, Module provides lexical scope. Using the wrong one causes bugs.
+
+**When to Use Each:**
+- **Module**: For local variables (most common case - lexical scope)
+- **Block**: To temporarily change global values (dynamic scope)
+- **With**: For constant local values
+
+**Example:**
+```mathematica
+(* Use Module for local variables *)
+f[x_] := Module[{temp = x^2}, temp + 1]
+
+(* Use Block to temporarily override globals *)
+Block[{$RecursionLimit = 1024}, RecursiveFunction[]]
+
+(* WRONG - Block with local assignments suggests Module is better *)
+Block[{x = 5, y = 10}, x + y]  (* Should probably be Module *)
+```
+
+---
+
+## 4. Security Vulnerability Rules (14 Total)
 
 ### 4.1 Hardcoded Credentials
 **Severity:** BLOCKER | **Type:** VULNERABILITY
@@ -1207,7 +1629,42 @@ cryptoKey = RandomInteger[{0, 255}, 32];  (* 256-bit key *)
 
 ---
 
-## 5. Security Hotspot Rules (6 Total)
+### 4.13 Unsafe CloudDeploy
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-276](https://cwe.mitre.org/data/definitions/276.html)
+
+CloudDeploy without Permissions parameter creates public cloud objects accessible to anyone.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+CloudDeploy[form]  (* Public by default! *)
+
+(* COMPLIANT *)
+CloudDeploy[form, Permissions -> "Private"]
+CloudDeploy[form, Permissions -> {"user@example.com" -> "Read"}]
+```
+
+---
+
+### 4.14 Dynamic Content Injection
+**Severity:** CRITICAL | **Type:** VULNERABILITY
+**CWE:** [CWE-94](https://cwe.mitre.org/data/definitions/94.html)
+
+Using ToExpression or Symbol on user input in Dynamic creates code injection vulnerabilities.
+
+**Example:**
+```mathematica
+(* VIOLATION *)
+Dynamic[ToExpression[userInput]]  (* User can execute arbitrary code! *)
+
+(* COMPLIANT *)
+Dynamic[SafeEvaluate[userInput]]  (* Use whitelist/sanitization *)
+```
+
+---
+
+## 5. Security Hotspot Rules (7 Total)
 
 Security Hotspots are code locations that require manual security review. Unlike Vulnerabilities (which are definite security issues), Hotspots highlight sensitive operations that **may** be secure if proper safeguards are in place.
 
@@ -1525,6 +1982,61 @@ Environment variable hotspots are usually MINOR priority unless they're exposed 
 - Calls in logging/error handling code (high risk)
 - Calls in UI display code (high risk)
 - Calls in internal processing (low risk if not logged)
+
+---
+
+### 5.7 Import Without Format Specification
+**Severity:** MAJOR | **Type:** SECURITY_HOTSPOT
+**CWE:** [CWE-434](https://cwe.mitre.org/data/definitions/434.html)
+
+Import without format specification guesses by file extension, which attackers can manipulate.
+
+**Example:**
+```mathematica
+(* REQUIRES REVIEW *)
+Import[userFile]  (* Guesses format - could execute .mx! *)
+
+(* GOOD PRACTICES *)
+(* 1. Always specify format explicitly *)
+Import[userFile, "CSV"]  (* Explicit format, safe *)
+Import[userFile, "JSON"]
+
+(* 2. Validate file extension before import *)
+If[StringEndsQ[userFile, ".csv"],
+  Import[userFile, "CSV"],
+  $Failed  (* Reject unexpected extensions *)
+];
+
+(* 3. Use safe formats only *)
+safeFormats = {"CSV", "JSON", "TSV", "Text"};
+If[MemberQ[safeFormats, format],
+  Import[userFile, format],
+  $Failed  (* Reject dangerous formats like MX *)
+];
+```
+
+### 📍 How to View in SonarQube UI
+
+**Method 1: Security Hotspots Tab**
+1. **Security Hotspots** tab
+2. Look for "Import Without Format" category
+3. Review each Import[] call to ensure:
+   - Format is explicitly specified
+   - File extension is validated
+   - Only safe formats are allowed
+4. Mark as **Safe** if proper validation is in place
+
+**Method 2: Search and Review**
+1. **Security Hotspots** tab
+2. Search: `Import`
+3. → Shows all Import[] calls without format
+4. Review each to add explicit format specification
+5. Mark status: Safe / Fix Required / Acknowledged
+
+**Dangerous Formats to Avoid:**
+- `.mx` files can execute arbitrary code during import
+- `.wl` and `.m` files can contain executable code
+- `.nb` notebook files may contain Dynamic content
 
 ---
 
