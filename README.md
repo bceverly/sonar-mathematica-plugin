@@ -21,8 +21,11 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Undefined Symbol Detection** | 10 rules | Reliability | ✅ Active | Issues → Search "undefined" |
 | **Type Mismatch Detection** | 20 rules | Type Safety | ✅ Active | Issues → Search "type" |
 | **Data Flow Analysis** | 16 rules | Data Flow | ✅ Active | Issues → Search "uninitialized" |
+| **Dead Code & Reachability** | 15 rules | Control Flow | ✅ Active | Issues → Search "unreachable" |
+| **Taint Analysis Security** | 15 rules | Security | ✅ Active | Issues → Search "taint" or "injection" |
+| **Control Flow Rules** | 5 rules | Code Quality | ✅ Active | Issues → Search "switch" or "return" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **245 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **280 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -3168,6 +3171,81 @@ Track variable initialization, assignment, and usage:
 - Type Mismatch Detection: 20 rules (type safety)
 - Data Flow Analysis: 16 rules (variable tracking)
 - **Total: 36 new rules**
+
+---
+
+## 10. Advanced Rules - Chunk 4 (35 New Rules)
+
+**Introduced:** Chunk 4 from ROADMAP_325.md (Items 161-200)
+**Focus:** Control flow analysis, dead code detection, and taint tracking for security vulnerabilities
+
+### 10.1 Dead Code & Reachability (15 Rules)
+
+Detect code that can never execute:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Unreachable Code After Return | Bug | Code after `Return[]` that can never execute |
+| Unreachable Branch Always True | Bug | `If[True, a, b]` where `b` is unreachable |
+| Unreachable Branch Always False | Bug | `If[False, a, b]` where `a` is unreachable |
+| Impossible Pattern | Bug | Patterns that can never match (e.g., `x_Integer?StringQ`) |
+| Empty Catch Block Enhanced | Bug | `Catch[]` with no corresponding `Throw` |
+| Condition Always Evaluates Same | Bug | Conditions that always produce same result (logic errors) |
+| Infinite Loop Proven | Critical Bug | `While[True, ...]` with no exit condition |
+| Loop Never Executes | Bug | `While[False, ...]` or `Do` with inverted range |
+| Code After Abort | Bug | Code after `Abort[]` is unreachable |
+| Multiple Returns Make Code Unreachable | Code Smell | Early returns leaving subsequent code unreachable |
+| Else Branch Never Taken | Bug | Else branch proven unreachable by analysis |
+| Switch Case Shadowed | Bug | Switch cases after catch-all `_` pattern |
+| Pattern Definition Shadowed | Bug | Specific pattern after general pattern |
+| Exception Never Thrown | Code Smell | Catch handling tag that's never thrown |
+| Break Outside Loop | Critical Bug | `Break[]` used outside Do/While/For context |
+
+**📍 How to View:** Issues → Search "unreachable" or "dead" → Filter by severity
+
+### 10.2 Taint Analysis for Security (15 Rules)
+
+Track untrusted data flowing to dangerous operations:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| SQL Injection Taint | Critical Vulnerability | Untrusted data concatenated into SQL queries |
+| Command Injection Taint | Critical Vulnerability | Untrusted data in `RunProcess`/`Run` commands |
+| Code Injection Taint | Critical Vulnerability | Untrusted data in `ToExpression` |
+| Path Traversal Taint | Critical Vulnerability | Untrusted data in file paths (e.g., `../../../etc/passwd`) |
+| XSS Taint | Critical Vulnerability | Untrusted data in HTML/XML output without sanitization |
+| LDAP Injection | Critical Vulnerability | Untrusted data in LDAP queries |
+| XXE Taint | Critical Vulnerability | XML imports from untrusted sources (XXE attacks) |
+| Unsafe Deserialization Taint | Critical Vulnerability | Untrusted data to `Import[..., "MX"]` |
+| SSRF Taint | Critical Vulnerability | Untrusted URLs in `URLFetch`/`URLExecute` |
+| Insecure Randomness Enhanced | Vulnerability | `RandomInteger` for security-sensitive values |
+| Weak Cryptography Enhanced | Vulnerability | MD5/SHA1 used for security purposes |
+| Hard-Coded Credentials Taint | Critical Vulnerability | String literals in authentication |
+| Sensitive Data In Logs | Vulnerability | Passwords/tokens logged via `Print` |
+| Mass Assignment | Critical Vulnerability | Untrusted associations in database updates |
+| Regex DoS | Vulnerability | Untrusted data in regex patterns (ReDoS) |
+
+**📍 How to View:** Issues → Type: Vulnerability → Search "injection" or "taint"
+
+### 10.3 Additional Control Flow Rules (5 Rules)
+
+Improve control flow clarity and completeness:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Missing Default Case | Bug | `Switch` without default case may return unevaluated |
+| Empty If Branch | Code Smell | `If[cond, , else]` should be inverted |
+| Nested If Depth | Code Smell | Deeply nested If statements (>4 levels) |
+| Too Many Return Points | Code Smell | Functions with >5 Return statements |
+| Missing Else Considered Harmful | Info | If without else may have unclear intent |
+
+**📍 How to View:** Issues → Search "switch" or "return" → Filter by rule name
+
+**Rule Count Summary:**
+- Dead Code & Reachability: 15 rules (control flow analysis)
+- Taint Analysis Security: 15 rules (injection prevention)
+- Additional Control Flow: 5 rules (code quality)
+- **Total: 35 new rules**
 
 ---
 

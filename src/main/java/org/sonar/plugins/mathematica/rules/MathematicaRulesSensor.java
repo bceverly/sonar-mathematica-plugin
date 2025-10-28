@@ -46,6 +46,7 @@ public class MathematicaRulesSensor implements Sensor {
     private final Chunk1Detector chunk1Detector = new Chunk1Detector();
     private final Chunk2Detector chunk2Detector = new Chunk2Detector();
     private final Chunk3Detector chunk3Detector = new Chunk3Detector();
+    private final Chunk4Detector chunk4Detector = new Chunk4Detector();
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -106,6 +107,7 @@ public class MathematicaRulesSensor implements Sensor {
             chunk1Detector.initializeCaches(content);
             chunk2Detector.initializeCaches(content);
             chunk3Detector.initializeCaches(content);
+            chunk4Detector.initializeCaches(content);
 
             // Analyze comments once and cache for reuse
             List<int[]> commentRanges = analyzeComments(context, inputFile, content);
@@ -390,6 +392,49 @@ public class MathematicaRulesSensor implements Sensor {
             chunk3Detector.detectAssignmentAsReturnValue(context, inputFile, content);
             chunk3Detector.detectVariableNeverModified(context, inputFile, content);
 
+            // ===== CHUNK 4 DETECTORS (Items 161-200 from ROADMAP_325.md) =====
+
+            // Dead Code & Reachability (Items 161-175)
+            chunk4Detector.detectUnreachableCodeAfterReturn(context, inputFile, content);
+            chunk4Detector.detectUnreachableBranchAlwaysTrue(context, inputFile, content);
+            chunk4Detector.detectUnreachableBranchAlwaysFalse(context, inputFile, content);
+            chunk4Detector.detectImpossiblePattern(context, inputFile, content);
+            chunk4Detector.detectEmptyCatchBlockEnhanced(context, inputFile, content);
+            chunk4Detector.detectConditionAlwaysEvaluatesSame(context, inputFile, content);
+            chunk4Detector.detectInfiniteLoopProven(context, inputFile, content);
+            chunk4Detector.detectLoopNeverExecutes(context, inputFile, content);
+            chunk4Detector.detectCodeAfterAbort(context, inputFile, content);
+            chunk4Detector.detectMultipleReturnsMakeCodeUnreachable(context, inputFile, content);
+            chunk4Detector.detectElseBranchNeverTaken(context, inputFile, content);
+            chunk4Detector.detectSwitchCaseShadowed(context, inputFile, content);
+            chunk4Detector.detectPatternDefinitionShadowed(context, inputFile, content);
+            chunk4Detector.detectExceptionNeverThrown(context, inputFile, content);
+            chunk4Detector.detectBreakOutsideLoop(context, inputFile, content);
+
+            // Taint Analysis for Security (Items 181-195)
+            chunk4Detector.detectSqlInjectionTaint(context, inputFile, content);
+            chunk4Detector.detectCommandInjectionTaint(context, inputFile, content);
+            chunk4Detector.detectCodeInjectionTaint(context, inputFile, content);
+            chunk4Detector.detectPathTraversalTaint(context, inputFile, content);
+            chunk4Detector.detectXssTaint(context, inputFile, content);
+            chunk4Detector.detectLdapInjection(context, inputFile, content);
+            chunk4Detector.detectXxeTaint(context, inputFile, content);
+            chunk4Detector.detectUnsafeDeserializationTaint(context, inputFile, content);
+            chunk4Detector.detectSsrfTaint(context, inputFile, content);
+            chunk4Detector.detectInsecureRandomnessEnhanced(context, inputFile, content);
+            chunk4Detector.detectWeakCryptographyEnhanced(context, inputFile, content);
+            chunk4Detector.detectHardCodedCredentialsTaint(context, inputFile, content);
+            chunk4Detector.detectSensitiveDataInLogs(context, inputFile, content);
+            chunk4Detector.detectMassAssignment(context, inputFile, content);
+            chunk4Detector.detectRegexDoS(context, inputFile, content);
+
+            // Additional Control Flow Rules (Items 196-200)
+            chunk4Detector.detectMissingDefaultCase(context, inputFile, content);
+            chunk4Detector.detectEmptyIfBranch(context, inputFile, content);
+            chunk4Detector.detectNestedIfDepth(context, inputFile, content);
+            chunk4Detector.detectTooManyReturnPoints(context, inputFile, content);
+            chunk4Detector.detectMissingElseConsideredHarmful(context, inputFile, content);
+
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
             bugDetector.clearCaches();
@@ -398,6 +443,7 @@ public class MathematicaRulesSensor implements Sensor {
             chunk1Detector.clearCaches();
             chunk2Detector.clearCaches();
             chunk3Detector.clearCaches();
+            chunk4Detector.clearCaches();
 
         } catch (Exception e) {
             LOG.error("Error analyzing file: {}", inputFile, e);
