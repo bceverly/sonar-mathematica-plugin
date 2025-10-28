@@ -389,6 +389,79 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY = "PublicAPINotInPackageContext";
     public static final String TEST_FUNCTION_IN_PRODUCTION_CODE_KEY = "TestFunctionInProductionCode";
 
+    // Rule keys - Chunk 6: Null Safety (Items 251-265 from ROADMAP_325.md)
+    public static final String NULL_DEREFERENCE_KEY = "NullDereference";
+    public static final String MISSING_NULL_CHECK_KEY = "MissingNullCheck";
+    public static final String NULL_PASSED_TO_NON_NULLABLE_KEY = "NullPassedToNonNullable";
+    public static final String INCONSISTENT_NULL_HANDLING_KEY = "InconsistentNullHandling";
+    public static final String NULL_RETURN_NOT_DOCUMENTED_KEY = "NullReturnNotDocumented";
+    public static final String COMPARISON_WITH_NULL_KEY = "ComparisonWithNull";
+    public static final String MISSING_CHECK_LEADS_TO_NULL_PROPAGATION_KEY = "MissingCheckLeadsToNullPropagation";
+    public static final String CHECK_PATTERN_DOESNT_HANDLE_ALL_CASES_KEY = "CheckPatternDoesntHandleAllCases";
+    public static final String QUIET_SUPPRESSING_IMPORTANT_MESSAGES_KEY = "QuietSuppressingImportantMessages";
+    public static final String OFF_DISABLING_IMPORTANT_WARNINGS_KEY = "OffDisablingImportantWarnings";
+    public static final String CATCH_ALL_EXCEPTION_HANDLER_KEY = "CatchAllExceptionHandler";
+    public static final String EMPTY_EXCEPTION_HANDLER_KEY = "EmptyExceptionHandler";
+    public static final String THROW_WITHOUT_CATCH_KEY = "ThrowWithoutCatch";
+    public static final String ABORT_IN_LIBRARY_CODE_KEY = "AbortInLibraryCode";
+    public static final String MESSAGE_WITHOUT_DEFINITION_KEY = "MessageWithoutDefinition";
+    public static final String MISSING_MESSAGE_DEFINITION_KEY = "MissingMessageDefinition";
+
+    // Rule keys - Chunk 6: Constant & Expression Analysis (Items 267-280 from ROADMAP_325.md)
+    public static final String CONDITION_ALWAYS_TRUE_CONSTANT_PROPAGATION_KEY = "ConditionAlwaysTrueConstantPropagation";
+    public static final String CONDITION_ALWAYS_FALSE_CONSTANT_PROPAGATION_KEY = "ConditionAlwaysFalseConstantPropagation";
+    public static final String LOOP_BOUND_CONSTANT_KEY = "LoopBoundConstant";
+    public static final String REDUNDANT_COMPUTATION_KEY = "RedundantComputation";
+    public static final String PURE_EXPRESSION_IN_LOOP_KEY = "PureExpressionInLoop";
+    public static final String CONSTANT_EXPRESSION_KEY = "ConstantExpression";
+    public static final String IDENTITY_OPERATION_KEY = "IdentityOperation";
+    public static final String COMPARISON_OF_IDENTICAL_EXPRESSIONS_KEY = "ComparisonOfIdenticalExpressions";
+    public static final String BOOLEAN_EXPRESSION_ALWAYS_TRUE_KEY = "BooleanExpressionAlwaysTrue";
+    public static final String BOOLEAN_EXPRESSION_ALWAYS_FALSE_KEY = "BooleanExpressionAlwaysFalse";
+    public static final String UNNECESSARY_BOOLEAN_CONVERSION_KEY = "UnnecessaryBooleanConversion";
+    public static final String DOUBLE_NEGATION_KEY = "DoubleNegation";
+    public static final String COMPLEX_BOOLEAN_EXPRESSION_ENHANCED_KEY = "ComplexBooleanExpressionEnhanced";
+    public static final String DE_MORGANS_LAW_OPPORTUNITY_KEY = "DeMorgansLawOpportunity";
+
+    // Rule keys - Chunk 6: Mathematica-Specific Patterns (Items 281-300 from ROADMAP_325.md)
+    public static final String HOLD_ATTRIBUTE_MISSING_KEY = "HoldAttributeMissing";
+    public static final String HOLD_FIRST_BUT_USES_SECOND_ARGUMENT_FIRST_KEY = "HoldFirstButUsesSecondArgumentFirst";
+    public static final String MISSING_UNEVALUATED_WRAPPER_KEY = "MissingUnevaluatedWrapper";
+    public static final String UNNECESSARY_HOLD_KEY = "UnnecessaryHold";
+    public static final String RELEASE_HOLD_AFTER_HOLD_KEY = "ReleaseHoldAfterHold";
+    public static final String EVALUATE_IN_HELD_CONTEXT_KEY = "EvaluateInHeldContext";
+    public static final String PATTERN_WITH_SIDE_EFFECT_KEY = "PatternWithSideEffect";
+    public static final String REPLACEMENT_RULE_ORDER_MATTERS_KEY = "ReplacementRuleOrderMatters";
+    public static final String REPLACE_ALL_VS_REPLACE_CONFUSION_KEY = "ReplaceAllVsReplaceConfusion";
+    public static final String RULE_DOESNT_MATCH_DUE_TO_EVALUATION_KEY = "RuleDoesntMatchDueToEvaluation";
+    public static final String PART_SPECIFICATION_OUT_OF_BOUNDS_KEY = "PartSpecificationOutOfBounds";
+    public static final String SPAN_SPECIFICATION_INVALID_KEY = "SpanSpecificationInvalid";
+    public static final String ALL_SPECIFICATION_INEFFICIENT_KEY = "AllSpecificationInefficient";
+    public static final String THREADING_OVER_NON_LISTS_KEY = "ThreadingOverNonLists";
+    public static final String MISSING_ATTRIBUTES_DECLARATION_KEY = "MissingAttributesDeclaration";
+    public static final String ONE_IDENTITY_ATTRIBUTE_MISUSE_KEY = "OneIdentityAttributeMisuse";
+    public static final String ORDERLESS_ATTRIBUTE_ON_NON_COMMUTATIVE_KEY = "OrderlessAttributeOnNonCommutative";
+    public static final String FLAT_ATTRIBUTE_MISUSE_KEY = "FlatAttributeMisuse";
+    public static final String SEQUENCE_IN_UNEXPECTED_CONTEXT_KEY = "SequenceInUnexpectedContext";
+    public static final String MISSING_SEQUENCE_WRAPPER_KEY = "MissingSequenceWrapper";
+
+    // Rule keys - Chunk 7: Test Coverage Integration (Items 307-310 from ROADMAP_325.md)
+    public static final String LOW_TEST_COVERAGE_WARNING_KEY = "LowTestCoverageWarning";
+    public static final String UNTESTED_PUBLIC_FUNCTION_KEY = "UntestedPublicFunction";
+    public static final String UNTESTED_BRANCH_KEY = "UntestedBranch";
+    public static final String TEST_ONLY_CODE_IN_PRODUCTION_KEY = "TestOnlyCodeInProduction";
+
+    // Rule keys - Chunk 7: Performance Analysis (Items 312-320 from ROADMAP_325.md)
+    public static final String COMPILABLE_FUNCTION_NOT_COMPILED_KEY = "CompilableFunctionNotCompiled";
+    public static final String COMPILATION_TARGET_MISSING_KEY = "CompilationTargetMissing";
+    public static final String NON_COMPILABLE_CONSTRUCT_IN_COMPILE_KEY = "NonCompilableConstructInCompile";
+    public static final String PACKED_ARRAY_UNPACKED_KEY = "PackedArrayUnpacked";
+    public static final String INEFFICIENT_PATTERN_IN_PERFORMANCE_CRITICAL_CODE_KEY = "InefficientPatternInPerformanceCriticalCode";
+    public static final String N_APPLIED_TOO_LATE_KEY = "NAppliedTooLate";
+    public static final String MISSING_MEMOIZATION_OPPORTUNITY_ENHANCED_KEY = "MissingMemoizationOpportunityEnhanced";
+    public static final String INEFFICIENT_STRING_CONCATENATION_ENHANCED_KEY = "InefficientStringConcatenationEnhanced";
+    public static final String LIST_CONCATENATION_IN_LOOP_KEY = "ListConcatenationInLoop";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -5511,6 +5584,841 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("MINOR")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("testing", "organization");
+
+        // ===== CHUNK 6 RULE DEFINITIONS (Items 251-300) =====
+
+        // Null Safety (Items 251-265)
+
+        repository.createRule(NULL_DEREFERENCE_KEY)
+            .setName("Null dereference causes runtime error")
+            .setHtmlDescription(
+                "<p>Accessing properties or methods of Null causes runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result[[1]]  (* If result is Null, this fails *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[result =!= Null, result[[1]], defaultValue]</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety", "runtime-error");
+
+        repository.createRule(MISSING_NULL_CHECK_KEY)
+            .setName("Missing null check before usage")
+            .setHtmlDescription(
+                "<p>Function parameters should be checked for Null before use.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>ProcessData[data_] := data[[1]]  (* No null check *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>ProcessData[data_] := If[data === Null, Null, data[[1]]]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety");
+
+        repository.createRule(NULL_PASSED_TO_NON_NULLABLE_KEY)
+            .setName("Null passed to parameter expecting non-null value")
+            .setHtmlDescription(
+                "<p>Passing Null to functions that expect non-null values causes errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Length[Null]  (* Error *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[data =!= Null, Length[data], 0]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety");
+
+        repository.createRule(INCONSISTENT_NULL_HANDLING_KEY)
+            .setName("Inconsistent null handling across branches")
+            .setHtmlDescription(
+                "<p>Handle Null consistently across all code paths.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[cond, process[x], x]  (* x might be Null in else *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[cond && x =!= Null, process[x], defaultValue]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety", "consistency");
+
+        repository.createRule(NULL_RETURN_NOT_DOCUMENTED_KEY)
+            .setName("Function returns Null without documenting it")
+            .setHtmlDescription(
+                "<p>Document when functions can return Null to avoid surprises.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>FindUser[id_] := If[..., userData, Null]  (* Not documented *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>FindUser::usage = \"Returns user data or Null if not found.\";</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("documentation", "null-safety");
+
+        repository.createRule(COMPARISON_WITH_NULL_KEY)
+            .setName("Use === for Null comparison, not ==")
+            .setHtmlDescription(
+                "<p>Use SameQ (===) instead of Equal (==) for Null comparisons.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[x == Null, ...]  (* Wrong *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[x === Null, ...]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety", "semantics");
+
+        repository.createRule(MISSING_CHECK_LEADS_TO_NULL_PROPAGATION_KEY)
+            .setName("Missing null check causes error cascade")
+            .setHtmlDescription(
+                "<p>Null propagating through operations causes cascading errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = f[g[h[x]]]  (* If h returns Null, all fail *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Check each step for Null</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety", "error-handling");
+
+        repository.createRule(CHECK_PATTERN_DOESNT_HANDLE_ALL_CASES_KEY)
+            .setName("Check pattern missing error cases")
+            .setHtmlDescription(
+                "<p>Check[] should handle all possible error conditions.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Check[expr, fallback]  (* What about other errors? *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Check[expr, fallback, {f::error1, f::error2}]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling");
+
+        repository.createRule(QUIET_SUPPRESSING_IMPORTANT_MESSAGES_KEY)
+            .setName("Quiet suppresses critical error messages")
+            .setHtmlDescription(
+                "<p>Quiet[] can hide important errors. Be specific about what to suppress.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Quiet[ImportantOperation[]]  (* Hides all messages *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Quiet[operation[], {f::msg1}]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling", "bad-practice");
+
+        repository.createRule(OFF_DISABLING_IMPORTANT_WARNINGS_KEY)
+            .setName("Off[] disables important warnings")
+            .setHtmlDescription(
+                "<p>Disabling warnings with Off[] can mask real problems.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Off[General::stop]  (* Masks errors *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Fix the underlying issue instead</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling", "bad-practice");
+
+        repository.createRule(CATCH_ALL_EXCEPTION_HANDLER_KEY)
+            .setName("Catch-all exception handler is too broad")
+            .setHtmlDescription(
+                "<p>Catch[] without specific tag catches everything, including intended throws.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Catch[expr]  (* Catches all tags *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Catch[expr, \"myTag\"]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling");
+
+        repository.createRule(EMPTY_EXCEPTION_HANDLER_KEY)
+            .setName("Empty exception handler silently ignores errors")
+            .setHtmlDescription(
+                "<p>Catching exceptions and doing nothing loses error information.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Catch[expr, _, Null &]  (* Silently ignores *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Log or handle the error appropriately</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling", "bad-practice");
+
+        repository.createRule(THROW_WITHOUT_CATCH_KEY)
+            .setName("Throw without surrounding Catch aborts evaluation")
+            .setHtmlDescription(
+                "<p>Throw[] without Catch will abort the entire evaluation.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Throw[\"error\"]  (* No catch *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Catch[code, tag]; Throw[\"error\", tag]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling");
+
+        repository.createRule(ABORT_IN_LIBRARY_CODE_KEY)
+            .setName("Abort[] in library code is too aggressive")
+            .setHtmlDescription(
+                "<p>Library functions should return errors, not call Abort[].</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>MyLibFunc[x_] := If[invalid[x], Abort[], ...]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Return $Failed or Throw with tag</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling", "library-design");
+
+        repository.createRule(MESSAGE_WITHOUT_DEFINITION_KEY)
+            .setName("Message issued but not defined")
+            .setHtmlDescription(
+                "<p>Define message templates before issuing messages.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Message[f::undefined]  (* Message not defined *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f::undefined = \"Error: undefined value\";\n" +
+                "Message[f::undefined]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("error-handling", "messaging");
+
+        repository.createRule(MISSING_MESSAGE_DEFINITION_KEY)
+            .setName("Function issues messages without defining them")
+            .setHtmlDescription(
+                "<p>All messages should be defined before use for clarity.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Function issues messages without ::msg definitions</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f::err = \"Error message template\";</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("documentation", "messaging");
+
+        // Constant & Expression Analysis (Items 267-280)
+
+        repository.createRule(CONDITION_ALWAYS_TRUE_CONSTANT_PROPAGATION_KEY)
+            .setName("Condition always evaluates to True")
+            .setHtmlDescription(
+                "<p>Constant propagation reveals condition that's always True.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 5; If[x > 0, ...]  (* Always True *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Remove dead branch or fix logic</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("constant-propagation", "dead-code");
+
+        repository.createRule(CONDITION_ALWAYS_FALSE_CONSTANT_PROPAGATION_KEY)
+            .setName("Condition always evaluates to False")
+            .setHtmlDescription(
+                "<p>Constant propagation reveals condition that's always False.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = -5; If[x > 0, ...]  (* Always False *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Remove dead branch or fix logic</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("constant-propagation", "dead-code");
+
+        repository.createRule(LOOP_BOUND_CONSTANT_KEY)
+            .setName("Loop bound is constant - use literal")
+            .setHtmlDescription(
+                "<p>If loop bound is constant, use the literal value for clarity.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>n = 100; Do[..., {i, 1, n}]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Do[..., {i, 1, 100}]</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("clarity");
+
+        repository.createRule(REDUNDANT_COMPUTATION_KEY)
+            .setName("Same expression computed multiple times")
+            .setHtmlDescription(
+                "<p>Cache results of expensive computations.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x] + f[x] + f[x]  (* f called 3 times *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>result = f[x]; result + result + result</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "caching");
+
+        repository.createRule(PURE_EXPRESSION_IN_LOOP_KEY)
+            .setName("Pure expression computed in every iteration")
+            .setHtmlDescription(
+                "<p>Hoist side-effect-free expressions outside loops.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[... + Sqrt[2] * ..., {i, 1, n}]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>val = Sqrt[2]; Do[... + val * ..., {i, 1, n}]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "loop-optimization");
+
+        repository.createRule(CONSTANT_EXPRESSION_KEY)
+            .setName("Constant expression should be simplified")
+            .setHtmlDescription(
+                "<p>Simplify x + 0, x * 1, x^1 to just x.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result * 1 + 0</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>result</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(IDENTITY_OPERATION_KEY)
+            .setName("Identity operation has no effect")
+            .setHtmlDescription(
+                "<p>Reverse[Reverse[x]] or Transpose[Transpose[x]] equals x.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Reverse[Reverse[list]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(COMPARISON_OF_IDENTICAL_EXPRESSIONS_KEY)
+            .setName("Comparing identical expressions")
+            .setHtmlDescription(
+                "<p>x == x is always True (unless x is a pattern).</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[value == value, ...]  (* Always True *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Check for typo or logic error</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("logic-error");
+
+        repository.createRule(BOOLEAN_EXPRESSION_ALWAYS_TRUE_KEY)
+            .setName("Boolean expression is tautology")
+            .setHtmlDescription(
+                "<p>Expression like x || !x is always True.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[x || !x, ...]  (* Tautology *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Fix logic error</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("logic-error");
+
+        repository.createRule(BOOLEAN_EXPRESSION_ALWAYS_FALSE_KEY)
+            .setName("Boolean expression is contradiction")
+            .setHtmlDescription(
+                "<p>Expression like x && !x is always False.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[x && !x, ...]  (* Contradiction *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Fix logic error</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("logic-error");
+
+        repository.createRule(UNNECESSARY_BOOLEAN_CONVERSION_KEY)
+            .setName("Unnecessary boolean conversion")
+            .setHtmlDescription(
+                "<p>If[cond, True, False] should just be cond.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[x > 0, True, False]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x > 0</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(DOUBLE_NEGATION_KEY)
+            .setName("Double negation should be simplified")
+            .setHtmlDescription(
+                "<p>!!x or Not[Not[x]] should be simplified to x.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Not[Not[condition]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>condition</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(COMPLEX_BOOLEAN_EXPRESSION_ENHANCED_KEY)
+            .setName("Boolean expression too complex")
+            .setHtmlDescription(
+                "<p>Boolean expressions with >5 operators are hard to understand.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>a && b || c && d || e && f && g</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Break into intermediate variables</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("complexity", "readability");
+
+        repository.createRule(DE_MORGANS_LAW_OPPORTUNITY_KEY)
+            .setName("De Morgan's Law could improve clarity")
+            .setHtmlDescription(
+                "<p>!(a && b) could be !a || !b for better readability.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>!(valid && ready)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>!valid || !ready</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("clarity");
+
+        // Mathematica-Specific Patterns (Items 281-300)
+
+        repository.createRule(HOLD_ATTRIBUTE_MISSING_KEY)
+            .setName("Function manipulates unevaluated expressions without Hold attribute")
+            .setHtmlDescription(
+                "<p>Functions that manipulate expressions should have Hold attributes.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>MyHold[x_] := Hold[x]  (* x already evaluated! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>SetAttributes[MyHold, HoldAll]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("evaluation", "hold");
+
+        repository.createRule(HOLD_FIRST_BUT_USES_SECOND_ARGUMENT_FIRST_KEY)
+            .setName("HoldFirst but uses second argument first")
+            .setHtmlDescription(
+                "<p>Function with HoldFirst shouldn't evaluate second argument first.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>SetAttributes[f, HoldFirst];\n" +
+                "f[x_, y_] := evaluate[y]  (* y evaluates first! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Use HoldAll or fix evaluation order</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("evaluation", "hold");
+
+        repository.createRule(MISSING_UNEVALUATED_WRAPPER_KEY)
+            .setName("Missing Unevaluated wrapper causes premature evaluation")
+            .setHtmlDescription(
+                "<p>Pass unevaluated expressions with Unevaluated wrapper.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>heldFunc[x + 1]  (* x + 1 evaluates first *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>heldFunc[Unevaluated[x + 1]]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("evaluation");
+
+        repository.createRule(UNNECESSARY_HOLD_KEY)
+            .setName("Unnecessary Hold on literal")
+            .setHtmlDescription(
+                "<p>Hold[5] is redundant; literals don't evaluate.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Hold[42]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>42</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(RELEASE_HOLD_AFTER_HOLD_KEY)
+            .setName("ReleaseHold after Hold is redundant")
+            .setHtmlDescription(
+                "<p>ReleaseHold[Hold[x]] is just x.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>ReleaseHold[Hold[expr]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>expr</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(EVALUATE_IN_HELD_CONTEXT_KEY)
+            .setName("Evaluate in held context may not be intended")
+            .setHtmlDescription(
+                "<p>Evaluate inside Hold creates evaluation leak.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Hold[x, Evaluate[y], z]  (* y evaluates! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Ensure this is intentional</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("evaluation", "hold");
+
+        repository.createRule(PATTERN_WITH_SIDE_EFFECT_KEY)
+            .setName("Pattern test with side effects evaluated multiple times")
+            .setHtmlDescription(
+                "<p>Pattern tests can be evaluated multiple times during matching.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x_?(Print[#]; True &)  (* Prints multiple times *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Use pure pattern test without side effects</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "side-effects");
+
+        repository.createRule(REPLACEMENT_RULE_ORDER_MATTERS_KEY)
+            .setName("Replacement rule order affects result")
+            .setHtmlDescription(
+                "<p>Order of replacement rules matters; specific should come before general.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>{_ -> 0, 2 -> 5}  (* Catch-all first! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>{2 -> 5, _ -> 0}</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "replacement-rules");
+
+        repository.createRule(REPLACE_ALL_VS_REPLACE_CONFUSION_KEY)
+            .setName("ReplaceAll vs Replace confusion")
+            .setHtmlDescription(
+                "<p>ReplaceAll (/.) and Replace have different semantics.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list /. rules  (* May not be intended *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Replace[list, rules, {1}]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("replacement-rules");
+
+        repository.createRule(RULE_DOESNT_MATCH_DUE_TO_EVALUATION_KEY)
+            .setName("Rule won't match due to evaluation timing")
+            .setHtmlDescription(
+                "<p>Rule may not match due to when expressions evaluate.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x /. {1 + 1 -> 5}  (* Won't match 2 *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x /. {2 -> 5}</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("replacement-rules", "evaluation");
+
+        repository.createRule(PART_SPECIFICATION_OUT_OF_BOUNDS_KEY)
+            .setName("Part specification out of bounds")
+            .setHtmlDescription(
+                "<p>Accessing list[[100]] when list has <100 elements causes error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list = {1, 2, 3}; list[[10]]  (* Error! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Check length first or use Take/Drop</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("bounds-check", "runtime-error");
+
+        repository.createRule(SPAN_SPECIFICATION_INVALID_KEY)
+            .setName("Span specification is invalid")
+            .setHtmlDescription(
+                "<p>Backward spans like list[[10;;1]] produce empty result.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list[[10;;1]]  (* Backward span *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list[[1;;10]]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("spans");
+
+        repository.createRule(ALL_SPECIFICATION_INEFFICIENT_KEY)
+            .setName("Using [[All]] is redundant")
+            .setHtmlDescription(
+                "<p>list[[All]] is just list.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list[[All]]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("simplification");
+
+        repository.createRule(THREADING_OVER_NON_LISTS_KEY)
+            .setName("Threading over non-list with Listable attribute")
+            .setHtmlDescription(
+                "<p>Listable functions thread over lists; unexpected on scalars.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>listableFunc[5]  (* Returns {result} not result *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Ensure input type matches expectation</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("listable", "attributes");
+
+        repository.createRule(MISSING_ATTRIBUTES_DECLARATION_KEY)
+            .setName("Function should have Listable attribute")
+            .setHtmlDescription(
+                "<p>Functions that map element-wise should have Listable.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_List] := Map[operation, x]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>SetAttributes[f, Listable]; f[x_] := operation[x]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "attributes");
+
+        repository.createRule(ONE_IDENTITY_ATTRIBUTE_MISUSE_KEY)
+            .setName("OneIdentity attribute causes subtle issues")
+            .setHtmlDescription(
+                "<p>OneIdentity changes pattern matching semantics subtly.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>SetAttributes[f, OneIdentity]  (* Be very careful *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Only use when truly needed</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("attributes", "semantics");
+
+        repository.createRule(ORDERLESS_ATTRIBUTE_ON_NON_COMMUTATIVE_KEY)
+            .setName("Orderless on non-commutative operation")
+            .setHtmlDescription(
+                "<p>Orderless should only be used on commutative operations.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>SetAttributes[subtract, Orderless]  (* Wrong! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Remove Orderless attribute</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("attributes", "semantics");
+
+        repository.createRule(FLAT_ATTRIBUTE_MISUSE_KEY)
+            .setName("Flat attribute on non-associative operation")
+            .setHtmlDescription(
+                "<p>Flat should only be used on associative operations.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>SetAttributes[divide, Flat]  (* Wrong! *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Remove Flat attribute</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("attributes", "semantics");
+
+        repository.createRule(SEQUENCE_IN_UNEXPECTED_CONTEXT_KEY)
+            .setName("Sequence flattens unexpectedly")
+            .setHtmlDescription(
+                "<p>Sequence[] flattens into its context, possibly losing structure.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>{1, Sequence[2, 3], 4}  (* Becomes {1, 2, 3, 4} *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Be aware of flattening behavior</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("sequence", "structure");
+
+        repository.createRule(MISSING_SEQUENCE_WRAPPER_KEY)
+            .setName("Should use Sequence to avoid extra nesting")
+            .setHtmlDescription(
+                "<p>Use Sequence[] to flatten results into parent expression.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[cond, {a, b}, {}]  (* Empty list creates nesting *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[cond, Sequence[a, b], Sequence[]]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("sequence", "idiom");
+
+        // ===== CHUNK 7 RULE DEFINITIONS (Items 307-310, 312-320) =====
+
+        // Test Coverage Integration (Items 307-310)
+
+        repository.createRule(LOW_TEST_COVERAGE_WARNING_KEY)
+            .setName("File has low test coverage")
+            .setHtmlDescription(
+                "<p>Files should have at least 80% line coverage.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>File with <80% coverage</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Add tests to improve coverage</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("testing", "coverage");
+
+        repository.createRule(UNTESTED_PUBLIC_FUNCTION_KEY)
+            .setName("Public function has no tests")
+            .setHtmlDescription(
+                "<p>All public API functions should have tests.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Public function with no VerificationTest</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Add VerificationTest for the function</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("testing", "coverage");
+
+        repository.createRule(UNTESTED_BRANCH_KEY)
+            .setName("Branch never executed in tests")
+            .setHtmlDescription(
+                "<p>All If/Which branches should be tested.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If branch with 0% coverage</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Add test for uncovered branch</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("testing", "coverage");
+
+        repository.createRule(TEST_ONLY_CODE_IN_PRODUCTION_KEY)
+            .setName("Code only executed in tests is dead in production")
+            .setHtmlDescription(
+                "<p>Code paths only hit during tests are dead in production.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Code only executed when testing flag is set</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Remove test-only code or make it test utility</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("testing", "dead-code");
+
+        // Performance Analysis (Items 312-320)
+
+        repository.createRule(COMPILABLE_FUNCTION_NOT_COMPILED_KEY)
+            .setName("Function suitable for Compile[] is not compiled")
+            .setHtmlDescription(
+                "<p>Suitable numerical functions should use Compile[] for 10-100x speedup.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>slowFunc[x_] := x^2 + Sin[x]  (* Could compile *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>fastFunc = Compile[{{x, _Real}}, x^2 + Sin[x]]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "compilation");
+
+        repository.createRule(COMPILATION_TARGET_MISSING_KEY)
+            .setName("Compile should target C not MVM")
+            .setHtmlDescription(
+                "<p>C compilation is much faster than MVM (Mathematica Virtual Machine).</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Compile[{x}, expr, CompilationTarget -> \"MVM\"]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Compile[{x}, expr, CompilationTarget -> \"C\"]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "compilation");
+
+        repository.createRule(NON_COMPILABLE_CONSTRUCT_IN_COMPILE_KEY)
+            .setName("Non-compilable function in Compile[] falls back to slow evaluation")
+            .setHtmlDescription(
+                "<p>Using non-compilable functions defeats the purpose of Compile[].</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Compile[{x}, Sort[x]]  (* Sort not compilable *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Use only compilable functions</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("performance", "compilation");
+
+        repository.createRule(PACKED_ARRAY_UNPACKED_KEY)
+            .setName("Operation unpacks packed array")
+            .setHtmlDescription(
+                "<p>Unpacking packed arrays causes 10-100x slowdown.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list[[1]] = x  (* Unpacks array *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Use ReplacePart instead</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "packed-arrays");
+
+        repository.createRule(INEFFICIENT_PATTERN_IN_PERFORMANCE_CRITICAL_CODE_KEY)
+            .setName("Complex pattern matching in hot loop")
+            .setHtmlDescription(
+                "<p>Pattern matching is slow in performance-critical loops.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[Match[x, complex_pattern], {i, 1, million}]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Use direct comparison or simplify pattern</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "patterns");
+
+        repository.createRule(N_APPLIED_TOO_LATE_KEY)
+            .setName("N[] applied after symbolic computation")
+            .setHtmlDescription(
+                "<p>Do numeric computation from the start for better performance.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>N[Integrate[f[x], {x, 0, 1}]]  (* Symbolic first *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>NIntegrate[f[x], {x, 0, 1}]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "numeric");
+
+        repository.createRule(MISSING_MEMOIZATION_OPPORTUNITY_ENHANCED_KEY)
+            .setName("Recursive function without memoization")
+            .setHtmlDescription(
+                "<p>Recursive functions should use memoization to avoid exponential time.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>fib[n_] := fib[n-1] + fib[n-2]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>fib[n_] := fib[n] = fib[n-1] + fib[n-2]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "memoization");
+
+        repository.createRule(INEFFICIENT_STRING_CONCATENATION_ENHANCED_KEY)
+            .setName("Repeated string concatenation in loop")
+            .setHtmlDescription(
+                "<p>Repeated <> in loop has quadratic complexity.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[str = str <> \"x\", {n}]  (* O(n²) *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>StringJoin[Table[\"x\", {n}]]  (* O(n) *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "strings");
+
+        repository.createRule(LIST_CONCATENATION_IN_LOOP_KEY)
+            .setName("List concatenation in loop has quadratic complexity")
+            .setHtmlDescription(
+                "<p>Join[list, {x}] in loop has O(n²) complexity.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[list = Join[list, {x}], {n}]</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Use Sow/Reap or Table instead</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "lists");
 
         repository.done();
     }

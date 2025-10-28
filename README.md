@@ -27,8 +27,13 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Dependency & Architecture** | 20 rules | Architecture | ✅ Active | Issues → Search "package" or "dependency" |
 | **Unused Export & Dead Code (Cross-File)** | 15 rules | Code Quality | ✅ Active | Issues → Search "unused" or "export" |
 | **Documentation & Consistency** | 5 rules | API Quality | ✅ Active | Issues → Search "usage" or "documentation" |
+| **Null Safety & Error Handling** | 16 rules | Reliability | ✅ Active | Issues → Search "null" or "error" |
+| **Constant & Expression Analysis** | 14 rules | Code Quality | ✅ Active | Issues → Search "constant" or "redundant" |
+| **Mathematica-Specific Patterns** | 20 rules | Language Idioms | ✅ Active | Issues → Search "hold" or "attribute" |
+| **Test Coverage Integration** | 4 rules | Testing | ✅ Active | Issues → Search "test" or "coverage" |
+| **Performance Analysis** | 9 rules | Performance | ✅ Active | Issues → Search "compile" or "packed" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **320 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **383 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -3338,6 +3343,145 @@ This enables sophisticated architectural analysis previously impossible with sin
 
 ---
 
+## 12. Advanced Semantics - Chunk 6 (50 New Rules)
+
+**Introduced:** Chunk 6 from ROADMAP_325.md (Items 251-300)
+**Focus:** Null safety, constant propagation, and Mathematica-specific evaluation semantics
+
+### 12.1 Null Safety & Error Handling (16 Rules)
+
+Advanced null/error detection and validation:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Null Dereference | Critical Bug | Accessing properties/methods of Null causes runtime errors |
+| Missing Null Check | Bug | Function parameter may be Null without validation |
+| Null Passed To Non-Nullable | Bug | Passing Null to function expecting valid value |
+| Inconsistent Null Handling | Code Smell | Some branches check for Null, others don't |
+| Null Return Not Documented | Code Smell | Function can return Null without documenting it |
+| Comparison With Null | Bug | Using `==` instead of `===` for Null comparison |
+| Missing Check Leads To Null Propagation | Bug | Null propagates through calculations unchecked |
+| Check Pattern Doesn't Handle All Cases | Bug | Pattern match missing edge cases (empty list, Null, $Failed) |
+| Quiet Suppressing Important Messages | Code Smell | `Quiet[]` without specifying which messages to suppress |
+| Off Disabling Important Warnings | Major Code Smell | `Off[General::...]` disables important error messages |
+| Catch All Exception Handler | Code Smell | `Catch[...]` without tag catches everything |
+| Empty Exception Handler | Bug | Exception caught but not handled (silently ignored) |
+| Throw Without Catch | Bug | `Throw[]` used but no corresponding `Catch[]` |
+| Abort In Library Code | Major Bug | `Abort[]` in library terminates user's session |
+| Message Without Definition | Bug | `Message[func::tag]` used but message not defined |
+| Missing Message Definition | Code Smell | Public function missing error message definitions |
+
+**📍 How to View:** Issues → Search "null" or "error" → Filter Critical/Major severity
+
+### 12.2 Constant & Expression Analysis (14 Rules)
+
+Constant propagation and dead code detection via static analysis:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Condition Always True (Constant Propagation) | Bug | Condition provably always True via constant analysis |
+| Condition Always False (Constant Propagation) | Bug | Condition provably always False |
+| Loop Bound Constant | Code Smell | Loop with constant bound (consider Range[] or Table[]) |
+| Redundant Computation | Code Smell | Same expression computed multiple times (cache result) |
+| Pure Expression In Loop | Performance | Side-effect-free expression recomputed each iteration |
+| Constant Expression | Code Smell | Expression always evaluates to same constant |
+| Identity Operation | Code Smell | Operations with no effect (x*1, x+0, Reverse[Reverse[x]]) |
+| Comparison Of Identical Expressions | Bug | `x == x` always True (likely copy-paste error) |
+| Boolean Expression Always True | Bug | Boolean expression trivially True (e.g., `x == 1 \|\| x != 1`) |
+| Boolean Expression Always False | Bug | Boolean expression trivially False (e.g., `x == 1 && x == 2`) |
+| Unnecessary Boolean Conversion | Code Smell | `If[cond, True, False]` → just use `cond` |
+| Double Negation | Code Smell | `Not[Not[x]]` or `!!x` → simplify to `x` |
+| Complex Boolean Expression Enhanced | Code Smell | Boolean expression too complex (>5 operators), extract to variable |
+| De Morgan's Law Opportunity | Code Smell | `Not[a \|\| b]` → `!a && !b` for readability |
+
+**📍 How to View:** Issues → Search "constant" or "redundant" → Type: Code Smell or Bug
+
+### 12.3 Mathematica-Specific Patterns (20 Rules)
+
+Deep analysis of Mathematica's unique evaluation semantics:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Hold Attribute Missing | Bug | Function modifies argument before evaluation (needs HoldAll/HoldFirst) |
+| HoldFirst But Uses Second Argument First | Bug | HoldFirst function evaluates second argument before first |
+| Missing Unevaluated Wrapper | Bug | Passing expression that shouldn't evaluate without Unevaluated[] |
+| Unnecessary Hold | Code Smell | Hold[] around literal value (has no effect) |
+| ReleaseHold After Hold | Code Smell | `ReleaseHold[Hold[x]]` → just use `x` |
+| Evaluate In Held Context | Bug | `Hold[... Evaluate[x] ...]` defeats purpose of Hold |
+| Pattern With Side Effect | Major Bug | Pattern test contains side effects (Print, Message, Set) |
+| Replacement Rule Order Matters | Bug | Rules in `{x_ -> a, 1 -> b}` - specific should come first |
+| ReplaceAll vs Replace Confusion | Code Smell | Using ReplaceAll (/.) when Replace is more appropriate |
+| Rule Doesn't Match Due To Evaluation | Bug | Pattern won't match because expression pre-evaluates |
+| Part Specification Out Of Bounds | Critical Bug | `list[[n]]` where n > Length[list] |
+| Span Specification Invalid | Bug | `list[[start;;end]]` where start > end |
+| All Specification Inefficient | Performance | `list[[All]]` slower than direct `list` access |
+| Threading Over Non-Lists | Bug | Listable function called on non-list expecting element-wise operation |
+| Missing Attributes Declaration | Code Smell | Function benefits from Orderless, Flat, or Listable but not declared |
+| OneIdentity Attribute Misuse | Bug | OneIdentity on function that shouldn't treat f[x] as x |
+| Orderless Attribute On Non-Commutative | Bug | Orderless on function where argument order matters |
+| Flat Attribute Misuse | Bug | Flat attribute on non-associative function |
+| Sequence In Unexpected Context | Bug | Sequence[] flattens where not intended |
+| Missing Sequence Wrapper | Bug | Should use Sequence[] to splice list into arguments |
+
+**📍 How to View:** Issues → Search "hold" or "attribute" → See Mathematica-specific patterns
+
+**Rule Count Summary:**
+- Null Safety & Error Handling: 16 rules
+- Constant & Expression Analysis: 14 rules
+- Mathematica-Specific Patterns: 20 rules
+- **Total: 50 new rules**
+
+**Key Innovation:** Chunk 6 introduces **semantic-aware analysis** understanding Mathematica's unique evaluation model (Hold attributes, Unevaluated, pattern matching timing) and **constant propagation** for detecting dead branches and tautologies.
+
+---
+
+## 13. Testing & Performance - Chunk 7 (13 New Rules)
+
+**Introduced:** Chunk 7 from ROADMAP_325.md (Items 301-325)
+**Focus:** Test coverage integration and performance optimization detection
+
+### 13.1 Test Coverage Integration (4 Rules)
+
+Encourage test-driven development and coverage:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Low Test Coverage Warning | Info | File has <50% test coverage (requires coverage data) |
+| Untested Public Function | Code Smell | Public exported function with no test cases |
+| Untested Branch | Code Smell | Conditional branch never executed in tests |
+| Test Only Code In Production | Bug | Test functions (Assert*, VerificationTest) in production files |
+
+**📍 How to View:** Issues → Search "test" or "coverage" → Type: Code Smell
+
+**Note:** Coverage metrics require test execution output. When not available, these rules use heuristics (presence of test files, VerificationTest usage, etc.).
+
+### 13.2 Performance Analysis (9 Rules)
+
+Detect missed optimization opportunities:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Compilable Function Not Compiled | Performance | Numerical function suitable for Compile[] but not compiled |
+| Compilation Target Missing | Performance | Compile[] without CompilationTarget (defaults to slow WVM) |
+| Non-Compilable Construct In Compile | Bug | Using Sort/Select/Cases in Compile[] (forces MainEvaluate) |
+| Packed Array Unpacked | Performance | Modifying packed array element-wise (unpacks to list) |
+| Inefficient Pattern In Performance-Critical Code | Performance | Pattern matching in inner loop (pre-compile or restructure) |
+| N Applied Too Late | Performance | `N[Integrate[...]]` → apply N earlier for numeric evaluation |
+| Missing Memoization Opportunity Enhanced | Performance | Expensive pure function recomputed (use memoization) |
+| Inefficient String Concatenation Enhanced | Performance | String concatenation in loop (use StringJoin or Table) |
+| List Concatenation In Loop | Critical Performance | `Do[..., list = Join[list, ...]]` O(n²) complexity |
+
+**📍 How to View:** Issues → Search "compile" or "packed" → Type: Performance
+
+**Rule Count Summary:**
+- Test Coverage Integration: 4 rules
+- Performance Analysis: 9 rules
+- **Total: 13 new rules**
+
+**Key Innovation:** Chunk 7 adds **test-awareness** (distinguishing test vs production code) and **performance optimization detection** (identifying common Mathematica bottlenecks like unpacking, missed compilation, inefficient loops).
+
+---
+
 ## OWASP Top 10 2021 Coverage Summary
 
 This plugin now covers **9 out of 10** OWASP Top 10 2021 categories:
@@ -3722,8 +3866,46 @@ Example files demonstrating all rules:
 - Ensure quality profile has rules activated
 
 ### Scan is very slow
+
+**Common cause:** With 383 rules analyzing large codebases, the scanner may run out of memory (especially metaspace for rule class metadata).
+
+**Symptoms:**
+- Scan slows dramatically near completion (90-99%)
+- Progress updates take 20-30+ seconds
+- High CPU usage but slow progress
+- Multiple minutes between "Progress: X/Y files" messages
+
+**Diagnosis:**
+Check if metaspace is full (requires `jstat` from JDK):
+```bash
+# Find scanner process ID
+ps aux | grep sonar-scanner-engine-shaded
+
+# Check GC stats (replace PID with actual process ID)
+jstat -gcutil PID 1000 3
+```
+
+If **M (Metaspace)** shows >95%, you need more memory.
+
+**Solution:** Add to your `sonar-project.properties`:
+```properties
+# Scanner JVM options - Increased for 383 rules across large codebases
+# Metaspace increased from default ~45MB to 512MB to handle rule class metadata
+sonar.scanner.javaOpts=-Xmx8192m -Xms2048m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC
+```
+
+**What each setting does:**
+- `-Xmx8192m` - Maximum heap size (8GB) - handles file analysis
+- `-Xms2048m` - Initial heap size (2GB) - avoids frequent resizing
+- `-XX:MetaspaceSize=256m` - Initial metaspace (256MB) - for rule classes
+- `-XX:MaxMetaspaceSize=512m` - Max metaspace (512MB) - prevents thrashing
+- `-XX:+UseG1GC` - G1 garbage collector - better for large heaps
+
+**Expected improvement:** 2-3x faster scans for large codebases (10,000+ files).
+
+**Alternative exclusions for faster scans:**
 - Large files (>10,000 lines) are auto-skipped
-- Exclude documentation directories
+- Exclude documentation directories (see below)
 - Increase duplication thresholds
 
 ### Too many duplication warnings

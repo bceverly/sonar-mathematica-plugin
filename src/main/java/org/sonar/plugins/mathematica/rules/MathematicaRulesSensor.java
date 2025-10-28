@@ -48,6 +48,7 @@ public class MathematicaRulesSensor implements Sensor {
     private final Chunk3Detector chunk3Detector = new Chunk3Detector();
     private final Chunk4Detector chunk4Detector = new Chunk4Detector();
     private final Chunk5Detector chunk5Detector = new Chunk5Detector();
+    private final Chunk67Detector chunk67Detector = new Chunk67Detector();
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -557,6 +558,81 @@ public class MathematicaRulesSensor implements Sensor {
             Chunk5Detector.detectPublicFunctionWithImplementationDetailsInName(context, inputFile, content);
             Chunk5Detector.detectPublicAPINotInPackageContext(context, inputFile, content);
             Chunk5Detector.detectTestFunctionInProductionCode(context, inputFile, content);
+
+            // ===== CHUNK 6 & 7 DETECTORS (Items 251-325 from ROADMAP_325.md) =====
+
+            // Null Safety & Error Handling (Items 251-266)
+            Chunk67Detector.detectNullDereference(context, inputFile, content);
+            Chunk67Detector.detectMissingNullCheck(context, inputFile, content);
+            Chunk67Detector.detectNullPassedToNonNullable(context, inputFile, content);
+            Chunk67Detector.detectInconsistentNullHandling(context, inputFile, content);
+            Chunk67Detector.detectNullReturnNotDocumented(context, inputFile, content);
+            Chunk67Detector.detectComparisonWithNull(context, inputFile, content);
+            Chunk67Detector.detectMissingCheckLeadsToNullPropagation(context, inputFile, content);
+            Chunk67Detector.detectCheckPatternDoesntHandleAllCases(context, inputFile, content);
+            Chunk67Detector.detectQuietSuppressingImportantMessages(context, inputFile, content);
+            Chunk67Detector.detectOffDisablingImportantWarnings(context, inputFile, content);
+            Chunk67Detector.detectCatchAllExceptionHandler(context, inputFile, content);
+            Chunk67Detector.detectEmptyExceptionHandler(context, inputFile, content);
+            Chunk67Detector.detectThrowWithoutCatch(context, inputFile, content);
+            Chunk67Detector.detectAbortInLibraryCode(context, inputFile, content);
+            Chunk67Detector.detectMessageWithoutDefinition(context, inputFile, content);
+            Chunk67Detector.detectMissingMessageDefinition(context, inputFile, content);
+
+            // Constant & Expression Analysis (Items 267-280)
+            Chunk67Detector.detectConditionAlwaysTrueConstantPropagation(context, inputFile, content);
+            Chunk67Detector.detectConditionAlwaysFalseConstantPropagation(context, inputFile, content);
+            Chunk67Detector.detectLoopBoundConstant(context, inputFile, content);
+            Chunk67Detector.detectRedundantComputation(context, inputFile, content);
+            Chunk67Detector.detectPureExpressionInLoop(context, inputFile, content);
+            Chunk67Detector.detectConstantExpression(context, inputFile, content);
+            Chunk67Detector.detectIdentityOperation(context, inputFile, content);
+            Chunk67Detector.detectComparisonOfIdenticalExpressions(context, inputFile, content);
+            Chunk67Detector.detectBooleanExpressionAlwaysTrue(context, inputFile, content);
+            Chunk67Detector.detectBooleanExpressionAlwaysFalse(context, inputFile, content);
+            Chunk67Detector.detectUnnecessaryBooleanConversion(context, inputFile, content);
+            Chunk67Detector.detectDoubleNegation(context, inputFile, content);
+            Chunk67Detector.detectComplexBooleanExpressionEnhanced(context, inputFile, content);
+            Chunk67Detector.detectDeMorgansLawOpportunity(context, inputFile, content);
+
+            // Mathematica-Specific Patterns (Items 281-300)
+            Chunk67Detector.detectHoldAttributeMissing(context, inputFile, content);
+            Chunk67Detector.detectHoldFirstButUsesSecondArgumentFirst(context, inputFile, content);
+            Chunk67Detector.detectMissingUnevaluatedWrapper(context, inputFile, content);
+            Chunk67Detector.detectUnnecessaryHold(context, inputFile, content);
+            Chunk67Detector.detectReleaseHoldAfterHold(context, inputFile, content);
+            Chunk67Detector.detectEvaluateInHeldContext(context, inputFile, content);
+            Chunk67Detector.detectPatternWithSideEffect(context, inputFile, content);
+            Chunk67Detector.detectReplacementRuleOrderMatters(context, inputFile, content);
+            Chunk67Detector.detectReplaceAllVsReplaceConfusion(context, inputFile, content);
+            Chunk67Detector.detectRuleDoesntMatchDueToEvaluation(context, inputFile, content);
+            Chunk67Detector.detectPartSpecificationOutOfBounds(context, inputFile, content);
+            Chunk67Detector.detectSpanSpecificationInvalid(context, inputFile, content);
+            Chunk67Detector.detectAllSpecificationInefficient(context, inputFile, content);
+            Chunk67Detector.detectThreadingOverNonLists(context, inputFile, content);
+            Chunk67Detector.detectMissingAttributesDeclaration(context, inputFile, content);
+            Chunk67Detector.detectOneIdentityAttributeMisuse(context, inputFile, content);
+            Chunk67Detector.detectOrderlessAttributeOnNonCommutative(context, inputFile, content);
+            Chunk67Detector.detectFlatAttributeMisuse(context, inputFile, content);
+            Chunk67Detector.detectSequenceInUnexpectedContext(context, inputFile, content);
+            Chunk67Detector.detectMissingSequenceWrapper(context, inputFile, content);
+
+            // Test Coverage Integration (Items 307-310)
+            Chunk67Detector.detectLowTestCoverageWarning(context, inputFile, content);
+            Chunk67Detector.detectUntestedPublicFunction(context, inputFile, content);
+            Chunk67Detector.detectUntestedBranch(context, inputFile, content);
+            Chunk67Detector.detectTestOnlyCodeInProduction(context, inputFile, content);
+
+            // Performance Analysis (Items 312-320)
+            Chunk67Detector.detectCompilableFunctionNotCompiled(context, inputFile, content);
+            Chunk67Detector.detectCompilationTargetMissing(context, inputFile, content);
+            Chunk67Detector.detectNonCompilableConstructInCompile(context, inputFile, content);
+            Chunk67Detector.detectPackedArrayUnpacked(context, inputFile, content);
+            Chunk67Detector.detectInefficientPatternInPerformanceCriticalCode(context, inputFile, content);
+            Chunk67Detector.detectNAppliedTooLate(context, inputFile, content);
+            Chunk67Detector.detectMissingMemoizationOpportunityEnhanced(context, inputFile, content);
+            Chunk67Detector.detectInefficientStringConcatenationEnhanced(context, inputFile, content);
+            Chunk67Detector.detectListConcatenationInLoop(context, inputFile, content);
 
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
