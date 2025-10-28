@@ -45,6 +45,7 @@ public class MathematicaRulesSensor implements Sensor {
     private final SecurityHotspotDetector securityHotspotDetector = new SecurityHotspotDetector();
     private final Chunk1Detector chunk1Detector = new Chunk1Detector();
     private final Chunk2Detector chunk2Detector = new Chunk2Detector();
+    private final Chunk3Detector chunk3Detector = new Chunk3Detector();
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -104,6 +105,7 @@ public class MathematicaRulesSensor implements Sensor {
             securityHotspotDetector.initializeCaches(content);
             chunk1Detector.initializeCaches(content);
             chunk2Detector.initializeCaches(content);
+            chunk3Detector.initializeCaches(content);
 
             // Analyze comments once and cache for reuse
             List<int[]> commentRanges = analyzeComments(context, inputFile, content);
@@ -346,6 +348,48 @@ public class MathematicaRulesSensor implements Sensor {
             chunk2Detector.detectCircularNeeds(context, inputFile, content);
             chunk2Detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content);
 
+            // ===== CHUNK 3 DETECTORS (Items 111-150 from ROADMAP_325.md) =====
+
+            // Type Mismatch Detection (Items 111-130)
+            chunk3Detector.detectNumericOperationOnString(context, inputFile, content);
+            chunk3Detector.detectStringOperationOnNumber(context, inputFile, content);
+            chunk3Detector.detectWrongArgumentType(context, inputFile, content);
+            chunk3Detector.detectFunctionReturnsWrongType(context, inputFile, content);
+            chunk3Detector.detectComparisonIncompatibleTypes(context, inputFile, content);
+            chunk3Detector.detectMixedNumericTypes(context, inputFile, content);
+            chunk3Detector.detectIntegerDivisionExpectingReal(context, inputFile, content);
+            chunk3Detector.detectListFunctionOnAssociation(context, inputFile, content);
+            chunk3Detector.detectPatternTypeMismatch(context, inputFile, content);
+            chunk3Detector.detectOptionalTypeInconsistent(context, inputFile, content);
+            chunk3Detector.detectReturnTypeInconsistent(context, inputFile, content);
+            chunk3Detector.detectNullAssignmentToTypedVariable(context, inputFile, content);
+            chunk3Detector.detectTypeCastWithoutValidation(context, inputFile, content);
+            chunk3Detector.detectImplicitTypeConversion(context, inputFile, content);
+            chunk3Detector.detectGraphicsObjectInNumericContext(context, inputFile, content);
+            chunk3Detector.detectSymbolInNumericContext(context, inputFile, content);
+            chunk3Detector.detectImageOperationOnNonImage(context, inputFile, content);
+            chunk3Detector.detectSoundOperationOnNonSound(context, inputFile, content);
+            chunk3Detector.detectDatasetOperationOnList(context, inputFile, content);
+            chunk3Detector.detectGraphOperationOnNonGraph(context, inputFile, content);
+
+            // Data Flow Analysis (Items 135-150)
+            chunk3Detector.detectUninitializedVariableUseEnhanced(context, inputFile, content);
+            chunk3Detector.detectVariableMayBeUninitialized(context, inputFile, content);
+            chunk3Detector.detectDeadStore(context, inputFile, content);
+            chunk3Detector.detectOverwrittenBeforeRead(context, inputFile, content);
+            chunk3Detector.detectVariableAliasingIssue(context, inputFile, content);
+            chunk3Detector.detectModificationOfLoopIterator(context, inputFile, content);
+            chunk3Detector.detectUseOfIteratorOutsideLoop(context, inputFile, content);
+            chunk3Detector.detectReadingUnsetVariable(context, inputFile, content);
+            chunk3Detector.detectDoubleAssignmentSameValue(context, inputFile, content);
+            chunk3Detector.detectMutationInPureFunction(context, inputFile, content);
+            chunk3Detector.detectSharedMutableState(context, inputFile, content);
+            chunk3Detector.detectVariableScopeEscape(context, inputFile, content);
+            chunk3Detector.detectClosureOverMutableVariable(context, inputFile, content);
+            chunk3Detector.detectAssignmentInConditionEnhanced(context, inputFile, content);
+            chunk3Detector.detectAssignmentAsReturnValue(context, inputFile, content);
+            chunk3Detector.detectVariableNeverModified(context, inputFile, content);
+
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
             bugDetector.clearCaches();
@@ -353,6 +397,7 @@ public class MathematicaRulesSensor implements Sensor {
             securityHotspotDetector.clearCaches();
             chunk1Detector.clearCaches();
             chunk2Detector.clearCaches();
+            chunk3Detector.clearCaches();
 
         } catch (Exception e) {
             LOG.error("Error analyzing file: {}", inputFile, e);

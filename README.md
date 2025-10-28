@@ -19,8 +19,10 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Unused Code Detection** | 15 rules | Dead Code | ✅ Active | Issues → Search "unused" |
 | **Shadowing & Naming** | 15 rules | Code Quality | ✅ Active | Issues → Search "shadow" |
 | **Undefined Symbol Detection** | 10 rules | Reliability | ✅ Active | Issues → Search "undefined" |
+| **Type Mismatch Detection** | 20 rules | Type Safety | ✅ Active | Issues → Search "type" |
+| **Data Flow Analysis** | 16 rules | Data Flow | ✅ Active | Issues → Search "uninitialized" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **209 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **245 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -3100,6 +3102,72 @@ Catch typos and missing imports before runtime:
 - Shadowing & Naming: 15 rules (code clarity)
 - Undefined Symbol Detection: 10 rules (runtime error prevention)
 - **Total: 50 new rules**
+
+---
+
+## 9. Advanced Rules - Chunk 3 (36 New Rules)
+
+**Introduced:** Chunk 3 from ROADMAP_325.md (Items 111-150)
+**Focus:** Type mismatch detection and data flow analysis for enhanced type safety and variable tracking
+
+### 9.1 Type Mismatch Detection (20 Rules)
+
+Catch type errors before runtime:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Numeric Operation On String | Bug | Arithmetic operations on string literals (e.g., `"hello" + 1`) |
+| String Operation On Number | Bug | String functions on numeric values (e.g., `StringLength[42]`) |
+| Wrong Argument Type | Bug | Functions called with incorrect argument types |
+| Function Returns Wrong Type | Bug | Return value doesn't match expected type from signature |
+| Comparison Incompatible Types | Bug | Comparing incompatible types (e.g., `"hello" == 5`) |
+| Mixed Numeric Types | Code Smell | Mixing Integer and Real without explicit conversion |
+| Integer Division Expecting Real | Bug | Using `/` when `N[...]` or explicit conversion needed |
+| List Function On Association | Bug | Using `Part`, `Length` on Association (use `Lookup`, `KeyTake` instead) |
+| Pattern Type Mismatch | Bug | Pattern declares type that doesn't match usage (e.g., `f[x_Integer] := x/2.0`) |
+| Optional Type Inconsistent | Bug | Optional parameter type doesn't match default value |
+| Return Type Inconsistent | Bug | Function returns different types in different branches |
+| Null Assignment To Typed Variable | Bug | Assigning `Null` to variable with type annotation |
+| Type Cast Without Validation | Security Hotspot | `ToExpression` without `Check` or validation |
+| Implicit Type Conversion | Code Smell | Relying on automatic type coercion (make explicit) |
+| Graphics Object In Numeric Context | Bug | Using Graphics/Graphics3D where number expected |
+| Symbol In Numeric Context | Bug | Unevaluated symbol in arithmetic (e.g., `x + 1` where `x` undefined) |
+| Image Operation On Non-Image | Bug | Using `ImageData`, `ImageDimensions` on non-Image |
+| Sound Operation On Non-Sound | Bug | Using `AudioData` on non-Audio object |
+| Dataset Operation On List | Code Smell | Using Dataset functions on plain List (inefficient) |
+| Graph Operation On Non-Graph | Bug | Using `VertexList`, `EdgeList` on non-Graph |
+
+**📍 How to View:** Issues → Search "type" or "mismatch" → Filter by rule name
+
+### 9.2 Data Flow Analysis (16 Rules)
+
+Track variable initialization, assignment, and usage:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Uninitialized Variable Use Enhanced | Bug | Using variable before any assignment (enhanced detection) |
+| Variable May Be Uninitialized | Bug | Variable may be uninitialized in some code paths |
+| Dead Store | Code Smell | Assignment immediately overwritten (never read) |
+| Overwritten Before Read | Code Smell | Variable assigned, then reassigned before first use |
+| Variable Aliasing Issue | Bug | Multiple references to mutable structure causing confusion |
+| Modification Of Loop Iterator | Bug | Changing loop iterator variable inside loop body |
+| Use Of Iterator Outside Loop | Bug | Referencing loop iterator after loop completes |
+| Reading Unset Variable | Bug | Using variable after `Unset` or `Clear` |
+| Double Assignment Same Value | Code Smell | Assigning same value twice (e.g., `x=5; x=5;`) |
+| Mutation In Pure Function | Bug | Side-effect in pure function (`Function`, `&`) |
+| Shared Mutable State | Code Smell | Global variable modified by multiple functions |
+| Variable Scope Escape | Bug | Local variable reference escapes scope (e.g., in closure) |
+| Closure Over Mutable Variable | Code Smell | Function captures variable that changes after definition |
+| Assignment In Condition Enhanced | Bug | Assignment in `If`, `While` condition (likely typo) |
+| Assignment As Return Value | Code Smell | Using `x = value` as return (use `;` or explicit `Return`) |
+| Variable Never Modified | Code Smell | Variable assigned once, never changed (consider constant) |
+
+**📍 How to View:** Issues → Search "uninitialized" or "assignment" → Filter by rule name
+
+**Rule Count Summary:**
+- Type Mismatch Detection: 20 rules (type safety)
+- Data Flow Analysis: 16 rules (variable tracking)
+- **Total: 36 new rules**
 
 ---
 

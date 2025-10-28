@@ -262,6 +262,46 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String CIRCULAR_NEEDS_KEY = "CircularNeeds";
     public static final String FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY = "ForwardReferenceWithoutDeclaration";
 
+    // Rule keys - Chunk 3: Type Mismatch Detection (Items 111-130 from ROADMAP_325.md)
+    public static final String NUMERIC_OPERATION_ON_STRING_KEY = "NumericOperationOnString";
+    public static final String STRING_OPERATION_ON_NUMBER_KEY = "StringOperationOnNumber";
+    public static final String WRONG_ARGUMENT_TYPE_KEY = "WrongArgumentType";
+    public static final String FUNCTION_RETURNS_WRONG_TYPE_KEY = "FunctionReturnsWrongType";
+    public static final String COMPARISON_INCOMPATIBLE_TYPES_KEY = "ComparisonIncompatibleTypes";
+    public static final String MIXED_NUMERIC_TYPES_KEY = "MixedNumericTypes";
+    public static final String INTEGER_DIVISION_EXPECTING_REAL_KEY = "IntegerDivisionExpectingReal";
+    public static final String LIST_FUNCTION_ON_ASSOCIATION_KEY = "ListFunctionOnAssociation";
+    public static final String PATTERN_TYPE_MISMATCH_KEY = "PatternTypeMismatch";
+    public static final String OPTIONAL_TYPE_INCONSISTENT_KEY = "OptionalTypeInconsistent";
+    public static final String RETURN_TYPE_INCONSISTENT_KEY = "ReturnTypeInconsistent";
+    public static final String NULL_ASSIGNMENT_TO_TYPED_VARIABLE_KEY = "NullAssignmentToTypedVariable";
+    public static final String TYPE_CAST_WITHOUT_VALIDATION_KEY = "TypeCastWithoutValidation";
+    public static final String IMPLICIT_TYPE_CONVERSION_KEY = "ImplicitTypeConversion";
+    public static final String GRAPHICS_OBJECT_IN_NUMERIC_CONTEXT_KEY = "GraphicsObjectInNumericContext";
+    public static final String SYMBOL_IN_NUMERIC_CONTEXT_KEY = "SymbolInNumericContext";
+    public static final String IMAGE_OPERATION_ON_NON_IMAGE_KEY = "ImageOperationOnNonImage";
+    public static final String SOUND_OPERATION_ON_NON_SOUND_KEY = "SoundOperationOnNonSound";
+    public static final String DATASET_OPERATION_ON_LIST_KEY = "DatasetOperationOnList";
+    public static final String GRAPH_OPERATION_ON_NON_GRAPH_KEY = "GraphOperationOnNonGraph";
+
+    // Rule keys - Chunk 3: Data Flow Analysis (Items 135-150 from ROADMAP_325.md)
+    public static final String UNINITIALIZED_VARIABLE_USE_ENHANCED_KEY = "UninitializedVariableUseEnhanced";
+    public static final String VARIABLE_MAY_BE_UNINITIALIZED_KEY = "VariableMayBeUninitialized";
+    public static final String DEAD_STORE_KEY = "DeadStore";
+    public static final String OVERWRITTEN_BEFORE_READ_KEY = "OverwrittenBeforeRead";
+    public static final String VARIABLE_ALIASING_ISSUE_KEY = "VariableAliasingIssue";
+    public static final String MODIFICATION_OF_LOOP_ITERATOR_KEY = "ModificationOfLoopIterator";
+    public static final String USE_OF_ITERATOR_OUTSIDE_LOOP_KEY = "UseOfIteratorOutsideLoop";
+    public static final String READING_UNSET_VARIABLE_KEY = "ReadingUnsetVariable";
+    public static final String DOUBLE_ASSIGNMENT_SAME_VALUE_KEY = "DoubleAssignmentSameValue";
+    public static final String MUTATION_IN_PURE_FUNCTION_KEY = "MutationInPureFunction";
+    public static final String SHARED_MUTABLE_STATE_KEY = "SharedMutableState";
+    public static final String VARIABLE_SCOPE_ESCAPE_KEY = "VariableScopeEscape";
+    public static final String CLOSURE_OVER_MUTABLE_VARIABLE_KEY = "ClosureOverMutableVariable";
+    public static final String ASSIGNMENT_IN_CONDITION_ENHANCED_KEY = "AssignmentInConditionEnhanced";
+    public static final String ASSIGNMENT_AS_RETURN_VALUE_KEY = "AssignmentAsReturnValue";
+    public static final String VARIABLE_NEVER_MODIFIED_KEY = "VariableNeverModified";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -3783,6 +3823,486 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("MAJOR")
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("forward-reference", "declaration");
+
+        // ===== CHUNK 3 RULE DEFINITIONS (Items 111-150 from ROADMAP_325.md) =====
+
+        // Type Mismatch Detection Rules (Items 111-130)
+
+        repository.createRule(NUMERIC_OPERATION_ON_STRING_KEY)
+            .setName("Numeric operations on strings cause runtime errors")
+            .setHtmlDescription(
+                "<p>Performing arithmetic operations on string values produces unexpected results or errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\"hello\" + 1  (* Concatenates, doesn't add *)\n" +
+                "\"hello\"^2  (* Returns unevaluated *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>ToExpression[\"5\"] + 1  (* Convert string to number first *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "runtime-error");
+
+        repository.createRule(STRING_OPERATION_ON_NUMBER_KEY)
+            .setName("String operations on numbers cause runtime errors")
+            .setHtmlDescription(
+                "<p>Using string functions on numeric values causes runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>StringJoin[123, \"abc\"]  (* Wrong argument type *)\n" +
+                "StringLength[42]  (* Expects string *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>StringJoin[ToString[123], \"abc\"]  (* Convert to string first *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "runtime-error");
+
+        repository.createRule(WRONG_ARGUMENT_TYPE_KEY)
+            .setName("Function called with wrong argument type")
+            .setHtmlDescription(
+                "<p>Passing wrong types to built-in functions causes runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Map[f, 123]  (* Expects list, not integer *)\n" +
+                "Length[5]  (* Expects list/association/string *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Map[f, {1,2,3}]  (* Use correct type *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "argument-type");
+
+        repository.createRule(FUNCTION_RETURNS_WRONG_TYPE_KEY)
+            .setName("Function returns type different from declaration")
+            .setHtmlDescription(
+                "<p>Functions should return consistent types matching their documentation.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>(* Documented to return Integer *)\n" +
+                "calculate[x_] := If[x > 0, x, \"error\"]  (* Returns String sometimes *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>calculate[x_?Positive] := x  (* Type-safe *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "return-type");
+
+        repository.createRule(COMPARISON_INCOMPATIBLE_TYPES_KEY)
+            .setName("Comparison of incompatible types")
+            .setHtmlDescription(
+                "<p>Comparing values of incompatible types produces meaningless results.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>\"hello\" < 5  (* Compares but meaningless *)\n" +
+                "{1,2} == 3  (* Always False *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>StringLength[\"hello\"] < 5  (* Compare compatible types *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("type-mismatch", "comparison");
+
+        repository.createRule(MIXED_NUMERIC_TYPES_KEY)
+            .setName("Mixing exact and approximate numbers loses precision")
+            .setHtmlDescription(
+                "<p>Mixing exact (Integer/Rational) with approximate (Real) numbers causes precision loss.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>1/3 + 0.5  (* Converts to approximate *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>1/3 + 1/2  (* Keep exact *)\nN[1/3] + 0.5  (* Or be explicit *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("numeric-precision", "type-mismatch");
+
+        repository.createRule(INTEGER_DIVISION_EXPECTING_REAL_KEY)
+            .setName("Integer division stays symbolic, use real division for numeric result")
+            .setHtmlDescription(
+                "<p>Division of integers stays symbolic unless converted to real.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>1/2  (* Evaluates to 1/2, not 0.5 *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>1./2  (* Evaluates to 0.5 *)\nN[1/2]  (* Explicit conversion *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("numeric-precision", "integer-division");
+
+        repository.createRule(LIST_FUNCTION_ON_ASSOCIATION_KEY)
+            .setName("List functions should not be used on associations")
+            .setHtmlDescription(
+                "<p>Using list functions on associations has different semantics than association functions.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Append[<|a->1|>, b->2]  (* Wrong semantics *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>AssociateTo[<|a->1|>, b->2]  (* Correct for associations *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "associations");
+
+        repository.createRule(PATTERN_TYPE_MISMATCH_KEY)
+            .setName("Function call doesn't match pattern types")
+            .setHtmlDescription(
+                "<p>Calling function with argument that doesn't match pattern type constraint.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_Integer] := x^2;\n" +
+                "f[\"hello\"]  (* Won't match, returns unevaluated *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[5]  (* Matches pattern *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "type-mismatch");
+
+        repository.createRule(OPTIONAL_TYPE_INCONSISTENT_KEY)
+            .setName("Optional parameter default has wrong type")
+            .setHtmlDescription(
+                "<p>Default value for optional parameter should match the pattern type.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_Integer : 1.5] := x  (* Default is Real, not Integer *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_Integer : 1] := x  (* Consistent types *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("patterns", "optional-parameters");
+
+        repository.createRule(RETURN_TYPE_INCONSISTENT_KEY)
+            .setName("Function returns inconsistent types")
+            .setHtmlDescription(
+                "<p>Functions that return different types from different branches are confusing.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_] := If[x > 0, x, \"negative\"]  (* Returns Integer or String *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_] := If[x > 0, x, -1]  (* Consistent Integer return *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("return-type", "api-design");
+
+        repository.createRule(NULL_ASSIGNMENT_TO_TYPED_VARIABLE_KEY)
+            .setName("Null assigned to variable expected to be numeric")
+            .setHtmlDescription(
+                "<p>Assigning Null to variables used in numeric contexts causes errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = Null; result = x + 1  (* Error *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 0; result = x + 1  (* Or use Missing[\"NotAvailable\"] *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("null-safety", "type-mismatch");
+
+        repository.createRule(TYPE_CAST_WITHOUT_VALIDATION_KEY)
+            .setName("Type conversion without validation")
+            .setHtmlDescription(
+                "<p>Converting types without checking validity can cause runtime errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>ToExpression[userInput]  (* May not be valid expression *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[StringQ[userInput], ToExpression[userInput], $Failed]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-casting", "validation");
+
+        repository.createRule(IMPLICIT_TYPE_CONVERSION_KEY)
+            .setName("Redundant type conversion")
+            .setHtmlDescription(
+                "<p>Converting values that are already the target type is redundant.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>ToString[\"hello\"]  (* Already a string *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>\"hello\"  (* No conversion needed *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("redundant", "type-conversion");
+
+        repository.createRule(GRAPHICS_OBJECT_IN_NUMERIC_CONTEXT_KEY)
+            .setName("Graphics object used in numeric computation")
+            .setHtmlDescription(
+                "<p>Using graphics objects in numeric contexts doesn't make sense.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Plot[x^2, {x, 0, 1}] + 1  (* Graphics + Number? *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Extract data first or fix logic error *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "graphics");
+
+        repository.createRule(SYMBOL_IN_NUMERIC_CONTEXT_KEY)
+            .setName("Symbolic variable in numeric context")
+            .setHtmlDescription(
+                "<p>Using undefined symbolic variables in numeric computations may not evaluate.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x + 1  (* If x undefined, returns x+1 symbolically *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5; x + 1  (* Assign value first *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("symbolic", "numeric-context");
+
+        repository.createRule(IMAGE_OPERATION_ON_NON_IMAGE_KEY)
+            .setName("Image operation on non-Image object")
+            .setHtmlDescription(
+                "<p>Image functions require Image objects, not raw arrays.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>ImageData[{{0,0},{1,1}}]  (* Expects Image, not array *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>ImageData[Image[{{0,0},{1,1}}]]  (* Wrap in Image first *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "image-processing");
+
+        repository.createRule(SOUND_OPERATION_ON_NON_SOUND_KEY)
+            .setName("Audio operation on non-Audio object")
+            .setHtmlDescription(
+                "<p>Audio functions require Audio objects, not raw arrays.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>AudioData[{1,2,3}]  (* Expects Audio, not list *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>AudioData[Audio[{1,2,3}]]  (* Wrap in Audio first *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "audio-processing");
+
+        repository.createRule(DATASET_OPERATION_ON_LIST_KEY)
+            .setName("Dataset operations require Dataset wrapper")
+            .setHtmlDescription(
+                "<p>Dataset-specific operations need data wrapped in Dataset.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>data = {{1,2},{3,4}};\ndata[All, \"col1\"]  (* Doesn't work on list *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Dataset[data][All, \"col1\"]  (* Wrap in Dataset *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "dataset");
+
+        repository.createRule(GRAPH_OPERATION_ON_NON_GRAPH_KEY)
+            .setName("Graph operation on non-Graph object")
+            .setHtmlDescription(
+                "<p>Graph functions require Graph objects, not edge lists.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>VertexList[{{1,2},{2,3}}]  (* Expects Graph, not edge list *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>VertexList[Graph[{{1,2},{2,3}}]]  (* Create Graph first *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("type-mismatch", "graph-theory");
+
+        // Data Flow Analysis Rules (Items 135-150)
+
+        repository.createRule(UNINITIALIZED_VARIABLE_USE_ENHANCED_KEY)
+            .setName("Variable used before initialization")
+            .setHtmlDescription(
+                "<p>Using variables before assigning a value causes runtime errors or unexpected behavior.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = x + 1  (* x never initialized *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 0; result = x + 1  (* Initialize first *)</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("uninitialized", "data-flow");
+
+        repository.createRule(VARIABLE_MAY_BE_UNINITIALIZED_KEY)
+            .setName("Variable may be uninitialized in some code paths")
+            .setHtmlDescription(
+                "<p>Variable initialized in some branches but not all causes logic errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[condition, x = 1];\nresult = x  (* x undefined if condition False *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = If[condition, 1, 0];\nresult = x  (* Always initialized *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("uninitialized", "data-flow");
+
+        repository.createRule(DEAD_STORE_KEY)
+            .setName("Value assigned but never read")
+            .setHtmlDescription(
+                "<p>Assigning values that are never read is useless computation.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = expensiveComputation[];  (* Value never used *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Remove unused assignment or use the value *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("dead-store", "performance");
+
+        repository.createRule(OVERWRITTEN_BEFORE_READ_KEY)
+            .setName("Assignment overwritten before being read")
+            .setHtmlDescription(
+                "<p>Assigning a value that's overwritten before being read is wasteful.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 1; x = 2; Print[x]  (* First assignment wasted *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 2; Print[x]  (* Remove redundant assignment *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("redundant", "data-flow");
+
+        repository.createRule(VARIABLE_ALIASING_ISSUE_KEY)
+            .setName("Multiple variables point to same mutable structure")
+            .setHtmlDescription(
+                "<p>Aliasing mutable structures causes unexpected modifications.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>list1 = {1,2,3};\nlist2 = list1;\nlist2[[1]] = 99  (* Also modifies list1 *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>list2 = list1  (* Copy if needed for independent modification *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("aliasing", "mutable-state");
+
+        repository.createRule(MODIFICATION_OF_LOOP_ITERATOR_KEY)
+            .setName("Loop iterator should not be modified inside loop")
+            .setHtmlDescription(
+                "<p>Modifying loop iterators inside the loop body is confusing and error-prone.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[i = i + 1; Print[i], {i, 1, 10}]  (* Modifying iterator *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Do[Print[i], {i, 1, 10}]  (* Don't modify iterator *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("loops", "iterator-modification");
+
+        repository.createRule(USE_OF_ITERATOR_OUTSIDE_LOOP_KEY)
+            .setName("Loop iterator value after loop is undefined")
+            .setHtmlDescription(
+                "<p>Using loop iterator after loop ends is unreliable - value is implementation-dependent.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[..., {i, 1, 10}];\nPrint[i]  (* i value after loop undefined *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Don't rely on iterator value after loop *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("loops", "iterator-scope");
+
+        repository.createRule(READING_UNSET_VARIABLE_KEY)
+            .setName("Reading variable after Unset or Clear")
+            .setHtmlDescription(
+                "<p>Reading a variable after Unset/Clear returns the symbol itself, not a value.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 5; Unset[x]; Print[x]  (* Prints symbol x, not value *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5; Print[x]; Unset[x]  (* Read before unsetting *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("unset", "data-flow");
+
+        repository.createRule(DOUBLE_ASSIGNMENT_SAME_VALUE_KEY)
+            .setName("Variable assigned same value twice")
+            .setHtmlDescription(
+                "<p>Assigning the same value to a variable multiple times is redundant.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 5; ...; x = 5  (* Same value assigned twice *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5;  (* Remove redundant assignment *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("redundant", "code-smell");
+
+        repository.createRule(MUTATION_IN_PURE_FUNCTION_KEY)
+            .setName("Pure function mutates outer variable")
+            .setHtmlDescription(
+                "<p>Pure functions with side effects are confusing and break functional paradigm.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>counter = 0;\nMap[(counter++; #) &, list]  (* Side effect in pure function *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>MapIndexed[...  (* Use stateless approach *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("pure-functions", "side-effects");
+
+        repository.createRule(SHARED_MUTABLE_STATE_KEY)
+            .setName("Global mutable state accessed from multiple functions")
+            .setHtmlDescription(
+                "<p>Shared mutable global state is hard to reason about and debug.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>globalCounter = 0;\nf[] := globalCounter++\ng[] := globalCounter--  (* Both modify global *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Pass state as parameters or use Module *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("global-state", "mutable-state");
+
+        repository.createRule(VARIABLE_SCOPE_ESCAPE_KEY)
+            .setName("Module local variable escapes its scope")
+            .setHtmlDescription(
+                "<p>Returning Module local variables causes them to escape as symbols.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x}, x]  (* Returns symbol, not value *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{x = 5}, x]  (* Return value, not symbol *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("scope", "module");
+
+        repository.createRule(CLOSURE_OVER_MUTABLE_VARIABLE_KEY)
+            .setName("Pure function captures mutable variable")
+            .setHtmlDescription(
+                "<p>Closures capturing mutable variables may not capture the expected value.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>funcs = Table[Function[x + i], {i, 3}]  (* All capture final i *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>funcs = Table[With[{j = i}, Function[x + j]], {i, 3}]  (* Capture value *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("closures", "variable-capture");
+
+        repository.createRule(ASSIGNMENT_IN_CONDITION_ENHANCED_KEY)
+            .setName("Assignment in condition instead of comparison")
+            .setHtmlDescription(
+                "<p>Using = instead of == in conditions is almost always a bug.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[x = 5, ...]  (* Assigns 5 to x, always true *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[x == 5, ...]  (* Compare, don't assign *)</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("assignment", "condition");
+
+        repository.createRule(ASSIGNMENT_AS_RETURN_VALUE_KEY)
+            .setName("Unnecessary variable assignment before return")
+            .setHtmlDescription(
+                "<p>Assigning to variable just to return it immediately is unnecessary.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_] := (y = x; y)  (* Unnecessary variable *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_] := x  (* Return directly *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("redundant", "return-value");
+
+        repository.createRule(VARIABLE_NEVER_MODIFIED_KEY)
+            .setName("Module variable never modified, use With instead")
+            .setHtmlDescription(
+                "<p>Variables that are never modified should use With for immutability guarantees.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x = 1}, computeWith[x]]  (* x never modified *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>With[{x = 1}, computeWith[x]]  (* Immutable *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("immutability", "best-practice");
 
         repository.done();
     }
