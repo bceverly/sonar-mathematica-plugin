@@ -16,8 +16,11 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Pattern System Rules** | 15 rules | Patterns | ✅ Active | Issues → Search "pattern" |
 | **List/Array Rules** | 10 rules | Data Structures | ✅ Active | Issues → Search "list" |
 | **Association Rules** | 10 rules | Data Structures | ✅ Active | Issues → Search "association" |
+| **Unused Code Detection** | 15 rules | Dead Code | ✅ Active | Issues → Search "unused" |
+| **Shadowing & Naming** | 15 rules | Code Quality | ✅ Active | Issues → Search "shadow" |
+| **Undefined Symbol Detection** | 10 rules | Reliability | ✅ Active | Issues → Search "undefined" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **159 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **209 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 
 ## Quick Navigation Cheat Sheet
 
@@ -3017,6 +3020,86 @@ Best practices for Mathematica's dictionary/map type:
 - List/Array: 10 rules (safety + performance)
 - Association: 10 rules (correctness + clarity)
 - **Total: 35 new rules**
+
+---
+
+## 8. Advanced Rules - Chunk 2 (50 New Rules)
+
+**Introduced:** Chunk 2 from ROADMAP_325.md (Items 61-100)
+**Focus:** Symbol table analysis, unused code detection, shadowing/naming issues, and undefined symbol detection
+
+### 8.1 Unused Code Detection (15 Rules)
+
+Dead code and unused variable detection for cleaner code:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Unused Private Function | Code Smell | Private functions never called anywhere |
+| Unused Function Parameter | Code Smell | Parameters declared but never referenced in body |
+| Unused Module Variable | Code Smell | Variables in `Module[{x,y}, ...]` never used |
+| Unused With Variable | Code Smell | Variables in `With[{a=1, b=2}, ...]` never used |
+| Unused Import | Code Smell | `Needs[]` packages never referenced |
+| Unused Pattern Name | Code Smell | Named patterns like `f[x_, y_]` where `y` unused |
+| Unused Optional Parameter | Code Smell | Optional parameters `f[x_, opts___]` never accessed |
+| Dead Code After Return | Bug | Code following `Return[]` is unreachable |
+| Unreachable After Abort/Throw | Bug | Code after `Abort[]` or `Throw[]` never executes |
+| Assignment Never Read | Code Smell | Variable assigned but overwritten before use |
+| Function Defined But Never Called | Code Smell | Global functions defined but never invoked |
+| Redefined Without Use | Bug | Variable reassigned before previous value is used |
+| Loop Iterator Unused | Code Smell | `Do[..., {i, 1, n}]` where `i` never referenced |
+| Catch Without Throw | Code Smell | `Catch[]` without corresponding `Throw` |
+| Condition Always False | Bug | `If[False, ...]` branch never executes |
+
+**📍 How to View:** Issues → Search "unused" or "dead" → Filter by rule name
+
+### 8.2 Shadowing & Naming (15 Rules)
+
+Variable naming and scoping best practices:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Local Shadows Global | Code Smell | Module variable shadows global variable name |
+| Parameter Shadows Built-in | Bug | Parameter like `f[List_]` shadows `List` |
+| Local Shadows Parameter | Bug | `Module[{x}, ...]` inside `f[x_]` shadows parameter |
+| Multiple Definitions Same Symbol | Code Smell | Same function name defined multiple times |
+| Symbol Name Too Short | Code Smell | Single-letter vars in large (>50 line) functions |
+| Symbol Name Too Long | Code Smell | Variable names exceeding 50 characters |
+| Inconsistent Naming Convention | Code Smell | Mix of camelCase, snake_case, PascalCase |
+| Built-in Name In Local Scope | Code Smell | `Module[{Map, Apply}, ...]` shadows built-ins |
+| Context Conflicts | Bug | Symbol defined in multiple contexts |
+| Reserved Name Usage | Bug | Assigning to `$SystemID`, `$Version`, etc. |
+| Private Context Symbol Public | Code Smell | Using `Package`Private`symbol` from outside |
+| Mismatched Begin/End | Bug | Unmatched `BeginPackage`/`EndPackage` pairs |
+| Symbol After EndPackage | Bug | Definition after `EndPackage[]` in wrong context |
+| Global In Package | Code Smell | `Global`temp` used in package code |
+| Temp Variable Not Temp | Code Smell | Variable named `temp`/`tmp` used repeatedly |
+
+**📍 How to View:** Issues → Search "shadow" or "naming" → Filter by rule name
+
+### 8.3 Undefined Symbol Detection (10 Rules)
+
+Catch typos and missing imports before runtime:
+
+| Rule | Type | What It Detects |
+|------|------|-----------------|
+| Undefined Function Call | Bug | Calling function that's never defined or imported |
+| Undefined Variable Reference | Bug | Using variable before it's assigned |
+| Typo In Built-in Name | Bug | Common typos like `Lenght`, `Frist`, `Lats` |
+| Wrong Capitalization | Bug | Using `length` instead of `Length` |
+| Missing Import | Bug | Using `Package`Symbol` without `Needs["Package`"]` |
+| Context Not Found | Bug | `Needs["NonExistent`"]` for package that doesn't exist |
+| Symbol Masked By Import | Bug | Local symbol overridden by package import |
+| Missing $Path Entry | Bug | `Get["file.m"]` where file not in `$Path` |
+| Circular Needs | Bug | Package A needs B which needs A |
+| Forward Reference Without Declaration | Bug | Using `g[f[x]]` before `f` is defined |
+
+**📍 How to View:** Issues → Search "undefined" or "typo" → Filter by rule name
+
+**Rule Count Summary:**
+- Unused Code Detection: 15 rules (dead code elimination)
+- Shadowing & Naming: 15 rules (code clarity)
+- Undefined Symbol Detection: 10 rules (runtime error prevention)
+- **Total: 50 new rules**
 
 ---
 

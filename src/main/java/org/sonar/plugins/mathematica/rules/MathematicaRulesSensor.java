@@ -44,6 +44,7 @@ public class MathematicaRulesSensor implements Sensor {
     private final VulnerabilityDetector vulnerabilityDetector = new VulnerabilityDetector();
     private final SecurityHotspotDetector securityHotspotDetector = new SecurityHotspotDetector();
     private final Chunk1Detector chunk1Detector = new Chunk1Detector();
+    private final Chunk2Detector chunk2Detector = new Chunk2Detector();
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -102,6 +103,7 @@ public class MathematicaRulesSensor implements Sensor {
             vulnerabilityDetector.initializeCaches(content);
             securityHotspotDetector.initializeCaches(content);
             chunk1Detector.initializeCaches(content);
+            chunk2Detector.initializeCaches(content);
 
             // Analyze comments once and cache for reuse
             List<int[]> commentRanges = analyzeComments(context, inputFile, content);
@@ -296,12 +298,61 @@ public class MathematicaRulesSensor implements Sensor {
             chunk1Detector.detectLookupWithMissingDefault(context, inputFile, content);
             chunk1Detector.detectGroupByWithoutAggregation(context, inputFile, content);
 
+            // ===== CHUNK 2 DETECTORS (Items 61-100 from ROADMAP_325.md) =====
+
+            // Unused Code Detection (Items 61-75)
+            chunk2Detector.detectUnusedPrivateFunction(context, inputFile, content);
+            chunk2Detector.detectUnusedFunctionParameter(context, inputFile, content);
+            chunk2Detector.detectUnusedModuleVariable(context, inputFile, content);
+            chunk2Detector.detectUnusedWithVariable(context, inputFile, content);
+            chunk2Detector.detectUnusedImport(context, inputFile, content);
+            chunk2Detector.detectUnusedPatternName(context, inputFile, content);
+            chunk2Detector.detectUnusedOptionalParameter(context, inputFile, content);
+            chunk2Detector.detectDeadCodeAfterReturn(context, inputFile, content);
+            chunk2Detector.detectUnreachableAfterAbortThrow(context, inputFile, content);
+            chunk2Detector.detectAssignmentNeverRead(context, inputFile, content);
+            chunk2Detector.detectFunctionDefinedButNeverCalled(context, inputFile, content);
+            chunk2Detector.detectRedefinedWithoutUse(context, inputFile, content);
+            chunk2Detector.detectLoopVariableUnused(context, inputFile, content);
+            chunk2Detector.detectCatchWithoutThrow(context, inputFile, content);
+            chunk2Detector.detectConditionAlwaysFalse(context, inputFile, content);
+
+            // Shadowing & Naming (Items 76-90)
+            chunk2Detector.detectLocalShadowsGlobal(context, inputFile, content);
+            chunk2Detector.detectParameterShadowsBuiltin(context, inputFile, content);
+            chunk2Detector.detectLocalShadowsParameter(context, inputFile, content);
+            chunk2Detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content);
+            chunk2Detector.detectSymbolNameTooShort(context, inputFile, content);
+            chunk2Detector.detectSymbolNameTooLong(context, inputFile, content);
+            chunk2Detector.detectInconsistentNamingConvention(context, inputFile, content);
+            chunk2Detector.detectBuiltinNameInLocalScope(context, inputFile, content);
+            chunk2Detector.detectContextConflicts(context, inputFile, content);
+            chunk2Detector.detectReservedNameUsage(context, inputFile, content);
+            chunk2Detector.detectPrivateContextSymbolPublic(context, inputFile, content);
+            chunk2Detector.detectMismatchedBeginEnd(context, inputFile, content);
+            chunk2Detector.detectSymbolAfterEndPackage(context, inputFile, content);
+            chunk2Detector.detectGlobalInPackage(context, inputFile, content);
+            chunk2Detector.detectTempVariableNotTemp(context, inputFile, content);
+
+            // Undefined Symbol Detection (Items 91-100)
+            chunk2Detector.detectUndefinedFunctionCall(context, inputFile, content);
+            chunk2Detector.detectUndefinedVariableReference(context, inputFile, content);
+            chunk2Detector.detectTypoInBuiltinName(context, inputFile, content);
+            chunk2Detector.detectWrongCapitalization(context, inputFile, content);
+            chunk2Detector.detectMissingImport(context, inputFile, content);
+            chunk2Detector.detectContextNotFound(context, inputFile, content);
+            chunk2Detector.detectSymbolMaskedByImport(context, inputFile, content);
+            chunk2Detector.detectMissingPathEntry(context, inputFile, content);
+            chunk2Detector.detectCircularNeeds(context, inputFile, content);
+            chunk2Detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content);
+
             // Clear caches after processing file
             codeSmellDetector.clearCaches();
             bugDetector.clearCaches();
             vulnerabilityDetector.clearCaches();
             securityHotspotDetector.clearCaches();
             chunk1Detector.clearCaches();
+            chunk2Detector.clearCaches();
 
         } catch (Exception e) {
             LOG.error("Error analyzing file: {}", inputFile, e);

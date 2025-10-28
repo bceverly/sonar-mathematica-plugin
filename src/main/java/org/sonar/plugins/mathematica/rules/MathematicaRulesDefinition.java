@@ -216,6 +216,52 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String LOOKUP_WITH_MISSING_DEFAULT_KEY = "LookupWithMissingDefault";
     public static final String GROUPBY_WITHOUT_AGGREGATION_KEY = "GroupByWithoutAggregation";
 
+    // Rule keys - Chunk 2: Unused Code Detection (Items 61-75 from ROADMAP_325.md)
+    public static final String UNUSED_PRIVATE_FUNCTION_KEY = "UnusedPrivateFunction";
+    public static final String UNUSED_FUNCTION_PARAMETER_KEY = "UnusedFunctionParameter";
+    public static final String UNUSED_MODULE_VARIABLE_KEY = "UnusedModuleVariable";
+    public static final String UNUSED_WITH_VARIABLE_KEY = "UnusedWithVariable";
+    public static final String UNUSED_IMPORT_KEY = "UnusedImport";
+    public static final String UNUSED_PATTERN_NAME_KEY = "UnusedPatternName";
+    public static final String UNUSED_OPTIONAL_PARAMETER_KEY = "UnusedOptionalParameter";
+    public static final String DEAD_AFTER_RETURN_KEY = "DeadCodeAfterReturn";
+    public static final String UNREACHABLE_AFTER_ABORT_THROW_KEY = "UnreachableAfterAbortThrow";
+    public static final String ASSIGNMENT_NEVER_READ_KEY = "AssignmentNeverRead";
+    public static final String FUNCTION_DEFINED_NEVER_CALLED_KEY = "FunctionDefinedButNeverCalled";
+    public static final String REDEFINED_WITHOUT_USE_KEY = "RedefinedWithoutUse";
+    public static final String LOOP_VARIABLE_UNUSED_KEY = "LoopVariableUnused";
+    public static final String CATCH_WITHOUT_THROW_KEY = "CatchWithoutThrow";
+    public static final String CONDITION_ALWAYS_FALSE_KEY = "ConditionAlwaysFalse";
+
+    // Rule keys - Chunk 2: Shadowing & Naming (Items 76-90 from ROADMAP_325.md)
+    public static final String LOCAL_SHADOWS_GLOBAL_KEY = "LocalShadowsGlobal";
+    public static final String PARAMETER_SHADOWS_BUILTIN_KEY = "ParameterShadowsBuiltin";
+    public static final String LOCAL_SHADOWS_PARAMETER_KEY = "LocalVariableShadowsParameter";
+    public static final String MULTIPLE_DEFINITIONS_SAME_SYMBOL_KEY = "MultipleDefinitionsSameSymbol";
+    public static final String SYMBOL_NAME_TOO_SHORT_KEY = "SymbolNameTooShort";
+    public static final String SYMBOL_NAME_TOO_LONG_KEY = "SymbolNameTooLong";
+    public static final String INCONSISTENT_NAMING_CONVENTION_KEY = "InconsistentNamingConvention";
+    public static final String BUILTIN_NAME_IN_LOCAL_SCOPE_KEY = "BuiltinNameInLocalScope";
+    public static final String CONTEXT_CONFLICTS_KEY = "ContextConflicts";
+    public static final String RESERVED_NAME_USAGE_KEY = "ReservedNameUsage";
+    public static final String PRIVATE_CONTEXT_SYMBOL_PUBLIC_KEY = "PrivateContextSymbolPublic";
+    public static final String MISMATCHED_BEGIN_END_KEY = "MismatchedBeginEnd";
+    public static final String SYMBOL_AFTER_ENDPACKAGE_KEY = "SymbolAfterEndPackage";
+    public static final String GLOBAL_IN_PACKAGE_KEY = "GlobalInPackage";
+    public static final String TEMP_VARIABLE_NOT_TEMP_KEY = "TempVariableNotTemp";
+
+    // Rule keys - Chunk 2: Undefined Symbol Detection (Items 91-100 from ROADMAP_325.md)
+    public static final String UNDEFINED_FUNCTION_CALL_KEY = "UndefinedFunctionCall";
+    public static final String UNDEFINED_VARIABLE_REFERENCE_KEY = "UndefinedVariableReference";
+    public static final String TYPO_IN_BUILTIN_NAME_KEY = "TypoInBuiltinName";
+    public static final String WRONG_CAPITALIZATION_KEY = "WrongCapitalization";
+    public static final String MISSING_IMPORT_KEY = "MissingImport";
+    public static final String CONTEXT_NOT_FOUND_KEY = "ContextNotFound";
+    public static final String SYMBOL_MASKED_BY_IMPORT_KEY = "SymbolMaskedByImport";
+    public static final String MISSING_PATH_ENTRY_KEY = "MissingPathEntry";
+    public static final String CIRCULAR_NEEDS_KEY = "CircularNeeds";
+    public static final String FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY = "ForwardReferenceWithoutDeclaration";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -3209,6 +3255,534 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("MINOR")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("associations", "clarity");
+
+        // ===== CHUNK 2 RULE DEFINITIONS (Items 61-100 from ROADMAP_325.md) =====
+
+        // Unused Code Detection Rules (Items 61-75)
+
+        repository.createRule(UNUSED_PRIVATE_FUNCTION_KEY)
+            .setName("Unused private functions should be removed")
+            .setHtmlDescription(
+                "<p>Private functions that are never called are dead code and should be removed.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>privateHelper[x_] := x^2  (* Never called *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Remove unused function *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "dead-code");
+
+        repository.createRule(UNUSED_FUNCTION_PARAMETER_KEY)
+            .setName("Unused function parameters should be removed or prefixed with underscore")
+            .setHtmlDescription(
+                "<p>Function parameters that are never used in the body may indicate a logic error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>compute[x_, y_] := x^2  (* y is unused *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>compute[x_, _] := x^2  (* Use blank for unused parameter *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "parameters");
+
+        repository.createRule(UNUSED_MODULE_VARIABLE_KEY)
+            .setName("Unused Module variables should be removed")
+            .setHtmlDescription(
+                "<p>Variables declared in Module but never used are clutter.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{x, y}, x = 5; x^2]  (* y is unused *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{x}, x = 5; x^2]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "scoping");
+
+        repository.createRule(UNUSED_WITH_VARIABLE_KEY)
+            .setName("Unused With variables should be removed")
+            .setHtmlDescription(
+                "<p>Variables declared in With but never used indicate unclear intent.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>With[{a = 1, b = 2}, a^2]  (* b is unused *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>With[{a = 1}, a^2]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "scoping");
+
+        repository.createRule(UNUSED_IMPORT_KEY)
+            .setName("Unused package imports should be removed")
+            .setHtmlDescription(
+                "<p>Importing packages that are never used adds load time and unnecessary dependencies.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Needs[\"MyPackage`\"]  (* No symbols from MyPackage used *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Remove unused Needs *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "imports");
+
+        repository.createRule(UNUSED_PATTERN_NAME_KEY)
+            .setName("Unused pattern names should use blank patterns")
+            .setHtmlDescription(
+                "<p>Named patterns that are never referenced should use unnamed blanks.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_, y_] := x  (* y is named but unused *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_, _] := x  (* Use blank for unused pattern *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "patterns");
+
+        repository.createRule(UNUSED_OPTIONAL_PARAMETER_KEY)
+            .setName("Unused optional parameters should be removed")
+            .setHtmlDescription(
+                "<p>Optional parameters that are never used even when provided create confusing APIs.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_, opts___] := x  (* opts never used *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_] := x  (* Remove unused optional *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "parameters");
+
+        repository.createRule(DEAD_AFTER_RETURN_KEY)
+            .setName("Code after Return statement is unreachable")
+            .setHtmlDescription(
+                "<p>Code after a Return statement in the same scope will never execute.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_] := (Return[x]; Print[\"Never executes\"])</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_] := Return[x]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("dead-code", "control-flow");
+
+        repository.createRule(UNREACHABLE_AFTER_ABORT_THROW_KEY)
+            .setName("Code after Abort or Throw is unreachable")
+            .setHtmlDescription(
+                "<p>Code after Abort[] or Throw[] will never execute.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[error, Abort[]]; processData[]  (* Never executes if error *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>If[!error, processData[]]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("dead-code", "control-flow");
+
+        repository.createRule(ASSIGNMENT_NEVER_READ_KEY)
+            .setName("Assignment value is never read")
+            .setHtmlDescription(
+                "<p>Assigning a value that is never read before being overwritten is useless work.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>x = 1; x = 2; Print[x]  (* First assignment wasted *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 2; Print[x]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "dead-code");
+
+        repository.createRule(FUNCTION_DEFINED_NEVER_CALLED_KEY)
+            .setName("Global function defined but never called")
+            .setHtmlDescription(
+                "<p>Global-scope functions that are never called may be dead code or part of a public API.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>utilityFunction[x_] := x^2  (* Never called anywhere *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Remove or document as public API *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "dead-code");
+
+        repository.createRule(REDEFINED_WITHOUT_USE_KEY)
+            .setName("Variable redefined without using previous value")
+            .setHtmlDescription(
+                "<p>Redefining a variable without using its previous value indicates a logic error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = Solve[eq1]; result = Solve[eq2]  (* First solve wasted *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>result = Solve[eq2]  (* Remove first assignment *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("logic-error", "dead-code");
+
+        repository.createRule(LOOP_VARIABLE_UNUSED_KEY)
+            .setName("Loop iterator variable is never used in body")
+            .setHtmlDescription(
+                "<p>When the loop iterator is never used, use the simpler form without iterator.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Do[Print[\"Hello\"], {i, 1, 10}]  (* i is unused *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Do[Print[\"Hello\"], 10]  (* Simpler form *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "loops");
+
+        repository.createRule(CATCH_WITHOUT_THROW_KEY)
+            .setName("Catch statement without corresponding Throw")
+            .setHtmlDescription(
+                "<p>A Catch without any Throw in its body is unnecessary overhead.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Catch[result = compute[x]]  (* No Throw in compute *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>result = compute[x]  (* Remove unnecessary Catch *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("unused", "error-handling");
+
+        repository.createRule(CONDITION_ALWAYS_FALSE_KEY)
+            .setName("Condition is always false")
+            .setHtmlDescription(
+                "<p>Conditions that are always false indicate dead code or logic errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>If[False, doSomething[]]  (* Never executes *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Remove dead branch or fix condition *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("dead-code", "logic-error");
+
+        // Shadowing & Naming Rules (Items 76-90)
+
+        repository.createRule(LOCAL_SHADOWS_GLOBAL_KEY)
+            .setName("Local variable shadows global variable")
+            .setHtmlDescription(
+                "<p>Local variables shadowing global variables can be confusing and may be unintended.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>data = {1,2,3};\nModule[{data}, data = {4,5,6}]  (* Shadows global *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{localData}, localData = {4,5,6}]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("shadowing", "naming");
+
+        repository.createRule(PARAMETER_SHADOWS_BUILTIN_KEY)
+            .setName("Parameter shadows built-in function")
+            .setHtmlDescription(
+                "<p>Parameters that shadow built-in functions will prevent their use and cause confusion.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[List_] := Length[List]  (* Shadows built-in List *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[list_] := Length[list]  (* Use lowercase *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("shadowing", "built-ins");
+
+        repository.createRule(LOCAL_SHADOWS_PARAMETER_KEY)
+            .setName("Local variable shadows function parameter")
+            .setHtmlDescription(
+                "<p>Local variables shadowing parameters is confusing and probably an error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_] := Module[{x}, x = 5; x^2]  (* Shadows parameter *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_] := Module[{y}, y = 5; y^2]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("shadowing", "scoping");
+
+        repository.createRule(MULTIPLE_DEFINITIONS_SAME_SYMBOL_KEY)
+            .setName("Symbol defined multiple times")
+            .setHtmlDescription(
+                "<p>Redefining the same symbol multiple times may be intentional (patterns) or an error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>f[x_] := x^2;\nf[x_] := x^3  (* Overwrites previous definition *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_Integer] := x^2;\nf[x_Real] := x^3  (* Pattern-based overloading *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("redefinition", "patterns");
+
+        repository.createRule(SYMBOL_NAME_TOO_SHORT_KEY)
+            .setName("Symbol name is too short in large function")
+            .setHtmlDescription(
+                "<p>Single-letter variable names in large functions reduce readability.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>largeFunction[x_] := Module[{a,b,c,d,e}, ...]  (* Many single letters *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>largeFunction[input_] := Module[{result, temp, index}, ...]</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("naming", "readability");
+
+        repository.createRule(SYMBOL_NAME_TOO_LONG_KEY)
+            .setName("Symbol name exceeds 50 characters")
+            .setHtmlDescription(
+                "<p>Very long variable names (>50 characters) reduce readability.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>thisIsAReallyLongVariableNameThatExceedsFiftyCharactersAndIsHardToRead = 5</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>computationResult = 5  (* Concise but descriptive *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("naming", "readability");
+
+        repository.createRule(INCONSISTENT_NAMING_CONVENTION_KEY)
+            .setName("Inconsistent naming convention (mix of camelCase, snake_case, PascalCase)")
+            .setHtmlDescription(
+                "<p>Mixing naming conventions reduces code consistency.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>myVariable = 1;\nmy_other_variable = 2;\nMyThirdVariable = 3</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>myVariable = 1;\nmyOtherVariable = 2;\nmyThirdVariable = 3  (* Consistent camelCase *)</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("naming", "consistency");
+
+        repository.createRule(BUILTIN_NAME_IN_LOCAL_SCOPE_KEY)
+            .setName("Built-in function name used in local scope")
+            .setHtmlDescription(
+                "<p>Using built-in names as local variables is confusing and prevents using those built-ins.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Module[{Map, Apply}, ...]  (* Shadows built-ins *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Module[{mapper, applier}, ...]</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("shadowing", "built-ins");
+
+        repository.createRule(CONTEXT_CONFLICTS_KEY)
+            .setName("Symbol defined in multiple contexts")
+            .setHtmlDescription(
+                "<p>Symbols defined in multiple contexts cause ambiguity and confusion.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>PackageA`mySymbol = 1;\nPackageB`mySymbol = 2  (* Ambiguous *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Use unique names or proper context management *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("contexts", "ambiguity");
+
+        repository.createRule(RESERVED_NAME_USAGE_KEY)
+            .setName("Reserved system variable name used")
+            .setHtmlDescription(
+                "<p>Using reserved names like $SystemID, $Version as variable names can cause issues.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>$SystemID = \"custom\"  (* Overwrites system variable *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>systemID = \"custom\"  (* Use non-reserved name *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("reserved", "system-variables");
+
+        repository.createRule(PRIVATE_CONTEXT_SYMBOL_PUBLIC_KEY)
+            .setName("Private context symbol used from outside package")
+            .setHtmlDescription(
+                "<p>Symbols in Private` context should not be used from outside the package.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>MyPackage`Private`helperFunction[x]  (* Breaks encapsulation *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Export function or use public API *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("encapsulation", "packages");
+
+        repository.createRule(MISMATCHED_BEGIN_END_KEY)
+            .setName("Mismatched BeginPackage/EndPackage or Begin/End")
+            .setHtmlDescription(
+                "<p>Mismatched package/context delimiters corrupt the context system.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>BeginPackage[\"MyPackage`\"]\n(* Missing EndPackage *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>BeginPackage[\"MyPackage`\"]\n...\nEndPackage[]</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("packages", "contexts");
+
+        repository.createRule(SYMBOL_AFTER_ENDPACKAGE_KEY)
+            .setName("Symbol defined after EndPackage")
+            .setHtmlDescription(
+                "<p>Symbols defined after EndPackage[] are in the wrong context.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>BeginPackage[\"MyPackage`\"]\n...\nEndPackage[]\nf[x_] := x  (* Wrong context *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>BeginPackage[\"MyPackage`\"]\nf[x_] := x\nEndPackage[]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("packages", "contexts");
+
+        repository.createRule(GLOBAL_IN_PACKAGE_KEY)
+            .setName("Global context used in package code")
+            .setHtmlDescription(
+                "<p>Package code should use the package context, not Global`.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Global`temp = 5  (* In package code *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>temp = 5  (* Uses package context *)</pre>"
+            )
+            .setSeverity("MINOR")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("packages", "contexts");
+
+        repository.createRule(TEMP_VARIABLE_NOT_TEMP_KEY)
+            .setName("Variables named 'temp' or 'tmp' used multiple times")
+            .setHtmlDescription(
+                "<p>Variables named 'temp' or 'tmp' that persist should have better names.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>temp = compute1[];\nresult1 = process[temp];\ntemp = compute2[]  (* Reused multiple times *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>intermediateResult1 = compute1[];\nresult1 = process[intermediateResult1]</pre>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("naming", "readability");
+
+        // Undefined Symbol Detection Rules (Items 91-100)
+
+        repository.createRule(UNDEFINED_FUNCTION_CALL_KEY)
+            .setName("Call to undefined function")
+            .setHtmlDescription(
+                "<p>Calling a function that is not defined or imported will cause a runtime error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = undefinedFunction[x]  (* Function not defined *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Define function or import package *)\nundefinedFunction[x_] := x^2</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("undefined", "runtime-error");
+
+        repository.createRule(UNDEFINED_VARIABLE_REFERENCE_KEY)
+            .setName("Reference to undefined variable")
+            .setHtmlDescription(
+                "<p>Using a variable before it is defined will return the symbol itself or cause an error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = x + 1  (* x never defined *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>x = 5;\nresult = x + 1</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("undefined", "runtime-error");
+
+        repository.createRule(TYPO_IN_BUILTIN_NAME_KEY)
+            .setName("Possible typo in built-in function name")
+            .setHtmlDescription(
+                "<p>Common typos in built-in names like 'Lenght' instead of 'Length'.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>size = Lenght[list]  (* Typo: should be Length *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>size = Length[list]</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("typo", "built-ins");
+
+        repository.createRule(WRONG_CAPITALIZATION_KEY)
+            .setName("Wrong capitalization of built-in function")
+            .setHtmlDescription(
+                "<p>Mathematica is case-sensitive; 'length' is not the same as 'Length'.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>size = length[list]  (* Should be Length with capital L *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>size = Length[list]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("capitalization", "built-ins");
+
+        repository.createRule(MISSING_IMPORT_KEY)
+            .setName("Missing package import for external symbol")
+            .setHtmlDescription(
+                "<p>Using package symbols without Needs[] may work in notebook but fail in scripts.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>result = ExternalPackage`Function[x]  (* Package not imported *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Needs[\"ExternalPackage`\"]\nresult = ExternalPackage`Function[x]</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("imports", "packages");
+
+        repository.createRule(CONTEXT_NOT_FOUND_KEY)
+            .setName("Needs references non-existent context")
+            .setHtmlDescription(
+                "<p>Attempting to load a package that doesn't exist causes a runtime error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Needs[\"NonExistentPackage`\"]  (* Package doesn't exist *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Use correct package name or create package *)</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("imports", "runtime-error");
+
+        repository.createRule(SYMBOL_MASKED_BY_IMPORT_KEY)
+            .setName("Local symbol masked by package import")
+            .setHtmlDescription(
+                "<p>Importing a package can silently override local symbols with same name.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>myFunction[x_] := x^2;\nNeeds[\"Package`\"]  (* Package also defines myFunction *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Rename local symbol or manage contexts carefully *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("shadowing", "imports");
+
+        repository.createRule(MISSING_PATH_ENTRY_KEY)
+            .setName("Get references file not in $Path")
+            .setHtmlDescription(
+                "<p>Loading a file with Get[] that's not in $Path will cause a runtime error.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>Get[\"myfile.m\"]  (* File not in $Path *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>Get[FileNameJoin[{Directory[], \"myfile.m\"}]]  (* Use absolute path *)</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("imports", "file-system");
+
+        repository.createRule(CIRCULAR_NEEDS_KEY)
+            .setName("Circular package dependency detected")
+            .setHtmlDescription(
+                "<p>Package A needs Package B which needs Package A causes load errors.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>(* In PackageA.m *)\nNeeds[\"PackageB`\"]\n(* In PackageB.m *)\nNeeds[\"PackageA`\"]  (* Circular *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>(* Refactor to break circular dependency *)</pre>"
+            )
+            .setSeverity("CRITICAL")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("circular-dependency", "packages");
+
+        repository.createRule(FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY)
+            .setName("Forward reference without explicit declaration")
+            .setHtmlDescription(
+                "<p>Using a symbol before defining it may fail in a fresh kernel without forward declaration.</p>" +
+                "<h2>Noncompliant Code Example</h2>" +
+                "<pre>g[x_] := f[x] + 1;\nf[x_] := x^2  (* f used before defined *)</pre>" +
+                "<h2>Compliant Solution</h2>" +
+                "<pre>f[x_];  (* Forward declaration *)\ng[x_] := f[x] + 1;\nf[x_] := x^2</pre>"
+            )
+            .setSeverity("MAJOR")
+            .setType(org.sonar.api.rules.RuleType.BUG)
+            .setTags("forward-reference", "declaration");
 
         repository.done();
     }
