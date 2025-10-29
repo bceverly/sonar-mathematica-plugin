@@ -18,8 +18,8 @@ import java.util.HashMap;
  * - Shadowing & Naming (15 rules)
  * - Undefined Symbol Detection (10 rules)
  */
-public class Chunk2Detector extends BaseDetector {
-    private static final Logger LOG = LoggerFactory.getLogger(Chunk2Detector.class);
+public class UnusedAndNamingDetector extends BaseDetector {
+    private static final Logger LOG = LoggerFactory.getLogger(UnusedAndNamingDetector.class);
 
     // ===== Pre-compiled patterns for Unused Code Detection =====
 

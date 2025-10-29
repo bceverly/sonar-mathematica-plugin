@@ -18,7 +18,7 @@ import org.sonar.api.batch.sensor.SensorContext;
  * - List/Array Rules (Items 31-40): 10 rules
  * - Association Rules (Items 41-50): 10 rules
  */
-public class Chunk1Detector extends BaseDetector {
+public class PatternAndDataStructureDetector extends BaseDetector {
 
     // Pre-compiled patterns for Pattern System Rules
     private static final Pattern UNRESTRICTED_BLANK = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*\\b\\w+_\\b[^\\]]*)\\]\\s*:?=");

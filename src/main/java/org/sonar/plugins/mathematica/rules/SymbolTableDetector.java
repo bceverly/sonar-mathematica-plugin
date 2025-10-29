@@ -347,6 +347,11 @@ public class SymbolTableDetector {
      * Variable A depends on B, B depends on C, C depends on A.
      */
     public static void detectCircularVariableDependencies(SensorContext context, InputFile file, SymbolTable table) {
+        // Skip large files - O(n²) complexity makes this prohibitively expensive
+        if (table.getAllSymbols().size() > 200) {
+            return;
+        }
+
         // Build dependency graph
         Map<String, Set<String>> dependencies = new java.util.HashMap<>();
 

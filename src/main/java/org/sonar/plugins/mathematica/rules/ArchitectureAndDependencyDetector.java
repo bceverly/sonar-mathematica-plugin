@@ -24,7 +24,7 @@ import java.util.stream.Collectors;
  * - Unused export detection
  * - API consistency validation
  */
-public class Chunk5Detector {
+public class ArchitectureAndDependencyDetector {
 
     // ========================================
     // PRE-COMPILED PATTERNS FOR PERFORMANCE
@@ -122,6 +122,27 @@ public class Chunk5Detector {
         packageVersions.clear();
         testFiles.clear();
         implementationFiles.clear();
+    }
+
+    /**
+     * Get size of package dependencies map (for performance tracking)
+     */
+    public static int getPackageDependenciesSize() {
+        return packageDependencies.size();
+    }
+
+    /**
+     * Get size of symbol definitions map (for performance tracking)
+     */
+    public static int getSymbolDefinitionsSize() {
+        return symbolDefinitions.size();
+    }
+
+    /**
+     * Get size of symbol usages map (for performance tracking)
+     */
+    public static int getSymbolUsagesSize() {
+        return symbolUsages.size();
     }
 
     /**

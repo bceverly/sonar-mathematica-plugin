@@ -19,8 +19,8 @@ import org.sonar.api.utils.log.Loggers;
  * All detection methods are fully implemented with comprehensive pattern matching
  * and control flow analysis.
  */
-public class Chunk4Detector extends BaseDetector {
-    private static final Logger LOG = Loggers.get(Chunk4Detector.class);
+public class ControlFlowAndTaintDetector extends BaseDetector {
+    private static final Logger LOG = Loggers.get(ControlFlowAndTaintDetector.class);
 
     // ===== PRE-COMPILED PATTERNS FOR PERFORMANCE =====
 

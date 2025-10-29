@@ -17,8 +17,8 @@ import java.util.HashMap;
  * - Type Mismatch Detection (20 rules)
  * - Data Flow Analysis (16 rules)
  */
-public class Chunk3Detector extends BaseDetector {
-    private static final Logger LOG = LoggerFactory.getLogger(Chunk3Detector.class);
+public class TypeAndDataFlowDetector extends BaseDetector {
+    private static final Logger LOG = LoggerFactory.getLogger(TypeAndDataFlowDetector.class);
 
     // ===== Pre-compiled patterns for Type Mismatch Detection =====
 

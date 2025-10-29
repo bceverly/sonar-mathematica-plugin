@@ -41,17 +41,17 @@ public class MathematicaRulesSensor implements Sensor {
     // Comment pattern for comment analysis
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
 
-    // Instantiate detector classes (reused across files)
-    private final CodeSmellDetector codeSmellDetector = new CodeSmellDetector();
-    private final BugDetector bugDetector = new BugDetector();
-    private final VulnerabilityDetector vulnerabilityDetector = new VulnerabilityDetector();
-    private final SecurityHotspotDetector securityHotspotDetector = new SecurityHotspotDetector();
-    private final Chunk1Detector chunk1Detector = new Chunk1Detector();
-    private final Chunk2Detector chunk2Detector = new Chunk2Detector();
-    private final Chunk3Detector chunk3Detector = new Chunk3Detector();
-    private final Chunk4Detector chunk4Detector = new Chunk4Detector();
-    private final Chunk5Detector chunk5Detector = new Chunk5Detector();
-    private final Chunk67Detector chunk67Detector = new Chunk67Detector();
+    // Thread-local detector instances for parallel processing with proper ThreadLocal caching
+    private final ThreadLocal<CodeSmellDetector> codeSmellDetector = ThreadLocal.withInitial(CodeSmellDetector::new);
+    private final ThreadLocal<BugDetector> bugDetector = ThreadLocal.withInitial(BugDetector::new);
+    private final ThreadLocal<VulnerabilityDetector> vulnerabilityDetector = ThreadLocal.withInitial(VulnerabilityDetector::new);
+    private final ThreadLocal<SecurityHotspotDetector> securityHotspotDetector = ThreadLocal.withInitial(SecurityHotspotDetector::new);
+    private final ThreadLocal<PatternAndDataStructureDetector> patternAndDataStructureDetector = ThreadLocal.withInitial(PatternAndDataStructureDetector::new);
+    private final ThreadLocal<UnusedAndNamingDetector> unusedAndNamingDetector = ThreadLocal.withInitial(UnusedAndNamingDetector::new);
+    private final ThreadLocal<TypeAndDataFlowDetector> typeAndDataFlowDetector = ThreadLocal.withInitial(TypeAndDataFlowDetector::new);
+    private final ThreadLocal<ControlFlowAndTaintDetector> controlFlowAndTaintDetector = ThreadLocal.withInitial(ControlFlowAndTaintDetector::new);
+    private final ThreadLocal<ArchitectureAndDependencyDetector> architectureAndDependencyDetector = ThreadLocal.withInitial(ArchitectureAndDependencyDetector::new);
+    private final ThreadLocal<AdvancedAnalysisDetector> advancedAnalysisDetector = ThreadLocal.withInitial(AdvancedAnalysisDetector::new);
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -78,22 +78,22 @@ public class MathematicaRulesSensor implements Sensor {
         int totalFiles = fileList.size();
 
         LOG.info("Starting analysis of {} Mathematica file(s)...", totalFiles);
-        LOG.info("Using parallel processing with {} threads", Runtime.getRuntime().availableProcessors());
+        LOG.info("Using parallel processing with {} threads (thread-local caching enabled)", Runtime.getRuntime().availableProcessors());
         LOG.info("Progress will be reported every 100 files");
 
         long startTime = System.currentTimeMillis();
 
         // === PHASE 1: Build cross-file analysis data for Chunk5 ===
         LOG.info("Phase 1: Building cross-file dependency graph...");
-        Chunk5Detector.initializeCaches();
+        ArchitectureAndDependencyDetector.initializeCaches();
 
-        fileList.parallelStream().forEach(inputFile -> {
+        fileList.stream().forEach(inputFile -> {
             try {
                 if (inputFile.lines() < 3 || inputFile.lines() > 35000) return;
                 String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
                 if (content.length() > 2_000_000 || content.trim().isEmpty()) return;
 
-                Chunk5Detector.buildCrossFileData(inputFile, content);
+                ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
             } catch (Exception e) {
                 LOG.debug("Error building cross-file data for: {}", inputFile.filename());
             }
@@ -105,7 +105,7 @@ public class MathematicaRulesSensor implements Sensor {
         java.util.concurrent.atomic.AtomicInteger processedCount = new java.util.concurrent.atomic.AtomicInteger(0);
         int progressInterval = 100; // Log every 100 files
 
-        // Use parallel stream for faster processing
+        // Use parallel stream with thread-local detector instances for correct ThreadLocal caching
         fileList.parallelStream().forEach(inputFile -> {
             try {
                 analyzeFile(context, inputFile);
@@ -138,7 +138,7 @@ public class MathematicaRulesSensor implements Sensor {
             String.format("%.1f", avgFilesPerSec));
 
         // Clean up cross-file analysis caches
-        Chunk5Detector.clearCaches();
+        ArchitectureAndDependencyDetector.clearCaches();
     }
 
     /**
@@ -150,6 +150,9 @@ public class MathematicaRulesSensor implements Sensor {
      * Performance optimization kept in metrics/CPD sensors where risk is lower.
      */
     private void analyzeFile(SensorContext context, InputFile inputFile) {
+        long fileStartTime = System.currentTimeMillis();
+        int issueCountBefore = 0;
+
         try {
             // Skip very small files quickly (likely empty or trivial)
             if (inputFile.lines() < 3) {
@@ -165,7 +168,11 @@ public class MathematicaRulesSensor implements Sensor {
                 return;
             }
 
+            long readStartTime = System.currentTimeMillis();
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
+            long readTime = System.currentTimeMillis() - readStartTime;
+
+            // File read timing removed - too noisy
 
             // Skip files larger than 2MB
             if (content.length() > 2_000_000) {
@@ -179,468 +186,551 @@ public class MathematicaRulesSensor implements Sensor {
             }
 
             // Initialize caches in all detectors for this file
-            codeSmellDetector.initializeCaches(content);
-            bugDetector.initializeCaches(content);
-            vulnerabilityDetector.initializeCaches(content);
-            securityHotspotDetector.initializeCaches(content);
-            chunk1Detector.initializeCaches(content);
-            chunk2Detector.initializeCaches(content);
-            chunk3Detector.initializeCaches(content);
-            chunk4Detector.initializeCaches(content);
+            codeSmellDetector.get().initializeCaches(content);
+            bugDetector.get().initializeCaches(content);
+            vulnerabilityDetector.get().initializeCaches(content);
+            securityHotspotDetector.get().initializeCaches(content);
+            patternAndDataStructureDetector.get().initializeCaches(content);
+            unusedAndNamingDetector.get().initializeCaches(content);
+            typeAndDataFlowDetector.get().initializeCaches(content);
+            controlFlowAndTaintDetector.get().initializeCaches(content);
 
             // Analyze comments once and cache for reuse
             List<int[]> commentRanges = analyzeComments(context, inputFile, content);
 
+            // === TIMING: Code Smell Detectors ===
+            long codeSmellStart = System.currentTimeMillis();
+
             // Delegate to Code Smell detector (33 rules)
-            codeSmellDetector.detectMagicNumbers(context, inputFile, content, commentRanges);
-            codeSmellDetector.detectEmptyBlocks(context, inputFile, content);
-            codeSmellDetector.detectLongFunctions(context, inputFile, content);
-            codeSmellDetector.detectEmptyCatchBlocks(context, inputFile, content);
-            codeSmellDetector.detectDebugCode(context, inputFile, content);
-            codeSmellDetector.detectUnusedVariables(context, inputFile, content);
-            codeSmellDetector.detectDuplicateFunctions(context, inputFile, content);
-            codeSmellDetector.detectTooManyParameters(context, inputFile, content);
-            codeSmellDetector.detectDeeplyNested(context, inputFile, content);
-            codeSmellDetector.detectMissingDocumentation(context, inputFile, content);
-            codeSmellDetector.detectInconsistentNaming(context, inputFile, content);
-            codeSmellDetector.detectIdenticalBranches(context, inputFile, content);
-            codeSmellDetector.detectExpressionTooComplex(context, inputFile, content, commentRanges);
-            codeSmellDetector.detectDeprecatedFunctions(context, inputFile, content);
-            codeSmellDetector.detectEmptyStatement(context, inputFile, content);
+            codeSmellDetector.get().detectMagicNumbers(context, inputFile, content, commentRanges);
+            codeSmellDetector.get().detectEmptyBlocks(context, inputFile, content);
+            codeSmellDetector.get().detectLongFunctions(context, inputFile, content);
+            codeSmellDetector.get().detectEmptyCatchBlocks(context, inputFile, content);
+            codeSmellDetector.get().detectDebugCode(context, inputFile, content);
+            codeSmellDetector.get().detectUnusedVariables(context, inputFile, content);
+            codeSmellDetector.get().detectDuplicateFunctions(context, inputFile, content);
+            codeSmellDetector.get().detectTooManyParameters(context, inputFile, content);
+            codeSmellDetector.get().detectDeeplyNested(context, inputFile, content);
+            codeSmellDetector.get().detectMissingDocumentation(context, inputFile, content);
+            codeSmellDetector.get().detectInconsistentNaming(context, inputFile, content);
+            codeSmellDetector.get().detectIdenticalBranches(context, inputFile, content);
+            codeSmellDetector.get().detectExpressionTooComplex(context, inputFile, content, commentRanges);
+            codeSmellDetector.get().detectDeprecatedFunctions(context, inputFile, content);
+            codeSmellDetector.get().detectEmptyStatement(context, inputFile, content);
 
             // Performance rules (Code Smell)
-            codeSmellDetector.detectAppendInLoop(context, inputFile, content);
-            codeSmellDetector.detectRepeatedFunctionCalls(context, inputFile, content);
-            codeSmellDetector.detectStringConcatInLoop(context, inputFile, content);
-            codeSmellDetector.detectUncompiledNumerical(context, inputFile, content);
-            codeSmellDetector.detectPackedArrayBreaking(context, inputFile, content);
-            codeSmellDetector.detectNestedMapTable(context, inputFile, content);
-            codeSmellDetector.detectLargeTempExpressions(context, inputFile, content);
-            codeSmellDetector.detectPlotInLoop(context, inputFile, content);
+            codeSmellDetector.get().detectAppendInLoop(context, inputFile, content);
+            codeSmellDetector.get().detectRepeatedFunctionCalls(context, inputFile, content);
+            codeSmellDetector.get().detectStringConcatInLoop(context, inputFile, content);
+            codeSmellDetector.get().detectUncompiledNumerical(context, inputFile, content);
+            codeSmellDetector.get().detectPackedArrayBreaking(context, inputFile, content);
+            codeSmellDetector.get().detectNestedMapTable(context, inputFile, content);
+            codeSmellDetector.get().detectLargeTempExpressions(context, inputFile, content);
+            codeSmellDetector.get().detectPlotInLoop(context, inputFile, content);
 
             // Best practices rules (Code Smell)
-            codeSmellDetector.detectGenericVariableNames(context, inputFile, content);
-            codeSmellDetector.detectMissingUsageMessage(context, inputFile, content);
-            codeSmellDetector.detectMissingOptionsPattern(context, inputFile, content);
-            codeSmellDetector.detectSideEffectsNaming(context, inputFile, content);
-            codeSmellDetector.detectComplexBoolean(context, inputFile, content);
-            codeSmellDetector.detectUnprotectedSymbols(context, inputFile, content);
-            codeSmellDetector.detectMissingReturn(context, inputFile, content);
+            codeSmellDetector.get().detectGenericVariableNames(context, inputFile, content);
+            codeSmellDetector.get().detectMissingUsageMessage(context, inputFile, content);
+            codeSmellDetector.get().detectMissingOptionsPattern(context, inputFile, content);
+            codeSmellDetector.get().detectSideEffectsNaming(context, inputFile, content);
+            codeSmellDetector.get().detectComplexBoolean(context, inputFile, content);
+            codeSmellDetector.get().detectUnprotectedSymbols(context, inputFile, content);
+            codeSmellDetector.get().detectMissingReturn(context, inputFile, content);
+
+            long codeSmellTime = System.currentTimeMillis() - codeSmellStart;
+
+            // === TIMING: Bug Detectors ===
+            long bugStart = System.currentTimeMillis();
 
             // Delegate to Bug detector (20 rules)
-            bugDetector.detectDivisionByZero(context, inputFile, content);
-            bugDetector.detectAssignmentInConditional(context, inputFile, content);
-            bugDetector.detectListIndexOutOfBounds(context, inputFile, content);
-            bugDetector.detectInfiniteRecursion(context, inputFile, content);
-            bugDetector.detectUnreachablePatterns(context, inputFile, content);
-            bugDetector.detectFloatingPointEquality(context, inputFile, content);
-            bugDetector.detectFunctionWithoutReturn(context, inputFile, content);
-            bugDetector.detectVariableBeforeAssignment(context, inputFile, content);
-            bugDetector.detectOffByOne(context, inputFile, content);
-            bugDetector.detectInfiniteLoop(context, inputFile, content);
-            bugDetector.detectMismatchedDimensions(context, inputFile, content);
-            bugDetector.detectTypeMismatch(context, inputFile, content);
-            bugDetector.detectSuspiciousPattern(context, inputFile, content);
+            bugDetector.get().detectDivisionByZero(context, inputFile, content);
+            bugDetector.get().detectAssignmentInConditional(context, inputFile, content);
+            bugDetector.get().detectListIndexOutOfBounds(context, inputFile, content);
+            bugDetector.get().detectInfiniteRecursion(context, inputFile, content);
+            bugDetector.get().detectUnreachablePatterns(context, inputFile, content);
+            bugDetector.get().detectFloatingPointEquality(context, inputFile, content);
+            bugDetector.get().detectFunctionWithoutReturn(context, inputFile, content);
+            bugDetector.get().detectVariableBeforeAssignment(context, inputFile, content);
+            bugDetector.get().detectOffByOne(context, inputFile, content);
+            bugDetector.get().detectInfiniteLoop(context, inputFile, content);
+            bugDetector.get().detectMismatchedDimensions(context, inputFile, content);
+            bugDetector.get().detectTypeMismatch(context, inputFile, content);
+            bugDetector.get().detectSuspiciousPattern(context, inputFile, content);
 
             // Pattern matching bugs
-            bugDetector.detectMissingPatternTest(context, inputFile, content);
-            bugDetector.detectPatternBlanksMisuse(context, inputFile, content);
-            bugDetector.detectSetDelayedConfusion(context, inputFile, content);
-            bugDetector.detectSymbolNameCollision(context, inputFile, content);
-            bugDetector.detectBlockModuleMisuse(context, inputFile, content);
+            bugDetector.get().detectMissingPatternTest(context, inputFile, content);
+            bugDetector.get().detectPatternBlanksMisuse(context, inputFile, content);
+            bugDetector.get().detectSetDelayedConfusion(context, inputFile, content);
+            bugDetector.get().detectSymbolNameCollision(context, inputFile, content);
+            bugDetector.get().detectBlockModuleMisuse(context, inputFile, content);
 
             // Resource management bugs
-            bugDetector.detectUnclosedFileHandle(context, inputFile, content);
-            bugDetector.detectGrowingDefinitionChain(context, inputFile, content);
+            bugDetector.get().detectUnclosedFileHandle(context, inputFile, content);
+            bugDetector.get().detectGrowingDefinitionChain(context, inputFile, content);
 
-            // Delegate to Vulnerability detector (14 rules)
-            vulnerabilityDetector.detectHardcodedCredentials(context, inputFile, content);
-            vulnerabilityDetector.detectCommandInjection(context, inputFile, content);
-            vulnerabilityDetector.detectSqlInjection(context, inputFile, content);
-            vulnerabilityDetector.detectCodeInjection(context, inputFile, content);
-            vulnerabilityDetector.detectPathTraversal(context, inputFile, content);
-            vulnerabilityDetector.detectWeakCryptography(context, inputFile, content);
-            vulnerabilityDetector.detectSsrf(context, inputFile, content);
-            vulnerabilityDetector.detectInsecureDeserialization(context, inputFile, content);
-            vulnerabilityDetector.detectUnsafeSymbol(context, inputFile, content);
-            vulnerabilityDetector.detectXXE(context, inputFile, content);
-            vulnerabilityDetector.detectMissingSanitization(context, inputFile, content);
-            vulnerabilityDetector.detectInsecureRandomExpanded(context, inputFile, content);
-            vulnerabilityDetector.detectUnsafeCloudDeploy(context, inputFile, content);
-            vulnerabilityDetector.detectDynamicInjection(context, inputFile, content);
+            long bugTime = System.currentTimeMillis() - bugStart;
+
+            // === TIMING: Vulnerability Detectors ===
+            long vulnStart = System.currentTimeMillis();
+
+            // Delegate to Vulnerability detector (14 rules) - with timing for slow rules
+            long ruleStart;
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectHardcodedCredentials(context, inputFile, content);
+            logSlowRule(inputFile, "HardcodedCredentials", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectCommandInjection(context, inputFile, content);
+            logSlowRule(inputFile, "CommandInjection", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectSqlInjection(context, inputFile, content);
+            logSlowRule(inputFile, "SqlInjection", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectCodeInjection(context, inputFile, content);
+            logSlowRule(inputFile, "CodeInjection", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectPathTraversal(context, inputFile, content);
+            logSlowRule(inputFile, "PathTraversal", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectWeakCryptography(context, inputFile, content);
+            logSlowRule(inputFile, "WeakCryptography", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectSsrf(context, inputFile, content);
+            logSlowRule(inputFile, "Ssrf", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectInsecureDeserialization(context, inputFile, content);
+            logSlowRule(inputFile, "InsecureDeserialization", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectUnsafeSymbol(context, inputFile, content);
+            logSlowRule(inputFile, "UnsafeSymbol", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectXXE(context, inputFile, content);
+            logSlowRule(inputFile, "XXE", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectMissingSanitization(context, inputFile, content);
+            logSlowRule(inputFile, "MissingSanitization", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectInsecureRandomExpanded(context, inputFile, content);
+            logSlowRule(inputFile, "InsecureRandomExpanded", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectUnsafeCloudDeploy(context, inputFile, content);
+            logSlowRule(inputFile, "UnsafeCloudDeploy", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectDynamicInjection(context, inputFile, content);
+            logSlowRule(inputFile, "DynamicInjection", ruleStart);
 
             // Delegate to Security Hotspot detector (7 rules)
-            securityHotspotDetector.detectFileUploadValidation(context, inputFile, content);
-            securityHotspotDetector.detectExternalApiSafeguards(context, inputFile, content);
-            securityHotspotDetector.detectCryptoKeyGeneration(context, inputFile, content);
-            securityHotspotDetector.detectNetworkOperations(context, inputFile, content);
-            securityHotspotDetector.detectFileSystemModifications(context, inputFile, content);
-            securityHotspotDetector.detectEnvironmentVariable(context, inputFile, content);
-            securityHotspotDetector.detectImportWithoutFormat(context, inputFile, content);
+            securityHotspotDetector.get().detectFileUploadValidation(context, inputFile, content);
+            securityHotspotDetector.get().detectExternalApiSafeguards(context, inputFile, content);
+            securityHotspotDetector.get().detectCryptoKeyGeneration(context, inputFile, content);
+            securityHotspotDetector.get().detectNetworkOperations(context, inputFile, content);
+            securityHotspotDetector.get().detectFileSystemModifications(context, inputFile, content);
+            securityHotspotDetector.get().detectEnvironmentVariable(context, inputFile, content);
+            securityHotspotDetector.get().detectImportWithoutFormat(context, inputFile, content);
 
             // ===== PHASE 4: NEW RULE DETECTORS (50 rules) =====
 
             // New Code Smell detectors (18 rules)
-            codeSmellDetector.detectOvercomplexPatterns(context, inputFile, content);
-            codeSmellDetector.detectInconsistentRuleTypes(context, inputFile, content);
-            codeSmellDetector.detectMissingFunctionAttributes(context, inputFile, content);
-            codeSmellDetector.detectMissingDownValuesDoc(context, inputFile, content);
-            codeSmellDetector.detectMissingPatternTestValidation(context, inputFile, content);
-            codeSmellDetector.detectExcessivePureFunctions(context, inputFile, content);
-            codeSmellDetector.detectMissingOperatorPrecedence(context, inputFile, content);
-            codeSmellDetector.detectHardcodedFilePaths(context, inputFile, content);
-            codeSmellDetector.detectInconsistentReturnTypes(context, inputFile, content);
-            codeSmellDetector.detectMissingErrorMessages(context, inputFile, content);
-            codeSmellDetector.detectGlobalStateModification(context, inputFile, content);
-            codeSmellDetector.detectMissingLocalization(context, inputFile, content);
-            codeSmellDetector.detectExplicitGlobalContext(context, inputFile, content);
-            codeSmellDetector.detectMissingTemporaryCleanup(context, inputFile, content);
-            codeSmellDetector.detectNestedListsInsteadAssociation(context, inputFile, content);
-            codeSmellDetector.detectRepeatedPartExtraction(context, inputFile, content);
-            codeSmellDetector.detectMissingMemoization(context, inputFile, content);
-            codeSmellDetector.detectStringJoinForTemplates(context, inputFile, content);
+            codeSmellDetector.get().detectOvercomplexPatterns(context, inputFile, content);
+            codeSmellDetector.get().detectInconsistentRuleTypes(context, inputFile, content);
+            codeSmellDetector.get().detectMissingFunctionAttributes(context, inputFile, content);
+            codeSmellDetector.get().detectMissingDownValuesDoc(context, inputFile, content);
+            codeSmellDetector.get().detectMissingPatternTestValidation(context, inputFile, content);
+            codeSmellDetector.get().detectExcessivePureFunctions(context, inputFile, content);
+            codeSmellDetector.get().detectMissingOperatorPrecedence(context, inputFile, content);
+            codeSmellDetector.get().detectHardcodedFilePaths(context, inputFile, content);
+            codeSmellDetector.get().detectInconsistentReturnTypes(context, inputFile, content);
+            codeSmellDetector.get().detectMissingErrorMessages(context, inputFile, content);
+            codeSmellDetector.get().detectGlobalStateModification(context, inputFile, content);
+            codeSmellDetector.get().detectMissingLocalization(context, inputFile, content);
+            codeSmellDetector.get().detectExplicitGlobalContext(context, inputFile, content);
+            codeSmellDetector.get().detectMissingTemporaryCleanup(context, inputFile, content);
+            codeSmellDetector.get().detectNestedListsInsteadAssociation(context, inputFile, content);
+            codeSmellDetector.get().detectRepeatedPartExtraction(context, inputFile, content);
+            codeSmellDetector.get().detectMissingMemoization(context, inputFile, content);
+            codeSmellDetector.get().detectStringJoinForTemplates(context, inputFile, content);
 
             // New Performance detectors (10 rules)
-            codeSmellDetector.detectLinearSearchInsteadLookup(context, inputFile, content);
-            codeSmellDetector.detectRepeatedCalculations(context, inputFile, content);
-            codeSmellDetector.detectPositionInsteadPattern(context, inputFile, content);
-            codeSmellDetector.detectFlattenTableAntipattern(context, inputFile, content);
-            codeSmellDetector.detectMissingParallelization(context, inputFile, content);
-            codeSmellDetector.detectMissingSparseArray(context, inputFile, content);
-            codeSmellDetector.detectUnnecessaryTranspose(context, inputFile, content);
-            codeSmellDetector.detectDeleteDuplicatesOnLargeData(context, inputFile, content);
-            codeSmellDetector.detectRepeatedStringParsing(context, inputFile, content);
-            codeSmellDetector.detectMissingCompilationTarget(context, inputFile, content);
+            codeSmellDetector.get().detectLinearSearchInsteadLookup(context, inputFile, content);
+            codeSmellDetector.get().detectRepeatedCalculations(context, inputFile, content);
+            codeSmellDetector.get().detectPositionInsteadPattern(context, inputFile, content);
+            codeSmellDetector.get().detectFlattenTableAntipattern(context, inputFile, content);
+            codeSmellDetector.get().detectMissingParallelization(context, inputFile, content);
+            codeSmellDetector.get().detectMissingSparseArray(context, inputFile, content);
+            codeSmellDetector.get().detectUnnecessaryTranspose(context, inputFile, content);
+            codeSmellDetector.get().detectDeleteDuplicatesOnLargeData(context, inputFile, content);
+            codeSmellDetector.get().detectRepeatedStringParsing(context, inputFile, content);
+            codeSmellDetector.get().detectMissingCompilationTarget(context, inputFile, content);
 
             // New Bug detectors (15 rules)
-            bugDetector.detectMissingEmptyListCheck(context, inputFile, content);
-            bugDetector.detectMachinePrecisionInSymbolic(context, inputFile, content);
-            bugDetector.detectMissingFailedCheck(context, inputFile, content);
-            bugDetector.detectZeroDenominator(context, inputFile, content);
-            bugDetector.detectMissingMatrixDimensionCheck(context, inputFile, content);
-            bugDetector.detectIncorrectSetInScoping(context, inputFile, content);
-            bugDetector.detectMissingHoldAttributes(context, inputFile, content);
-            bugDetector.detectEvaluationOrderAssumption(context, inputFile, content);
-            bugDetector.detectIncorrectLevelSpecification(context, inputFile, content);
-            bugDetector.detectUnpackingPackedArrays(context, inputFile, content);
-            bugDetector.detectMissingSpecialCaseHandling(context, inputFile, content);
-            bugDetector.detectIncorrectAssociationOperations(context, inputFile, content);
-            bugDetector.detectDateObjectValidation(context, inputFile, content);
-            bugDetector.detectTotalMeanOnNonNumeric(context, inputFile, content);
-            bugDetector.detectQuantityUnitMismatch(context, inputFile, content);
+            bugDetector.get().detectMissingEmptyListCheck(context, inputFile, content);
+            bugDetector.get().detectMachinePrecisionInSymbolic(context, inputFile, content);
+            bugDetector.get().detectMissingFailedCheck(context, inputFile, content);
+            bugDetector.get().detectZeroDenominator(context, inputFile, content);
+            bugDetector.get().detectMissingMatrixDimensionCheck(context, inputFile, content);
+            bugDetector.get().detectIncorrectSetInScoping(context, inputFile, content);
+            bugDetector.get().detectMissingHoldAttributes(context, inputFile, content);
+            bugDetector.get().detectEvaluationOrderAssumption(context, inputFile, content);
+            bugDetector.get().detectIncorrectLevelSpecification(context, inputFile, content);
+            bugDetector.get().detectUnpackingPackedArrays(context, inputFile, content);
+            bugDetector.get().detectMissingSpecialCaseHandling(context, inputFile, content);
+            bugDetector.get().detectIncorrectAssociationOperations(context, inputFile, content);
+            bugDetector.get().detectDateObjectValidation(context, inputFile, content);
+            bugDetector.get().detectTotalMeanOnNonNumeric(context, inputFile, content);
+            bugDetector.get().detectQuantityUnitMismatch(context, inputFile, content);
 
-            // New Vulnerability detectors (7 rules)
-            vulnerabilityDetector.detectToExpressionOnInput(context, inputFile, content);
-            vulnerabilityDetector.detectUnsanitizedRunProcess(context, inputFile, content);
-            vulnerabilityDetector.detectMissingCloudAuth(context, inputFile, content);
-            vulnerabilityDetector.detectHardcodedApiKeys(context, inputFile, content);
-            vulnerabilityDetector.detectNeedsGetUntrusted(context, inputFile, content);
-            vulnerabilityDetector.detectExposingSensitiveData(context, inputFile, content);
-            vulnerabilityDetector.detectMissingFormFunctionValidation(context, inputFile, content);
+            // New Vulnerability detectors (7 rules) - with timing
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectToExpressionOnInput(context, inputFile, content);
+            logSlowRule(inputFile, "ToExpressionOnInput", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectUnsanitizedRunProcess(context, inputFile, content);
+            logSlowRule(inputFile, "UnsanitizedRunProcess", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectMissingCloudAuth(context, inputFile, content);
+            logSlowRule(inputFile, "MissingCloudAuth", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectHardcodedApiKeys(context, inputFile, content);
+            logSlowRule(inputFile, "HardcodedApiKeys", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectNeedsGetUntrusted(context, inputFile, content);
+            logSlowRule(inputFile, "NeedsGetUntrusted", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectExposingSensitiveData(context, inputFile, content);
+            logSlowRule(inputFile, "ExposingSensitiveData", ruleStart);
+
+            ruleStart = System.currentTimeMillis();
+            vulnerabilityDetector.get().detectMissingFormFunctionValidation(context, inputFile, content);
+            logSlowRule(inputFile, "MissingFormFunctionValidation", ruleStart);
 
             // ===== CHUNK 1 DETECTORS (Items 16-50 from ROADMAP_325.md) =====
 
             // Pattern System Rules (Items 16-30)
-            chunk1Detector.detectUnrestrictedBlankPattern(context, inputFile, content);
-            chunk1Detector.detectPatternTestVsCondition(context, inputFile, content);
-            chunk1Detector.detectBlankSequenceWithoutRestriction(context, inputFile, content);
-            chunk1Detector.detectNestedOptionalPatterns(context, inputFile, content);
-            chunk1Detector.detectPatternNamingConflicts(context, inputFile, content);
-            chunk1Detector.detectRepeatedPatternAlternatives(context, inputFile, content);
-            chunk1Detector.detectPatternTestWithPureFunction(context, inputFile, content);
-            chunk1Detector.detectMissingPatternDefaults(context, inputFile, content);
-            chunk1Detector.detectOrderDependentPatterns(context, inputFile, content);
-            chunk1Detector.detectVerbatimPatternMisuse(context, inputFile, content);
-            chunk1Detector.detectHoldPatternUnnecessary(context, inputFile, content);
-            chunk1Detector.detectLongestShortestWithoutOrdering(context, inputFile, content);
-            chunk1Detector.detectPatternRepeatedDifferentTypes(context, inputFile, content);
-            chunk1Detector.detectAlternativesTooComplex(context, inputFile, content);
-            chunk1Detector.detectPatternMatchingLargeLists(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectUnrestrictedBlankPattern(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPatternTestVsCondition(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectBlankSequenceWithoutRestriction(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectNestedOptionalPatterns(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPatternNamingConflicts(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectRepeatedPatternAlternatives(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPatternTestWithPureFunction(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectMissingPatternDefaults(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectOrderDependentPatterns(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectVerbatimPatternMisuse(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectHoldPatternUnnecessary(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectLongestShortestWithoutOrdering(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPatternRepeatedDifferentTypes(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectAlternativesTooComplex(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPatternMatchingLargeLists(context, inputFile, content);
 
             // List/Array Rules (Items 31-40)
-            chunk1Detector.detectEmptyListIndexing(context, inputFile, content);
-            chunk1Detector.detectNegativeIndexWithoutValidation(context, inputFile, content);
-            chunk1Detector.detectPartAssignmentToImmutable(context, inputFile, content);
-            chunk1Detector.detectInefficientListConcatenation(context, inputFile, content);
-            chunk1Detector.detectUnnecessaryFlatten(context, inputFile, content);
-            chunk1Detector.detectLengthInLoopCondition(context, inputFile, content);
-            chunk1Detector.detectReverseTwice(context, inputFile, content);
-            chunk1Detector.detectSortWithoutComparison(context, inputFile, content);
-            chunk1Detector.detectPositionVsSelect(context, inputFile, content);
-            chunk1Detector.detectNestedPartExtraction(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectEmptyListIndexing(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectNegativeIndexWithoutValidation(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPartAssignmentToImmutable(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectInefficientListConcatenation(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectUnnecessaryFlatten(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectLengthInLoopCondition(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectReverseTwice(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectSortWithoutComparison(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectPositionVsSelect(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectNestedPartExtraction(context, inputFile, content);
 
             // Association Rules (Items 41-50)
-            chunk1Detector.detectMissingKeyCheck(context, inputFile, content);
-            chunk1Detector.detectAssociationVsListConfusion(context, inputFile, content);
-            chunk1Detector.detectInefficientKeyLookup(context, inputFile, content);
-            chunk1Detector.detectQueryOnNonDataset(context, inputFile, content);
-            chunk1Detector.detectAssociationUpdatePattern(context, inputFile, content);
-            chunk1Detector.detectMergeWithoutConflictStrategy(context, inputFile, content);
-            chunk1Detector.detectAssociateToOnNonSymbol(context, inputFile, content);
-            chunk1Detector.detectKeyDropMultipleTimes(context, inputFile, content);
-            chunk1Detector.detectLookupWithMissingDefault(context, inputFile, content);
-            chunk1Detector.detectGroupByWithoutAggregation(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectMissingKeyCheck(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectAssociationVsListConfusion(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectInefficientKeyLookup(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectQueryOnNonDataset(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectAssociationUpdatePattern(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectMergeWithoutConflictStrategy(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectAssociateToOnNonSymbol(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectKeyDropMultipleTimes(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectLookupWithMissingDefault(context, inputFile, content);
+            patternAndDataStructureDetector.get().detectGroupByWithoutAggregation(context, inputFile, content);
 
             // ===== CHUNK 2 DETECTORS (Items 61-100 from ROADMAP_325.md) =====
 
             // Unused Code Detection (Items 61-75)
-            chunk2Detector.detectUnusedPrivateFunction(context, inputFile, content);
-            chunk2Detector.detectUnusedFunctionParameter(context, inputFile, content);
-            chunk2Detector.detectUnusedModuleVariable(context, inputFile, content);
-            chunk2Detector.detectUnusedWithVariable(context, inputFile, content);
-            chunk2Detector.detectUnusedImport(context, inputFile, content);
-            chunk2Detector.detectUnusedPatternName(context, inputFile, content);
-            chunk2Detector.detectUnusedOptionalParameter(context, inputFile, content);
-            chunk2Detector.detectDeadCodeAfterReturn(context, inputFile, content);
-            chunk2Detector.detectUnreachableAfterAbortThrow(context, inputFile, content);
-            chunk2Detector.detectAssignmentNeverRead(context, inputFile, content);
-            chunk2Detector.detectFunctionDefinedButNeverCalled(context, inputFile, content);
-            chunk2Detector.detectRedefinedWithoutUse(context, inputFile, content);
-            chunk2Detector.detectLoopVariableUnused(context, inputFile, content);
-            chunk2Detector.detectCatchWithoutThrow(context, inputFile, content);
-            chunk2Detector.detectConditionAlwaysFalse(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedPrivateFunction(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedFunctionParameter(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedModuleVariable(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedWithVariable(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedImport(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedPatternName(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnusedOptionalParameter(context, inputFile, content);
+            unusedAndNamingDetector.get().detectDeadCodeAfterReturn(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUnreachableAfterAbortThrow(context, inputFile, content);
+            unusedAndNamingDetector.get().detectAssignmentNeverRead(context, inputFile, content);
+            unusedAndNamingDetector.get().detectFunctionDefinedButNeverCalled(context, inputFile, content);
+            unusedAndNamingDetector.get().detectRedefinedWithoutUse(context, inputFile, content);
+            unusedAndNamingDetector.get().detectLoopVariableUnused(context, inputFile, content);
+            unusedAndNamingDetector.get().detectCatchWithoutThrow(context, inputFile, content);
+            unusedAndNamingDetector.get().detectConditionAlwaysFalse(context, inputFile, content);
 
             // Shadowing & Naming (Items 76-90)
-            chunk2Detector.detectLocalShadowsGlobal(context, inputFile, content);
-            chunk2Detector.detectParameterShadowsBuiltin(context, inputFile, content);
-            chunk2Detector.detectLocalShadowsParameter(context, inputFile, content);
-            chunk2Detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content);
-            chunk2Detector.detectSymbolNameTooShort(context, inputFile, content);
-            chunk2Detector.detectSymbolNameTooLong(context, inputFile, content);
-            chunk2Detector.detectInconsistentNamingConvention(context, inputFile, content);
-            chunk2Detector.detectBuiltinNameInLocalScope(context, inputFile, content);
-            chunk2Detector.detectContextConflicts(context, inputFile, content);
-            chunk2Detector.detectReservedNameUsage(context, inputFile, content);
-            chunk2Detector.detectPrivateContextSymbolPublic(context, inputFile, content);
-            chunk2Detector.detectMismatchedBeginEnd(context, inputFile, content);
-            chunk2Detector.detectSymbolAfterEndPackage(context, inputFile, content);
-            chunk2Detector.detectGlobalInPackage(context, inputFile, content);
-            chunk2Detector.detectTempVariableNotTemp(context, inputFile, content);
+            unusedAndNamingDetector.get().detectLocalShadowsGlobal(context, inputFile, content);
+            unusedAndNamingDetector.get().detectParameterShadowsBuiltin(context, inputFile, content);
+            unusedAndNamingDetector.get().detectLocalShadowsParameter(context, inputFile, content);
+            unusedAndNamingDetector.get().detectMultipleDefinitionsSameSymbol(context, inputFile, content);
+            unusedAndNamingDetector.get().detectSymbolNameTooShort(context, inputFile, content);
+            unusedAndNamingDetector.get().detectSymbolNameTooLong(context, inputFile, content);
+            unusedAndNamingDetector.get().detectInconsistentNamingConvention(context, inputFile, content);
+            unusedAndNamingDetector.get().detectBuiltinNameInLocalScope(context, inputFile, content);
+            unusedAndNamingDetector.get().detectContextConflicts(context, inputFile, content);
+            unusedAndNamingDetector.get().detectReservedNameUsage(context, inputFile, content);
+            unusedAndNamingDetector.get().detectPrivateContextSymbolPublic(context, inputFile, content);
+            unusedAndNamingDetector.get().detectMismatchedBeginEnd(context, inputFile, content);
+            unusedAndNamingDetector.get().detectSymbolAfterEndPackage(context, inputFile, content);
+            unusedAndNamingDetector.get().detectGlobalInPackage(context, inputFile, content);
+            unusedAndNamingDetector.get().detectTempVariableNotTemp(context, inputFile, content);
 
             // Undefined Symbol Detection (Items 91-100)
-            chunk2Detector.detectUndefinedFunctionCall(context, inputFile, content);
-            chunk2Detector.detectUndefinedVariableReference(context, inputFile, content);
-            chunk2Detector.detectTypoInBuiltinName(context, inputFile, content);
-            chunk2Detector.detectWrongCapitalization(context, inputFile, content);
-            chunk2Detector.detectMissingImport(context, inputFile, content);
-            chunk2Detector.detectContextNotFound(context, inputFile, content);
-            chunk2Detector.detectSymbolMaskedByImport(context, inputFile, content);
-            chunk2Detector.detectMissingPathEntry(context, inputFile, content);
-            chunk2Detector.detectCircularNeeds(context, inputFile, content);
-            chunk2Detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUndefinedFunctionCall(context, inputFile, content);
+            unusedAndNamingDetector.get().detectUndefinedVariableReference(context, inputFile, content);
+            unusedAndNamingDetector.get().detectTypoInBuiltinName(context, inputFile, content);
+            unusedAndNamingDetector.get().detectWrongCapitalization(context, inputFile, content);
+            unusedAndNamingDetector.get().detectMissingImport(context, inputFile, content);
+            unusedAndNamingDetector.get().detectContextNotFound(context, inputFile, content);
+            unusedAndNamingDetector.get().detectSymbolMaskedByImport(context, inputFile, content);
+            unusedAndNamingDetector.get().detectMissingPathEntry(context, inputFile, content);
+            unusedAndNamingDetector.get().detectCircularNeeds(context, inputFile, content);
+            unusedAndNamingDetector.get().detectForwardReferenceWithoutDeclaration(context, inputFile, content);
 
             // ===== CHUNK 3 DETECTORS (Items 111-150 from ROADMAP_325.md) =====
 
             // Type Mismatch Detection (Items 111-130)
-            chunk3Detector.detectNumericOperationOnString(context, inputFile, content);
-            chunk3Detector.detectStringOperationOnNumber(context, inputFile, content);
-            chunk3Detector.detectWrongArgumentType(context, inputFile, content);
-            chunk3Detector.detectFunctionReturnsWrongType(context, inputFile, content);
-            chunk3Detector.detectComparisonIncompatibleTypes(context, inputFile, content);
-            chunk3Detector.detectMixedNumericTypes(context, inputFile, content);
-            chunk3Detector.detectIntegerDivisionExpectingReal(context, inputFile, content);
-            chunk3Detector.detectListFunctionOnAssociation(context, inputFile, content);
-            chunk3Detector.detectPatternTypeMismatch(context, inputFile, content);
-            chunk3Detector.detectOptionalTypeInconsistent(context, inputFile, content);
-            chunk3Detector.detectReturnTypeInconsistent(context, inputFile, content);
-            chunk3Detector.detectNullAssignmentToTypedVariable(context, inputFile, content);
-            chunk3Detector.detectTypeCastWithoutValidation(context, inputFile, content);
-            chunk3Detector.detectImplicitTypeConversion(context, inputFile, content);
-            chunk3Detector.detectGraphicsObjectInNumericContext(context, inputFile, content);
-            chunk3Detector.detectSymbolInNumericContext(context, inputFile, content);
-            chunk3Detector.detectImageOperationOnNonImage(context, inputFile, content);
-            chunk3Detector.detectSoundOperationOnNonSound(context, inputFile, content);
-            chunk3Detector.detectDatasetOperationOnList(context, inputFile, content);
-            chunk3Detector.detectGraphOperationOnNonGraph(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectNumericOperationOnString(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectStringOperationOnNumber(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectWrongArgumentType(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectFunctionReturnsWrongType(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectComparisonIncompatibleTypes(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectMixedNumericTypes(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectIntegerDivisionExpectingReal(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectListFunctionOnAssociation(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectPatternTypeMismatch(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectOptionalTypeInconsistent(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectReturnTypeInconsistent(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectNullAssignmentToTypedVariable(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectTypeCastWithoutValidation(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectImplicitTypeConversion(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectGraphicsObjectInNumericContext(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectSymbolInNumericContext(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectImageOperationOnNonImage(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectSoundOperationOnNonSound(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectDatasetOperationOnList(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectGraphOperationOnNonGraph(context, inputFile, content);
 
             // Data Flow Analysis (Items 135-150)
-            chunk3Detector.detectUninitializedVariableUseEnhanced(context, inputFile, content);
-            chunk3Detector.detectVariableMayBeUninitialized(context, inputFile, content);
-            chunk3Detector.detectDeadStore(context, inputFile, content);
-            chunk3Detector.detectOverwrittenBeforeRead(context, inputFile, content);
-            chunk3Detector.detectVariableAliasingIssue(context, inputFile, content);
-            chunk3Detector.detectModificationOfLoopIterator(context, inputFile, content);
-            chunk3Detector.detectUseOfIteratorOutsideLoop(context, inputFile, content);
-            chunk3Detector.detectReadingUnsetVariable(context, inputFile, content);
-            chunk3Detector.detectDoubleAssignmentSameValue(context, inputFile, content);
-            chunk3Detector.detectMutationInPureFunction(context, inputFile, content);
-            chunk3Detector.detectSharedMutableState(context, inputFile, content);
-            chunk3Detector.detectVariableScopeEscape(context, inputFile, content);
-            chunk3Detector.detectClosureOverMutableVariable(context, inputFile, content);
-            chunk3Detector.detectAssignmentInConditionEnhanced(context, inputFile, content);
-            chunk3Detector.detectAssignmentAsReturnValue(context, inputFile, content);
-            chunk3Detector.detectVariableNeverModified(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectUninitializedVariableUseEnhanced(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectVariableMayBeUninitialized(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectDeadStore(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectOverwrittenBeforeRead(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectVariableAliasingIssue(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectModificationOfLoopIterator(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectUseOfIteratorOutsideLoop(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectReadingUnsetVariable(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectDoubleAssignmentSameValue(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectMutationInPureFunction(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectSharedMutableState(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectVariableScopeEscape(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectClosureOverMutableVariable(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectAssignmentInConditionEnhanced(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectAssignmentAsReturnValue(context, inputFile, content);
+            typeAndDataFlowDetector.get().detectVariableNeverModified(context, inputFile, content);
 
             // ===== CHUNK 4 DETECTORS (Items 161-200 from ROADMAP_325.md) =====
 
             // Dead Code & Reachability (Items 161-175)
-            chunk4Detector.detectUnreachableCodeAfterReturn(context, inputFile, content);
-            chunk4Detector.detectUnreachableBranchAlwaysTrue(context, inputFile, content);
-            chunk4Detector.detectUnreachableBranchAlwaysFalse(context, inputFile, content);
-            chunk4Detector.detectImpossiblePattern(context, inputFile, content);
-            chunk4Detector.detectEmptyCatchBlockEnhanced(context, inputFile, content);
-            chunk4Detector.detectConditionAlwaysEvaluatesSame(context, inputFile, content);
-            chunk4Detector.detectInfiniteLoopProven(context, inputFile, content);
-            chunk4Detector.detectLoopNeverExecutes(context, inputFile, content);
-            chunk4Detector.detectCodeAfterAbort(context, inputFile, content);
-            chunk4Detector.detectMultipleReturnsMakeCodeUnreachable(context, inputFile, content);
-            chunk4Detector.detectElseBranchNeverTaken(context, inputFile, content);
-            chunk4Detector.detectSwitchCaseShadowed(context, inputFile, content);
-            chunk4Detector.detectPatternDefinitionShadowed(context, inputFile, content);
-            chunk4Detector.detectExceptionNeverThrown(context, inputFile, content);
-            chunk4Detector.detectBreakOutsideLoop(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectUnreachableCodeAfterReturn(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectUnreachableBranchAlwaysTrue(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectUnreachableBranchAlwaysFalse(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectImpossiblePattern(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectEmptyCatchBlockEnhanced(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectConditionAlwaysEvaluatesSame(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectInfiniteLoopProven(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectLoopNeverExecutes(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectCodeAfterAbort(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectMultipleReturnsMakeCodeUnreachable(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectElseBranchNeverTaken(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectSwitchCaseShadowed(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectPatternDefinitionShadowed(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectExceptionNeverThrown(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectBreakOutsideLoop(context, inputFile, content);
 
             // Taint Analysis for Security (Items 181-195)
-            chunk4Detector.detectSqlInjectionTaint(context, inputFile, content);
-            chunk4Detector.detectCommandInjectionTaint(context, inputFile, content);
-            chunk4Detector.detectCodeInjectionTaint(context, inputFile, content);
-            chunk4Detector.detectPathTraversalTaint(context, inputFile, content);
-            chunk4Detector.detectXssTaint(context, inputFile, content);
-            chunk4Detector.detectLdapInjection(context, inputFile, content);
-            chunk4Detector.detectXxeTaint(context, inputFile, content);
-            chunk4Detector.detectUnsafeDeserializationTaint(context, inputFile, content);
-            chunk4Detector.detectSsrfTaint(context, inputFile, content);
-            chunk4Detector.detectInsecureRandomnessEnhanced(context, inputFile, content);
-            chunk4Detector.detectWeakCryptographyEnhanced(context, inputFile, content);
-            chunk4Detector.detectHardCodedCredentialsTaint(context, inputFile, content);
-            chunk4Detector.detectSensitiveDataInLogs(context, inputFile, content);
-            chunk4Detector.detectMassAssignment(context, inputFile, content);
-            chunk4Detector.detectRegexDoS(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectSqlInjectionTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectCommandInjectionTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectCodeInjectionTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectPathTraversalTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectXssTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectLdapInjection(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectXxeTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectUnsafeDeserializationTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectSsrfTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectInsecureRandomnessEnhanced(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectWeakCryptographyEnhanced(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectHardCodedCredentialsTaint(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectSensitiveDataInLogs(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectMassAssignment(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectRegexDoS(context, inputFile, content);
 
             // Additional Control Flow Rules (Items 196-200)
-            chunk4Detector.detectMissingDefaultCase(context, inputFile, content);
-            chunk4Detector.detectEmptyIfBranch(context, inputFile, content);
-            chunk4Detector.detectNestedIfDepth(context, inputFile, content);
-            chunk4Detector.detectTooManyReturnPoints(context, inputFile, content);
-            chunk4Detector.detectMissingElseConsideredHarmful(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectMissingDefaultCase(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectEmptyIfBranch(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectNestedIfDepth(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectTooManyReturnPoints(context, inputFile, content);
+            controlFlowAndTaintDetector.get().detectMissingElseConsideredHarmful(context, inputFile, content);
 
             // ===== CHUNK 5 DETECTORS (Items 211-250 from ROADMAP_325.md) =====
 
             // Dependency & Architecture Rules (Items 211-230)
-            Chunk5Detector.detectCircularPackageDependency(context, inputFile, content);
-            Chunk5Detector.detectUnusedPackageImport(context, inputFile, content);
-            Chunk5Detector.detectMissingPackageImport(context, inputFile, content);
-            Chunk5Detector.detectTransitiveDependencyCouldBeDirect(context, inputFile, content);
-            Chunk5Detector.detectDiamondDependency(context, inputFile, content);
-            Chunk5Detector.detectGodPackageTooManyDependencies(context, inputFile, content);
-            Chunk5Detector.detectPackageDependsOnApplicationCode(context, inputFile, content);
-            Chunk5Detector.detectCyclicCallBetweenPackages(context, inputFile, content);
-            Chunk5Detector.detectLayerViolation(context, inputFile, content);
-            Chunk5Detector.detectUnstableDependency(context, inputFile, content);
-            Chunk5Detector.detectPackageTooLarge(context, inputFile, content);
-            Chunk5Detector.detectPackageTooSmall(context, inputFile, content);
-            Chunk5Detector.detectInconsistentPackageNaming(context, inputFile, content);
-            Chunk5Detector.detectPackageExportsTooMuch(context, inputFile, content);
-            Chunk5Detector.detectPackageExportsTooLittle(context, inputFile, content);
-            Chunk5Detector.detectIncompletePublicAPI(context, inputFile, content);
-            Chunk5Detector.detectPrivateSymbolUsedExternally(context, inputFile, content);
-            Chunk5Detector.detectInternalImplementationExposed(context, inputFile, content);
-            Chunk5Detector.detectMissingPackageDocumentation(context, inputFile, content);
-            Chunk5Detector.detectPublicAPIChangedWithoutVersionBump(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectCircularPackageDependency(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectUnusedPackageImport(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectMissingPackageImport(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectTransitiveDependencyCouldBeDirect(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectDiamondDependency(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectGodPackageTooManyDependencies(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageDependsOnApplicationCode(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectCyclicCallBetweenPackages(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectLayerViolation(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectUnstableDependency(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageTooLarge(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageTooSmall(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageExportsTooMuch(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageExportsTooLittle(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectIncompletePublicAPI(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPrivateSymbolUsedExternally(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectInternalImplementationExposed(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectMissingPackageDocumentation(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicAPIChangedWithoutVersionBump(context, inputFile, content);
 
             // Unused Export & Dead Code (Items 231-245)
-            Chunk5Detector.detectUnusedPublicFunction(context, inputFile, content);
-            Chunk5Detector.detectUnusedExport(context, inputFile, content);
-            Chunk5Detector.detectDeadPackage(context, inputFile, content);
-            Chunk5Detector.detectFunctionOnlyCalledOnce(context, inputFile, content);
-            Chunk5Detector.detectOverAbstractedAPI(context, inputFile, content);
-            Chunk5Detector.detectOrphanedTestFile(context, inputFile, content);
-            Chunk5Detector.detectImplementationWithoutTests(context, inputFile, content);
-            Chunk5Detector.detectDeprecatedAPIStillUsedInternally(context, inputFile, content);
-            Chunk5Detector.detectInternalAPIUsedLikePublic(context, inputFile, content);
-            Chunk5Detector.detectCommentedOutPackageLoad(context, inputFile, content);
-            Chunk5Detector.detectConditionalPackageLoad(context, inputFile, content);
-            Chunk5Detector.detectPackageLoadedButNotListedInMetadata(context, inputFile, content);
-            Chunk5Detector.detectDuplicateSymbolDefinitionAcrossPackages(context, inputFile, content);
-            Chunk5Detector.detectSymbolRedefinitionAfterImport(context, inputFile, content);
-            Chunk5Detector.detectPackageVersionMismatch(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectUnusedPublicFunction(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectUnusedExport(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectDeadPackage(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectFunctionOnlyCalledOnce(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectOverAbstractedAPI(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectOrphanedTestFile(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectImplementationWithoutTests(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectDeprecatedAPIStillUsedInternally(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectInternalAPIUsedLikePublic(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectCommentedOutPackageLoad(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectConditionalPackageLoad(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageLoadedButNotListedInMetadata(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectDuplicateSymbolDefinitionAcrossPackages(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectSymbolRedefinitionAfterImport(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageVersionMismatch(context, inputFile, content);
 
             // Documentation & Consistency (Items 246-250)
-            Chunk5Detector.detectPublicExportMissingUsageMessage(context, inputFile, content);
-            Chunk5Detector.detectInconsistentParameterNamesAcrossOverloads(context, inputFile, content);
-            Chunk5Detector.detectPublicFunctionWithImplementationDetailsInName(context, inputFile, content);
-            Chunk5Detector.detectPublicAPINotInPackageContext(context, inputFile, content);
-            Chunk5Detector.detectTestFunctionInProductionCode(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicExportMissingUsageMessage(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectInconsistentParameterNamesAcrossOverloads(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicFunctionWithImplementationDetailsInName(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicAPINotInPackageContext(context, inputFile, content);
+            ArchitectureAndDependencyDetector.detectTestFunctionInProductionCode(context, inputFile, content);
 
             // ===== CHUNK 6 & 7 DETECTORS (Items 251-325 from ROADMAP_325.md) =====
 
             // Null Safety & Error Handling (Items 251-266)
-            Chunk67Detector.detectNullDereference(context, inputFile, content);
-            Chunk67Detector.detectMissingNullCheck(context, inputFile, content);
-            Chunk67Detector.detectNullPassedToNonNullable(context, inputFile, content);
-            Chunk67Detector.detectInconsistentNullHandling(context, inputFile, content);
-            Chunk67Detector.detectNullReturnNotDocumented(context, inputFile, content);
-            Chunk67Detector.detectComparisonWithNull(context, inputFile, content);
-            Chunk67Detector.detectMissingCheckLeadsToNullPropagation(context, inputFile, content);
-            Chunk67Detector.detectCheckPatternDoesntHandleAllCases(context, inputFile, content);
-            Chunk67Detector.detectQuietSuppressingImportantMessages(context, inputFile, content);
-            Chunk67Detector.detectOffDisablingImportantWarnings(context, inputFile, content);
-            Chunk67Detector.detectCatchAllExceptionHandler(context, inputFile, content);
-            Chunk67Detector.detectEmptyExceptionHandler(context, inputFile, content);
-            Chunk67Detector.detectThrowWithoutCatch(context, inputFile, content);
-            Chunk67Detector.detectAbortInLibraryCode(context, inputFile, content);
-            Chunk67Detector.detectMessageWithoutDefinition(context, inputFile, content);
-            Chunk67Detector.detectMissingMessageDefinition(context, inputFile, content);
+            AdvancedAnalysisDetector.detectNullDereference(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingNullCheck(context, inputFile, content);
+            AdvancedAnalysisDetector.detectNullPassedToNonNullable(context, inputFile, content);
+            AdvancedAnalysisDetector.detectInconsistentNullHandling(context, inputFile, content);
+            AdvancedAnalysisDetector.detectNullReturnNotDocumented(context, inputFile, content);
+            AdvancedAnalysisDetector.detectComparisonWithNull(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingCheckLeadsToNullPropagation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectCheckPatternDoesntHandleAllCases(context, inputFile, content);
+            AdvancedAnalysisDetector.detectQuietSuppressingImportantMessages(context, inputFile, content);
+            AdvancedAnalysisDetector.detectOffDisablingImportantWarnings(context, inputFile, content);
+            AdvancedAnalysisDetector.detectCatchAllExceptionHandler(context, inputFile, content);
+            AdvancedAnalysisDetector.detectEmptyExceptionHandler(context, inputFile, content);
+            AdvancedAnalysisDetector.detectThrowWithoutCatch(context, inputFile, content);
+            AdvancedAnalysisDetector.detectAbortInLibraryCode(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMessageWithoutDefinition(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingMessageDefinition(context, inputFile, content);
 
             // Constant & Expression Analysis (Items 267-280)
-            Chunk67Detector.detectConditionAlwaysTrueConstantPropagation(context, inputFile, content);
-            Chunk67Detector.detectConditionAlwaysFalseConstantPropagation(context, inputFile, content);
-            Chunk67Detector.detectLoopBoundConstant(context, inputFile, content);
-            Chunk67Detector.detectRedundantComputation(context, inputFile, content);
-            Chunk67Detector.detectPureExpressionInLoop(context, inputFile, content);
-            Chunk67Detector.detectConstantExpression(context, inputFile, content);
-            Chunk67Detector.detectIdentityOperation(context, inputFile, content);
-            Chunk67Detector.detectComparisonOfIdenticalExpressions(context, inputFile, content);
-            Chunk67Detector.detectBooleanExpressionAlwaysTrue(context, inputFile, content);
-            Chunk67Detector.detectBooleanExpressionAlwaysFalse(context, inputFile, content);
-            Chunk67Detector.detectUnnecessaryBooleanConversion(context, inputFile, content);
-            Chunk67Detector.detectDoubleNegation(context, inputFile, content);
-            Chunk67Detector.detectComplexBooleanExpressionEnhanced(context, inputFile, content);
-            Chunk67Detector.detectDeMorgansLawOpportunity(context, inputFile, content);
+            AdvancedAnalysisDetector.detectConditionAlwaysTrueConstantPropagation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectConditionAlwaysFalseConstantPropagation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectLoopBoundConstant(context, inputFile, content);
+            AdvancedAnalysisDetector.detectRedundantComputation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectPureExpressionInLoop(context, inputFile, content);
+            AdvancedAnalysisDetector.detectConstantExpression(context, inputFile, content);
+            AdvancedAnalysisDetector.detectIdentityOperation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectComparisonOfIdenticalExpressions(context, inputFile, content);
+            AdvancedAnalysisDetector.detectBooleanExpressionAlwaysTrue(context, inputFile, content);
+            AdvancedAnalysisDetector.detectBooleanExpressionAlwaysFalse(context, inputFile, content);
+            AdvancedAnalysisDetector.detectUnnecessaryBooleanConversion(context, inputFile, content);
+            AdvancedAnalysisDetector.detectDoubleNegation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectComplexBooleanExpressionEnhanced(context, inputFile, content);
+            AdvancedAnalysisDetector.detectDeMorgansLawOpportunity(context, inputFile, content);
 
             // Mathematica-Specific Patterns (Items 281-300)
-            Chunk67Detector.detectHoldAttributeMissing(context, inputFile, content);
-            Chunk67Detector.detectHoldFirstButUsesSecondArgumentFirst(context, inputFile, content);
-            Chunk67Detector.detectMissingUnevaluatedWrapper(context, inputFile, content);
-            Chunk67Detector.detectUnnecessaryHold(context, inputFile, content);
-            Chunk67Detector.detectReleaseHoldAfterHold(context, inputFile, content);
-            Chunk67Detector.detectEvaluateInHeldContext(context, inputFile, content);
-            Chunk67Detector.detectPatternWithSideEffect(context, inputFile, content);
-            Chunk67Detector.detectReplacementRuleOrderMatters(context, inputFile, content);
-            Chunk67Detector.detectReplaceAllVsReplaceConfusion(context, inputFile, content);
-            Chunk67Detector.detectRuleDoesntMatchDueToEvaluation(context, inputFile, content);
-            Chunk67Detector.detectPartSpecificationOutOfBounds(context, inputFile, content);
-            Chunk67Detector.detectSpanSpecificationInvalid(context, inputFile, content);
-            Chunk67Detector.detectAllSpecificationInefficient(context, inputFile, content);
-            Chunk67Detector.detectThreadingOverNonLists(context, inputFile, content);
-            Chunk67Detector.detectMissingAttributesDeclaration(context, inputFile, content);
-            Chunk67Detector.detectOneIdentityAttributeMisuse(context, inputFile, content);
-            Chunk67Detector.detectOrderlessAttributeOnNonCommutative(context, inputFile, content);
-            Chunk67Detector.detectFlatAttributeMisuse(context, inputFile, content);
-            Chunk67Detector.detectSequenceInUnexpectedContext(context, inputFile, content);
-            Chunk67Detector.detectMissingSequenceWrapper(context, inputFile, content);
+            AdvancedAnalysisDetector.detectHoldAttributeMissing(context, inputFile, content);
+            AdvancedAnalysisDetector.detectHoldFirstButUsesSecondArgumentFirst(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingUnevaluatedWrapper(context, inputFile, content);
+            AdvancedAnalysisDetector.detectUnnecessaryHold(context, inputFile, content);
+            AdvancedAnalysisDetector.detectReleaseHoldAfterHold(context, inputFile, content);
+            AdvancedAnalysisDetector.detectEvaluateInHeldContext(context, inputFile, content);
+            AdvancedAnalysisDetector.detectPatternWithSideEffect(context, inputFile, content);
+            AdvancedAnalysisDetector.detectReplacementRuleOrderMatters(context, inputFile, content);
+            AdvancedAnalysisDetector.detectReplaceAllVsReplaceConfusion(context, inputFile, content);
+            AdvancedAnalysisDetector.detectRuleDoesntMatchDueToEvaluation(context, inputFile, content);
+            AdvancedAnalysisDetector.detectPartSpecificationOutOfBounds(context, inputFile, content);
+            AdvancedAnalysisDetector.detectSpanSpecificationInvalid(context, inputFile, content);
+            AdvancedAnalysisDetector.detectAllSpecificationInefficient(context, inputFile, content);
+            AdvancedAnalysisDetector.detectThreadingOverNonLists(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingAttributesDeclaration(context, inputFile, content);
+            AdvancedAnalysisDetector.detectOneIdentityAttributeMisuse(context, inputFile, content);
+            AdvancedAnalysisDetector.detectOrderlessAttributeOnNonCommutative(context, inputFile, content);
+            AdvancedAnalysisDetector.detectFlatAttributeMisuse(context, inputFile, content);
+            AdvancedAnalysisDetector.detectSequenceInUnexpectedContext(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingSequenceWrapper(context, inputFile, content);
 
             // Test Coverage Integration (Items 307-310)
-            Chunk67Detector.detectLowTestCoverageWarning(context, inputFile, content);
-            Chunk67Detector.detectUntestedPublicFunction(context, inputFile, content);
-            Chunk67Detector.detectUntestedBranch(context, inputFile, content);
-            Chunk67Detector.detectTestOnlyCodeInProduction(context, inputFile, content);
+            AdvancedAnalysisDetector.detectLowTestCoverageWarning(context, inputFile, content);
+            AdvancedAnalysisDetector.detectUntestedPublicFunction(context, inputFile, content);
+            AdvancedAnalysisDetector.detectUntestedBranch(context, inputFile, content);
+            AdvancedAnalysisDetector.detectTestOnlyCodeInProduction(context, inputFile, content);
 
             // Performance Analysis (Items 312-320)
-            Chunk67Detector.detectCompilableFunctionNotCompiled(context, inputFile, content);
-            Chunk67Detector.detectCompilationTargetMissing(context, inputFile, content);
-            Chunk67Detector.detectNonCompilableConstructInCompile(context, inputFile, content);
-            Chunk67Detector.detectPackedArrayUnpacked(context, inputFile, content);
-            Chunk67Detector.detectInefficientPatternInPerformanceCriticalCode(context, inputFile, content);
-            Chunk67Detector.detectNAppliedTooLate(context, inputFile, content);
-            Chunk67Detector.detectMissingMemoizationOpportunityEnhanced(context, inputFile, content);
-            Chunk67Detector.detectInefficientStringConcatenationEnhanced(context, inputFile, content);
-            Chunk67Detector.detectListConcatenationInLoop(context, inputFile, content);
+            AdvancedAnalysisDetector.detectCompilableFunctionNotCompiled(context, inputFile, content);
+            AdvancedAnalysisDetector.detectCompilationTargetMissing(context, inputFile, content);
+            AdvancedAnalysisDetector.detectNonCompilableConstructInCompile(context, inputFile, content);
+            AdvancedAnalysisDetector.detectPackedArrayUnpacked(context, inputFile, content);
+            AdvancedAnalysisDetector.detectInefficientPatternInPerformanceCriticalCode(context, inputFile, content);
+            AdvancedAnalysisDetector.detectNAppliedTooLate(context, inputFile, content);
+            AdvancedAnalysisDetector.detectMissingMemoizationOpportunityEnhanced(context, inputFile, content);
+            AdvancedAnalysisDetector.detectInefficientStringConcatenationEnhanced(context, inputFile, content);
+            AdvancedAnalysisDetector.detectListConcatenationInLoop(context, inputFile, content);
 
             // ===== SYMBOL TABLE ANALYSIS (10 rules) =====
+            // === TIMING: Symbol Table Analysis ===
+            long symbolTableStart = System.currentTimeMillis();
+
             // Build symbol table for advanced variable lifetime and scope analysis
             try {
+                long buildStart = System.currentTimeMillis();
                 SymbolTable symbolTable = SymbolTableBuilder.build(inputFile, content);
+                long buildTime = System.currentTimeMillis() - buildStart;
+
+                long detectStart = System.currentTimeMillis();
 
                 // Run symbol table-based detectors
                 SymbolTableDetector.detectUnusedVariable(context, inputFile, symbolTable);
@@ -665,20 +755,35 @@ public class MathematicaRulesSensor implements Sensor {
                 SymbolTableDetector.detectVariableReuseWithDifferentSemantics(context, inputFile, symbolTable);
                 SymbolTableDetector.detectIncorrectClosureCapture(context, inputFile, symbolTable);
                 SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable);
+
+                // Symbol table timing removed - too noisy
             } catch (Exception e) {
                 LOG.debug("Error in symbol table analysis for: {}", inputFile.filename());
             }
 
+            // === FINAL TIMING SUMMARY ===
+            long totalFileTime = System.currentTimeMillis() - fileStartTime;
+            long vulnTime = vulnStart > 0 ? (System.currentTimeMillis() - vulnStart) : 0;
+
+            // Only log very slow files (>2 seconds) with detailed breakdown
+            if (totalFileTime > 2000) {
+                LOG.info("PERF: SLOW FILE - {} took {}ms total ({} lines) - CodeSmell: {}ms ({}%), Bug: {}ms ({}%), Vuln: {}ms ({}%)",
+                    inputFile.filename(), totalFileTime, inputFile.lines(),
+                    codeSmellTime, (codeSmellTime * 100 / totalFileTime),
+                    bugTime, (bugTime * 100 / totalFileTime),
+                    vulnTime, (vulnTime * 100 / totalFileTime));
+            }
+
             // Clear caches after processing file
-            codeSmellDetector.clearCaches();
-            bugDetector.clearCaches();
-            vulnerabilityDetector.clearCaches();
-            securityHotspotDetector.clearCaches();
-            chunk1Detector.clearCaches();
-            chunk2Detector.clearCaches();
-            chunk3Detector.clearCaches();
-            chunk4Detector.clearCaches();
-            // Note: Chunk5Detector uses static caches cleared at end of execute()
+            codeSmellDetector.get().clearCaches();
+            bugDetector.get().clearCaches();
+            vulnerabilityDetector.get().clearCaches();
+            securityHotspotDetector.get().clearCaches();
+            patternAndDataStructureDetector.get().clearCaches();
+            unusedAndNamingDetector.get().clearCaches();
+            typeAndDataFlowDetector.get().clearCaches();
+            controlFlowAndTaintDetector.get().clearCaches();
+            // Note: ArchitectureAndDependencyDetector uses static caches cleared at end of execute()
 
         } catch (Exception e) {
             LOG.error("Error analyzing file: {}", inputFile, e);
@@ -839,5 +944,15 @@ public class MathematicaRulesSensor implements Sensor {
 
         issue.at(location);
         issue.save();
+    }
+
+    /**
+     * Logs slow rules (>100ms) to help identify performance bottlenecks.
+     */
+    private void logSlowRule(InputFile inputFile, String ruleName, long startTime) {
+        long elapsed = System.currentTimeMillis() - startTime;
+        if (elapsed > 100) {
+            LOG.info("PERF: SLOW RULE - {} in {} took {}ms", ruleName, inputFile.filename(), elapsed);
+        }
     }
 }

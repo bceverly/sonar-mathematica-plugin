@@ -21,7 +21,7 @@ import java.util.regex.Pattern;
  * 4. Test Coverage Integration (Items 307-310): 4 rules
  * 5. Performance Analysis (Items 312-320): 9 rules
  */
-public class Chunk67Detector {
+public class AdvancedAnalysisDetector {
 
     // ========================================
     // PRE-COMPILED PATTERNS FOR PERFORMANCE
