@@ -38,7 +38,7 @@ public class MathematicaMetricsSensor implements Sensor {
     private final ComplexityCalculator complexityCalculator = new ComplexityCalculator();
 
     // Pre-compiled patterns for statement estimation (PERFORMANCE OPTIMIZATION)
-    private static final Pattern COMMENT_REMOVAL_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
+    // NOTE: COMMENT_REMOVAL_PATTERN removed - using character-based parser to avoid catastrophic backtracking
     private static final Pattern DELAYED_ASSIGN_PATTERN = Pattern.compile(":=");
     private static final Pattern ASSIGN_PATTERN = Pattern.compile("\\s=\\s");
     private static final Pattern FUNCTION_CALL_PATTERN = Pattern.compile("[a-zA-Z]\\w*\\[");
@@ -125,11 +125,11 @@ public class MathematicaMetricsSensor implements Sensor {
     /**
      * Estimate the number of executable statements in the file.
      * This is a rough heuristic based on counting semicolons and assignments.
-     * OPTIMIZED: Uses pre-compiled patterns for better performance.
+     * OPTIMIZED: Uses character-based parser to avoid catastrophic regex backtracking.
      */
     private int estimateStatements(String content) {
-        // Remove comments using pre-compiled pattern
-        String cleanContent = COMMENT_REMOVAL_PATTERN.matcher(content).replaceAll("");
+        // Remove comments using safe character-based parser
+        String cleanContent = removeCommentsCharBased(content);
 
         // Count statement indicators using pre-compiled patterns
         int statements = 0;
@@ -146,6 +146,45 @@ public class MathematicaMetricsSensor implements Sensor {
 
         // Return at least 1 if file has content
         return Math.max(1, statements / 2);  // Divide by 2 to avoid double-counting
+    }
+
+    /**
+     * Remove Mathematica comments using character-based parsing.
+     * This is O(n) and handles nested comments correctly without catastrophic backtracking.
+     *
+     * Mathematica comments: (* comment *) and can be nested.
+     */
+    private String removeCommentsCharBased(String content) {
+        StringBuilder result = new StringBuilder(content.length());
+        int depth = 0;
+        int i = 0;
+
+        while (i < content.length()) {
+            // Check for comment start: (*
+            if (i < content.length() - 1 && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
+                depth++;
+                i += 2;
+                continue;
+            }
+
+            // Check for comment end: *)
+            if (i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                if (depth > 0) {
+                    depth--;
+                }
+                i += 2;
+                continue;
+            }
+
+            // If not in comment, add character to result
+            if (depth == 0) {
+                result.append(content.charAt(i));
+            }
+
+            i++;
+        }
+
+        return result.toString();
     }
 
     private int countChar(String text, char ch) {

@@ -23,7 +23,7 @@ public class ComplexityCalculator {
     private static final Logger LOG = Loggers.get(ComplexityCalculator.class);
 
     // Patterns for complexity calculation
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
+    // NOTE: COMMENT_PATTERN removed - using character-based parser to avoid catastrophic backtracking
     private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
 
     // Cache for cleaned content (avoids repeated regex operations)
@@ -227,7 +227,10 @@ public class ComplexityCalculator {
 
     /**
      * Remove comments and strings from content to avoid false positives.
-     * Uses caching to avoid repeated regex operations on same content.
+     * Uses caching to avoid repeated operations on same content.
+     *
+     * IMPORTANT: Uses character-based parser instead of regex to avoid catastrophic backtracking.
+     * Mathematica comments can be nested: (* outer (* inner *) outer *)
      */
     private String removeCommentsAndStrings(String content) {
         // Check cache first (PERFORMANCE OPTIMIZATION)
@@ -235,8 +238,8 @@ public class ComplexityCalculator {
             return cachedCleaned;
         }
 
-        // Replace comments with spaces (preserve line structure)
-        String result = COMMENT_PATTERN.matcher(content).replaceAll("");
+        // Remove comments using safe character-based parser (handles nesting)
+        String result = removeCommentsCharBased(content);
 
         // Replace strings with normalized token
         result = STRING_PATTERN.matcher(result).replaceAll("\"STRING\"");
@@ -246,6 +249,45 @@ public class ComplexityCalculator {
         cachedCleaned = result;
 
         return result;
+    }
+
+    /**
+     * Remove Mathematica comments using character-based parsing.
+     * This is O(n) and handles nested comments correctly without catastrophic backtracking.
+     *
+     * Mathematica comments: (* comment *) and can be nested.
+     */
+    private String removeCommentsCharBased(String content) {
+        StringBuilder result = new StringBuilder(content.length());
+        int depth = 0;
+        int i = 0;
+
+        while (i < content.length()) {
+            // Check for comment start: (*
+            if (i < content.length() - 1 && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
+                depth++;
+                i += 2;
+                continue;
+            }
+
+            // Check for comment end: *)
+            if (i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                if (depth > 0) {
+                    depth--;
+                }
+                i += 2;
+                continue;
+            }
+
+            // If not in comment, add character to result
+            if (depth == 0) {
+                result.append(content.charAt(i));
+            }
+
+            i++;
+        }
+
+        return result.toString();
     }
 
     /**

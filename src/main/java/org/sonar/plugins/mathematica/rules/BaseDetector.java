@@ -21,6 +21,13 @@ public abstract class BaseDetector {
 
     protected static final Logger LOG = Loggers.get(BaseDetector.class);
 
+    // Reference to sensor for queuing issues
+    protected MathematicaRulesSensor sensor;
+
+    public void setSensor(MathematicaRulesSensor sensor) {
+        this.sensor = sensor;
+    }
+
     // Thread-local caches for performance (cleared per file)
     protected ThreadLocal<int[]> lineOffsetCache = new ThreadLocal<>();
     protected ThreadLocal<String[]> linesCache = new ThreadLocal<>();
@@ -31,7 +38,7 @@ public abstract class BaseDetector {
     protected static final Map<String, Pattern> PATTERN_CACHE = new ConcurrentHashMap<>();
 
     // Common patterns used across detectors
-    protected static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
+    // NOTE: COMMENT_PATTERN removed - use removeCommentsCharBased() to avoid catastrophic backtracking
     protected static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
 
     /**
@@ -122,19 +129,26 @@ public abstract class BaseDetector {
     }
 
     /**
-     * Reports an issue at a specific line.
+     * Reports an issue at a specific line by queuing it for the background saver thread.
      */
     protected void reportIssue(SensorContext context, InputFile inputFile, int line, String ruleKey, String message) {
-        NewIssue issue = context.newIssue()
-            .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, ruleKey));
+        if (sensor != null) {
+            // Queue the issue data for background thread to create and save
+            sensor.queueIssue(inputFile, line, ruleKey, message);
+        } else {
+            // Fallback: create and save directly (shouldn't happen)
+            LOG.warn("Sensor not set, falling back to direct save");
+            NewIssue issue = context.newIssue()
+                .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, ruleKey));
 
-        NewIssueLocation location = issue.newLocation()
-            .on(inputFile)
-            .at(inputFile.selectLine(line))
-            .message(message);
+            NewIssueLocation location = issue.newLocation()
+                .on(inputFile)
+                .at(inputFile.selectLine(line))
+                .message(message);
 
-        issue.at(location);
-        issue.save();
+            issue.at(location);
+            issue.save();
+        }
     }
 
     /**
@@ -195,14 +209,42 @@ public abstract class BaseDetector {
     }
 
     /**
-     * Analyzes comments and returns their ranges.
+     * Analyzes comments and returns their ranges using character-based parsing.
+     * This is O(n) and handles nested comments without catastrophic backtracking.
      */
     protected List<int[]> analyzeComments(String content) {
         List<int[]> commentRanges = new java.util.ArrayList<>();
-        Matcher matcher = COMMENT_PATTERN.matcher(content);
-        while (matcher.find()) {
-            commentRanges.add(new int[]{matcher.start(), matcher.end()});
+        int depth = 0;
+        int commentStart = -1;
+        int i = 0;
+
+        while (i < content.length()) {
+            // Check for comment start: (*
+            if (i < content.length() - 1 && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
+                if (depth == 0) {
+                    commentStart = i;
+                }
+                depth++;
+                i += 2;
+                continue;
+            }
+
+            // Check for comment end: *)
+            if (i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                if (depth > 0) {
+                    depth--;
+                    if (depth == 0 && commentStart >= 0) {
+                        commentRanges.add(new int[]{commentStart, i + 2});
+                        commentStart = -1;
+                    }
+                }
+                i += 2;
+                continue;
+            }
+
+            i++;
         }
+
         return commentRanges;
     }
 

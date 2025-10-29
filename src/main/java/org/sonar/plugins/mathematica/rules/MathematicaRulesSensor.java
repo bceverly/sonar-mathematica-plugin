@@ -38,26 +38,170 @@ public class MathematicaRulesSensor implements Sensor {
 
     private static final Logger LOG = Loggers.get(MathematicaRulesSensor.class);
 
+    // Track files that skip vulnerability detection due to size
+    private final List<String> skippedVulnFiles = new java.util.concurrent.CopyOnWriteArrayList<>();
+    private static final int MAX_FILE_SIZE_FOR_VULN_DETECTION = 50_000; // lines
+
     // Comment pattern for comment analysis
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
 
-    // Thread-local detector instances for parallel processing with proper ThreadLocal caching
-    private final ThreadLocal<CodeSmellDetector> codeSmellDetector = ThreadLocal.withInitial(CodeSmellDetector::new);
-    private final ThreadLocal<BugDetector> bugDetector = ThreadLocal.withInitial(BugDetector::new);
-    private final ThreadLocal<VulnerabilityDetector> vulnerabilityDetector = ThreadLocal.withInitial(VulnerabilityDetector::new);
-    private final ThreadLocal<SecurityHotspotDetector> securityHotspotDetector = ThreadLocal.withInitial(SecurityHotspotDetector::new);
-    private final ThreadLocal<PatternAndDataStructureDetector> patternAndDataStructureDetector = ThreadLocal.withInitial(PatternAndDataStructureDetector::new);
-    private final ThreadLocal<UnusedAndNamingDetector> unusedAndNamingDetector = ThreadLocal.withInitial(UnusedAndNamingDetector::new);
-    private final ThreadLocal<TypeAndDataFlowDetector> typeAndDataFlowDetector = ThreadLocal.withInitial(TypeAndDataFlowDetector::new);
-    private final ThreadLocal<ControlFlowAndTaintDetector> controlFlowAndTaintDetector = ThreadLocal.withInitial(ControlFlowAndTaintDetector::new);
-    private final ThreadLocal<ArchitectureAndDependencyDetector> architectureAndDependencyDetector = ThreadLocal.withInitial(ArchitectureAndDependencyDetector::new);
-    private final ThreadLocal<AdvancedAnalysisDetector> advancedAnalysisDetector = ThreadLocal.withInitial(AdvancedAnalysisDetector::new);
+    // PERFORMANCE: Queue issue DATA (not NewIssue objects) to avoid thread-safety issues
+    private static class IssueData {
+        final InputFile inputFile;
+        final int line;
+        final String ruleKey;
+        final String message;
+
+        IssueData(InputFile inputFile, int line, String ruleKey, String message) {
+            this.inputFile = inputFile;
+            this.line = line;
+            this.ruleKey = ruleKey;
+            this.message = message;
+        }
+    }
+
+    private final java.util.concurrent.BlockingQueue<IssueData> issueQueue =
+        new java.util.concurrent.LinkedBlockingQueue<>();
+    private volatile Thread issueSaverThread;
+    private volatile boolean shutdownSaver = false;
+    private final java.util.concurrent.atomic.AtomicLong queuedIssues = new java.util.concurrent.atomic.AtomicLong(0);
+    private final java.util.concurrent.atomic.AtomicLong savedIssues = new java.util.concurrent.atomic.AtomicLong(0);
+    private SensorContext sensorContext; // Store context for saver thread
+
+    // Thread-local detector instances for parallel processing
+    private final ThreadLocal<CodeSmellDetector> codeSmellDetector = ThreadLocal.withInitial(() -> {
+        CodeSmellDetector d = new CodeSmellDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<BugDetector> bugDetector = ThreadLocal.withInitial(() -> {
+        BugDetector d = new BugDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<VulnerabilityDetector> vulnerabilityDetector = ThreadLocal.withInitial(() -> {
+        VulnerabilityDetector d = new VulnerabilityDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<SecurityHotspotDetector> securityHotspotDetector = ThreadLocal.withInitial(() -> {
+        SecurityHotspotDetector d = new SecurityHotspotDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<PatternAndDataStructureDetector> patternAndDataStructureDetector = ThreadLocal.withInitial(() -> {
+        PatternAndDataStructureDetector d = new PatternAndDataStructureDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<UnusedAndNamingDetector> unusedAndNamingDetector = ThreadLocal.withInitial(() -> {
+        UnusedAndNamingDetector d = new UnusedAndNamingDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<TypeAndDataFlowDetector> typeAndDataFlowDetector = ThreadLocal.withInitial(() -> {
+        TypeAndDataFlowDetector d = new TypeAndDataFlowDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<ControlFlowAndTaintDetector> controlFlowAndTaintDetector = ThreadLocal.withInitial(() -> {
+        ControlFlowAndTaintDetector d = new ControlFlowAndTaintDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<ArchitectureAndDependencyDetector> architectureAndDependencyDetector =
+        ThreadLocal.withInitial(ArchitectureAndDependencyDetector::new);
+    private final ThreadLocal<AdvancedAnalysisDetector> advancedAnalysisDetector =
+        ThreadLocal.withInitial(AdvancedAnalysisDetector::new);
 
     @Override
     public void describe(SensorDescriptor descriptor) {
         descriptor
             .name("Mathematica Rules Sensor")
             .onlyOnLanguage(MathematicaLanguage.KEY);
+    }
+
+    /**
+     * Queues issue DATA (not NewIssue object) to be created and saved by the background thread.
+     * This eliminates lock contention AND thread-safety issues.
+     */
+    public void queueIssue(InputFile inputFile, int line, String ruleKey, String message) {
+        try {
+            issueQueue.put(new IssueData(inputFile, line, ruleKey, message));
+            queuedIssues.incrementAndGet();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Interrupted while queueing issue", e);
+        }
+    }
+
+    /**
+     * Starts the background thread that creates and saves issues from queued data.
+     */
+    private void startIssueSaverThread(SensorContext context) {
+        this.sensorContext = context;
+        shutdownSaver = false;
+        issueSaverThread = new Thread(() -> {
+            LOG.info("Issue saver thread started");
+            try {
+                while (!shutdownSaver || !issueQueue.isEmpty()) {
+                    IssueData data = issueQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
+                    if (data != null) {
+                        long saveStart = System.currentTimeMillis();
+
+                        // Create and save issue on THIS thread (saver thread)
+                        org.sonar.api.batch.sensor.issue.NewIssue issue = context.newIssue()
+                            .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, data.ruleKey));
+
+                        org.sonar.api.batch.sensor.issue.NewIssueLocation location = issue.newLocation()
+                            .on(data.inputFile)
+                            .at(data.inputFile.selectLine(data.line))
+                            .message(data.message);
+
+                        issue.at(location);
+                        issue.save();
+
+                        long saveDuration = System.currentTimeMillis() - saveStart;
+                        savedIssues.incrementAndGet();
+
+                        if (saveDuration > 10) {
+                            LOG.info("⚠ SLOW SAVE: Issue #{} took {}ms (queue: {})",
+                                savedIssues.get(), saveDuration, issueQueue.size());
+                        }
+                    }
+                }
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
+                LOG.error("Issue saver thread interrupted", e);
+            } catch (Exception e) {
+                LOG.error("Error in issue saver thread", e);
+            }
+            LOG.info("Issue saver thread finished. Saved {}/{} issues", savedIssues.get(), queuedIssues.get());
+        }, "MathematicaIssueSaver");
+
+        issueSaverThread.setDaemon(false); // Ensure it completes before shutdown
+        issueSaverThread.start();
+    }
+
+    /**
+     * Stops the background saver thread and waits for queue to drain.
+     */
+    private void stopIssueSaverThread() {
+        LOG.info("Stopping issue saver thread (queue size: {}, saved: {}/{})",
+            issueQueue.size(), savedIssues.get(), queuedIssues.get());
+        shutdownSaver = true;
+
+        try {
+            if (issueSaverThread != null) {
+                issueSaverThread.join(60000); // Wait up to 1 minute
+                if (issueSaverThread.isAlive()) {
+                    LOG.warn("Issue saver thread did not finish in time");
+                }
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Interrupted waiting for issue saver thread", e);
+        }
     }
 
     @Override
@@ -76,6 +220,9 @@ public class MathematicaRulesSensor implements Sensor {
         List<InputFile> fileList = new ArrayList<>();
         inputFiles.forEach(fileList::add);
         int totalFiles = fileList.size();
+
+        // Start background issue saver thread
+        startIssueSaverThread(context);
 
         LOG.info("Starting analysis of {} Mathematica file(s)...", totalFiles);
         LOG.info("Using parallel processing with {} threads (thread-local caching enabled)", Runtime.getRuntime().availableProcessors());
@@ -137,8 +284,23 @@ public class MathematicaRulesSensor implements Sensor {
             totalTimeMs / 1000,
             String.format("%.1f", avgFilesPerSec));
 
+        // Report files that skipped vulnerability detection
+        if (!skippedVulnFiles.isEmpty()) {
+            LOG.warn("=== SKIPPED VULNERABILITY DETECTION ({} files) ===", skippedVulnFiles.size());
+            for (String file : skippedVulnFiles) {
+                LOG.warn("  - {}", file);
+            }
+            LOG.warn("Reason: Files >{}K lines skipped for performance", MAX_FILE_SIZE_FOR_VULN_DETECTION / 1000);
+        }
+
         // Clean up cross-file analysis caches
         ArchitectureAndDependencyDetector.clearCaches();
+        SymbolTableManager.clear();
+
+        // Stop issue saver thread and wait for queue to drain
+        stopIssueSaverThread();
+
+        LOG.info("Cleared all static caches - ready for next scan");
     }
 
     /**
@@ -273,61 +435,83 @@ public class MathematicaRulesSensor implements Sensor {
             // === TIMING: Vulnerability Detectors ===
             long vulnStart = System.currentTimeMillis();
 
+            // Check if file should skip vulnerability detection due to size
+            boolean skipVulnDetection = shouldSkipVulnerabilityDetection(content, inputFile.filename());
+            if (skipVulnDetection) {
+                skippedVulnFiles.add(String.format("%s (%d lines)", inputFile.filename(), inputFile.lines()));
+            }
+
             // Delegate to Vulnerability detector (14 rules) - with timing for slow rules
             long ruleStart;
 
+            if (!skipVulnDetection) {
+
+            logRuleStart("HardcodedCredentials");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectHardcodedCredentials(context, inputFile, content);
             logSlowRule(inputFile, "HardcodedCredentials", ruleStart);
 
+            logRuleStart("CommandInjection");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectCommandInjection(context, inputFile, content);
             logSlowRule(inputFile, "CommandInjection", ruleStart);
 
+            logRuleStart("SqlInjection");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectSqlInjection(context, inputFile, content);
             logSlowRule(inputFile, "SqlInjection", ruleStart);
 
+            logRuleStart("CodeInjection");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectCodeInjection(context, inputFile, content);
             logSlowRule(inputFile, "CodeInjection", ruleStart);
 
+            logRuleStart("PathTraversal");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectPathTraversal(context, inputFile, content);
             logSlowRule(inputFile, "PathTraversal", ruleStart);
 
+            logRuleStart("WeakCryptography");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectWeakCryptography(context, inputFile, content);
             logSlowRule(inputFile, "WeakCryptography", ruleStart);
 
+            logRuleStart("Ssrf");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectSsrf(context, inputFile, content);
             logSlowRule(inputFile, "Ssrf", ruleStart);
 
+            logRuleStart("InsecureDeserialization");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectInsecureDeserialization(context, inputFile, content);
             logSlowRule(inputFile, "InsecureDeserialization", ruleStart);
 
+            logRuleStart("UnsafeSymbol");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectUnsafeSymbol(context, inputFile, content);
             logSlowRule(inputFile, "UnsafeSymbol", ruleStart);
 
+            logRuleStart("XXE");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectXXE(context, inputFile, content);
             logSlowRule(inputFile, "XXE", ruleStart);
 
+            logRuleStart("MissingSanitization");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectMissingSanitization(context, inputFile, content);
             logSlowRule(inputFile, "MissingSanitization", ruleStart);
 
+            logRuleStart("InsecureRandomExpanded");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectInsecureRandomExpanded(context, inputFile, content);
             logSlowRule(inputFile, "InsecureRandomExpanded", ruleStart);
 
+            logRuleStart("UnsafeCloudDeploy");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectUnsafeCloudDeploy(context, inputFile, content);
             logSlowRule(inputFile, "UnsafeCloudDeploy", ruleStart);
 
+            logRuleStart("DynamicInjection");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectDynamicInjection(context, inputFile, content);
             logSlowRule(inputFile, "DynamicInjection", ruleStart);
@@ -393,30 +577,37 @@ public class MathematicaRulesSensor implements Sensor {
             bugDetector.get().detectQuantityUnitMismatch(context, inputFile, content);
 
             // New Vulnerability detectors (7 rules) - with timing
+            logRuleStart("ToExpressionOnInput");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectToExpressionOnInput(context, inputFile, content);
             logSlowRule(inputFile, "ToExpressionOnInput", ruleStart);
 
+            logRuleStart("UnsanitizedRunProcess");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectUnsanitizedRunProcess(context, inputFile, content);
             logSlowRule(inputFile, "UnsanitizedRunProcess", ruleStart);
 
+            logRuleStart("MissingCloudAuth");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectMissingCloudAuth(context, inputFile, content);
             logSlowRule(inputFile, "MissingCloudAuth", ruleStart);
 
+            logRuleStart("HardcodedApiKeys");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectHardcodedApiKeys(context, inputFile, content);
             logSlowRule(inputFile, "HardcodedApiKeys", ruleStart);
 
+            logRuleStart("NeedsGetUntrusted");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectNeedsGetUntrusted(context, inputFile, content);
             logSlowRule(inputFile, "NeedsGetUntrusted", ruleStart);
 
+            logRuleStart("ExposingSensitiveData");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectExposingSensitiveData(context, inputFile, content);
             logSlowRule(inputFile, "ExposingSensitiveData", ruleStart);
 
+            logRuleStart("MissingFormFunctionValidation");
             ruleStart = System.currentTimeMillis();
             vulnerabilityDetector.get().detectMissingFormFunctionValidation(context, inputFile, content);
             logSlowRule(inputFile, "MissingFormFunctionValidation", ruleStart);
@@ -761,6 +952,8 @@ public class MathematicaRulesSensor implements Sensor {
                 LOG.debug("Error in symbol table analysis for: {}", inputFile.filename());
             }
 
+            } // End of !skipVulnDetection block
+
             // === FINAL TIMING SUMMARY ===
             long totalFileTime = System.currentTimeMillis() - fileStartTime;
             long vulnTime = vulnStart > 0 ? (System.currentTimeMillis() - vulnStart) : 0;
@@ -947,6 +1140,13 @@ public class MathematicaRulesSensor implements Sensor {
     }
 
     /**
+     * Logs when a rule starts execution to help identify hanging rules.
+     */
+    private void logRuleStart(String ruleName) {
+        LOG.info("→ Starting rule: {}", ruleName);
+    }
+
+    /**
      * Logs slow rules (>100ms) to help identify performance bottlenecks.
      */
     private void logSlowRule(InputFile inputFile, String ruleName, long startTime) {
@@ -954,5 +1154,22 @@ public class MathematicaRulesSensor implements Sensor {
         if (elapsed > 100) {
             LOG.info("PERF: SLOW RULE - {} in {} took {}ms", ruleName, inputFile.filename(), elapsed);
         }
+    }
+
+    /**
+     * Check if file should skip vulnerability detection due to size.
+     * Very large files can cause performance issues with regex-based vulnerability detection.
+     */
+    private boolean shouldSkipVulnerabilityDetection(String content, String filename) {
+        int lineCount = 1;
+        for (int i = 0; i < content.length(); i++) {
+            if (content.charAt(i) == '\n') {
+                lineCount++;
+                if (lineCount > MAX_FILE_SIZE_FOR_VULN_DETECTION) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }
