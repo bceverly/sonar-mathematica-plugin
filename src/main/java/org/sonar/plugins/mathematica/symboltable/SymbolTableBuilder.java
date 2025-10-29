@@ -184,6 +184,7 @@ public class SymbolTableBuilder {
 
     /**
      * Tracks variable references in a line.
+     * PERFORMANCE: Uses O(1) HashSet check instead of O(n) stream search.
      */
     private static void trackReferences(SymbolTable table, String line, int lineNumber, Scope scope) {
         // Remove assignments to avoid double-counting
@@ -195,18 +196,14 @@ public class SymbolTableBuilder {
             if (!BUILTINS.contains(varName) && !Character.isDigit(varName.charAt(0))) {
                 Symbol symbol = scope.resolveSymbol(varName);
                 if (symbol != null) {
-                    // Check if not already added (avoid duplicates)
-                    boolean alreadyReferenced = symbol.getReferences().stream()
-                        .anyMatch(ref -> ref.getLine() == lineNumber &&
-                                        Math.abs(ref.getColumn() - refMatcher.start(1)) < 5);
-                    if (!alreadyReferenced) {
-                        symbol.addReference(new SymbolReference(
-                            lineNumber,
-                            refMatcher.start(1),
-                            ReferenceType.READ,
-                            line.trim()
-                        ));
-                    }
+                    // PERFORMANCE FIX: O(1) HashSet check instead of O(n) stream().anyMatch()
+                    // This was causing O(n²) behavior as symbols accumulated references
+                    symbol.addReferenceIfNew(new SymbolReference(
+                        lineNumber,
+                        refMatcher.start(1),
+                        ReferenceType.READ,
+                        line.trim()
+                    ));
                 }
             }
         }

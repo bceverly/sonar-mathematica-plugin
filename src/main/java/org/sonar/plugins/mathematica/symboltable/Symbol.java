@@ -3,6 +3,8 @@ package org.sonar.plugins.mathematica.symboltable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Represents a symbol (variable) in Mathematica code.
@@ -16,6 +18,9 @@ public class Symbol {
     private final List<SymbolReference> references;
     private final boolean isParameter;
     private final boolean isModuleVariable;
+
+    // PERFORMANCE: O(1) duplicate check instead of O(n) stream search
+    private final Set<String> seenReferences = new HashSet<>();
 
     /**
      * Creates a symbol.
@@ -50,6 +55,7 @@ public class Symbol {
 
     /**
      * Adds a reference (read) to this symbol.
+     * PERFORMANCE: Uses HashSet to avoid O(n) duplicate check.
      */
     public void addReference(SymbolReference reference) {
         if (!reference.isRead()) {
@@ -57,6 +63,33 @@ public class Symbol {
                 "Reference must be READ or READ_WRITE type");
         }
         references.add(reference);
+    }
+
+    /**
+     * Checks if a reference at this line/column was already seen.
+     * PERFORMANCE: O(1) HashSet lookup instead of O(n) stream search.
+     */
+    public boolean hasReferenceAt(int line, int column) {
+        String key = line + ":" + column;
+        return seenReferences.contains(key);
+    }
+
+    /**
+     * Adds a reference only if not already seen at this line/column.
+     * PERFORMANCE: O(1) check + add instead of O(n) stream search.
+     * @return true if added, false if duplicate
+     */
+    public boolean addReferenceIfNew(SymbolReference reference) {
+        if (!reference.isRead()) {
+            throw new IllegalArgumentException(
+                "Reference must be READ or READ_WRITE type");
+        }
+        String key = reference.getLine() + ":" + reference.getColumn();
+        if (seenReferences.add(key)) {
+            references.add(reference);
+            return true;
+        }
+        return false;
     }
 
     public String getName() {

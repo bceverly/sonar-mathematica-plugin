@@ -44,6 +44,10 @@ public class MathematicaParser {
     // PERFORMANCE: Cache line offsets for O(log n) lookups instead of O(n) scans
     private int[] lineOffsets;
 
+    // PERFORMANCE: Pre-compute delimiter positions to avoid O(n²) scanning
+    private int[] semicolonPositions;
+    private int[] assignmentPositions;
+
     /**
      * Parse Mathematica source code into an AST.
      *
@@ -53,14 +57,34 @@ public class MathematicaParser {
         List<AstNode> nodes = new ArrayList<>();
 
         try {
-            // PERFORMANCE: Build line offset array once for O(log n) lookups
-            this.lineOffsets = buildLineOffsetArray(content);
+            long startTotal = System.currentTimeMillis();
 
-            // Remove comments for simplified parsing
-            String cleanContent = COMMENT_PATTERN.matcher(content).replaceAll("");
+            // PERFORMANCE: Build line offset array once for O(log n) lookups
+            long startLineOffsets = System.currentTimeMillis();
+            this.lineOffsets = buildLineOffsetArray(content);
+            long lineOffsetsTime = System.currentTimeMillis() - startLineOffsets;
+
+            // PERFORMANCE: Remove comments efficiently (manual scan instead of regex)
+            long startComments = System.currentTimeMillis();
+            String cleanContent = removeComments(content);
+            long commentsTime = System.currentTimeMillis() - startComments;
+
+            // PERFORMANCE: Pre-scan for delimiters once (O(n)) instead of per-function (O(n²))
+            long startDelimiters = System.currentTimeMillis();
+            precomputeDelimiterPositions(cleanContent);
+            long delimitersTime = System.currentTimeMillis() - startDelimiters;
 
             // Parse function definitions
+            long startParsing = System.currentTimeMillis();
             nodes.addAll(parseFunctionDefinitions(cleanContent));
+            long parsingTime = System.currentTimeMillis() - startParsing;
+
+            long totalTime = System.currentTimeMillis() - startTotal;
+
+            if (totalTime > 1000) {
+                LOG.info("PROFILE Parser: total={}ms (lineOffsets={}ms, comments={}ms, delimiters={}ms, parsing={}ms) for {} chars",
+                    totalTime, lineOffsetsTime, commentsTime, delimitersTime, parsingTime, content.length());
+            }
 
         } catch (Exception e) {
             LOG.warn("Error parsing Mathematica code: {}", e.getMessage());
@@ -75,10 +99,17 @@ public class MathematicaParser {
     private List<AstNode> parseFunctionDefinitions(String content) {
         List<AstNode> functions = new ArrayList<>();
 
+        long startMatcher = System.currentTimeMillis();
         Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
-        int lineNumber = 1;
+        long matcherTime = System.currentTimeMillis() - startMatcher;
+
+        long totalMatchFind = 0;
+        long totalParseExpr = 0;
+        int funcCount = 0;
 
         while (matcher.find()) {
+            funcCount++;
+            long findTime = System.currentTimeMillis();
             try {
                 String functionName = matcher.group(1);
                 String parametersStr = matcher.group(2);
@@ -98,7 +129,9 @@ public class MathematicaParser {
                 String bodyStr = content.substring(bodyStart, bodyEnd).trim();
 
                 // Parse body (simplified - just create a placeholder for now)
+                long startExpr = System.currentTimeMillis();
                 AstNode body = parseExpression(bodyStr, startLine, startColumn);
+                totalParseExpr += (System.currentTimeMillis() - startExpr);
 
                 int endLine = calculateLine(content, bodyEnd);
                 int endColumn = calculateColumn(content, bodyEnd);
@@ -113,6 +146,12 @@ public class MathematicaParser {
             } catch (Exception e) {
                 LOG.debug("Error parsing function definition: {}", e.getMessage());
             }
+            totalMatchFind += (System.currentTimeMillis() - findTime);
+        }
+
+        if (funcCount > 100) {
+            LOG.info("PROFILE parseFunctionDefs: funcCount={}, matcherCreate={}ms, matchFind={}ms, parseExpr={}ms",
+                funcCount, matcherTime, totalMatchFind, totalParseExpr);
         }
 
         return functions;
@@ -153,12 +192,13 @@ public class MathematicaParser {
     }
 
     /**
-     * Find the end of a function body (simplified heuristic).
+     * Find the end of a function body using pre-computed delimiter positions.
+     * PERFORMANCE: O(log n) binary search instead of O(n) indexOf scan.
      */
     private int findBodyEnd(String content, int start) {
-        // Look for semicolon, next function definition, or end of file
-        int semicolon = content.indexOf(';', start);
-        int nextFunc = content.indexOf(":=", start + 1);
+        // Binary search in pre-computed arrays
+        int semicolon = binarySearchNext(semicolonPositions, start);
+        int nextFunc = binarySearchNext(assignmentPositions, start + 1);
 
         if (semicolon == -1 && nextFunc == -1) {
             return content.length();
@@ -169,6 +209,31 @@ public class MathematicaParser {
         } else {
             return Math.min(semicolon, nextFunc);
         }
+    }
+
+    /**
+     * Binary search to find next position > start in sorted array.
+     * PERFORMANCE: O(log n) instead of O(n).
+     */
+    private int binarySearchNext(int[] positions, int start) {
+        if (positions == null || positions.length == 0) {
+            return -1;
+        }
+
+        int left = 0;
+        int right = positions.length - 1;
+
+        // Find first position > start
+        while (left <= right) {
+            int mid = (left + right) / 2;
+            if (positions[mid] <= start) {
+                left = mid + 1;
+            } else {
+                right = mid - 1;
+            }
+        }
+
+        return (left < positions.length) ? positions[left] : -1;
     }
 
     /**
@@ -288,5 +353,63 @@ public class MathematicaParser {
         int line = calculateLine(content, position);
         int lineStartOffset = lineOffsets[line - 1];
         return position - lineStartOffset;
+    }
+
+    /**
+     * Pre-compute positions of all semicolons and := operators in O(n) time.
+     * PERFORMANCE: This avoids O(n²) behavior when calling findBodyEnd() for each function.
+     */
+    private void precomputeDelimiterPositions(String content) {
+        List<Integer> semicolons = new ArrayList<>();
+        List<Integer> assignments = new ArrayList<>();
+
+        for (int i = 0; i < content.length(); i++) {
+            char c = content.charAt(i);
+            if (c == ';') {
+                semicolons.add(i);
+            } else if (c == ':' && i + 1 < content.length() && content.charAt(i + 1) == '=') {
+                assignments.add(i);
+                i++; // Skip the '=' character
+            }
+        }
+
+        this.semicolonPositions = semicolons.stream().mapToInt(Integer::intValue).toArray();
+        this.assignmentPositions = assignments.stream().mapToInt(Integer::intValue).toArray();
+    }
+
+    /**
+     * Remove Mathematica comments (* ... *) efficiently.
+     * PERFORMANCE: Manual state machine instead of regex replaceAll.
+     */
+    private String removeComments(String content) {
+        StringBuilder result = new StringBuilder(content.length());
+        int depth = 0;
+        int i = 0;
+
+        while (i < content.length()) {
+            // Check for comment start (*
+            if (i + 1 < content.length() && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
+                depth++;
+                i += 2;
+                continue;
+            }
+
+            // Check for comment end *)
+            if (i + 1 < content.length() && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                if (depth > 0) {
+                    depth--;
+                }
+                i += 2;
+                continue;
+            }
+
+            // If not in a comment, append character
+            if (depth == 0) {
+                result.append(content.charAt(i));
+            }
+            i++;
+        }
+
+        return result.toString();
     }
 }

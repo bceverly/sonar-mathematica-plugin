@@ -22,6 +22,35 @@ public interface AstVisitor {
 
     void visit(LiteralNode node);
 
+    // New node types for comprehensive parsing
+    default void visit(AssignmentNode node) {
+        visitChildren(node);
+    }
+
+    default void visit(OperatorNode node) {
+        visitChildren(node);
+    }
+
+    default void visit(ListNode node) {
+        visitChildren(node);
+    }
+
+    default void visit(AssociationNode node) {
+        visitChildren(node);
+    }
+
+    default void visit(ControlFlowNode node) {
+        visitChildren(node);
+    }
+
+    default void visit(LoopNode node) {
+        visitChildren(node);
+    }
+
+    default void visit(ScopingNode node) {
+        visitChildren(node);
+    }
+
     /**
      * Default implementation that can be overridden for specific node types.
      */
