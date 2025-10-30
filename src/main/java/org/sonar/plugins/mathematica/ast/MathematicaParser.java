@@ -31,7 +31,8 @@ public class MathematicaParser {
 
     // Patterns for parsing
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
-    private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
+    // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
+    private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
         "([a-zA-Z$][a-zA-Z0-9$]*)\\s*\\[([^\\]]*)\\]\\s*(:?=)"
     );
@@ -82,7 +83,7 @@ public class MathematicaParser {
             long totalTime = System.currentTimeMillis() - startTotal;
 
             if (totalTime > 1000) {
-                LOG.info("PROFILE Parser: total={}ms (lineOffsets={}ms, comments={}ms, delimiters={}ms, parsing={}ms) for {} chars",
+                LOG.debug("PROFILE Parser: total={}ms (lineOffsets={}ms, comments={}ms, delimiters={}ms, parsing={}ms) for {} chars",
                     totalTime, lineOffsetsTime, commentsTime, delimitersTime, parsingTime, content.length());
             }
 
@@ -150,7 +151,7 @@ public class MathematicaParser {
         }
 
         if (funcCount > 100) {
-            LOG.info("PROFILE parseFunctionDefs: funcCount={}, matcherCreate={}ms, matchFind={}ms, parseExpr={}ms",
+            LOG.debug("PROFILE parseFunctionDefs: funcCount={}, matcherCreate={}ms, matchFind={}ms, parseExpr={}ms",
                 funcCount, matcherTime, totalMatchFind, totalParseExpr);
         }
 

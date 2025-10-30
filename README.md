@@ -157,9 +157,9 @@ To ensure reliable analysis of large codebases, this plugin implements **intelli
 - **Impact**: Typically affects only 1-2 files in large codebases (>10,000 files)
 
 ### Analysis Timeout
-- **SymbolTable analysis timeout**: 120 seconds per file
+- **SymbolTable analysis timeout**: 30 seconds per file
 - **Rationale**: Certain file patterns (heavy use of Export/Import with complex scoping) can trigger pathological O(n²) or exponential behavior
-- **Behavior**: If SymbolTable analysis exceeds 120 seconds, it's terminated gracefully and the file analysis continues without symbol table rules
+- **Behavior**: If SymbolTable analysis exceeds 30 seconds, it's terminated gracefully and the file analysis continues without symbol table rules
 - **Impact**:
   - Basic code quality rules still run (code smells, bugs, security)
   - Only advanced variable lifetime/scope rules (20 rules) are skipped on timeout
@@ -186,7 +186,7 @@ When limits are triggered, you'll see log messages like:
 
 ```
 WARN: SKIP: File Experiment.m has 31719 lines (exceeds limit of 25000), skipping analysis to prevent timeout
-WARN: TIMEOUT: SymbolTable analysis for Export.m exceeded 120 seconds, skipping (file has 9571 lines)
+WARN: TIMEOUT: SymbolTable analysis for Export.m exceeded 30 seconds, skipping (file has 9571 lines)
 ```
 
 These warnings are **expected behavior** for extremely large or complex files and do not indicate errors.

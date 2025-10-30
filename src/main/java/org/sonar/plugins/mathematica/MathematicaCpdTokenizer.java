@@ -45,7 +45,24 @@ public class MathematicaCpdTokenizer implements Sensor {
 
         for (InputFile inputFile : inputFiles) {
             LOG.debug("Tokenizing file: {}", inputFile);
-            tokenize(context, inputFile);
+            try {
+                tokenize(context, inputFile);
+            } catch (Throwable t) {
+                // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
+                if (t instanceof Error) {
+                    Error fatalError = (Error) t;
+                    LOG.error("========================================");
+                    LOG.error("FATAL ERROR in CPD Tokenizer while analyzing file: {}", inputFile.filename());
+                    LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                    LOG.error("File URI: {}", inputFile.uri());
+                    LOG.error("File size: {} lines", inputFile.lines());
+                    LOG.error("Error type: {}", fatalError.getClass().getName());
+                    LOG.error("========================================");
+                    // Re-throw fatal errors to crash the scanner
+                    throw fatalError;
+                }
+                // Non-fatal exceptions already logged in tokenize()
+            }
         }
     }
 
@@ -66,9 +83,6 @@ public class MathematicaCpdTokenizer implements Sensor {
 
         } catch (IOException e) {
             LOG.error("Error reading file: {}", inputFile, e);
-        } catch (StackOverflowError e) {
-            // Regex catastrophic backtracking on complex Mathematica syntax - skip this file
-            LOG.warn("Skipping file due to regex complexity (StackOverflowError): {}", inputFile);
         } catch (Exception e) {
             // Catch any other tokenization errors and skip the file
             LOG.warn("Skipping file due to tokenization error: {}", inputFile, e);
@@ -87,7 +101,8 @@ public class MathematicaCpdTokenizer implements Sensor {
         // Patterns for different token types
         // More robust comment pattern that avoids catastrophic backtracking
         private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
-        private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
+        // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
+        private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
         private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*(?:[eE][+-]?\\d+)?");
         private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");
         private static final Pattern OPERATOR_PATTERN = Pattern.compile(

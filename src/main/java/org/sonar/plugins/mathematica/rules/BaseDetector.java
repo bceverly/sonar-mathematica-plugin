@@ -50,17 +50,15 @@ public abstract class BaseDetector {
         lineOffsetCache.set(buildLineOffsetArray(content));
         linesCache.set(content.split("\n", -1));
 
-        // PERFORMANCE: Parse AST once and cache (only if content is small enough)
-        if (content.length() <= 2_000_000) {
-            try {
-                org.sonar.plugins.mathematica.ast.MathematicaParser parser =
-                    new org.sonar.plugins.mathematica.ast.MathematicaParser();
-                java.util.List<org.sonar.plugins.mathematica.ast.AstNode> ast = parser.parse(content);
-                astCache.set(ast);
-            } catch (Exception e) {
-                LOG.debug("Failed to cache AST: {}", e.getMessage());
-                astCache.set(null);
-            }
+        // PERFORMANCE: Parse AST once and cache
+        try {
+            org.sonar.plugins.mathematica.ast.MathematicaParser parser =
+                new org.sonar.plugins.mathematica.ast.MathematicaParser();
+            java.util.List<org.sonar.plugins.mathematica.ast.AstNode> ast = parser.parse(content);
+            astCache.set(ast);
+        } catch (Exception e) {
+            LOG.debug("Failed to cache AST: {}", e.getMessage());
+            astCache.set(null);
         }
     }
 

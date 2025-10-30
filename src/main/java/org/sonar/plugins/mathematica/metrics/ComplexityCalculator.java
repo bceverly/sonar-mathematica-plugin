@@ -24,7 +24,8 @@ public class ComplexityCalculator {
 
     // Patterns for complexity calculation
     // NOTE: COMMENT_PATTERN removed - using character-based parser to avoid catastrophic backtracking
-    private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
+    // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
+    private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
 
     // Cache for cleaned content (avoids repeated regex operations)
     private String cachedOriginal = null;

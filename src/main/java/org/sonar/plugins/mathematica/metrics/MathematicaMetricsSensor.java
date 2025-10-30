@@ -65,8 +65,22 @@ public class MathematicaMetricsSensor implements Sensor {
         for (InputFile inputFile : inputFiles) {
             try {
                 analyzeFile(context, inputFile);
-            } catch (Exception e) {
-                LOG.error("Error analyzing file: {}", inputFile, e);
+            } catch (Throwable t) {
+                // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
+                if (t instanceof Error) {
+                    Error fatalError = (Error) t;
+                    LOG.error("========================================");
+                    LOG.error("FATAL ERROR in Metrics Sensor while analyzing file: {}", inputFile.filename());
+                    LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                    LOG.error("File URI: {}", inputFile.uri());
+                    LOG.error("File size: {} lines", inputFile.lines());
+                    LOG.error("Error type: {}", fatalError.getClass().getName());
+                    LOG.error("========================================");
+                    // Re-throw fatal errors to crash the scanner
+                    throw fatalError;
+                }
+                // Non-fatal exceptions: log and continue
+                LOG.error("Error analyzing file: {}", inputFile, t);
             }
         }
     }
@@ -78,12 +92,6 @@ public class MathematicaMetricsSensor implements Sensor {
             // Always calculate metrics for consistency and correctness.
 
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
-
-            // Skip very large files to avoid performance issues
-            if (content.length() > 2_000_000) {
-                LOG.info("Skipping metrics for large file (>2MB): {}", inputFile);
-                return;
-            }
 
             // PERFORMANCE: Clear cache before processing new file
             complexityCalculator.clearCache();

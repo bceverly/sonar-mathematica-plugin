@@ -38,8 +38,10 @@ public class ComprehensiveParser {
     private static final Pattern NUMBER = Pattern.compile(
         "\\d+\\.?\\d*(?:[eE][+-]?\\d+)?"
     );
+    // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
+    // Without *+, a 650KB string with escaped quotes causes StackOverflowError via exponential backtracking
     private static final Pattern STRING = Pattern.compile(
-        "\"(?:[^\"\\\\]|\\\\.)*\""
+        "\"(?:[^\"\\\\]|\\\\.)*+\""
     );
     private static final Pattern OPERATOR = Pattern.compile(
         ":=|->|@@|@|//|/.|\\.\\.\\.|\\.\\.|==|!=|<=|>=|&&|\\|\\||!|\\+\\+|--|\\+=|-=|\\*=|/=|\\^=|[+\\-*/^&|<>=!;,]"

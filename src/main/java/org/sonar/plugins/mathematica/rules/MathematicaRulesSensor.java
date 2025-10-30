@@ -308,7 +308,7 @@ public class MathematicaRulesSensor implements Sensor {
             try {
                 if (inputFile.lines() < 3 || inputFile.lines() > 35000) return;
                 String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
-                if (content.length() > 2_000_000 || content.trim().isEmpty()) return;
+                if (content.trim().isEmpty()) return;
 
                 ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
             } catch (Exception e) {
@@ -992,9 +992,9 @@ public class MathematicaRulesSensor implements Sensor {
             // === FINAL TIMING SUMMARY ===
             long totalFileTime = System.currentTimeMillis() - fileStartTime;
 
-            // Only log very slow files (>2 seconds) with detailed breakdown
+            // Only log very slow files (>2 seconds) with detailed breakdown (debug mode only)
             if (totalFileTime > 2000) {
-                LOG.info("PERF: SLOW FILE - {} took {}ms total ({} lines) - UnifiedAST: {}ms ({}%), SymbolTable: {}ms ({}%)",
+                LOG.debug("PERF: SLOW FILE - {} took {}ms total ({} lines) - UnifiedAST: {}ms ({}%), SymbolTable: {}ms ({}%)",
                     inputFile.filename(), totalFileTime, inputFile.lines(),
                     analysisTime, (analysisTime * 100 / Math.max(totalFileTime, 1)),
                     symbolTableTime, (symbolTableTime * 100 / Math.max(totalFileTime, 1)));
@@ -1013,8 +1013,22 @@ public class MathematicaRulesSensor implements Sensor {
             advancedAnalysisDetector.get().clearCaches();
             // Note: ArchitectureAndDependencyDetector uses static caches cleared at end of execute()
 
-        } catch (Exception e) {
-            LOG.error("Error analyzing file: {}", inputFile, e);
+        } catch (Throwable t) {
+            // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
+            if (t instanceof Error) {
+                Error fatalError = (Error) t;
+                LOG.error("========================================");
+                LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
+                LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                LOG.error("File URI: {}", inputFile.uri());
+                LOG.error("File size: {} lines", inputFile.lines());
+                LOG.error("Error type: {}", fatalError.getClass().getName());
+                LOG.error("========================================");
+                // Re-throw fatal errors to crash the scanner
+                throw fatalError;
+            }
+            // Non-fatal exceptions: log and continue
+            LOG.error("Error analyzing file: {}", inputFile, t);
         }
     }
 
