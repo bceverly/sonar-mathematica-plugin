@@ -27,6 +27,7 @@ bin/
 # SonarQube
 .sonar/
 .sonarlint/
+.scannerwork/
 
 # Temporary files
 *.tmp

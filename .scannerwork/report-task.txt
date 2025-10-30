@@ -1,6 +1,0 @@
-projectKey=sonar-mathematica-plugin
-serverUrl=http://localhost:9000
-serverVersion=10.7.0.96327
-dashboardUrl=http://localhost:9000/dashboard?id=sonar-mathematica-plugin
-ceTaskId=4ccc8f9a-d0dc-4770-9039-0c802968302b
-ceTaskUrl=http://localhost:9000/api/ce/task?id=4ccc8f9a-d0dc-4770-9039-0c802968302b

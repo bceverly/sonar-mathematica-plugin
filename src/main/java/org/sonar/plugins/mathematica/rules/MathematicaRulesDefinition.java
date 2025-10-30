@@ -11,6 +11,28 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String REPOSITORY_KEY = "mathematica";
     public static final String REPOSITORY_NAME = "SonarAnalyzer";
 
+    // Severity constants
+    private static final String SEVERITY_CRITICAL = "CRITICAL";
+    private static final String SEVERITY_MAJOR = "MAJOR";
+    private static final String SEVERITY_MINOR = "MINOR";
+
+    // Remediation time constants
+    private static final String TIME_10MIN = "10min";
+    private static final String TIME_15MIN = "15min";
+    private static final String TIME_20MIN = "20min";
+    private static final String TIME_30MIN = "30min";
+    private static final String TIME_45MIN = "45min";
+
+    // Tag constants
+    private static final String TAG_PERFORMANCE = "performance";
+    private static final String TAG_RELIABILITY = "reliability";
+    private static final String TAG_SECURITY = "security";
+    private static final String TAG_PATTERNS = "patterns";
+    private static final String TAG_UNUSED = "unused";
+    private static final String TAG_DEAD_CODE = "dead-code";
+    private static final String TAG_READABILITY = "readability";
+
+
     // Rule keys - Code Smells
     public static final String COMMENTED_CODE_KEY = "CommentedCode";
     public static final String MAGIC_NUMBER_KEY = "MagicNumber";
@@ -515,11 +537,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = ImprovedSolve[equation, x];\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "clutter");
+            .setTags(TAG_UNUSED, "clutter");
 
-            rule1.setDebtRemediationFunction(rule1.debtRemediationFunctions().constantPerIssue("15min"));
+            rule1.setDebtRemediationFunction(rule1.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define the magic number rule
         NewRule rule2 = repository.createRule(MAGIC_NUMBER_KEY)
@@ -540,9 +562,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "threshold = defaultThreshold;\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability");
+            .setTags(TAG_READABILITY);
 
             rule2.setDebtRemediationFunction(rule2.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -582,11 +604,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "If[condition, action, defaultAction]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("suspicious");
 
-            rule4.setDebtRemediationFunction(rule4.debtRemediationFunctions().constantPerIssue("15min"));
+            rule4.setDebtRemediationFunction(rule4.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define the function length rule
         NewRule rule5 = repository.createRule(FUNCTION_LENGTH_KEY)
@@ -596,11 +618,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<p>Consider splitting large functions into smaller, focused functions.</p>"
                 + "<p>Default maximum: 150 lines (configurable via sonar.mathematica.function.maximumLines)</p>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("brain-overload");
 
-            rule5.setDebtRemediationFunction(rule5.debtRemediationFunctions().constantPerIssue("15min"));
+            rule5.setDebtRemediationFunction(rule5.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define the file length rule
         NewRule rule6 = repository.createRule(FILE_LENGTH_KEY)
@@ -610,11 +632,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<p>Consider splitting large files into multiple focused modules.</p>"
                 + "<p>Default maximum: 1000 lines (configurable via sonar.mathematica.file.maximumLines)</p>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("brain-overload");
 
-            rule6.setDebtRemediationFunction(rule6.debtRemediationFunctions().constantPerIssue("15min"));
+            rule6.setDebtRemediationFunction(rule6.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define the empty catch block rule
         NewRule rule7 = repository.createRule(EMPTY_CATCH_KEY)
@@ -656,11 +678,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/'>OWASP Top 10 2021 A09</a> - Security Logging and Monitoring Failures</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("error-handling", "security", "owasp");
+            .setTags("error-handling", TAG_SECURITY, "owasp");
 
-            rule7.setDebtRemediationFunction(rule7.debtRemediationFunctions().constantPerIssue("15min"));
+            rule7.setDebtRemediationFunction(rule7.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define the debug code rule
         NewRule rule8 = repository.createRule(DEBUG_CODE_KEY)
@@ -702,11 +724,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A05_2021-Security_Misconfiguration/'>OWASP Top 10 2021 A05</a> - Security Misconfiguration</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("security", "owasp", "production-readiness");
+            .setTags(TAG_SECURITY, "owasp", "production-readiness");
 
-            rule8.setDebtRemediationFunction(rule8.debtRemediationFunctions().constantPerIssue("15min"));
+            rule8.setDebtRemediationFunction(rule8.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // ===== SECURITY RULES =====
 
@@ -736,7 +758,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("BLOCKER")
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "security");
+            .setTags("cwe", "owasp", TAG_SECURITY);
 
             rule9.setDebtRemediationFunction(rule9.debtRemediationFunctions().constantPerIssue("60min"));
 
@@ -764,11 +786,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A03_2021-Injection/'>OWASP Top 10 2021 A03</a> - Injection</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "injection", "security");
+            .setTags("cwe", "owasp", "injection", TAG_SECURITY);
 
-            rule10.setDebtRemediationFunction(rule10.debtRemediationFunctions().constantPerIssue("45min"));
+            rule10.setDebtRemediationFunction(rule10.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Define SQL injection rule
         NewRule rule11 = repository.createRule(SQL_INJECTION_KEY)
@@ -793,11 +815,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A03_2021-Injection/'>OWASP Top 10 2021 A03</a> - Injection</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "sql", "injection", "security");
+            .setTags("cwe", "owasp", "sql", "injection", TAG_SECURITY);
 
-            rule11.setDebtRemediationFunction(rule11.debtRemediationFunctions().constantPerIssue("45min"));
+            rule11.setDebtRemediationFunction(rule11.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Define code injection rule
         NewRule rule12 = repository.createRule(CODE_INJECTION_KEY)
@@ -822,11 +844,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A03_2021-Injection/'>OWASP Top 10 2021 A03</a> - Injection</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "injection", "security");
+            .setTags("cwe", "owasp", "injection", TAG_SECURITY);
 
-            rule12.setDebtRemediationFunction(rule12.debtRemediationFunctions().constantPerIssue("45min"));
+            rule12.setDebtRemediationFunction(rule12.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Define path traversal rule
         NewRule rule13 = repository.createRule(PATH_TRAVERSAL_KEY)
@@ -853,11 +875,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A01_2021-Broken_Access_Control/'>OWASP Top 10 2021 A01</a> - Broken Access Control</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "path-traversal", "security");
+            .setTags("cwe", "owasp", "path-traversal", TAG_SECURITY);
 
-            rule13.setDebtRemediationFunction(rule13.debtRemediationFunctions().constantPerIssue("45min"));
+            rule13.setDebtRemediationFunction(rule13.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Define weak cryptography rule
         NewRule rule14 = repository.createRule(WEAK_CRYPTOGRAPHY_KEY)
@@ -893,11 +915,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'>OWASP Top 10 2021 A02</a> - Cryptographic Failures</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "cryptography", "security");
+            .setTags("cwe", "owasp", "cryptography", TAG_SECURITY);
 
-            rule14.setDebtRemediationFunction(rule14.debtRemediationFunctions().constantPerIssue("45min"));
+            rule14.setDebtRemediationFunction(rule14.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Define SSRF rule
         NewRule rule15 = repository.createRule(SSRF_KEY)
@@ -935,11 +957,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/'>OWASP Top 10 2021 A10</a> - SSRF</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "ssrf", "security");
+            .setTags("cwe", "owasp", "ssrf", TAG_SECURITY);
 
-            rule15.setDebtRemediationFunction(rule15.debtRemediationFunctions().constantPerIssue("45min"));
+            rule15.setDebtRemediationFunction(rule15.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Define insecure deserialization rule
         NewRule rule16 = repository.createRule(INSECURE_DESERIALIZATION_KEY)
@@ -986,11 +1008,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/'>OWASP Top 10 2021 A08</a> - Software and Data Integrity Failures</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "deserialization", "security");
+            .setTags("cwe", "owasp", "deserialization", TAG_SECURITY);
 
-            rule16.setDebtRemediationFunction(rule16.debtRemediationFunctions().constantPerIssue("45min"));
+            rule16.setDebtRemediationFunction(rule16.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // ===== BUG RULES (Reliability) =====
 
@@ -1019,11 +1041,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/369.html'>CWE-369</a> - Divide By Zero</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "error-handling");
+            .setTags(TAG_RELIABILITY, "error-handling");
 
-            rule17.setDebtRemediationFunction(rule17.debtRemediationFunctions().constantPerIssue("20min"));
+            rule17.setDebtRemediationFunction(rule17.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Define assignment in conditional rule
         NewRule rule18 = repository.createRule(ASSIGNMENT_IN_CONDITIONAL_KEY)
@@ -1051,11 +1073,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/480.html'>CWE-480</a> - Use of Incorrect Operator</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "logic-error");
+            .setTags(TAG_RELIABILITY, "logic-error");
 
-            rule18.setDebtRemediationFunction(rule18.debtRemediationFunctions().constantPerIssue("30min"));
+            rule18.setDebtRemediationFunction(rule18.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Define list index out of bounds rule
         NewRule rule19 = repository.createRule(LIST_INDEX_OUT_OF_BOUNDS_KEY)
@@ -1086,11 +1108,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/125.html'>CWE-125</a> - Out-of-bounds Read</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "error-handling");
+            .setTags(TAG_RELIABILITY, "error-handling");
 
-            rule19.setDebtRemediationFunction(rule19.debtRemediationFunctions().constantPerIssue("20min"));
+            rule19.setDebtRemediationFunction(rule19.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Define infinite recursion rule
         NewRule rule20 = repository.createRule(INFINITE_RECURSION_KEY)
@@ -1122,11 +1144,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/674.html'>CWE-674</a> - Uncontrolled Recursion</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "stack-overflow");
+            .setTags(TAG_RELIABILITY, "stack-overflow");
 
-            rule20.setDebtRemediationFunction(rule20.debtRemediationFunctions().constantPerIssue("30min"));
+            rule20.setDebtRemediationFunction(rule20.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Define unreachable pattern rule
         NewRule rule21 = repository.createRule(UNREACHABLE_PATTERN_KEY)
@@ -1157,11 +1179,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "calculate[n_] := n^2;\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "logic-error", "pattern-matching");
+            .setTags(TAG_RELIABILITY, "logic-error", "pattern-matching");
 
-            rule21.setDebtRemediationFunction(rule21.debtRemediationFunctions().constantPerIssue("20min"));
+            rule21.setDebtRemediationFunction(rule21.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // ===== SECURITY HOTSPOT RULES =====
 
@@ -1209,11 +1231,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload'>OWASP</a> - Unrestricted File Upload</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "file-upload", "owasp");
+            .setTags(TAG_SECURITY, "file-upload", "owasp");
 
-            rule22.setDebtRemediationFunction(rule22.debtRemediationFunctions().constantPerIssue("15min"));
+            rule22.setDebtRemediationFunction(rule22.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define external API safeguards rule
         NewRule rule23 = repository.createRule(EXTERNAL_API_SAFEGUARDS_KEY)
@@ -1261,11 +1283,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/controls/Blocking_Brute_Force_Attacks'>OWASP</a> - Rate Limiting</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "api", "availability");
+            .setTags(TAG_SECURITY, "api", "availability");
 
-            rule23.setDebtRemediationFunction(rule23.debtRemediationFunctions().constantPerIssue("15min"));
+            rule23.setDebtRemediationFunction(rule23.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Define crypto key generation rule
         NewRule rule24 = repository.createRule(CRYPTO_KEY_GENERATION_KEY)
@@ -1310,11 +1332,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'>OWASP Top 10 2021 A02</a> - Cryptographic Failures</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "cryptography", "owasp");
+            .setTags(TAG_SECURITY, "cryptography", "owasp");
 
-            rule24.setDebtRemediationFunction(rule24.debtRemediationFunctions().constantPerIssue("15min"));
+            rule24.setDebtRemediationFunction(rule24.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // ===== NEW CODE SMELL RULES (Phase 2) =====
 
@@ -1338,11 +1360,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "];\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "clutter");
+            .setTags(TAG_UNUSED, "clutter");
 
-            rule25.setDebtRemediationFunction(rule25.debtRemediationFunctions().constantPerIssue("15min"));
+            rule25.setDebtRemediationFunction(rule25.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Duplicate Function Definitions
         NewRule rule26 = repository.createRule(DUPLICATE_FUNCTION_KEY)
@@ -1366,11 +1388,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "myFuncCube[x_] := x^3;\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("confusing", "pitfall");
 
-            rule26.setDebtRemediationFunction(rule26.debtRemediationFunctions().constantPerIssue("15min"));
+            rule26.setDebtRemediationFunction(rule26.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Too Many Parameters
         NewRule rule27 = repository.createRule(TOO_MANY_PARAMETERS_KEY)
@@ -1389,11 +1411,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "processData[<|\"name\" -> \"John\", \"age\" -> 30, ...|>]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("brain-overload");
 
-            rule27.setDebtRemediationFunction(rule27.debtRemediationFunctions().constantPerIssue("15min"));
+            rule27.setDebtRemediationFunction(rule27.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Deeply Nested Conditionals
         NewRule rule28 = repository.createRule(DEEPLY_NESTED_KEY)
@@ -1424,11 +1446,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "If[a, processA[], defaultResult]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("brain-overload", "complexity");
 
-            rule28.setDebtRemediationFunction(rule28.debtRemediationFunctions().constantPerIssue("15min"));
+            rule28.setDebtRemediationFunction(rule28.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Missing Documentation
         NewRule rule29 = repository.createRule(MISSING_DOCUMENTATION_KEY)
@@ -1451,7 +1473,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "ProcessUserData[data_, options_] := Module[{...}, ...]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("documentation");
 
@@ -1477,7 +1499,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "GetUserName[] := ...\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("convention");
 
@@ -1501,11 +1523,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "If[condition, DoSomething[], DoSomethingElse[]]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("suspicious", "pitfall");
 
-            rule31.setDebtRemediationFunction(rule31.debtRemediationFunctions().constantPerIssue("15min"));
+            rule31.setDebtRemediationFunction(rule31.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Expression Too Complex
         NewRule rule32 = repository.createRule(EXPRESSION_TOO_COMPLEX_KEY)
@@ -1524,11 +1546,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = term1 - term2 + term3;\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("brain-overload");
 
-            rule32.setDebtRemediationFunction(rule32.debtRemediationFunctions().constantPerIssue("15min"));
+            rule32.setDebtRemediationFunction(rule32.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Deprecated Functions
         NewRule rule33 = repository.createRule(DEPRECATED_FUNCTION_KEY)
@@ -1542,11 +1564,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><code>Sqrt[-1]</code> pattern - Use <code>I</code> directly</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("obsolete");
 
-            rule33.setDebtRemediationFunction(rule33.debtRemediationFunctions().constantPerIssue("15min"));
+            rule33.setDebtRemediationFunction(rule33.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Empty Statement
         NewRule rule34 = repository.createRule(EMPTY_STATEMENT_KEY)
@@ -1564,7 +1586,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "If[condition, DoSomething[]]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("suspicious");
 
@@ -1595,11 +1617,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/1077.html'>CWE-1077</a> - Floating Point Comparison</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "floating-point");
+            .setTags(TAG_RELIABILITY, "floating-point");
 
-            rule35.setDebtRemediationFunction(rule35.debtRemediationFunctions().constantPerIssue("20min"));
+            rule35.setDebtRemediationFunction(rule35.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Function Without Return
         NewRule rule36 = repository.createRule(FUNCTION_WITHOUT_RETURN_KEY)
@@ -1622,11 +1644,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + ");\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule36.setDebtRemediationFunction(rule36.debtRemediationFunctions().constantPerIssue("20min"));
+            rule36.setDebtRemediationFunction(rule36.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Variable Before Assignment
         NewRule rule37 = repository.createRule(VARIABLE_BEFORE_ASSIGNMENT_KEY)
@@ -1650,11 +1672,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "]\n"
                 + "</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule37.setDebtRemediationFunction(rule37.debtRemediationFunctions().constantPerIssue("30min"));
+            rule37.setDebtRemediationFunction(rule37.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Off-by-One
         NewRule rule38 = repository.createRule(OFF_BY_ONE_KEY)
@@ -1671,11 +1693,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "Do[Print[list[[i]]], {i, 1, Length[list]}]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule38.setDebtRemediationFunction(rule38.debtRemediationFunctions().constantPerIssue("20min"));
+            rule38.setDebtRemediationFunction(rule38.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Infinite Loop
         NewRule rule39 = repository.createRule(INFINITE_LOOP_KEY)
@@ -1697,11 +1719,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "While[!done, DoSomething[]]\n"
                 + "</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule39.setDebtRemediationFunction(rule39.debtRemediationFunctions().constantPerIssue("30min"));
+            rule39.setDebtRemediationFunction(rule39.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Mismatched Dimensions
         NewRule rule40 = repository.createRule(MISMATCHED_DIMENSIONS_KEY)
@@ -1723,11 +1745,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule40.setDebtRemediationFunction(rule40.debtRemediationFunctions().constantPerIssue("20min"));
+            rule40.setDebtRemediationFunction(rule40.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Type Mismatch
         NewRule rule41 = repository.createRule(TYPE_MISMATCH_KEY)
@@ -1743,11 +1765,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = \"hello\" <> ToString[5]  (* String concatenation *)\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule41.setDebtRemediationFunction(rule41.debtRemediationFunctions().constantPerIssue("20min"));
+            rule41.setDebtRemediationFunction(rule41.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Suspicious Pattern
         NewRule rule42 = repository.createRule(SUSPICIOUS_PATTERN_KEY)
@@ -1768,11 +1790,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "func[x__] := ...  (* At least one argument *)\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "pattern-matching");
+            .setTags(TAG_RELIABILITY, "pattern-matching");
 
-            rule42.setDebtRemediationFunction(rule42.debtRemediationFunctions().constantPerIssue("20min"));
+            rule42.setDebtRemediationFunction(rule42.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // ===== NEW VULNERABILITY RULES (Phase 2) =====
 
@@ -1802,11 +1824,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "injection", "security");
+            .setTags("cwe", "injection", TAG_SECURITY);
 
-            rule43.setDebtRemediationFunction(rule43.debtRemediationFunctions().constantPerIssue("45min"));
+            rule43.setDebtRemediationFunction(rule43.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // XML External Entity (XXE)
         NewRule rule44 = repository.createRule(XXE_KEY)
@@ -1829,11 +1851,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/vulnerabilities/XML_External_Entity_(XXE)_Processing'>OWASP</a> - XXE</li>"
                 + "</ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "owasp", "xxe", "security");
+            .setTags("cwe", "owasp", "xxe", TAG_SECURITY);
 
-            rule44.setDebtRemediationFunction(rule44.debtRemediationFunctions().constantPerIssue("45min"));
+            rule44.setDebtRemediationFunction(rule44.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         // Missing Input Sanitization
         NewRule rule45 = repository.createRule(MISSING_SANITIZATION_KEY)
@@ -1859,11 +1881,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/20.html'>CWE-20</a> - Improper Input Validation</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "validation", "security");
+            .setTags("cwe", "validation", TAG_SECURITY);
 
-            rule45.setDebtRemediationFunction(rule45.debtRemediationFunctions().constantPerIssue("30min"));
+            rule45.setDebtRemediationFunction(rule45.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Insecure Random (Expanded)
         NewRule rule46 = repository.createRule(INSECURE_RANDOM_EXPANDED_KEY)
@@ -1889,11 +1911,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/338.html'>CWE-338</a> - Weak PRNG</li>"
                 + "</ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("cwe", "cryptography", "security");
+            .setTags("cwe", "cryptography", TAG_SECURITY);
 
-            rule46.setDebtRemediationFunction(rule46.debtRemediationFunctions().constantPerIssue("30min"));
+            rule46.setDebtRemediationFunction(rule46.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // ===== NEW SECURITY HOTSPOT RULES (Phase 2) =====
 
@@ -1919,11 +1941,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "WebExecute[session, \"Click\", ...]  (* Check: Auth? Session security? *)\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "network");
+            .setTags(TAG_SECURITY, "network");
 
-            rule47.setDebtRemediationFunction(rule47.debtRemediationFunctions().constantPerIssue("15min"));
+            rule47.setDebtRemediationFunction(rule47.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // File System Modifications
         NewRule rule48 = repository.createRule(FILE_SYSTEM_MODIFICATIONS_KEY)
@@ -1948,11 +1970,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "CopyFile[src, dst]  (* Check: Destination validated? *)\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "file-system");
+            .setTags(TAG_SECURITY, "file-system");
 
-            rule48.setDebtRemediationFunction(rule48.debtRemediationFunctions().constantPerIssue("15min"));
+            rule48.setDebtRemediationFunction(rule48.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Environment Variables
         NewRule rule49 = repository.createRule(ENVIRONMENT_VARIABLE_KEY)
@@ -1982,11 +2004,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "URLFetch[url, \"Headers\" -> {\"Authorization\" -> \"Bearer \" <> apiKey}]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "secrets");
+            .setTags(TAG_SECURITY, "secrets");
 
-            rule49.setDebtRemediationFunction(rule49.debtRemediationFunctions().constantPerIssue("10min"));
+            rule49.setDebtRemediationFunction(rule49.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         // ===== PHASE 3 RULES (25 rules) =====
 
@@ -2012,11 +2034,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/1050.html'>CWE-1050</a> - Excessive Platform Resource Consumption</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "mathematica-specific");
+            .setTags(TAG_PERFORMANCE, "mathematica-specific");
 
-            rule50.setDebtRemediationFunction(rule50.debtRemediationFunctions().constantPerIssue("15min"));
+            rule50.setDebtRemediationFunction(rule50.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule51 = repository.createRule(REPEATED_FUNCTION_CALLS_KEY)
             .setName("Expensive function calls should not be repeated")
@@ -2033,9 +2055,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = cached + cached\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
             rule51.setDebtRemediationFunction(rule51.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2054,11 +2076,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = StringJoin[Table[ToString[i], {i, 1000}]]  (* O(n) *)\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
-            rule52.setDebtRemediationFunction(rule52.debtRemediationFunctions().constantPerIssue("15min"));
+            rule52.setDebtRemediationFunction(rule52.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule53 = repository.createRule(UNCOMPILED_NUMERICAL_KEY)
             .setName("Numerical loops should use Compile")
@@ -2074,9 +2096,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = compiled[]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "optimization");
+            .setTags(TAG_PERFORMANCE, "optimization");
 
             rule53.setDebtRemediationFunction(rule53.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2092,9 +2114,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<li>Applying non-numerical functions</li>"
                 + "</ul>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "arrays");
+            .setTags(TAG_PERFORMANCE, "arrays");
 
             rule54.setDebtRemediationFunction(rule54.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2113,9 +2135,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "result = Outer[Times, Range[10], Range[10]]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "readability");
+            .setTags(TAG_PERFORMANCE, TAG_READABILITY);
 
             rule55.setDebtRemediationFunction(rule55.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2125,9 +2147,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 "<p>Large intermediate results (>100MB) that aren't assigned can cause memory issues.</p>"
                 + "<p>Assign large results to variables to make memory usage explicit.</p>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("memory", "performance");
+            .setTags("memory", TAG_PERFORMANCE);
 
             rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2144,11 +2166,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "ListPlot[data, PlotRange -> All]  (* One plot with all data *)\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "visualization");
+            .setTags(TAG_PERFORMANCE, "visualization");
 
-            rule57.setDebtRemediationFunction(rule57.debtRemediationFunctions().constantPerIssue("15min"));
+            rule57.setDebtRemediationFunction(rule57.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // PATTERN MATCHING ISSUES (5 rules)
 
@@ -2168,11 +2190,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/704.html'>CWE-704</a> - Incorrect Type Conversion</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "type-safety");
+            .setTags(TAG_RELIABILITY, "type-safety");
 
-            rule58.setDebtRemediationFunction(rule58.debtRemediationFunctions().constantPerIssue("20min"));
+            rule58.setDebtRemediationFunction(rule58.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule59 = repository.createRule(PATTERN_BLANKS_MISUSE_KEY)
             .setName("Pattern blanks should be used correctly")
@@ -2189,11 +2211,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "f[x_List] := Length[x]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "pattern-matching");
+            .setTags(TAG_RELIABILITY, "pattern-matching");
 
-            rule59.setDebtRemediationFunction(rule59.debtRemediationFunctions().constantPerIssue("20min"));
+            rule59.setDebtRemediationFunction(rule59.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule60 = repository.createRule(SET_DELAYED_CONFUSION_KEY)
             .setName("Use SetDelayed (:=) for function definitions")
@@ -2208,11 +2230,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "f[x_] := RandomReal[]  (* Evaluates each time function is called *)\n"
                 + "</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "common-mistake");
+            .setTags(TAG_RELIABILITY, "common-mistake");
 
-            rule60.setDebtRemediationFunction(rule60.debtRemediationFunctions().constantPerIssue("30min"));
+            rule60.setDebtRemediationFunction(rule60.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule61 = repository.createRule(SYMBOL_NAME_COLLISION_KEY)
             .setName("User symbols should not shadow built-in functions")
@@ -2233,11 +2255,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Common Built-ins to Avoid</h2>"
                 + "<p>N, D, I, C, O, E, K, Pi, Re, Im, Abs, Min, Max, Log, Sin, Cos</p>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "naming");
+            .setTags(TAG_RELIABILITY, "naming");
 
-            rule61.setDebtRemediationFunction(rule61.debtRemediationFunctions().constantPerIssue("30min"));
+            rule61.setDebtRemediationFunction(rule61.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule62 = repository.createRule(BLOCK_MODULE_MISUSE_KEY)
             .setName("Block and Module should be used correctly")
@@ -2257,11 +2279,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "Block[{$RecursionLimit = 1024}, RecursiveFunction[]]\n"
                 + "</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "scope");
+            .setTags(TAG_RELIABILITY, "scope");
 
-            rule62.setDebtRemediationFunction(rule62.debtRemediationFunctions().constantPerIssue("20min"));
+            rule62.setDebtRemediationFunction(rule62.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // BEST PRACTICES (7 rules)
 
@@ -2283,9 +2305,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "firstQuarterSales = processedSales[[1]];\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability", "naming");
+            .setTags(TAG_READABILITY, "naming");
 
             rule63.setDebtRemediationFunction(rule63.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2303,7 +2325,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "ProcessUserData[data_, options___] := Module[...]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("documentation");
 
@@ -2327,7 +2349,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("maintainability", "api-design");
 
@@ -2348,7 +2370,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "UpdateCache![data_] := (globalCache = data; data)\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("naming", "side-effects");
 
@@ -2370,9 +2392,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "If[condition1 || condition2 || condition3, ...]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability", "complexity");
+            .setTags(TAG_READABILITY, "complexity");
 
             rule67.setDebtRemediationFunction(rule67.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2386,7 +2408,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "Protect[PublicFunction1, PublicFunction2, PublicConstant];\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("api-design", "safety");
 
@@ -2406,9 +2428,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "]\n"
                 + "</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability");
+            .setTags(TAG_READABILITY);
 
             rule69.setDebtRemediationFunction(rule69.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2430,11 +2452,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/276.html'>CWE-276</a> - Incorrect Default Permissions</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("security", "cloud", "permissions");
+            .setTags(TAG_SECURITY, "cloud", "permissions");
 
-            rule70.setDebtRemediationFunction(rule70.debtRemediationFunctions().constantPerIssue("45min"));
+            rule70.setDebtRemediationFunction(rule70.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule71 = repository.createRule(DYNAMIC_INJECTION_KEY)
             .setName("Dynamic content should not use ToExpression on user input")
@@ -2451,11 +2473,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
-            .setTags("security", "injection");
+            .setTags(TAG_SECURITY, "injection");
 
-            rule71.setDebtRemediationFunction(rule71.debtRemediationFunctions().constantPerIssue("45min"));
+            rule71.setDebtRemediationFunction(rule71.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule72 = repository.createRule(IMPORT_WITHOUT_FORMAT_KEY)
             .setName("Import should specify format explicitly")
@@ -2474,11 +2496,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/434.html'>CWE-434</a> - Unrestricted Upload of File with Dangerous Type</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
-            .setTags("security", "file-upload");
+            .setTags(TAG_SECURITY, "file-upload");
 
-            rule72.setDebtRemediationFunction(rule72.debtRemediationFunctions().constantPerIssue("15min"));
+            rule72.setDebtRemediationFunction(rule72.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // RESOURCE MANAGEMENT (2 rules)
 
@@ -2504,11 +2526,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/772.html'>CWE-772</a> - Missing Release of Resource</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "resource-leak");
+            .setTags(TAG_RELIABILITY, "resource-leak");
 
-            rule73.setDebtRemediationFunction(rule73.debtRemediationFunctions().constantPerIssue("20min"));
+            rule73.setDebtRemediationFunction(rule73.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule74 = repository.createRule(GROWING_DEFINITION_CHAIN_KEY)
             .setName("Definitions should not grow unbounded")
@@ -2536,11 +2558,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/401.html'>CWE-401</a> - Memory Leak</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "memory-leak");
+            .setTags(TAG_RELIABILITY, "memory-leak");
 
-            rule74.setDebtRemediationFunction(rule74.debtRemediationFunctions().constantPerIssue("20min"));
+            rule74.setDebtRemediationFunction(rule74.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // ===== PHASE 4: 50 NEW RULES =====
 
@@ -2555,7 +2577,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf[x_?AtomQ] := x  (* Simplified using pattern test *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("complexity", "maintainability");
 
@@ -2570,7 +2592,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nrules = {a :> RandomReal[], b :> RandomReal[]}  (* Both delayed *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("consistency");
 
@@ -2585,7 +2607,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nSetAttributes[MyFunction, Listable];\nMyFunction[x_] := x^2\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("best-practice");
 
@@ -2613,11 +2635,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf[x_?NumericQ] := x^2  (* Only numeric input *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "validation");
+            .setTags(TAG_RELIABILITY, "validation");
 
-            rule79.setDebtRemediationFunction(rule79.debtRemediationFunctions().constantPerIssue("20min"));
+            rule79.setDebtRemediationFunction(rule79.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Code Clarity Rules (8 rules)
 
@@ -2630,9 +2652,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nMap[Function[{x, y, z}, x^2 + y*z - x/y], data]\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability");
+            .setTags(TAG_READABILITY);
 
             rule80.setDebtRemediationFunction(rule80.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2645,9 +2667,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf /@ (g @@ data)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability");
+            .setTags(TAG_READABILITY);
 
             rule81.setDebtRemediationFunction(rule81.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2660,11 +2682,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\ndata = Import[FileNameJoin[{$HomeDirectory, \"data.csv\"}]];\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("portability");
 
-            rule82.setDebtRemediationFunction(rule82.debtRemediationFunctions().constantPerIssue("15min"));
+            rule82.setDebtRemediationFunction(rule82.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule83 = repository.createRule(INCONSISTENT_RETURN_TYPES_KEY)
             .setName("Functions should return consistent types")
@@ -2673,11 +2695,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\nf[x_Integer] := {x};\nf[x_Real] := <|\"value\" -> x|>;  (* Inconsistent *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("consistency");
 
-            rule83.setDebtRemediationFunction(rule83.debtRemediationFunctions().constantPerIssue("15min"));
+            rule83.setDebtRemediationFunction(rule83.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule84 = repository.createRule(MISSING_ERROR_MESSAGES_KEY)
             .setName("Custom functions should define error messages")
@@ -2686,7 +2708,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nMyFunc::badarg = \"Invalid argument: `1`\";\nMyFunc[x_] := Message[MyFunc::badarg, x] /; x < 0\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("usability");
 
@@ -2701,11 +2723,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nUpdateCounter![n_] := (globalCount = n)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("conventions", "side-effects");
 
-            rule85.setDebtRemediationFunction(rule85.debtRemediationFunctions().constantPerIssue("15min"));
+            rule85.setDebtRemediationFunction(rule85.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule86 = repository.createRule(MISSING_LOCALIZATION_KEY)
             .setName("Dynamic interfaces should use LocalizeVariables")
@@ -2714,7 +2736,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\nManipulate[Plot[Sin[a x], {x, 0, 2Pi}], {a, 1, 5}]  (* 'a' may leak *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("scoping");
 
@@ -2729,7 +2751,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nmyVariable = 5;  (* Implicit global *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("conventions");
 
@@ -2744,7 +2766,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\ntempFile = CreateFile[]  (* Auto-deleted at end of session *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("resource-management");
 
@@ -2759,9 +2781,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\ndata = <|\"name\" -> \"John\", \"age\" -> 25, \"salary\" -> 50000|>;\nname = data[\"name\"]; salary = data[\"salary\"];\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability", "maintainability");
+            .setTags(TAG_READABILITY, "maintainability");
 
             rule89.setDebtRemediationFunction(rule89.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2774,7 +2796,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\n{x, y, z} = data[[{1, 2, 3}]];\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("clarity");
 
@@ -2787,9 +2809,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf[x_] := f[x] = ExpensiveComputation[x]  (* Memoized *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
             rule91.setDebtRemediationFunction(rule91.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2802,9 +2824,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nmsg = StringTemplate[\"User: `name`, Age: `age`\"][<|\"name\" -> name, \"age\" -> age|>];\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability");
+            .setTags(TAG_READABILITY);
 
             rule92.setDebtRemediationFunction(rule92.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -2819,11 +2841,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nresult = If[Length[data] > 0, First[data], defaultValue]\n</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "crash");
+            .setTags(TAG_RELIABILITY, "crash");
 
-            rule93.setDebtRemediationFunction(rule93.debtRemediationFunctions().constantPerIssue("30min"));
+            rule93.setDebtRemediationFunction(rule93.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule94 = repository.createRule(MACHINE_PRECISION_IN_SYMBOLIC_KEY)
             .setName("Avoid machine precision floats in symbolic calculations")
@@ -2834,11 +2856,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nSolve[x^2 == 2, x]  (* Exact *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("precision", "correctness");
 
-            rule94.setDebtRemediationFunction(rule94.debtRemediationFunctions().constantPerIssue("20min"));
+            rule94.setDebtRemediationFunction(rule94.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule95 = repository.createRule(MISSING_FAILED_CHECK_KEY)
             .setName("Check for $Failed after Import, Get, URLFetch operations")
@@ -2849,11 +2871,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\ndata = Import[\"file.csv\"];\nIf[data === $Failed, Return[$Failed]];\nresult = Mean[data]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "error-handling");
+            .setTags(TAG_RELIABILITY, "error-handling");
 
-            rule95.setDebtRemediationFunction(rule95.debtRemediationFunctions().constantPerIssue("20min"));
+            rule95.setDebtRemediationFunction(rule95.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule96 = repository.createRule(ZERO_DENOMINATOR_KEY)
             .setName("Division operations should guard against zero denominators")
@@ -2864,11 +2886,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nresult = If[b != 0, a / b, $Failed]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability");
+            .setTags(TAG_RELIABILITY);
 
-            rule96.setDebtRemediationFunction(rule96.debtRemediationFunctions().constantPerIssue("20min"));
+            rule96.setDebtRemediationFunction(rule96.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule97 = repository.createRule(MISSING_MATRIX_DIMENSION_CHECK_KEY)
             .setName("Matrix operations should validate compatible dimensions")
@@ -2877,11 +2899,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nIf[Dimensions[a][[2]] == Dimensions[b][[1]], a.b, $Failed]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("reliability", "linear-algebra");
+            .setTags(TAG_RELIABILITY, "linear-algebra");
 
-            rule97.setDebtRemediationFunction(rule97.debtRemediationFunctions().constantPerIssue("20min"));
+            rule97.setDebtRemediationFunction(rule97.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule98 = repository.createRule(INCORRECT_SET_IN_SCOPING_KEY)
             .setName("Use proper assignment inside Module and Block")
@@ -2892,11 +2914,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nModule[{x}, x = RandomReal[]; ...]  (* Evaluated at runtime *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("scoping", "evaluation");
 
-            rule98.setDebtRemediationFunction(rule98.debtRemediationFunctions().constantPerIssue("20min"));
+            rule98.setDebtRemediationFunction(rule98.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule99 = repository.createRule(MISSING_HOLD_ATTRIBUTES_KEY)
             .setName("Functions delaying evaluation should use Hold attributes")
@@ -2905,11 +2927,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nSetAttributes[MyIf, HoldRest];\nMyIf[test_, true_, false_] := If[test, true, false]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("evaluation");
 
-            rule99.setDebtRemediationFunction(rule99.debtRemediationFunctions().constantPerIssue("20min"));
+            rule99.setDebtRemediationFunction(rule99.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule100 = repository.createRule(EVALUATION_ORDER_ASSUMPTION_KEY)
             .setName("Do not rely on implicit evaluation order")
@@ -2918,11 +2940,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\n{i++, i++, i++}  (* Order not guaranteed *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("undefined-behavior");
 
-            rule100.setDebtRemediationFunction(rule100.debtRemediationFunctions().constantPerIssue("20min"));
+            rule100.setDebtRemediationFunction(rule100.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Data Handling Bug Rules (7 rules)
 
@@ -2933,11 +2955,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Example</h2>"
                 + "<pre>\nMap[f, {{1, 2}, {3, 4}}]  (* Level 1 by default *)\nMap[f, {{1, 2}, {3, 4}}, {2}]  (* Level 2 *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("correctness");
 
-            rule101.setDebtRemediationFunction(rule101.debtRemediationFunctions().constantPerIssue("20min"));
+            rule101.setDebtRemediationFunction(rule101.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule102 = repository.createRule(UNPACKING_PACKED_ARRAYS_KEY)
             .setName("Avoid operations that unpack packed arrays")
@@ -2948,11 +2970,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\ndata = Range[1000]  (* Stays packed *)\n</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("performance", "packed-arrays");
+            .setTags(TAG_PERFORMANCE, "packed-arrays");
 
-            rule102.setDebtRemediationFunction(rule102.debtRemediationFunctions().constantPerIssue("30min"));
+            rule102.setDebtRemediationFunction(rule102.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule103 = repository.createRule(MISSING_SPECIAL_CASE_HANDLING_KEY)
             .setName("Handle special values: 0, Infinity, ComplexInfinity, Indeterminate")
@@ -2961,11 +2983,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf[x_] := f[x] = Which[\n  x === 0, 0,\n  x === Infinity, Infinity,\n  True, NormalComputation[x]\n]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("edge-cases");
 
-            rule103.setDebtRemediationFunction(rule103.debtRemediationFunctions().constantPerIssue("20min"));
+            rule103.setDebtRemediationFunction(rule103.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule104 = repository.createRule(INCORRECT_ASSOCIATION_OPERATIONS_KEY)
             .setName("Association operations differ from List operations")
@@ -2974,11 +2996,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Example</h2>"
                 + "<pre>\nJoin[<|a->1|>, <|a->2|>]  (* Result: <|a->2|>, not <|a->1, a->2|> *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("correctness", "associations");
 
-            rule104.setDebtRemediationFunction(rule104.debtRemediationFunctions().constantPerIssue("20min"));
+            rule104.setDebtRemediationFunction(rule104.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule105 = repository.createRule(DATEOBJECT_VALIDATION_KEY)
             .setName("Validate DateObject inputs for invalid dates")
@@ -2987,11 +3009,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\ndate = DateObject[{2024, 2, 30}]  (* Invalid date *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("validation");
 
-            rule105.setDebtRemediationFunction(rule105.debtRemediationFunctions().constantPerIssue("10min"));
+            rule105.setDebtRemediationFunction(rule105.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule106 = repository.createRule(TOTAL_MEAN_ON_NON_NUMERIC_KEY)
             .setName("Total, Mean should only operate on numeric data")
@@ -3000,11 +3022,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\nMean[{1, 2, \"x\"}]  (* Produces symbolic result *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("correctness", "statistics");
 
-            rule106.setDebtRemediationFunction(rule106.debtRemediationFunctions().constantPerIssue("20min"));
+            rule106.setDebtRemediationFunction(rule106.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule107 = repository.createRule(QUANTITY_UNIT_MISMATCH_KEY)
             .setName("Quantity operations should have compatible units")
@@ -3013,11 +3035,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nUnitConvert[Quantity[5, \"Meters\"] + Quantity[3, \"Centimeters\"], \"Meters\"]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("units", "correctness");
 
-            rule107.setDebtRemediationFunction(rule107.debtRemediationFunctions().constantPerIssue("20min"));
+            rule107.setDebtRemediationFunction(rule107.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Performance Rules (10 rules)
 
@@ -3030,11 +3052,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nassoc = AssociationThread[data[[All, \"id\"]] -> data];\nassoc[targetId]  (* O(1) *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "algorithmic");
+            .setTags(TAG_PERFORMANCE, "algorithmic");
 
-            rule108.setDebtRemediationFunction(rule108.debtRemediationFunctions().constantPerIssue("15min"));
+            rule108.setDebtRemediationFunction(rule108.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule109 = repository.createRule(REPEATED_CALCULATIONS_KEY)
             .setName("Expensive expressions should not be recalculated in loops")
@@ -3045,11 +3067,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nconst = ExpensiveFunc[];\nDo[result += data[[i]] * const, {i, n}]\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
-            rule109.setDebtRemediationFunction(rule109.debtRemediationFunctions().constantPerIssue("15min"));
+            rule109.setDebtRemediationFunction(rule109.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule110 = repository.createRule(POSITION_INSTEAD_PATTERN_KEY)
             .setName("Use pattern matching instead of Position when possible")
@@ -3060,9 +3082,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nresults = Cases[data, _?EvenQ]\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "idiomatic");
+            .setTags(TAG_PERFORMANCE, "idiomatic");
 
             rule110.setDebtRemediationFunction(rule110.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3075,9 +3097,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nCatenate[Table[f[i], {i, n}]]  (* More efficient *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
             rule111.setDebtRemediationFunction(rule111.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3088,9 +3110,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nParallelTable[ExpensiveFunc[i], {i, 10000}]  (* Uses all cores *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "parallelization");
+            .setTags(TAG_PERFORMANCE, "parallelization");
 
             rule112.setDebtRemediationFunction(rule112.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3101,9 +3123,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nmatrix = SparseArray[{{1,1}->5, {100,100}->3}, {100, 100}]  (* Efficient *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "memory");
+            .setTags(TAG_PERFORMANCE, "memory");
 
             rule113.setDebtRemediationFunction(rule113.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3114,9 +3136,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\nresult = Transpose[Map[f, Transpose[data]]]  (* Transpose twice *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
             rule114.setDebtRemediationFunction(rule114.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3127,9 +3149,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nKeys@GroupBy[largeList, Identity]  (* Faster than DeleteDuplicates *)\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
             rule115.setDebtRemediationFunction(rule115.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3142,9 +3164,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nexpr = ToExpression[str];\nDo[result += expr, {i, 1000}]\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance");
+            .setTags(TAG_PERFORMANCE);
 
             rule116.setDebtRemediationFunction(rule116.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3155,9 +3177,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nCompile[{{x, _Real}}, x^2 + Sin[x], CompilationTarget -> \"C\"]\n</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "compilation");
+            .setTags(TAG_PERFORMANCE, "compilation");
 
             rule117.setDebtRemediationFunction(rule117.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3174,11 +3196,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "injection", "owasp-a03");
 
-            rule118.setDebtRemediationFunction(rule118.debtRemediationFunctions().constantPerIssue("45min"));
+            rule118.setDebtRemediationFunction(rule118.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule119 = repository.createRule(UNSANITIZED_RUNPROCESS_KEY)
             .setName("RunProcess with user input enables command injection")
@@ -3191,11 +3213,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/78.html'>CWE-78</a> - OS Command Injection</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "injection", "owasp-a03");
 
-            rule119.setDebtRemediationFunction(rule119.debtRemediationFunctions().constantPerIssue("45min"));
+            rule119.setDebtRemediationFunction(rule119.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule120 = repository.createRule(MISSING_CLOUD_AUTH_KEY)
             .setName("Cloud functions should have authentication and authorization")
@@ -3208,11 +3230,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/306.html'>CWE-306</a> - Missing Authentication</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "authentication", "owasp-a01");
 
-            rule120.setDebtRemediationFunction(rule120.debtRemediationFunctions().constantPerIssue("45min"));
+            rule120.setDebtRemediationFunction(rule120.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule121 = repository.createRule(HARDCODED_API_KEYS_KEY)
             .setName("API keys and tokens should not be hardcoded")
@@ -3225,11 +3247,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/798.html'>CWE-798</a> - Hard-coded Credentials</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "credentials", "owasp-a07");
 
-            rule121.setDebtRemediationFunction(rule121.debtRemediationFunctions().constantPerIssue("45min"));
+            rule121.setDebtRemediationFunction(rule121.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule122 = repository.createRule(NEEDS_GET_UNTRUSTED_KEY)
             .setName("Needs and Get should not load code from untrusted paths")
@@ -3240,11 +3262,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/829.html'>CWE-829</a> - Untrusted Control Sphere</li></ul>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "code-injection");
 
-            rule122.setDebtRemediationFunction(rule122.debtRemediationFunctions().constantPerIssue("45min"));
+            rule122.setDebtRemediationFunction(rule122.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule123 = repository.createRule(EXPOSING_SENSITIVE_DATA_KEY)
             .setName("Cloud functions should not expose sensitive system information")
@@ -3255,11 +3277,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/200.html'>CWE-200</a> - Information Exposure</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "information-disclosure");
 
-            rule123.setDebtRemediationFunction(rule123.debtRemediationFunctions().constantPerIssue("30min"));
+            rule123.setDebtRemediationFunction(rule123.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule124 = repository.createRule(MISSING_FORMFUNCTION_VALIDATION_KEY)
             .setName("FormFunction inputs should be validated and sanitized")
@@ -3270,11 +3292,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/20.html'>CWE-20</a> - Improper Input Validation</li></ul>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("cwe", "validation", "owasp-a03");
 
-            rule124.setDebtRemediationFunction(rule124.debtRemediationFunctions().constantPerIssue("30min"));
+            rule124.setDebtRemediationFunction(rule124.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // ===== CHUNK 1 RULES (Items 16-50 from ROADMAP_325.md) =====
 
@@ -3288,9 +3310,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_?NumericQ] := x^2  (* Type-safe *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "type-safety");
+            .setTags(TAG_PATTERNS, "type-safety");
 
             rule125.setDebtRemediationFunction(rule125.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3303,11 +3325,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_?IntegerQ] := x  (* More efficient *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "performance");
+            .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
-            rule126.setDebtRemediationFunction(rule126.debtRemediationFunctions().constantPerIssue("10min"));
+            rule126.setDebtRemediationFunction(rule126.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule127 = repository.createRule(BLANKSEQUENCE_WITHOUT_RESTRICTION_KEY)
             .setName("BlankSequence should have type restrictions when possible")
@@ -3318,9 +3340,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>sum[x__?NumericQ] := Total[{x}]  (* Type-safe *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "performance");
+            .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule127.setDebtRemediationFunction(rule127.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3333,11 +3355,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_:1, y_:1] := x + y  (* Independent defaults *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "evaluation-order");
+            .setTags(TAG_PATTERNS, "evaluation-order");
 
-            rule128.setDebtRemediationFunction(rule128.debtRemediationFunctions().constantPerIssue("20min"));
+            rule128.setDebtRemediationFunction(rule128.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule129 = repository.createRule(PATTERN_NAMING_CONFLICTS_KEY)
             .setName("Pattern names should not have conflicting type restrictions")
@@ -3348,11 +3370,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_Integer, y_Real] := x + y  (* Use different names *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns");
+            .setTags(TAG_PATTERNS);
 
-            rule129.setDebtRemediationFunction(rule129.debtRemediationFunctions().constantPerIssue("20min"));
+            rule129.setDebtRemediationFunction(rule129.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule130 = repository.createRule(REPEATED_PATTERN_ALTERNATIVES_KEY)
             .setName("Pattern alternatives should use correct syntax")
@@ -3363,9 +3385,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x:(_Integer | _Real)] := x  (* Correct syntax *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "clarity");
+            .setTags(TAG_PATTERNS, "clarity");
 
             rule130.setDebtRemediationFunction(rule130.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3378,9 +3400,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_?Positive] := x  (* Built-in predicate *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "performance");
+            .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule131.setDebtRemediationFunction(rule131.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3393,11 +3415,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_, opts:OptionsPattern[]] := DoSomething[x, opts]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "validation");
+            .setTags(TAG_PATTERNS, "validation");
 
-            rule132.setDebtRemediationFunction(rule132.debtRemediationFunctions().constantPerIssue("10min"));
+            rule132.setDebtRemediationFunction(rule132.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule133 = repository.createRule(ORDER_DEPENDENT_PATTERNS_KEY)
             .setName("Specific patterns should be defined before general ones")
@@ -3408,11 +3430,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf[0] := 0;  (* Specific first *)\nf[x_] := x^2;  (* General second *)\n</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "unreachable-code");
+            .setTags(TAG_PATTERNS, "unreachable-code");
 
-            rule133.setDebtRemediationFunction(rule133.debtRemediationFunctions().constantPerIssue("20min"));
+            rule133.setDebtRemediationFunction(rule133.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule134 = repository.createRule(VERBATIM_PATTERN_MISUSE_KEY)
             .setName("Verbatim should only be used when necessary")
@@ -3421,11 +3443,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Example</h2>"
                 + "<pre>Cases[{1, 2, x, y}, Verbatim[x]]  (* Only matches literal x *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns");
+            .setTags(TAG_PATTERNS);
 
-            rule134.setDebtRemediationFunction(rule134.debtRemediationFunctions().constantPerIssue("10min"));
+            rule134.setDebtRemediationFunction(rule134.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule135 = repository.createRule(HOLDPATTERN_UNNECESSARY_KEY)
             .setName("HoldPattern should be removed when not needed")
@@ -3436,9 +3458,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Cases[list, _Integer]  (* HoldPattern not needed *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "clutter");
+            .setTags(TAG_PATTERNS, "clutter");
 
             rule135.setDebtRemediationFunction(rule135.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3449,11 +3471,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Example</h2>"
                 + "<pre>StringCases[str, Longest[__]]  (* Needs alternatives to be useful *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns");
+            .setTags(TAG_PATTERNS);
 
-            rule136.setDebtRemediationFunction(rule136.debtRemediationFunctions().constantPerIssue("10min"));
+            rule136.setDebtRemediationFunction(rule136.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule137 = repository.createRule(PATTERN_REPEATED_DIFFERENT_TYPES_KEY)
             .setName("Use conditions instead of repeated pattern names for equality checks")
@@ -3464,11 +3486,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[{x_, y_} /; x == y] := x  (* Checks equality *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns");
+            .setTags(TAG_PATTERNS);
 
-            rule137.setDebtRemediationFunction(rule137.debtRemediationFunctions().constantPerIssue("20min"));
+            rule137.setDebtRemediationFunction(rule137.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule138 = repository.createRule(ALTERNATIVES_TOO_COMPLEX_KEY)
             .setName("Pattern alternatives with many options cause backtracking")
@@ -3479,9 +3501,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x_ /; MemberQ[{a,b,c,d,e,f,g,h,i,j,k,l}, x] := ...</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "performance");
+            .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule138.setDebtRemediationFunction(rule138.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3494,9 +3516,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Select[Range[10000], # > 100 &]  (* Much faster *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("patterns", "performance");
+            .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule139.setDebtRemediationFunction(rule139.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3510,11 +3532,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[Length[list] > 0, result = list[[1]], result = Missing[]]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("lists", "bounds-check");
 
-            rule140.setDebtRemediationFunction(rule140.debtRemediationFunctions().constantPerIssue("20min"));
+            rule140.setDebtRemediationFunction(rule140.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule141 = repository.createRule(NEGATIVE_INDEX_WITHOUT_VALIDATION_KEY)
             .setName("Validate negative indices against list length")
@@ -3525,11 +3547,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[n <= Length[list], last = list[[-n]], ...]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("lists", "bounds-check");
 
-            rule141.setDebtRemediationFunction(rule141.debtRemediationFunctions().constantPerIssue("20min"));
+            rule141.setDebtRemediationFunction(rule141.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule142 = repository.createRule(PART_ASSIGNMENT_TO_IMMUTABLE_KEY)
             .setName("Part assignment requires a variable")
@@ -3540,11 +3562,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list = {1,2,3}; list[[1]] = 5  (* Modifies list *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("lists", "mutation");
 
-            rule142.setDebtRemediationFunction(rule142.debtRemediationFunctions().constantPerIssue("20min"));
+            rule142.setDebtRemediationFunction(rule142.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule143 = repository.createRule(INEFFICIENT_LIST_CONCATENATION_KEY)
             .setName("Avoid repeated Join operations in loops")
@@ -3555,11 +3577,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = Table[i, {i, 1000}]  (* Linear *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("lists", "performance");
+            .setTags("lists", TAG_PERFORMANCE);
 
-            rule143.setDebtRemediationFunction(rule143.debtRemediationFunctions().constantPerIssue("15min"));
+            rule143.setDebtRemediationFunction(rule143.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule144 = repository.createRule(UNNECESSARY_FLATTEN_KEY)
             .setName("Don't flatten already-flat lists")
@@ -3570,9 +3592,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>{a, b, c}  (* No Flatten needed *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("lists", "performance");
+            .setTags("lists", TAG_PERFORMANCE);
 
             rule144.setDebtRemediationFunction(rule144.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3585,9 +3607,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>n = Length[list]; Do[..., {i, 1, n}]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("lists", "performance");
+            .setTags("lists", TAG_PERFORMANCE);
 
             rule145.setDebtRemediationFunction(rule145.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3600,7 +3622,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list  (* Remove double Reverse *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("lists", "redundant");
 
@@ -3615,9 +3637,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Reverse[Sort[list]]  (* Faster *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("lists", "performance");
+            .setTags("lists", TAG_PERFORMANCE);
 
             rule147.setDebtRemediationFunction(rule147.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3630,7 +3652,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Select[list, EvenQ]  (* Clearer and faster *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("lists", "clarity");
 
@@ -3645,7 +3667,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list[[i, j]]  (* Cleaner *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("lists", "clarity");
 
@@ -3661,11 +3683,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[KeyExistsQ[assoc, \"key\"], value = assoc[\"key\"], ...]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("associations", "validation");
 
-            rule150.setDebtRemediationFunction(rule150.debtRemediationFunctions().constantPerIssue("20min"));
+            rule150.setDebtRemediationFunction(rule150.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule151 = repository.createRule(ASSOCIATION_VS_LIST_CONFUSION_KEY)
             .setName("Don't use list operations on associations")
@@ -3676,11 +3698,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>First[Values[assoc]]  (* Correct *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("associations");
 
-            rule151.setDebtRemediationFunction(rule151.debtRemediationFunctions().constantPerIssue("20min"));
+            rule151.setDebtRemediationFunction(rule151.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule152 = repository.createRule(INEFFICIENT_KEY_LOOKUP_KEY)
             .setName("Use KeySelect instead of Select on Keys")
@@ -3691,9 +3713,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>KeySelect[assoc, StringQ]  (* Faster *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("associations", "performance");
+            .setTags("associations", TAG_PERFORMANCE);
 
             rule152.setDebtRemediationFunction(rule152.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3706,11 +3728,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Query[All, \"name\"][Dataset[list]]  (* Correct *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("associations", "datasets");
 
-            rule153.setDebtRemediationFunction(rule153.debtRemediationFunctions().constantPerIssue("20min"));
+            rule153.setDebtRemediationFunction(rule153.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule154 = repository.createRule(ASSOCIATION_UPDATE_PATTERN_KEY)
             .setName("Use AssociateTo or Append for association updates")
@@ -3721,7 +3743,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>AssociateTo[assoc, \"key\" -> value]  (* Clear intent *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("associations", "clarity");
 
@@ -3736,11 +3758,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Merge[{a1, a2}, Total]  (* Explicit strategy *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("associations", "clarity");
 
-            rule155.setDebtRemediationFunction(rule155.debtRemediationFunctions().constantPerIssue("10min"));
+            rule155.setDebtRemediationFunction(rule155.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule156 = repository.createRule(ASSOCIATETO_ON_NON_SYMBOL_KEY)
             .setName("AssociateTo requires a symbol")
@@ -3751,11 +3773,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>assoc = <|\"a\"->1|>; AssociateTo[assoc, \"b\"->2]  (* Modifies assoc *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("associations", "mutation");
 
-            rule156.setDebtRemediationFunction(rule156.debtRemediationFunctions().constantPerIssue("20min"));
+            rule156.setDebtRemediationFunction(rule156.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule157 = repository.createRule(KEYDROP_MULTIPLE_TIMES_KEY)
             .setName("Drop multiple keys in one call")
@@ -3766,9 +3788,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>KeyDrop[assoc, {\"a\", \"b\"}]  (* Single pass *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("associations", "performance");
+            .setTags("associations", TAG_PERFORMANCE);
 
             rule157.setDebtRemediationFunction(rule157.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3781,7 +3803,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Lookup[assoc, key]  (* Same behavior *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("associations", "redundant");
 
@@ -3796,7 +3818,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>GatherBy[data, First]  (* Clearer intent *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("associations", "clarity");
 
@@ -3815,9 +3837,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused function *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule160.setDebtRemediationFunction(rule160.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3830,9 +3852,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>compute[x_, _] := x^2  (* Use blank for unused parameter *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "parameters");
+            .setTags(TAG_UNUSED, "parameters");
 
             rule161.setDebtRemediationFunction(rule161.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3845,9 +3867,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; x^2]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "scoping");
+            .setTags(TAG_UNUSED, "scoping");
 
             rule162.setDebtRemediationFunction(rule162.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3860,9 +3882,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{a = 1}, a^2]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "scoping");
+            .setTags(TAG_UNUSED, "scoping");
 
             rule163.setDebtRemediationFunction(rule163.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3875,9 +3897,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused Needs *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "imports");
+            .setTags(TAG_UNUSED, "imports");
 
             rule164.setDebtRemediationFunction(rule164.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3890,9 +3912,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_, _] := x  (* Use blank for unused pattern *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "patterns");
+            .setTags(TAG_UNUSED, TAG_PATTERNS);
 
             rule165.setDebtRemediationFunction(rule165.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3905,9 +3927,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := x  (* Remove unused optional *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "parameters");
+            .setTags(TAG_UNUSED, "parameters");
 
             rule166.setDebtRemediationFunction(rule166.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3920,11 +3942,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := Return[x]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "control-flow");
+            .setTags(TAG_DEAD_CODE, "control-flow");
 
-            rule167.setDebtRemediationFunction(rule167.debtRemediationFunctions().constantPerIssue("20min"));
+            rule167.setDebtRemediationFunction(rule167.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule168 = repository.createRule(UNREACHABLE_AFTER_ABORT_THROW_KEY)
             .setName("Code after Abort or Throw is unreachable")
@@ -3935,11 +3957,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[!error, processData[]]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "control-flow");
+            .setTags(TAG_DEAD_CODE, "control-flow");
 
-            rule168.setDebtRemediationFunction(rule168.debtRemediationFunctions().constantPerIssue("20min"));
+            rule168.setDebtRemediationFunction(rule168.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule169 = repository.createRule(ASSIGNMENT_NEVER_READ_KEY)
             .setName("Assignment value is never read")
@@ -3950,9 +3972,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 2; Print[x]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule169.setDebtRemediationFunction(rule169.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -3967,7 +3989,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule170.setDebtRemediationFunction(rule170.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -3980,11 +4002,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = Solve[eq2]  (* Remove first assignment *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("logic-error", "dead-code");
+            .setTags("logic-error", TAG_DEAD_CODE);
 
-            rule171.setDebtRemediationFunction(rule171.debtRemediationFunctions().constantPerIssue("20min"));
+            rule171.setDebtRemediationFunction(rule171.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule172 = repository.createRule(LOOP_VARIABLE_UNUSED_KEY)
             .setName("Loop iterator variable is never used in body")
@@ -3995,9 +4017,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[Print[\"Hello\"], 10]  (* Simpler form *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "loops");
+            .setTags(TAG_UNUSED, "loops");
 
             rule172.setDebtRemediationFunction(rule172.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -4010,9 +4032,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = compute[x]  (* Remove unnecessary Catch *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "error-handling");
+            .setTags(TAG_UNUSED, "error-handling");
 
             rule173.setDebtRemediationFunction(rule173.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -4025,11 +4047,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove dead branch or fix condition *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "logic-error");
+            .setTags(TAG_DEAD_CODE, "logic-error");
 
-            rule174.setDebtRemediationFunction(rule174.debtRemediationFunctions().constantPerIssue("20min"));
+            rule174.setDebtRemediationFunction(rule174.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Shadowing & Naming Rules (Items 76-90)
 
@@ -4042,7 +4064,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{localData}, localData = {4,5,6}]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("shadowing", "naming");
 
@@ -4057,11 +4079,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[list_] := Length[list]  (* Use lowercase *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("shadowing", "built-ins");
 
-            rule176.setDebtRemediationFunction(rule176.debtRemediationFunctions().constantPerIssue("20min"));
+            rule176.setDebtRemediationFunction(rule176.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule177 = repository.createRule(LOCAL_SHADOWS_PARAMETER_KEY)
             .setName("Local variable shadows function parameter")
@@ -4072,11 +4094,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := Module[{y}, y = 5; y^2]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("shadowing", "scoping");
 
-            rule177.setDebtRemediationFunction(rule177.debtRemediationFunctions().constantPerIssue("20min"));
+            rule177.setDebtRemediationFunction(rule177.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule178 = repository.createRule(MULTIPLE_DEFINITIONS_SAME_SYMBOL_KEY)
             .setName("Symbol defined multiple times")
@@ -4089,7 +4111,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("redefinition", "patterns");
+            .setTags("redefinition", TAG_PATTERNS);
 
             rule178.setDebtRemediationFunction(rule178.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -4104,7 +4126,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("naming", "readability");
+            .setTags("naming", TAG_READABILITY);
 
             rule179.setDebtRemediationFunction(rule179.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -4119,7 +4141,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("naming", "readability");
+            .setTags("naming", TAG_READABILITY);
 
             rule180.setDebtRemediationFunction(rule180.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -4147,7 +4169,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{mapper, applier}, ...]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("shadowing", "built-ins");
 
@@ -4162,11 +4184,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use unique names or proper context management *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("contexts", "ambiguity");
 
-            rule183.setDebtRemediationFunction(rule183.debtRemediationFunctions().constantPerIssue("20min"));
+            rule183.setDebtRemediationFunction(rule183.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule184 = repository.createRule(RESERVED_NAME_USAGE_KEY)
             .setName("Reserved system variable name used")
@@ -4177,11 +4199,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>systemID = \"custom\"  (* Use non-reserved name *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("reserved", "system-variables");
 
-            rule184.setDebtRemediationFunction(rule184.debtRemediationFunctions().constantPerIssue("20min"));
+            rule184.setDebtRemediationFunction(rule184.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule185 = repository.createRule(PRIVATE_CONTEXT_SYMBOL_PUBLIC_KEY)
             .setName("Private context symbol used from outside package")
@@ -4192,7 +4214,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Export function or use public API *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("encapsulation", "packages");
 
@@ -4207,11 +4229,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>BeginPackage[\"MyPackage`\"]\n...\nEndPackage[]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("packages", "contexts");
 
-            rule186.setDebtRemediationFunction(rule186.debtRemediationFunctions().constantPerIssue("30min"));
+            rule186.setDebtRemediationFunction(rule186.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule187 = repository.createRule(SYMBOL_AFTER_ENDPACKAGE_KEY)
             .setName("Symbol defined after EndPackage")
@@ -4222,11 +4244,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>BeginPackage[\"MyPackage`\"]\nf[x_] := x\nEndPackage[]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("packages", "contexts");
 
-            rule187.setDebtRemediationFunction(rule187.debtRemediationFunctions().constantPerIssue("20min"));
+            rule187.setDebtRemediationFunction(rule187.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule188 = repository.createRule(GLOBAL_IN_PACKAGE_KEY)
             .setName("Global context used in package code")
@@ -4237,7 +4259,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>temp = 5  (* Uses package context *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("packages", "contexts");
 
@@ -4254,7 +4276,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("naming", "readability");
+            .setTags("naming", TAG_READABILITY);
 
             rule189.setDebtRemediationFunction(rule189.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -4269,11 +4291,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Define function or import package *)\nundefinedFunction[x_] := x^2</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("undefined", "runtime-error");
 
-            rule190.setDebtRemediationFunction(rule190.debtRemediationFunctions().constantPerIssue("30min"));
+            rule190.setDebtRemediationFunction(rule190.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule191 = repository.createRule(UNDEFINED_VARIABLE_REFERENCE_KEY)
             .setName("Reference to undefined variable")
@@ -4284,11 +4306,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5;\nresult = x + 1</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("undefined", "runtime-error");
 
-            rule191.setDebtRemediationFunction(rule191.debtRemediationFunctions().constantPerIssue("30min"));
+            rule191.setDebtRemediationFunction(rule191.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule192 = repository.createRule(TYPO_IN_BUILTIN_NAME_KEY)
             .setName("Possible typo in built-in function name")
@@ -4299,11 +4321,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>size = Length[list]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("typo", "built-ins");
 
-            rule192.setDebtRemediationFunction(rule192.debtRemediationFunctions().constantPerIssue("30min"));
+            rule192.setDebtRemediationFunction(rule192.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule193 = repository.createRule(WRONG_CAPITALIZATION_KEY)
             .setName("Wrong capitalization of built-in function")
@@ -4314,11 +4336,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>size = Length[list]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("capitalization", "built-ins");
 
-            rule193.setDebtRemediationFunction(rule193.debtRemediationFunctions().constantPerIssue("20min"));
+            rule193.setDebtRemediationFunction(rule193.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule194 = repository.createRule(MISSING_IMPORT_KEY)
             .setName("Missing package import for external symbol")
@@ -4329,11 +4351,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Needs[\"ExternalPackage`\"]\nresult = ExternalPackage`Function[x]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("imports", "packages");
 
-            rule194.setDebtRemediationFunction(rule194.debtRemediationFunctions().constantPerIssue("20min"));
+            rule194.setDebtRemediationFunction(rule194.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule195 = repository.createRule(CONTEXT_NOT_FOUND_KEY)
             .setName("Needs references non-existent context")
@@ -4344,11 +4366,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use correct package name or create package *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("imports", "runtime-error");
 
-            rule195.setDebtRemediationFunction(rule195.debtRemediationFunctions().constantPerIssue("30min"));
+            rule195.setDebtRemediationFunction(rule195.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule196 = repository.createRule(SYMBOL_MASKED_BY_IMPORT_KEY)
             .setName("Local symbol masked by package import")
@@ -4359,11 +4381,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Rename local symbol or manage contexts carefully *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("shadowing", "imports");
 
-            rule196.setDebtRemediationFunction(rule196.debtRemediationFunctions().constantPerIssue("20min"));
+            rule196.setDebtRemediationFunction(rule196.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule197 = repository.createRule(MISSING_PATH_ENTRY_KEY)
             .setName("Get references file not in $Path")
@@ -4374,11 +4396,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Get[FileNameJoin[{Directory[], \"myfile.m\"}]]  (* Use absolute path *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("imports", "file-system");
 
-            rule197.setDebtRemediationFunction(rule197.debtRemediationFunctions().constantPerIssue("20min"));
+            rule197.setDebtRemediationFunction(rule197.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule198 = repository.createRule(CIRCULAR_NEEDS_KEY)
             .setName("Circular package dependency detected")
@@ -4389,11 +4411,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Refactor to break circular dependency *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("circular-dependency", "packages");
 
-            rule198.setDebtRemediationFunction(rule198.debtRemediationFunctions().constantPerIssue("30min"));
+            rule198.setDebtRemediationFunction(rule198.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule199 = repository.createRule(FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY)
             .setName("Forward reference without explicit declaration")
@@ -4404,11 +4426,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_];  (* Forward declaration *)\ng[x_] := f[x] + 1;\nf[x_] := x^2</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("forward-reference", "declaration");
 
-            rule199.setDebtRemediationFunction(rule199.debtRemediationFunctions().constantPerIssue("20min"));
+            rule199.setDebtRemediationFunction(rule199.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // ===== CHUNK 3 RULE DEFINITIONS (Items 111-150 from ROADMAP_325.md) =====
 
@@ -4424,11 +4446,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>ToExpression[\"5\"] + 1  (* Convert string to number first *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "runtime-error");
 
-            rule200.setDebtRemediationFunction(rule200.debtRemediationFunctions().constantPerIssue("20min"));
+            rule200.setDebtRemediationFunction(rule200.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule201 = repository.createRule(STRING_OPERATION_ON_NUMBER_KEY)
             .setName("String operations on numbers cause runtime errors")
@@ -4440,11 +4462,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>StringJoin[ToString[123], \"abc\"]  (* Convert to string first *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "runtime-error");
 
-            rule201.setDebtRemediationFunction(rule201.debtRemediationFunctions().constantPerIssue("20min"));
+            rule201.setDebtRemediationFunction(rule201.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule202 = repository.createRule(WRONG_ARGUMENT_TYPE_KEY)
             .setName("Function called with wrong argument type")
@@ -4456,11 +4478,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Map[f, {1,2,3}]  (* Use correct type *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "argument-type");
 
-            rule202.setDebtRemediationFunction(rule202.debtRemediationFunctions().constantPerIssue("20min"));
+            rule202.setDebtRemediationFunction(rule202.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule203 = repository.createRule(FUNCTION_RETURNS_WRONG_TYPE_KEY)
             .setName("Function returns type different from declaration")
@@ -4472,11 +4494,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>calculate[x_?Positive] := x  (* Type-safe *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "return-type");
 
-            rule203.setDebtRemediationFunction(rule203.debtRemediationFunctions().constantPerIssue("20min"));
+            rule203.setDebtRemediationFunction(rule203.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule204 = repository.createRule(COMPARISON_INCOMPATIBLE_TYPES_KEY)
             .setName("Comparison of incompatible types")
@@ -4488,7 +4510,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>StringLength[\"hello\"] < 5  (* Compare compatible types *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("type-mismatch", "comparison");
 
@@ -4503,7 +4525,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>1/3 + 1/2  (* Keep exact *)\nN[1/3] + 0.5  (* Or be explicit *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("numeric-precision", "type-mismatch");
 
@@ -4518,11 +4540,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>1./2  (* Evaluates to 0.5 *)\nN[1/2]  (* Explicit conversion *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("numeric-precision", "integer-division");
 
-            rule206.setDebtRemediationFunction(rule206.debtRemediationFunctions().constantPerIssue("20min"));
+            rule206.setDebtRemediationFunction(rule206.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule207 = repository.createRule(LIST_FUNCTION_ON_ASSOCIATION_KEY)
             .setName("List functions should not be used on associations")
@@ -4533,11 +4555,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>AssociateTo[<|a->1|>, b->2]  (* Correct for associations *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "associations");
 
-            rule207.setDebtRemediationFunction(rule207.debtRemediationFunctions().constantPerIssue("20min"));
+            rule207.setDebtRemediationFunction(rule207.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule208 = repository.createRule(PATTERN_TYPE_MISMATCH_KEY)
             .setName("Function call doesn't match pattern types")
@@ -4549,11 +4571,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[5]  (* Matches pattern *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "type-mismatch");
+            .setTags(TAG_PATTERNS, "type-mismatch");
 
-            rule208.setDebtRemediationFunction(rule208.debtRemediationFunctions().constantPerIssue("20min"));
+            rule208.setDebtRemediationFunction(rule208.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule209 = repository.createRule(OPTIONAL_TYPE_INCONSISTENT_KEY)
             .setName("Optional parameter default has wrong type")
@@ -4564,11 +4586,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_Integer : 1] := x  (* Consistent types *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "optional-parameters");
+            .setTags(TAG_PATTERNS, "optional-parameters");
 
-            rule209.setDebtRemediationFunction(rule209.debtRemediationFunctions().constantPerIssue("20min"));
+            rule209.setDebtRemediationFunction(rule209.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule210 = repository.createRule(RETURN_TYPE_INCONSISTENT_KEY)
             .setName("Function returns inconsistent types")
@@ -4579,7 +4601,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := If[x > 0, x, -1]  (* Consistent Integer return *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("return-type", "api-design");
 
@@ -4594,11 +4616,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 0; result = x + 1  (* Or use Missing[\"NotAvailable\"] *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety", "type-mismatch");
 
-            rule211.setDebtRemediationFunction(rule211.debtRemediationFunctions().constantPerIssue("20min"));
+            rule211.setDebtRemediationFunction(rule211.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule212 = repository.createRule(TYPE_CAST_WITHOUT_VALIDATION_KEY)
             .setName("Type conversion without validation")
@@ -4609,11 +4631,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[StringQ[userInput], ToExpression[userInput], $Failed]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-casting", "validation");
 
-            rule212.setDebtRemediationFunction(rule212.debtRemediationFunctions().constantPerIssue("20min"));
+            rule212.setDebtRemediationFunction(rule212.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule213 = repository.createRule(IMPLICIT_TYPE_CONVERSION_KEY)
             .setName("Redundant type conversion")
@@ -4624,7 +4646,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\"hello\"  (* No conversion needed *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("redundant", "type-conversion");
 
@@ -4639,11 +4661,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Extract data first or fix logic error *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "graphics");
 
-            rule214.setDebtRemediationFunction(rule214.debtRemediationFunctions().constantPerIssue("20min"));
+            rule214.setDebtRemediationFunction(rule214.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule215 = repository.createRule(SYMBOL_IN_NUMERIC_CONTEXT_KEY)
             .setName("Symbolic variable in numeric context")
@@ -4654,7 +4676,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; x + 1  (* Assign value first *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("symbolic", "numeric-context");
 
@@ -4669,11 +4691,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>ImageData[Image[{{0,0},{1,1}}]]  (* Wrap in Image first *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "image-processing");
 
-            rule216.setDebtRemediationFunction(rule216.debtRemediationFunctions().constantPerIssue("20min"));
+            rule216.setDebtRemediationFunction(rule216.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule217 = repository.createRule(SOUND_OPERATION_ON_NON_SOUND_KEY)
             .setName("Audio operation on non-Audio object")
@@ -4684,11 +4706,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>AudioData[Audio[{1,2,3}]]  (* Wrap in Audio first *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "audio-processing");
 
-            rule217.setDebtRemediationFunction(rule217.debtRemediationFunctions().constantPerIssue("20min"));
+            rule217.setDebtRemediationFunction(rule217.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule218 = repository.createRule(DATASET_OPERATION_ON_LIST_KEY)
             .setName("Dataset operations require Dataset wrapper")
@@ -4699,11 +4721,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Dataset[data][All, \"col1\"]  (* Wrap in Dataset *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "dataset");
 
-            rule218.setDebtRemediationFunction(rule218.debtRemediationFunctions().constantPerIssue("20min"));
+            rule218.setDebtRemediationFunction(rule218.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule219 = repository.createRule(GRAPH_OPERATION_ON_NON_GRAPH_KEY)
             .setName("Graph operation on non-Graph object")
@@ -4714,11 +4736,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>VertexList[Graph[{{1,2},{2,3}}]]  (* Create Graph first *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type-mismatch", "graph-theory");
 
-            rule219.setDebtRemediationFunction(rule219.debtRemediationFunctions().constantPerIssue("20min"));
+            rule219.setDebtRemediationFunction(rule219.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Data Flow Analysis Rules (Items 135-150)
 
@@ -4731,11 +4753,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 0; result = x + 1  (* Initialize first *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("uninitialized", "data-flow");
 
-            rule220.setDebtRemediationFunction(rule220.debtRemediationFunctions().constantPerIssue("30min"));
+            rule220.setDebtRemediationFunction(rule220.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule221 = repository.createRule(VARIABLE_MAY_BE_UNINITIALIZED_KEY)
             .setName("Variable may be uninitialized in some code paths")
@@ -4746,11 +4768,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = If[condition, 1, 0];\nresult = x  (* Always initialized *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("uninitialized", "data-flow");
 
-            rule221.setDebtRemediationFunction(rule221.debtRemediationFunctions().constantPerIssue("20min"));
+            rule221.setDebtRemediationFunction(rule221.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule222 = repository.createRule(DEAD_STORE_KEY)
             .setName("Value assigned but never read")
@@ -4761,9 +4783,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused assignment or use the value *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("dead-store", "performance");
+            .setTags("dead-store", TAG_PERFORMANCE);
 
             rule222.setDebtRemediationFunction(rule222.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -4776,7 +4798,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 2; Print[x]  (* Remove redundant assignment *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("redundant", "data-flow");
 
@@ -4791,11 +4813,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list2 = list1  (* Copy if needed for independent modification *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("aliasing", "mutable-state");
 
-            rule224.setDebtRemediationFunction(rule224.debtRemediationFunctions().constantPerIssue("20min"));
+            rule224.setDebtRemediationFunction(rule224.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule225 = repository.createRule(MODIFICATION_OF_LOOP_ITERATOR_KEY)
             .setName("Loop iterator should not be modified inside loop")
@@ -4806,11 +4828,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[Print[i], {i, 1, 10}]  (* Don't modify iterator *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("loops", "iterator-modification");
 
-            rule225.setDebtRemediationFunction(rule225.debtRemediationFunctions().constantPerIssue("20min"));
+            rule225.setDebtRemediationFunction(rule225.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule226 = repository.createRule(USE_OF_ITERATOR_OUTSIDE_LOOP_KEY)
             .setName("Loop iterator value after loop is undefined")
@@ -4821,11 +4843,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Don't rely on iterator value after loop *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("loops", "iterator-scope");
 
-            rule226.setDebtRemediationFunction(rule226.debtRemediationFunctions().constantPerIssue("10min"));
+            rule226.setDebtRemediationFunction(rule226.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule227 = repository.createRule(READING_UNSET_VARIABLE_KEY)
             .setName("Reading variable after Unset or Clear")
@@ -4836,11 +4858,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; Print[x]; Unset[x]  (* Read before unsetting *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("unset", "data-flow");
 
-            rule227.setDebtRemediationFunction(rule227.debtRemediationFunctions().constantPerIssue("20min"));
+            rule227.setDebtRemediationFunction(rule227.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule228 = repository.createRule(DOUBLE_ASSIGNMENT_SAME_VALUE_KEY)
             .setName("Variable assigned same value twice")
@@ -4866,7 +4888,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>MapIndexed[...  (* Use stateless approach *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("pure-functions", "side-effects");
 
@@ -4881,7 +4903,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Pass state as parameters or use Module *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("global-state", "mutable-state");
 
@@ -4896,11 +4918,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x = 5}, x]  (* Return value, not symbol *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("scope", "module");
 
-            rule231.setDebtRemediationFunction(rule231.debtRemediationFunctions().constantPerIssue("10min"));
+            rule231.setDebtRemediationFunction(rule231.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule232 = repository.createRule(CLOSURE_OVER_MUTABLE_VARIABLE_KEY)
             .setName("Pure function captures mutable variable")
@@ -4911,11 +4933,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>funcs = Table[With[{j = i}, Function[x + j]], {i, 3}]  (* Capture value *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("closures", "variable-capture");
 
-            rule232.setDebtRemediationFunction(rule232.debtRemediationFunctions().constantPerIssue("20min"));
+            rule232.setDebtRemediationFunction(rule232.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule233 = repository.createRule(ASSIGNMENT_IN_CONDITION_ENHANCED_KEY)
             .setName("Assignment in condition instead of comparison")
@@ -4926,11 +4948,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[x == 5, ...]  (* Compare, don't assign *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("assignment", "condition");
 
-            rule233.setDebtRemediationFunction(rule233.debtRemediationFunctions().constantPerIssue("30min"));
+            rule233.setDebtRemediationFunction(rule233.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule234 = repository.createRule(ASSIGNMENT_AS_RETURN_VALUE_KEY)
             .setName("Unnecessary variable assignment before return")
@@ -4984,11 +5006,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "  x^2\n"
                 + "]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "unreachable");
+            .setTags(TAG_DEAD_CODE, "unreachable");
 
-            rule236.setDebtRemediationFunction(rule236.debtRemediationFunctions().constantPerIssue("20min"));
+            rule236.setDebtRemediationFunction(rule236.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule237 = repository.createRule(UNREACHABLE_BRANCH_ALWAYS_TRUE_KEY)
             .setName("If condition always true makes else branch unreachable")
@@ -5001,11 +5023,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>action1[]  (* Remove the conditional *)\n"
                 + "\"yes\"  (* Simplify to constant *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "logic-error");
+            .setTags(TAG_DEAD_CODE, "logic-error");
 
-            rule237.setDebtRemediationFunction(rule237.debtRemediationFunctions().constantPerIssue("20min"));
+            rule237.setDebtRemediationFunction(rule237.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule238 = repository.createRule(UNREACHABLE_BRANCH_ALWAYS_FALSE_KEY)
             .setName("If condition always false makes true branch unreachable")
@@ -5018,11 +5040,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>action2[]  (* Remove the conditional *)\n"
                 + "\"no\"  (* Simplify to constant *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "logic-error");
+            .setTags(TAG_DEAD_CODE, "logic-error");
 
-            rule238.setDebtRemediationFunction(rule238.debtRemediationFunctions().constantPerIssue("20min"));
+            rule238.setDebtRemediationFunction(rule238.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule239 = repository.createRule(IMPOSSIBLE_PATTERN_KEY)
             .setName("Pattern can never match any input")
@@ -5035,11 +5057,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>f[x_Integer] := x  (* Remove contradictory test *)\n"
                 + "f[x_ /; x &gt; 10] := x  (* Remove contradiction *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "pattern-matching");
+            .setTags(TAG_DEAD_CODE, "pattern-matching");
 
-            rule239.setDebtRemediationFunction(rule239.debtRemediationFunctions().constantPerIssue("20min"));
+            rule239.setDebtRemediationFunction(rule239.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule240 = repository.createRule(EMPTY_CATCH_BLOCK_ENHANCED_KEY)
             .setName("Catch block with no handlers is pointless")
@@ -5050,11 +5072,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>computation[]  (* Remove unnecessary Catch *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "error-handling");
+            .setTags(TAG_DEAD_CODE, "error-handling");
 
-            rule240.setDebtRemediationFunction(rule240.debtRemediationFunctions().constantPerIssue("20min"));
+            rule240.setDebtRemediationFunction(rule240.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule241 = repository.createRule(CONDITION_ALWAYS_EVALUATES_SAME_KEY)
             .setName("Condition always evaluates to the same value")
@@ -5069,11 +5091,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "(* Remove always-true condition *)\n"
                 + "(* Remove never-executing loop *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("logic-error", "control-flow");
 
-            rule241.setDebtRemediationFunction(rule241.debtRemediationFunctions().constantPerIssue("20min"));
+            rule241.setDebtRemediationFunction(rule241.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule242 = repository.createRule(INFINITE_LOOP_PROVEN_KEY)
             .setName("Loop has no exit condition (proven infinite)")
@@ -5086,11 +5108,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>While[condition[], process[]]  (* Add exit condition *)\n"
                 + "While[x &lt; 10, x++]  (* Fix increment direction *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("infinite-loop", "hang");
 
-            rule242.setDebtRemediationFunction(rule242.debtRemediationFunctions().constantPerIssue("30min"));
+            rule242.setDebtRemediationFunction(rule242.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule243 = repository.createRule(LOOP_NEVER_EXECUTES_KEY)
             .setName("Loop body never executes")
@@ -5103,11 +5125,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>While[condition[], process[]]  (* Fix condition *)\n"
                 + "Do[action[], {i, 1, 10}]  (* Fix range *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "loop");
+            .setTags(TAG_DEAD_CODE, "loop");
 
-            rule243.setDebtRemediationFunction(rule243.debtRemediationFunctions().constantPerIssue("20min"));
+            rule243.setDebtRemediationFunction(rule243.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule244 = repository.createRule(CODE_AFTER_ABORT_KEY)
             .setName("Code after Abort[] is unreachable")
@@ -5121,11 +5143,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>If[error, Return[$Failed]];\n"
                 + "Print[\"Continuing\"];</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "abort");
+            .setTags(TAG_DEAD_CODE, "abort");
 
-            rule244.setDebtRemediationFunction(rule244.debtRemediationFunctions().constantPerIssue("20min"));
+            rule244.setDebtRemediationFunction(rule244.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule245 = repository.createRule(MULTIPLE_RETURNS_MAKE_CODE_UNREACHABLE_KEY)
             .setName("Early returns make subsequent code unreachable")
@@ -5145,9 +5167,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "  result\n"
                 + ")</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("dead-code", "return");
+            .setTags(TAG_DEAD_CODE, "return");
 
             rule245.setDebtRemediationFunction(rule245.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5162,11 +5184,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>x = 5;\n"
                 + "actionA[]  (* Remove unreachable branch *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "conditional");
+            .setTags(TAG_DEAD_CODE, "conditional");
 
-            rule246.setDebtRemediationFunction(rule246.debtRemediationFunctions().constantPerIssue("20min"));
+            rule246.setDebtRemediationFunction(rule246.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule247 = repository.createRule(SWITCH_CASE_SHADOWED_KEY)
             .setName("Switch case is shadowed by earlier more general case")
@@ -5183,11 +5205,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "  _, \"default\"  (* Default last *)\n"
                 + "]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "switch");
+            .setTags(TAG_DEAD_CODE, "switch");
 
-            rule247.setDebtRemediationFunction(rule247.debtRemediationFunctions().constantPerIssue("20min"));
+            rule247.setDebtRemediationFunction(rule247.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule248 = repository.createRule(PATTERN_DEFINITION_SHADOWED_KEY)
             .setName("Specific pattern definition shadowed by more general one")
@@ -5200,11 +5222,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>f[0] := 0;  (* Specific case first *)\n"
                 + "f[x_] := x^2;  (* General case last *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("dead-code", "pattern-matching");
+            .setTags(TAG_DEAD_CODE, "pattern-matching");
 
-            rule248.setDebtRemediationFunction(rule248.debtRemediationFunctions().constantPerIssue("20min"));
+            rule248.setDebtRemediationFunction(rule248.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule249 = repository.createRule(EXCEPTION_NEVER_THROWN_KEY)
             .setName("Catch handles exception tag that is never thrown")
@@ -5215,9 +5237,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>normalComputation[]  (* Remove unnecessary Catch *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("dead-code", "exception");
+            .setTags(TAG_DEAD_CODE, "exception");
 
             rule249.setDebtRemediationFunction(rule249.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5230,11 +5252,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := If[x &lt; 0, Return[$Failed]];  (* Use Return instead *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("runtime-error", "control-flow");
 
-            rule250.setDebtRemediationFunction(rule250.debtRemediationFunctions().constantPerIssue("30min"));
+            rule250.setDebtRemediationFunction(rule250.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Taint Analysis for Security (Items 181-195)
 
@@ -5249,11 +5271,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>userInput = Import[\"https://example.com/data\", \"String\"];\n"
                 + "SQLExecute[conn, \"SELECT * FROM users WHERE name=?\", {userInput}]  (* Parameterized *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("sql-injection", "cwe-89", "owasp-a03");
 
-            rule251.setDebtRemediationFunction(rule251.debtRemediationFunctions().constantPerIssue("45min"));
+            rule251.setDebtRemediationFunction(rule251.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule252 = repository.createRule(COMMAND_INJECTION_TAINT_KEY)
             .setName("Command injection: untrusted data flows to RunProcess")
@@ -5268,11 +5290,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "  RunProcess[{\"cat\", fileName}]\n"
                 + "]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("command-injection", "cwe-78", "owasp-a03");
 
-            rule252.setDebtRemediationFunction(rule252.debtRemediationFunctions().constantPerIssue("45min"));
+            rule252.setDebtRemediationFunction(rule252.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule253 = repository.createRule(CODE_INJECTION_TAINT_KEY)
             .setName("Code injection: untrusted data flows to ToExpression")
@@ -5285,11 +5307,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>(* Avoid ToExpression on untrusted data entirely *)\n"
                 + "(* Or use sandboxing: ToExpression[userCode, StandardForm, HoldForm] *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("code-injection", "cwe-94", "owasp-a03");
 
-            rule253.setDebtRemediationFunction(rule253.debtRemediationFunctions().constantPerIssue("45min"));
+            rule253.setDebtRemediationFunction(rule253.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule254 = repository.createRule(PATH_TRAVERSAL_TAINT_KEY)
             .setName("Path traversal: untrusted data flows to file operations")
@@ -5303,11 +5325,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "fileName = FileNameJoin[{$BaseDirectory, \"data\", FileNameTake[fileName]}];\n"
                 + "Import[fileName]  (* Confined to safe directory *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("path-traversal", "cwe-22", "owasp-a01");
 
-            rule254.setDebtRemediationFunction(rule254.debtRemediationFunctions().constantPerIssue("45min"));
+            rule254.setDebtRemediationFunction(rule254.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule255 = repository.createRule(XSS_TAINT_KEY)
             .setName("XSS: untrusted data in HTML/XML output without sanitization")
@@ -5321,11 +5343,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "safe = StringReplace[userName, {\"&lt;\" -&gt; \"&amp;lt;\", \"&gt;\" -&gt; \"&amp;gt;\"}];\n"
                 + "ExportString[XMLElement[\"p\", {}, {safe}], \"HTML\"]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("xss", "cwe-79", "owasp-a03");
 
-            rule255.setDebtRemediationFunction(rule255.debtRemediationFunctions().constantPerIssue("45min"));
+            rule255.setDebtRemediationFunction(rule255.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule256 = repository.createRule(LDAP_INJECTION_KEY)
             .setName("LDAP injection: untrusted data in LDAP queries")
@@ -5338,11 +5360,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>(* Sanitize LDAP special characters: *, (, ), \\, NUL *)\n"
                 + "safe = StringReplace[userName, {\"*\" -&gt; \"\\\\*\", \"(\" -&gt; \"\\\\(\"}]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("ldap-injection", "cwe-90", "owasp-a03");
 
-            rule256.setDebtRemediationFunction(rule256.debtRemediationFunctions().constantPerIssue("45min"));
+            rule256.setDebtRemediationFunction(rule256.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule257 = repository.createRule(XXE_TAINT_KEY)
             .setName("XXE: XML External Entity attack via untrusted XML")
@@ -5353,11 +5375,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Disable external entity processing or validate XML structure first *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("xxe", "cwe-611", "owasp-a05");
 
-            rule257.setDebtRemediationFunction(rule257.debtRemediationFunctions().constantPerIssue("45min"));
+            rule257.setDebtRemediationFunction(rule257.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule258 = repository.createRule(UNSAFE_DESERIALIZATION_TAINT_KEY)
             .setName("Unsafe deserialization: untrusted data to Import[..., \"MX\"]")
@@ -5370,11 +5392,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>(* Never deserialize untrusted MX files *)\n"
                 + "(* Use JSON or other safe formats *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("deserialization", "cwe-502", "owasp-a08");
 
-            rule258.setDebtRemediationFunction(rule258.debtRemediationFunctions().constantPerIssue("45min"));
+            rule258.setDebtRemediationFunction(rule258.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule259 = repository.createRule(SSRF_TAINT_KEY)
             .setName("SSRF: untrusted URLs in URLFetch/URLExecute")
@@ -5389,11 +5411,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "  URLFetch[url]\n"
                 + "]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("ssrf", "cwe-918", "owasp-a10");
 
-            rule259.setDebtRemediationFunction(rule259.debtRemediationFunctions().constantPerIssue("45min"));
+            rule259.setDebtRemediationFunction(rule259.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule260 = repository.createRule(INSECURE_RANDOMNESS_ENHANCED_KEY)
             .setName("Insecure randomness: RandomInteger for security-sensitive values")
@@ -5405,11 +5427,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>Needs[\"Cryptography`\"];\n"
                 + "sessionToken = RandomBytes[16]  (* Cryptographically secure *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("randomness", "cwe-330", "crypto");
 
-            rule260.setDebtRemediationFunction(rule260.debtRemediationFunctions().constantPerIssue("30min"));
+            rule260.setDebtRemediationFunction(rule260.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule261 = repository.createRule(WEAK_CRYPTOGRAPHY_ENHANCED_KEY)
             .setName("Weak cryptography: MD5 or SHA1 used for security")
@@ -5421,11 +5443,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>hash = Hash[password, \"SHA256\"]  (* Use SHA-256 or stronger *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("crypto", "cwe-327", "owasp-a02");
 
-            rule261.setDebtRemediationFunction(rule261.debtRemediationFunctions().constantPerIssue("30min"));
+            rule261.setDebtRemediationFunction(rule261.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule262 = repository.createRule(HARD_CODED_CREDENTIALS_TAINT_KEY)
             .setName("Hard-coded credentials: string literals in authentication")
@@ -5438,11 +5460,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>password = Environment[\"DB_PASSWORD\"];\n"
                 + "DatabaseConnect[\"server\", Username -&gt; \"user\", Password -&gt; password]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("credentials", "cwe-798", "owasp-a07");
 
-            rule262.setDebtRemediationFunction(rule262.debtRemediationFunctions().constantPerIssue("45min"));
+            rule262.setDebtRemediationFunction(rule262.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule263 = repository.createRule(SENSITIVE_DATA_IN_LOGS_KEY)
             .setName("Sensitive data: credentials or tokens in Print/logs")
@@ -5455,11 +5477,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>password = getPassword[];\n"
                 + "Print[\"Authenticating\"]  (* Don't log sensitive data *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("sensitive-data", "cwe-532", "logging");
 
-            rule263.setDebtRemediationFunction(rule263.debtRemediationFunctions().constantPerIssue("30min"));
+            rule263.setDebtRemediationFunction(rule263.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule264 = repository.createRule(MASS_ASSIGNMENT_KEY)
             .setName("Mass assignment: untrusted association directly used in updates")
@@ -5473,11 +5495,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "allowed = KeyTake[userData, {\"name\", \"email\"}];\n"
                 + "SQLExecute[conn, \"UPDATE users SET ...\", allowed]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("mass-assignment", "cwe-915", "owasp-a04");
 
-            rule264.setDebtRemediationFunction(rule264.debtRemediationFunctions().constantPerIssue("45min"));
+            rule264.setDebtRemediationFunction(rule264.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule265 = repository.createRule(REGEX_DOS_KEY)
             .setName("ReDoS: untrusted data in regex can cause catastrophic backtracking")
@@ -5490,11 +5512,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>(* Validate pattern complexity or use fixed patterns only *)\n"
                 + "StringMatchQ[text, RegularExpression[\"^[a-z]+$\"]]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
             .setTags("redos", "cwe-1333", "dos");
 
-            rule265.setDebtRemediationFunction(rule265.debtRemediationFunctions().constantPerIssue("30min"));
+            rule265.setDebtRemediationFunction(rule265.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Additional Control Flow Rules (Items 196-200)
 
@@ -5507,11 +5529,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = Switch[x, 1, \"one\", 2, \"two\", _, \"other\"]  (* Add default *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("switch", "completeness");
 
-            rule266.setDebtRemediationFunction(rule266.debtRemediationFunctions().constantPerIssue("10min"));
+            rule266.setDebtRemediationFunction(rule266.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule267 = repository.createRule(EMPTY_IF_BRANCH_KEY)
             .setName("Empty If true branch should be inverted")
@@ -5522,9 +5544,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[!condition, elseAction[]]  (* Inverted, clearer *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("readability", "conditional");
+            .setTags(TAG_READABILITY, "conditional");
 
             rule267.setDebtRemediationFunction(rule267.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5538,7 +5560,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>If[a &amp;&amp; b &amp;&amp; c &amp;&amp; d &amp;&amp; e, action[]]  (* Flatten conditions *)\n"
                 + "(* Or use Which for multiple cases *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("complexity", "nesting");
 
@@ -5567,7 +5589,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "  True, 4\n"
                 + "]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("complexity", "return");
 
@@ -5608,11 +5630,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "BeginPackage[\"A`\"];\n"
                 + "Needs[\"C`\"];</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("architecture", "circular-dependency");
 
-            rule271.setDebtRemediationFunction(rule271.debtRemediationFunctions().constantPerIssue("30min"));
+            rule271.setDebtRemediationFunction(rule271.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule272 = repository.createRule(UNUSED_PACKAGE_IMPORT_KEY)
             .setName("Unused package import should be removed")
@@ -5623,9 +5645,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused import *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dependency");
+            .setTags(TAG_UNUSED, "dependency");
 
             rule272.setDebtRemediationFunction(rule272.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5639,11 +5661,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>Needs[\"MyPackage`\"];\n"
                 + "result = MyPackage`MyFunction[x];</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("missing-import", "runtime-error");
 
-            rule273.setDebtRemediationFunction(rule273.debtRemediationFunctions().constantPerIssue("20min"));
+            rule273.setDebtRemediationFunction(rule273.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule274 = repository.createRule(TRANSITIVE_DEPENDENCY_COULD_BE_DIRECT_KEY)
             .setName("Relying on transitive dependency is fragile")
@@ -5657,7 +5679,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "Needs[\"B`\"];  (* Explicit dependency *)\n"
                 + "B`MyFunction[];</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("dependency", "fragile");
 
@@ -5689,7 +5711,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Split package or reduce dependencies *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("architecture", "coupling");
 
@@ -5705,11 +5727,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Application depends on library, not vice versa *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("architecture", "dependency-direction");
 
-            rule277.setDebtRemediationFunction(rule277.debtRemediationFunctions().constantPerIssue("20min"));
+            rule277.setDebtRemediationFunction(rule277.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule278 = repository.createRule(CYCLIC_CALL_BETWEEN_PACKAGES_KEY)
             .setName("Cyclic function calls between packages indicate tight coupling")
@@ -5720,7 +5742,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Extract shared logic to a third package *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("architecture", "coupling");
 
@@ -5735,7 +5757,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* UILayer depends on DataLayer *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("architecture", "layering");
 
@@ -5750,7 +5772,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Invert dependency or stabilize the unstable package *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("architecture", "stability");
 
@@ -5842,7 +5864,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>PublicFunc[] := Module[{result}, result = Private`HelperFunc[]; result];</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("encapsulation", "api");
 
@@ -5857,11 +5879,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = MyPackage`PublicFunc[];  (* Use public API *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("encapsulation", "private-access");
 
-            rule287.setDebtRemediationFunction(rule287.debtRemediationFunctions().constantPerIssue("20min"));
+            rule287.setDebtRemediationFunction(rule287.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule288 = repository.createRule(INTERNAL_IMPLEMENTATION_EXPOSED_KEY)
             .setName("Internal` symbols used from outside are unstable API")
@@ -5872,11 +5894,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use public API or request feature be made public *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("api", "stability");
 
-            rule288.setDebtRemediationFunction(rule288.debtRemediationFunctions().constantPerIssue("15min"));
+            rule288.setDebtRemediationFunction(rule288.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule289 = repository.createRule(MISSING_PACKAGE_DOCUMENTATION_KEY)
             .setName("Package without usage message reduces discoverability")
@@ -5904,7 +5926,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Increment major version when breaking changes occur *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("versioning", "api");
 
@@ -5921,9 +5943,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Make private or remove if truly unused *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule291.setDebtRemediationFunction(rule291.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5936,9 +5958,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove from exports if truly unused *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "api");
+            .setTags(TAG_UNUSED, "api");
 
             rule292.setDebtRemediationFunction(rule292.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5951,9 +5973,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove dead package or add usage *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule293.setDebtRemediationFunction(rule293.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -5998,7 +6020,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove orphaned test or restore implementation *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("testing", "orphaned");
 
@@ -6029,7 +6051,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>InternalFunc[] := ... NewFunc[] ...;  (* Migrated *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("deprecated", "migration");
 
@@ -6044,11 +6066,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Make it public: PackageA`SharedFunc *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("api", "encapsulation");
 
-            rule299.setDebtRemediationFunction(rule299.debtRemediationFunctions().constantPerIssue("10min"));
+            rule299.setDebtRemediationFunction(rule299.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule300 = repository.createRule(COMMENTED_OUT_PACKAGE_LOAD_KEY)
             .setName("Commented out Needs[] is dead dependency or TODO")
@@ -6074,7 +6096,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Needs[\"MyPackage`\"];  (* Unconditional *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("dependency", "fragile");
 
@@ -6089,7 +6111,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Add \"MyPackage\" to PacletInfo.m Extensions list *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("metadata", "dependency");
 
@@ -6104,11 +6126,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Rename to PackageA`MyFunc and PackageB`MyFunc *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("conflict", "naming");
 
-            rule303.setDebtRemediationFunction(rule303.debtRemediationFunctions().constantPerIssue("20min"));
+            rule303.setDebtRemediationFunction(rule303.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule304 = repository.createRule(SYMBOL_REDEFINITION_AFTER_IMPORT_KEY)
             .setName("Symbol defined locally after importing package with same symbol")
@@ -6120,11 +6142,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use different name or explicit context *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("shadowing", "conflict");
 
-            rule304.setDebtRemediationFunction(rule304.debtRemediationFunctions().constantPerIssue("20min"));
+            rule304.setDebtRemediationFunction(rule304.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule305 = repository.createRule(PACKAGE_VERSION_MISMATCH_KEY)
             .setName("Importing incompatible package versions causes runtime errors")
@@ -6135,11 +6157,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Ensure compatible versions or add version checks *)</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("versioning", "compatibility");
 
-            rule305.setDebtRemediationFunction(rule305.debtRemediationFunctions().constantPerIssue("30min"));
+            rule305.setDebtRemediationFunction(rule305.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Documentation & Consistency (Items 246-250)
 
@@ -6191,7 +6213,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>PublicUtilityFunc[] := ...;  (* Better abstraction *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("naming", "abstraction");
 
@@ -6211,11 +6233,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "Begin[\"Private`\"];\n"
                 + "PublicFunc[] := ...;  (* Define *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("context", "api");
 
-            rule309.setDebtRemediationFunction(rule309.debtRemediationFunctions().constantPerIssue("20min"));
+            rule309.setDebtRemediationFunction(rule309.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule310 = repository.createRule(TEST_FUNCTION_IN_PRODUCTION_CODE_KEY)
             .setName("Function with 'Test' in name should be in test package")
@@ -6227,7 +6249,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Move to MyPackageTest.m *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("testing", "organization");
 
@@ -6246,11 +6268,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[result =!= Null, result[[1]], defaultValue]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety", "runtime-error");
 
-            rule311.setDebtRemediationFunction(rule311.debtRemediationFunctions().constantPerIssue("30min"));
+            rule311.setDebtRemediationFunction(rule311.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule312 = repository.createRule(MISSING_NULL_CHECK_KEY)
             .setName("Missing null check before usage")
@@ -6261,11 +6283,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>ProcessData[data_] := If[data === Null, Null, data[[1]]]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety");
 
-            rule312.setDebtRemediationFunction(rule312.debtRemediationFunctions().constantPerIssue("20min"));
+            rule312.setDebtRemediationFunction(rule312.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule313 = repository.createRule(NULL_PASSED_TO_NON_NULLABLE_KEY)
             .setName("Null passed to parameter expecting non-null value")
@@ -6276,11 +6298,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[data =!= Null, Length[data], 0]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety");
 
-            rule313.setDebtRemediationFunction(rule313.debtRemediationFunctions().constantPerIssue("20min"));
+            rule313.setDebtRemediationFunction(rule313.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule314 = repository.createRule(INCONSISTENT_NULL_HANDLING_KEY)
             .setName("Inconsistent null handling across branches")
@@ -6291,11 +6313,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[cond && x =!= Null, process[x], defaultValue]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety", "consistency");
 
-            rule314.setDebtRemediationFunction(rule314.debtRemediationFunctions().constantPerIssue("20min"));
+            rule314.setDebtRemediationFunction(rule314.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule315 = repository.createRule(NULL_RETURN_NOT_DOCUMENTED_KEY)
             .setName("Function returns Null without documenting it")
@@ -6306,7 +6328,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>FindUser::usage = \"Returns user data or Null if not found.\";</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("documentation", "null-safety");
 
@@ -6321,11 +6343,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[x === Null, ...]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety", "semantics");
 
-            rule316.setDebtRemediationFunction(rule316.debtRemediationFunctions().constantPerIssue("10min"));
+            rule316.setDebtRemediationFunction(rule316.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule317 = repository.createRule(MISSING_CHECK_LEADS_TO_NULL_PROPAGATION_KEY)
             .setName("Missing null check causes error cascade")
@@ -6336,11 +6358,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check each step for Null</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("null-safety", "error-handling");
 
-            rule317.setDebtRemediationFunction(rule317.debtRemediationFunctions().constantPerIssue("20min"));
+            rule317.setDebtRemediationFunction(rule317.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule318 = repository.createRule(CHECK_PATTERN_DOESNT_HANDLE_ALL_CASES_KEY)
             .setName("Check pattern missing error cases")
@@ -6351,11 +6373,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check[expr, fallback, {f::error1, f::error2}]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling");
 
-            rule318.setDebtRemediationFunction(rule318.debtRemediationFunctions().constantPerIssue("10min"));
+            rule318.setDebtRemediationFunction(rule318.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule319 = repository.createRule(QUIET_SUPPRESSING_IMPORTANT_MESSAGES_KEY)
             .setName("Quiet suppresses critical error messages")
@@ -6366,11 +6388,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Quiet[operation[], {f::msg1}]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling", "bad-practice");
 
-            rule319.setDebtRemediationFunction(rule319.debtRemediationFunctions().constantPerIssue("20min"));
+            rule319.setDebtRemediationFunction(rule319.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule320 = repository.createRule(OFF_DISABLING_IMPORTANT_WARNINGS_KEY)
             .setName("Off[] disables important warnings")
@@ -6381,11 +6403,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Fix the underlying issue instead</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling", "bad-practice");
 
-            rule320.setDebtRemediationFunction(rule320.debtRemediationFunctions().constantPerIssue("20min"));
+            rule320.setDebtRemediationFunction(rule320.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule321 = repository.createRule(CATCH_ALL_EXCEPTION_HANDLER_KEY)
             .setName("Catch-all exception handler is too broad")
@@ -6396,11 +6418,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Catch[expr, \"myTag\"]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling");
 
-            rule321.setDebtRemediationFunction(rule321.debtRemediationFunctions().constantPerIssue("10min"));
+            rule321.setDebtRemediationFunction(rule321.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule322 = repository.createRule(EMPTY_EXCEPTION_HANDLER_KEY)
             .setName("Empty exception handler silently ignores errors")
@@ -6411,11 +6433,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Log or handle the error appropriately</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling", "bad-practice");
 
-            rule322.setDebtRemediationFunction(rule322.debtRemediationFunctions().constantPerIssue("20min"));
+            rule322.setDebtRemediationFunction(rule322.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule323 = repository.createRule(THROW_WITHOUT_CATCH_KEY)
             .setName("Throw without surrounding Catch aborts evaluation")
@@ -6426,11 +6448,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Catch[code, tag]; Throw[\"error\", tag]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling");
 
-            rule323.setDebtRemediationFunction(rule323.debtRemediationFunctions().constantPerIssue("20min"));
+            rule323.setDebtRemediationFunction(rule323.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule324 = repository.createRule(ABORT_IN_LIBRARY_CODE_KEY)
             .setName("Abort[] in library code is too aggressive")
@@ -6441,11 +6463,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Return $Failed or Throw with tag</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling", "library-design");
 
-            rule324.setDebtRemediationFunction(rule324.debtRemediationFunctions().constantPerIssue("20min"));
+            rule324.setDebtRemediationFunction(rule324.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule325 = repository.createRule(MESSAGE_WITHOUT_DEFINITION_KEY)
             .setName("Message issued but not defined")
@@ -6457,11 +6479,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<pre>f::undefined = \"Error: undefined value\";\n"
                 + "Message[f::undefined]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("error-handling", "messaging");
 
-            rule325.setDebtRemediationFunction(rule325.debtRemediationFunctions().constantPerIssue("10min"));
+            rule325.setDebtRemediationFunction(rule325.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule326 = repository.createRule(MISSING_MESSAGE_DEFINITION_KEY)
             .setName("Function issues messages without defining them")
@@ -6472,7 +6494,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f::err = \"Error message template\";</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("documentation", "messaging");
 
@@ -6489,11 +6511,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove dead branch or fix logic</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("constant-propagation", "dead-code");
+            .setTags("constant-propagation", TAG_DEAD_CODE);
 
-            rule327.setDebtRemediationFunction(rule327.debtRemediationFunctions().constantPerIssue("20min"));
+            rule327.setDebtRemediationFunction(rule327.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule328 = repository.createRule(CONDITION_ALWAYS_FALSE_CONSTANT_PROPAGATION_KEY)
             .setName("Condition always evaluates to False")
@@ -6504,11 +6526,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove dead branch or fix logic</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("constant-propagation", "dead-code");
+            .setTags("constant-propagation", TAG_DEAD_CODE);
 
-            rule328.setDebtRemediationFunction(rule328.debtRemediationFunctions().constantPerIssue("20min"));
+            rule328.setDebtRemediationFunction(rule328.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule329 = repository.createRule(LOOP_BOUND_CONSTANT_KEY)
             .setName("Loop bound is constant - use literal")
@@ -6534,9 +6556,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = f[x]; result + result + result</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "caching");
+            .setTags(TAG_PERFORMANCE, "caching");
 
             rule330.setDebtRemediationFunction(rule330.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -6549,9 +6571,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>val = Sqrt[2]; Do[... + val * ..., {i, 1, n}]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "loop-optimization");
+            .setTags(TAG_PERFORMANCE, "loop-optimization");
 
             rule331.setDebtRemediationFunction(rule331.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -6594,11 +6616,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check for typo or logic error</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("logic-error");
 
-            rule334.setDebtRemediationFunction(rule334.debtRemediationFunctions().constantPerIssue("20min"));
+            rule334.setDebtRemediationFunction(rule334.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule335 = repository.createRule(BOOLEAN_EXPRESSION_ALWAYS_TRUE_KEY)
             .setName("Boolean expression is tautology")
@@ -6609,11 +6631,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Fix logic error</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("logic-error");
 
-            rule335.setDebtRemediationFunction(rule335.debtRemediationFunctions().constantPerIssue("20min"));
+            rule335.setDebtRemediationFunction(rule335.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule336 = repository.createRule(BOOLEAN_EXPRESSION_ALWAYS_FALSE_KEY)
             .setName("Boolean expression is contradiction")
@@ -6624,11 +6646,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Fix logic error</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("logic-error");
 
-            rule336.setDebtRemediationFunction(rule336.debtRemediationFunctions().constantPerIssue("20min"));
+            rule336.setDebtRemediationFunction(rule336.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule337 = repository.createRule(UNNECESSARY_BOOLEAN_CONVERSION_KEY)
             .setName("Unnecessary boolean conversion")
@@ -6669,9 +6691,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Break into intermediate variables</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("complexity", "readability");
+            .setTags("complexity", TAG_READABILITY);
 
             rule339.setDebtRemediationFunction(rule339.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -6701,11 +6723,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>SetAttributes[MyHold, HoldAll]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("evaluation", "hold");
 
-            rule341.setDebtRemediationFunction(rule341.debtRemediationFunctions().constantPerIssue("20min"));
+            rule341.setDebtRemediationFunction(rule341.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule342 = repository.createRule(HOLD_FIRST_BUT_USES_SECOND_ARGUMENT_FIRST_KEY)
             .setName("HoldFirst but uses second argument first")
@@ -6717,11 +6739,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use HoldAll or fix evaluation order</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("evaluation", "hold");
 
-            rule342.setDebtRemediationFunction(rule342.debtRemediationFunctions().constantPerIssue("20min"));
+            rule342.setDebtRemediationFunction(rule342.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule343 = repository.createRule(MISSING_UNEVALUATED_WRAPPER_KEY)
             .setName("Missing Unevaluated wrapper causes premature evaluation")
@@ -6732,11 +6754,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>heldFunc[Unevaluated[x + 1]]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("evaluation");
 
-            rule343.setDebtRemediationFunction(rule343.debtRemediationFunctions().constantPerIssue("20min"));
+            rule343.setDebtRemediationFunction(rule343.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule344 = repository.createRule(UNNECESSARY_HOLD_KEY)
             .setName("Unnecessary Hold on literal")
@@ -6777,11 +6799,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Ensure this is intentional</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("evaluation", "hold");
 
-            rule346.setDebtRemediationFunction(rule346.debtRemediationFunctions().constantPerIssue("10min"));
+            rule346.setDebtRemediationFunction(rule346.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule347 = repository.createRule(PATTERN_WITH_SIDE_EFFECT_KEY)
             .setName("Pattern test with side effects evaluated multiple times")
@@ -6792,11 +6814,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use pure pattern test without side effects</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "side-effects");
+            .setTags(TAG_PATTERNS, "side-effects");
 
-            rule347.setDebtRemediationFunction(rule347.debtRemediationFunctions().constantPerIssue("20min"));
+            rule347.setDebtRemediationFunction(rule347.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule348 = repository.createRule(REPLACEMENT_RULE_ORDER_MATTERS_KEY)
             .setName("Replacement rule order affects result")
@@ -6807,11 +6829,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>{2 -> 5, _ -> 0}</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("patterns", "replacement-rules");
+            .setTags(TAG_PATTERNS, "replacement-rules");
 
-            rule348.setDebtRemediationFunction(rule348.debtRemediationFunctions().constantPerIssue("20min"));
+            rule348.setDebtRemediationFunction(rule348.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule349 = repository.createRule(REPLACE_ALL_VS_REPLACE_CONFUSION_KEY)
             .setName("ReplaceAll vs Replace confusion")
@@ -6822,11 +6844,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Replace[list, rules, {1}]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("replacement-rules");
 
-            rule349.setDebtRemediationFunction(rule349.debtRemediationFunctions().constantPerIssue("20min"));
+            rule349.setDebtRemediationFunction(rule349.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule350 = repository.createRule(RULE_DOESNT_MATCH_DUE_TO_EVALUATION_KEY)
             .setName("Rule won't match due to evaluation timing")
@@ -6837,11 +6859,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x /. {2 -> 5}</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("replacement-rules", "evaluation");
 
-            rule350.setDebtRemediationFunction(rule350.debtRemediationFunctions().constantPerIssue("20min"));
+            rule350.setDebtRemediationFunction(rule350.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule351 = repository.createRule(PART_SPECIFICATION_OUT_OF_BOUNDS_KEY)
             .setName("Part specification out of bounds")
@@ -6852,11 +6874,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check length first or use Take/Drop</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("bounds-check", "runtime-error");
 
-            rule351.setDebtRemediationFunction(rule351.debtRemediationFunctions().constantPerIssue("30min"));
+            rule351.setDebtRemediationFunction(rule351.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule352 = repository.createRule(SPAN_SPECIFICATION_INVALID_KEY)
             .setName("Span specification is invalid")
@@ -6867,11 +6889,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list[[1;;10]]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("spans");
 
-            rule352.setDebtRemediationFunction(rule352.debtRemediationFunctions().constantPerIssue("10min"));
+            rule352.setDebtRemediationFunction(rule352.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule353 = repository.createRule(ALL_SPECIFICATION_INEFFICIENT_KEY)
             .setName("Using [[All]] is redundant")
@@ -6897,11 +6919,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Ensure input type matches expectation</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("listable", "attributes");
 
-            rule354.setDebtRemediationFunction(rule354.debtRemediationFunctions().constantPerIssue("10min"));
+            rule354.setDebtRemediationFunction(rule354.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         NewRule rule355 = repository.createRule(MISSING_ATTRIBUTES_DECLARATION_KEY)
             .setName("Function should have Listable attribute")
@@ -6912,9 +6934,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>SetAttributes[f, Listable]; f[x_] := operation[x]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "attributes");
+            .setTags(TAG_PERFORMANCE, "attributes");
 
             rule355.setDebtRemediationFunction(rule355.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -6927,11 +6949,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Only use when truly needed</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("attributes", "semantics");
 
-            rule356.setDebtRemediationFunction(rule356.debtRemediationFunctions().constantPerIssue("20min"));
+            rule356.setDebtRemediationFunction(rule356.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule357 = repository.createRule(ORDERLESS_ATTRIBUTE_ON_NON_COMMUTATIVE_KEY)
             .setName("Orderless on non-commutative operation")
@@ -6942,11 +6964,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove Orderless attribute</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("attributes", "semantics");
 
-            rule357.setDebtRemediationFunction(rule357.debtRemediationFunctions().constantPerIssue("30min"));
+            rule357.setDebtRemediationFunction(rule357.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule358 = repository.createRule(FLAT_ATTRIBUTE_MISUSE_KEY)
             .setName("Flat attribute on non-associative operation")
@@ -6957,11 +6979,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove Flat attribute</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("attributes", "semantics");
 
-            rule358.setDebtRemediationFunction(rule358.debtRemediationFunctions().constantPerIssue("30min"));
+            rule358.setDebtRemediationFunction(rule358.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule359 = repository.createRule(SEQUENCE_IN_UNEXPECTED_CONTEXT_KEY)
             .setName("Sequence flattens unexpectedly")
@@ -6972,11 +6994,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Be aware of flattening behavior</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("sequence", "structure");
 
-            rule359.setDebtRemediationFunction(rule359.debtRemediationFunctions().constantPerIssue("20min"));
+            rule359.setDebtRemediationFunction(rule359.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule360 = repository.createRule(MISSING_SEQUENCE_WRAPPER_KEY)
             .setName("Should use Sequence to avoid extra nesting")
@@ -6987,7 +7009,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[cond, Sequence[a, b], Sequence[]]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("sequence", "idiom");
 
@@ -7021,7 +7043,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Add VerificationTest for the function</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("testing", "coverage");
 
@@ -7036,7 +7058,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Add test for uncovered branch</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("testing", "coverage");
 
@@ -7051,11 +7073,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove test-only code or make it test utility</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("testing", "dead-code");
+            .setTags("testing", TAG_DEAD_CODE);
 
-            rule364.setDebtRemediationFunction(rule364.debtRemediationFunctions().constantPerIssue("10min"));
+            rule364.setDebtRemediationFunction(rule364.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
         // Performance Analysis (Items 312-320)
 
@@ -7068,9 +7090,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>fastFunc = Compile[{{x, _Real}}, x^2 + Sin[x]]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "compilation");
+            .setTags(TAG_PERFORMANCE, "compilation");
 
             rule365.setDebtRemediationFunction(rule365.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7083,9 +7105,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Compile[{x}, expr, CompilationTarget -> \"C\"]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "compilation");
+            .setTags(TAG_PERFORMANCE, "compilation");
 
             rule366.setDebtRemediationFunction(rule366.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7098,11 +7120,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use only compilable functions</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("performance", "compilation");
+            .setTags(TAG_PERFORMANCE, "compilation");
 
-            rule367.setDebtRemediationFunction(rule367.debtRemediationFunctions().constantPerIssue("20min"));
+            rule367.setDebtRemediationFunction(rule367.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule368 = repository.createRule(PACKED_ARRAY_UNPACKED_KEY)
             .setName("Operation unpacks packed array")
@@ -7113,11 +7135,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use ReplacePart instead</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "packed-arrays");
+            .setTags(TAG_PERFORMANCE, "packed-arrays");
 
-            rule368.setDebtRemediationFunction(rule368.debtRemediationFunctions().constantPerIssue("15min"));
+            rule368.setDebtRemediationFunction(rule368.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule369 = repository.createRule(INEFFICIENT_PATTERN_IN_PERFORMANCE_CRITICAL_CODE_KEY)
             .setName("Complex pattern matching in hot loop")
@@ -7128,9 +7150,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use direct comparison or simplify pattern</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "patterns");
+            .setTags(TAG_PERFORMANCE, TAG_PATTERNS);
 
             rule369.setDebtRemediationFunction(rule369.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7143,9 +7165,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>NIntegrate[f[x], {x, 0, 1}]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "numeric");
+            .setTags(TAG_PERFORMANCE, "numeric");
 
             rule370.setDebtRemediationFunction(rule370.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7158,9 +7180,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>fib[n_] := fib[n] = fib[n-1] + fib[n-2]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "memoization");
+            .setTags(TAG_PERFORMANCE, "memoization");
 
             rule371.setDebtRemediationFunction(rule371.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7173,9 +7195,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>StringJoin[Table[\"x\", {n}]]  (* O(n) *)</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "strings");
+            .setTags(TAG_PERFORMANCE, "strings");
 
             rule372.setDebtRemediationFunction(rule372.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7188,9 +7210,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use Sow/Reap or Table instead</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "lists");
+            .setTags(TAG_PERFORMANCE, "lists");
 
             rule373.setDebtRemediationFunction(rule373.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7205,9 +7227,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; Print[x]]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule374.setDebtRemediationFunction(rule374.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7220,11 +7242,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; Print[x]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule375.setDebtRemediationFunction(rule375.debtRemediationFunctions().constantPerIssue("15min"));
+            rule375.setDebtRemediationFunction(rule375.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Note: DEAD_STORE_KEY rule already defined in Chunk 3 section (line ~4297)
         // Reusing existing definition: "Value assigned but never read"
@@ -7238,11 +7260,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; Print[x]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("uninitialized", "logic-error");
 
-            rule376.setDebtRemediationFunction(rule376.debtRemediationFunctions().constantPerIssue("30min"));
+            rule376.setDebtRemediationFunction(rule376.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule377 = repository.createRule(VARIABLE_SHADOWING_KEY)
             .setName("Variable shadows outer scope variable")
@@ -7253,7 +7275,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 1; Module[{y}, y = 2; Print[y]]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("confusing", "naming");
 
@@ -7268,9 +7290,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := x * 2</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "parameters");
+            .setTags(TAG_UNUSED, "parameters");
 
             rule378.setDebtRemediationFunction(rule378.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7283,11 +7305,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = expensive[]; Print[x]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("unused", "dead-code");
+            .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule379.setDebtRemediationFunction(rule379.debtRemediationFunctions().constantPerIssue("15min"));
+            rule379.setDebtRemediationFunction(rule379.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule380 = repository.createRule(REDUNDANT_ASSIGNMENT_KEY)
             .setName("Variable assigned same value multiple times")
@@ -7298,7 +7320,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("redundant", "code-smell");
 
@@ -7328,11 +7350,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{x = 5}, f[] := x]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("scope", "closure", "logic-error");
 
-            rule382.setDebtRemediationFunction(rule382.debtRemediationFunctions().constantPerIssue("30min"));
+            rule382.setDebtRemediationFunction(rule382.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // Advanced Symbol Table Analysis Rules (10 rules)
 
@@ -7345,7 +7367,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{}, (* 100 lines *); Block[{x}, x = 5; Print[x]]]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("scope", "memory", "maintainability");
 
@@ -7360,11 +7382,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; Block[{y}, y = 10; x = y]; Print[x]]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("scope", "data-flow", "maintainability");
 
-            rule384.setDebtRemediationFunction(rule384.debtRemediationFunctions().constantPerIssue("15min"));
+            rule384.setDebtRemediationFunction(rule384.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule385 = repository.createRule(GLOBAL_VARIABLE_POLLUTION_KEY)
             .setName("Too many global variables defined")
@@ -7375,11 +7397,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>BeginPackage[\"MyPackage`\"]; x=1; y=2; EndPackage[]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("global", "namespace", "architecture");
 
-            rule385.setDebtRemediationFunction(rule385.debtRemediationFunctions().constantPerIssue("15min"));
+            rule385.setDebtRemediationFunction(rule385.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         NewRule rule386 = repository.createRule(CIRCULAR_VARIABLE_DEPENDENCIES_KEY)
             .setName("Circular variable dependencies detected")
@@ -7390,11 +7412,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 0; y = x + 1; z = y + 1</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("circular-dependency", "logic-error");
 
-            rule386.setDebtRemediationFunction(rule386.debtRemediationFunctions().constantPerIssue("20min"));
+            rule386.setDebtRemediationFunction(rule386.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule387 = repository.createRule(NAMING_CONVENTION_VIOLATIONS_KEY)
             .setName("Variable naming convention violations")
@@ -7405,9 +7427,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{result, count, tempValue}, ...]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("naming", "readability");
+            .setTags("naming", TAG_READABILITY);
 
             rule387.setDebtRemediationFunction(rule387.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -7420,7 +7442,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{pi = 3.14159}, f[x_] := pi * x; ...]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("constants", "best-practice");
 
@@ -7435,11 +7457,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>num = 5; num = num + 1; str = \"result: \" <> ToString[num]</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("type", "logic-error");
 
-            rule389.setDebtRemediationFunction(rule389.debtRemediationFunctions().constantPerIssue("20min"));
+            rule389.setDebtRemediationFunction(rule389.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule390 = repository.createRule(VARIABLE_REUSE_WITH_DIFFERENT_SEMANTICS_KEY)
             .setName("Variable reused for different purposes")
@@ -7450,7 +7472,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>count = 0; Do[count++, {10}]; sum = Total[data]; Print[sum]</pre>"
             )
-            .setSeverity("MINOR")
+            .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("clarity", "maintainability");
 
@@ -7465,11 +7487,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[With[{j = i}, funcs[[i]] = Function[j]], {i, 5}]  (* Each captures own j *)</pre>"
             )
-            .setSeverity("MAJOR")
+            .setSeverity(SEVERITY_MAJOR)
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("closure", "loop", "logic-error");
 
-            rule391.setDebtRemediationFunction(rule391.debtRemediationFunctions().constantPerIssue("20min"));
+            rule391.setDebtRemediationFunction(rule391.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         NewRule rule392 = repository.createRule(SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY)
             .setName("Variable scope may leak through dynamic evaluation")
@@ -7480,11 +7502,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; With[{val = x}, ToExpression[\"val + 1\"]]]</pre>"
             )
-            .setSeverity("CRITICAL")
+            .setSeverity(SEVERITY_CRITICAL)
             .setType(org.sonar.api.rules.RuleType.BUG)
-            .setTags("scope", "dynamic", "security");
+            .setTags("scope", "dynamic", TAG_SECURITY);
 
-            rule392.setDebtRemediationFunction(rule392.debtRemediationFunctions().constantPerIssue("30min"));
+            rule392.setDebtRemediationFunction(rule392.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         // ===== PERFORMANCE LIMITS (INFO-level informational rules) =====
 
@@ -7504,7 +7526,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "file-size", "maintainability");
+            .setTags(TAG_PERFORMANCE, "file-size", "maintainability");
 
             rule393.setDebtRemediationFunction(rule393.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -7531,7 +7553,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
-            .setTags("performance", "complexity", "analysis-limits");
+            .setTags(TAG_PERFORMANCE, "complexity", "analysis-limits");
 
             rule394.setDebtRemediationFunction(rule394.debtRemediationFunctions().constantPerIssue("2min"));
 
