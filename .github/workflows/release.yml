@@ -1,0 +1,147 @@
+name: Release Plugin
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  release:
+    name: Build and Release Plugin
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up JDK 11
+        uses: actions/setup-java@v4
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build plugin
+        run: make build
+
+      - name: Get version from tag
+        id: version
+        run: |
+          VERSION=${GITHUB_REF#refs/tags/v}
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: Find JAR file
+        id: jar
+        run: |
+          JAR_FILE=$(ls build/libs/sonar-mathematica-plugin-*.jar)
+          echo "file=$JAR_FILE" >> $GITHUB_OUTPUT
+          echo "name=$(basename $JAR_FILE)" >> $GITHUB_OUTPUT
+
+      - name: Generate SHA256 hash
+        id: hash
+        run: |
+          HASH=$(sha256sum ${{ steps.jar.outputs.file }} | cut -d' ' -f1)
+          echo "sha256=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Create release notes
+        id: notes
+        run: |
+          cat > release_notes.md <<'EOF'
+          ## SonarQube Mathematica Plugin ${{ steps.version.outputs.version }}
+
+          ### Installation Instructions
+
+          1. **Download the plugin JAR:**
+             - Download `${{ steps.jar.outputs.name }}` from the assets below
+
+          2. **Verify the download (optional but recommended):**
+             ```bash
+             sha256sum ${{ steps.jar.outputs.name }}
+             ```
+             Expected hash: `${{ steps.hash.outputs.sha256 }}`
+
+          3. **Install to SonarQube:**
+             ```bash
+             # Copy JAR to SonarQube plugins directory
+             cp ${{ steps.jar.outputs.name }} $SONARQUBE_HOME/extensions/plugins/
+
+             # Remove old versions (if any)
+             rm -f $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+             # (Keep only the new version you just copied)
+             ```
+
+          4. **Restart SonarQube:**
+             ```bash
+             # macOS:
+             $SONARQUBE_HOME/bin/macosx-universal-64/sonar.sh restart
+
+             # Linux:
+             $SONARQUBE_HOME/bin/linux-x86-64/sonar.sh restart
+
+             # Windows:
+             # Use Services control panel or:
+             # $SONARQUBE_HOME\bin\windows-x86-64\StopNTService.bat
+             # $SONARQUBE_HOME\bin\windows-x86-64\StartNTService.bat
+             ```
+
+          5. **Verify installation:**
+             - Navigate to: Administration → Marketplace → Installed
+             - Look for "Mathematica" plugin
+             - Version should show: ${{ steps.version.outputs.version }}
+
+          ### Plugin Details
+
+          - **Version:** ${{ steps.version.outputs.version }}
+          - **JAR File:** `${{ steps.jar.outputs.name }}`
+          - **SHA256:** `${{ steps.hash.outputs.sha256 }}`
+          - **Build Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
+          - **Minimum SonarQube Version:** 9.9
+
+          ### Features
+
+          - Support for Wolfram Mathematica code analysis (.m, .wl, .wls files)
+          - 430+ code quality rules
+          - Security vulnerability detection (21 rules)
+          - Security hotspot detection (7 rules)
+          - Bug detection (80+ rules)
+          - Code smell detection (300+ rules)
+          - Symbol table analysis for variable lifetime and scope
+          - Copy-paste detection (CPD)
+          - Syntax highlighting
+          - Metrics: Lines of code, cyclomatic complexity, cognitive complexity
+
+          ### Configuration
+
+          Add to your `sonar-project.properties`:
+          ```properties
+          # Enable Mathematica analysis
+          sonar.mathematica.file.suffixes=.m,.wl,.wls
+          ```
+
+          For more configuration options, see the project documentation.
+
+          ---
+
+          🤖 Generated with GitHub Actions
+          EOF
+
+          echo "file=release_notes.md" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          name: Release ${{ steps.version.outputs.version }}
+          body_path: release_notes.md
+          files: ${{ steps.jar.outputs.file }}
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

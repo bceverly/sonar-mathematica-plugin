@@ -90,6 +90,15 @@ public class UnifiedRuleVisitor implements AstVisitor {
         checkExposingSensitiveData(node);
         checkMissingFormFunctionValidation(node);
 
+        // Security Hotspots (7 rules)
+        checkFileUploadValidation(node);
+        checkExternalApiSafeguards(node);
+        checkCryptoKeyGeneration(node);
+        checkNetworkOperations(node);
+        checkFileSystemModifications(node);
+        checkEnvironmentVariable(node);
+        checkImportWithoutFormat(node);
+
         // Check for deprecated functions
         checkDeprecatedFunction(node, funcName);
 
@@ -468,6 +477,76 @@ public class UnifiedRuleVisitor implements AstVisitor {
         if (node.getFunctionName().equals("FormFunction")) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.MISSING_FORMFUNCTION_VALIDATION_KEY,
                 "FormFunction should validate all inputs before processing.");
+        }
+    }
+
+    // ========== Security Hotspot Rules ==========
+
+    private void checkFileUploadValidation(FunctionCallNode node) {
+        Set<String> fileOps = Set.of("Import", "Get", "OpenRead", "OpenWrite", "Put");
+        if (fileOps.contains(node.getFunctionName())) {
+            String message;
+            if (node.getFunctionName().equals("Import") || node.getFunctionName().equals("Get")) {
+                message = "Review: Ensure file uploads/imports are validated for type, size, and content.";
+            } else {
+                message = "Review: Ensure file operations validate and sanitize file paths.";
+            }
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.FILE_UPLOAD_VALIDATION_KEY, message);
+        }
+    }
+
+    private void checkExternalApiSafeguards(FunctionCallNode node) {
+        Set<String> apiCalls = Set.of("URLRead", "URLFetch", "URLExecute", "URLSubmit", "ServiceExecute", "ServiceConnect");
+        if (apiCalls.contains(node.getFunctionName())) {
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY,
+                "Review: Ensure this API call has timeout, error handling, and rate limiting.");
+        }
+    }
+
+    private void checkCryptoKeyGeneration(FunctionCallNode node) {
+        Set<String> keyFuncs = Set.of("RandomInteger", "Random", "GenerateSymmetricKey", "GenerateAsymmetricKeyPair");
+        if (keyFuncs.contains(node.getFunctionName())) {
+            String message;
+            if (node.getFunctionName().equals("Random")) {
+                message = "Review: Random[] is not cryptographically secure. Use RandomInteger for keys.";
+            } else {
+                message = "Review: Ensure cryptographic keys are generated with sufficient entropy and stored securely.";
+            }
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY, message);
+        }
+    }
+
+    private void checkNetworkOperations(FunctionCallNode node) {
+        Set<String> networkOps = Set.of("SocketConnect", "SocketOpen", "SocketListen", "WebExecute");
+        if (networkOps.contains(node.getFunctionName())) {
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY,
+                "Review: Network operation should use TLS, have timeout, and proper error handling.");
+        }
+    }
+
+    private void checkFileSystemModifications(FunctionCallNode node) {
+        Set<String> fileMods = Set.of("DeleteFile", "DeleteDirectory", "RenameFile", "CopyFile", "SetFileDate");
+        if (fileMods.contains(node.getFunctionName())) {
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY,
+                "Review: File system modification should validate paths and log operations.");
+        }
+    }
+
+    private void checkEnvironmentVariable(FunctionCallNode node) {
+        if (node.getFunctionName().equals("Environment")) {
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY,
+                "Review: Environment variable may contain secrets. Ensure not logged or exposed.");
+        }
+    }
+
+    private void checkImportWithoutFormat(FunctionCallNode node) {
+        if (node.getFunctionName().equals("Import")) {
+            // Check if Import has only 1 argument (no format specified)
+            // This is a simple heuristic - more sophisticated would parse arguments
+            if (node.getArguments().size() == 1) {
+                reportIssue(node.getStartLine(), MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY,
+                    "Review: Import without explicit format relies on file extension. Specify format for security.");
+            }
         }
     }
 
