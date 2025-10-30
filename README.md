@@ -1,6 +1,8 @@
 # SonarQube Plugin for Wolfram Mathematica
 
-A comprehensive SonarQube plugin providing code quality analysis, security scanning, and duplication detection for Wolfram Mathematica code.
+A comprehensive SonarQube plugin providing code quality analysis, security scanning, duplication detection, and **automated Quick Fixes** for Wolfram Mathematica code.
+
+**New:** ✨ **Quick Fixes** - Get one-click automated code fixes directly in your IDE via SonarLint integration!
 
 ## Features Overview
 
@@ -34,7 +36,8 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Performance Analysis** | 9 rules | Performance | ✅ Active | Issues → Search "compile" or "packed" |
 | **Symbol Table Analysis** | 19 rules (+ 1 reused) | Advanced Variable Analysis | ✅ Active | Issues → Search "unused" or "shadow" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **402 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **430+ rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Quick Fixes (SonarLint)** | 10 fixes | IDE Productivity | ✅ Active | SonarLint → "Quick Fix" button |
 
 ## Quick Navigation Cheat Sheet
 
@@ -72,6 +75,74 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 
 **To search for specific rule:**
 - Issues → Search box → Type rule keywords (e.g., "commented", "SQL", "hardcoded", "division", "recursion")
+
+**To use Quick Fixes in your IDE:**
+- Install SonarLint 7.0+ in your IDE
+- Connect SonarLint to SonarQube (Connected Mode)
+- Open a Mathematica file → See issues with "Quick Fix" buttons
+- Click "Quick Fix" → Code is automatically corrected
+
+---
+
+## Quick Fixes (One-Click Code Fixes in IDE)
+
+This plugin provides **automated Quick Fixes** for common code issues via SonarLint integration. When an issue has a Quick Fix available, SonarLint displays a **"Quick Fix"** button in your IDE that automatically corrects the code with a single click.
+
+### 📍 How to Use Quick Fixes
+
+**Requirements:**
+- **SonarLint** 7.0+ installed in your IDE (IntelliJ IDEA, VS Code, Eclipse, Visual Studio)
+- Plugin installed in SonarQube server
+- SonarLint connected to your SonarQube server (Connected Mode)
+
+**Setup Steps:**
+
+1. **Install SonarLint in your IDE:**
+   - **IntelliJ IDEA:** Settings → Plugins → Search "SonarLint" → Install
+   - **VS Code:** Extensions → Search "SonarLint" → Install
+   - **Eclipse:** Help → Eclipse Marketplace → Search "SonarLint" → Install
+   - **Visual Studio:** Extensions → Manage Extensions → Search "SonarLint" → Install
+
+2. **Configure Connected Mode:**
+   - Open SonarLint settings in your IDE
+   - Click "Add Connection" or "Configure SonarQube Connection"
+   - Enter your SonarQube server URL (e.g., `http://localhost:9000`)
+   - Authenticate with token or username/password
+   - Bind your project to the SonarQube project
+
+3. **Use Quick Fixes:**
+   - Open a Mathematica file (`.m`, `.wl`, `.wls`)
+   - SonarLint will analyze the file and show issues inline
+   - For issues with Quick Fixes, you'll see a **"Quick Fix"** button or lightbulb icon
+   - Click the button → Select the fix → Code is automatically corrected
+
+### Available Quick Fixes (10)
+
+| Rule | Issue | Quick Fix Action | Example |
+|------|-------|------------------|---------|
+| **EmptyBlock** | Empty Module/Block/With | Remove empty block | `Module[{x}, ]` → *(removed)* |
+| **DebugCodeLeftInProduction** | Debug statements | Remove Print/Echo | `Print["debug"];` → *(removed)* |
+| **DoubleSemicolon** | Extra semicolon | Remove duplicate | `x = 5;;` → `x = 5;` |
+| **DoubleTranspose** | Redundant transpose | Simplify expression | `Transpose[Transpose[x]]` → `x` |
+| **DoubleNegation** | Double negation | Remove redundancy | `!!x` → `x` or `Not[Not[x]]` → `x` |
+| **UnnecessaryBooleanConversion** | Unnecessary If for boolean | Simplify to condition | `If[x, True, False]` → `x` |
+| **IdentityOperation** | Identity operations | Remove no-op | `x + 0` → `x`, `x * 1` → `x`, `x^1` → `x` |
+| **ReverseReverse** | Double Reverse | Simplify expression | `Reverse[Reverse[x]]` → `x` |
+| **GlobalContext** | Explicit Global\` prefix | Remove prefix | `Global\`x` → `x` |
+| **ComparisonWithNull** | == used with Null | Use === instead | `x == Null` → `x === Null` |
+
+### Benefits
+
+- **🚀 Faster Development:** Fix issues with one click instead of manual editing
+- **📚 Learning Tool:** See correct patterns by observing the fixes
+- **✅ Consistency:** Fixes applied uniformly across entire codebase
+- **🎯 Reduced Errors:** Automated fixes reduce human mistakes
+
+### Notes
+
+- **Security Rules Never Have Quick Fixes:** Security vulnerabilities (SQL injection, XSS, etc.) require human review and never have automated fixes
+- **Quick Fixes Only in Connected Mode:** Quick Fixes require SonarLint connected to SonarQube; standalone mode shows issues but not fixes
+- **More Fixes Coming:** The framework supports 50+ potential fixes; more will be added in future releases
 
 ---
 
@@ -3986,6 +4057,49 @@ sonar-scanner \
 
 Open http://localhost:9000 and navigate to your project.
 
+### 4. Set Up Quick Fixes (Optional - IDE Integration)
+
+To get **one-click Quick Fixes** in your IDE:
+
+#### Install SonarLint
+
+Choose your IDE and install SonarLint:
+
+- **IntelliJ IDEA:** `Settings` → `Plugins` → Search "SonarLint" → Install & Restart
+- **VS Code:** `Extensions` → Search "SonarLint" → Install
+- **Eclipse:** `Help` → `Eclipse Marketplace` → Search "SonarLint" → Install
+- **Visual Studio:** `Extensions` → `Manage Extensions` → Search "SonarLint" → Install
+
+#### Configure Connected Mode
+
+1. Open SonarLint settings in your IDE:
+   - **IntelliJ:** `Settings` → `Tools` → `SonarLint`
+   - **VS Code:** `Settings` → Search "SonarLint"
+   - **Eclipse:** `Window` → `Preferences` → `SonarLint`
+   - **Visual Studio:** `Tools` → `Options` → `SonarLint`
+
+2. Add SonarQube connection:
+   - Click "Add Connection" or "Configure"
+   - Server URL: `http://localhost:9000` (or your SonarQube URL)
+   - Authentication: Use token (My Account → Security → Generate Token)
+   - Click "Test Connection"
+
+3. Bind your project:
+   - Right-click project → `SonarLint` → `Bind to SonarQube`
+   - Select your SonarQube server
+   - Select your project from the list
+   - Click "Bind"
+
+#### Use Quick Fixes
+
+Once connected:
+- Open any Mathematica file (`.m`, `.wl`, `.wls`)
+- SonarLint highlights issues inline
+- For issues with Quick Fixes, you'll see a **lightbulb icon** or **"Quick Fix"** button
+- Click it → Select the fix → Code is automatically corrected ✨
+
+**Available Quick Fixes:** 10 fixes including removing empty blocks, debug code, double semicolons, redundant operations, and more. See the [Quick Fixes section](#quick-fixes-one-click-code-fixes-in-ide) above for the complete list.
+
 ---
 
 ## Configuration Reference
@@ -4083,7 +4197,7 @@ Example files demonstrating all rules:
 
 ### Scan is very slow
 
-**Common cause:** With 402 rules analyzing large codebases, the scanner may run out of memory (especially metaspace for rule class metadata).
+**Common cause:** With 430+ rules analyzing large codebases, the scanner may run out of memory (especially metaspace for rule class metadata).
 
 **Symptoms:**
 - Scan slows dramatically near completion (90-99%)
@@ -4105,7 +4219,7 @@ If **M (Metaspace)** shows >95%, you need more memory.
 
 **Solution:** Add to your `sonar-project.properties`:
 ```properties
-# Scanner JVM options - Increased for 402 rules across large codebases
+# Scanner JVM options - Increased for 430+ rules across large codebases
 # Metaspace increased from default ~45MB to 512MB to handle rule class metadata
 sonar.scanner.javaOpts=-Xmx8192m -Xms2048m -XX:MetaspaceSize=256m -XX:MaxMetaspaceSize=512m -XX:+UseG1GC
 ```

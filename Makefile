@@ -43,6 +43,12 @@ help:
 # Build the plugin JAR
 build:
 	@echo "Building SonarQube Mathematica Plugin..."
+	@# Remove any old plugin JARs from build/libs/ first
+	@if ls build/libs/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
+		echo "Removing old plugin JARs from build/libs/:"; \
+		ls -lh build/libs/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9}'; \
+		rm -f build/libs/sonar-mathematica-plugin-*.jar; \
+	fi
 	@./gradlew build
 	@echo ""
 	@echo "Build complete!"
@@ -62,18 +68,25 @@ test:
 # Clean build artifacts
 clean:
 	@echo "Cleaning build artifacts..."
-	@# Remove all version-numbered JARs
+	@# Remove all version-numbered JARs FIRST (before gradle clean)
 	@if ls build/libs/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
-		echo "  Removing old JAR files:"; \
+		echo "  Removing old JAR files from build/libs/:"; \
 		ls -lh build/libs/sonar-mathematica-plugin-*.jar | awk '{print "    " $$9}'; \
 		rm -f build/libs/sonar-mathematica-plugin-*.jar; \
 	fi
 	@# Clean Gradle build artifacts
 	@./gradlew clean
-	@# Remove build directories
+	@# Remove build directories completely
 	@rm -rf build/
 	@rm -rf .gradle/
 	@rm -rf out/
+	@# Verify clean
+	@if ls build/libs/*.jar 1> /dev/null 2>&1; then \
+		echo ""; \
+		echo "WARNING: JAR files still present after clean:"; \
+		ls -lh build/libs/*.jar; \
+		echo ""; \
+	fi
 	@echo "Clean complete!"
 	@echo ""
 
@@ -152,6 +165,14 @@ install: check-sonarqube-home build
 		echo "Removing:"; \
 		ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9}'; \
 		rm -f $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar; \
+		if ls $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
+			echo ""; \
+			echo "ERROR: Failed to remove old plugin versions!"; \
+			echo "Please check file permissions and try again."; \
+			echo ""; \
+			exit 1; \
+		fi; \
+		echo "Old versions removed successfully."; \
 	else \
 		echo "No old versions found."; \
 	fi
@@ -160,9 +181,20 @@ install: check-sonarqube-home build
 	@echo "=========================================="
 	@echo "Step 3/5: Installing new plugin version..."
 	@echo "=========================================="
-	@cp build/libs/sonar-mathematica-plugin-*.jar $(SONARQUBE_HOME)/extensions/plugins/
-	@echo "Installed:"
-	@ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9 " (" $$5 ")"}'
+	@# Get the current version and copy only that specific JAR
+	@VERSION=$$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "0.1.0-SNAPSHOT"); \
+	JAR_FILE="build/libs/sonar-mathematica-plugin-$$VERSION.jar"; \
+	if [ ! -f "$$JAR_FILE" ]; then \
+		echo ""; \
+		echo "ERROR: Expected JAR file not found: $$JAR_FILE"; \
+		echo "Available JARs in build/libs/:"; \
+		ls -lh build/libs/*.jar 2>/dev/null || echo "  (none)"; \
+		echo ""; \
+		exit 1; \
+	fi; \
+	cp "$$JAR_FILE" $(SONARQUBE_HOME)/extensions/plugins/; \
+	echo "Installed:"; \
+	ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-$$VERSION.jar | awk '{print "  " $$9 " (" $$5 ")"}'
 	@echo ""
 	@# Step 4: Start SonarQube
 	@echo "=========================================="

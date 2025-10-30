@@ -152,6 +152,45 @@ public abstract class BaseDetector {
     }
 
     /**
+     * Reports an issue with Quick Fix data.
+     *
+     * @param context Sensor context
+     * @param inputFile The file with the issue
+     * @param line Line number of the issue
+     * @param ruleKey Rule key identifying the rule
+     * @param message Issue message
+     * @param startOffset Character offset where the issue starts
+     * @param endOffset Character offset where the issue ends
+     */
+    protected void reportIssueWithFix(SensorContext context, InputFile inputFile, int line, String ruleKey, String message,
+                                     int startOffset, int endOffset) {
+        if (sensor != null) {
+            String fileContent = contentCache.get();
+            org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext =
+                new org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext();
+            sensor.queueIssueWithFix(inputFile, line, ruleKey, message, fileContent, startOffset, endOffset, fixContext);
+        } else {
+            // Fallback: report without fix
+            reportIssue(context, inputFile, line, ruleKey, message);
+        }
+    }
+
+    /**
+     * Reports an issue with Quick Fix data and additional context.
+     */
+    protected void reportIssueWithFix(SensorContext context, InputFile inputFile, int line, String ruleKey, String message,
+                                     int startOffset, int endOffset,
+                                     org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext) {
+        if (sensor != null) {
+            String fileContent = contentCache.get();
+            sensor.queueIssueWithFix(inputFile, line, ruleKey, message, fileContent, startOffset, endOffset, fixContext);
+        } else {
+            // Fallback: report without fix
+            reportIssue(context, inputFile, line, ruleKey, message);
+        }
+    }
+
+    /**
      * Helper to count pattern occurrences using cached patterns.
      */
     protected int countOccurrences(String text, String patternString) {

@@ -50,12 +50,34 @@ public class MathematicaRulesSensor implements Sensor {
         final int line;
         final String ruleKey;
         final String message;
+        // Quick Fix data
+        final String fileContent;
+        final int startOffset;
+        final int endOffset;
+        final org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context;
 
         IssueData(InputFile inputFile, int line, String ruleKey, String message) {
             this.inputFile = inputFile;
             this.line = line;
             this.ruleKey = ruleKey;
             this.message = message;
+            this.fileContent = null;
+            this.startOffset = -1;
+            this.endOffset = -1;
+            this.context = null;
+        }
+
+        IssueData(InputFile inputFile, int line, String ruleKey, String message,
+                 String fileContent, int startOffset, int endOffset,
+                 org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
+            this.inputFile = inputFile;
+            this.line = line;
+            this.ruleKey = ruleKey;
+            this.message = message;
+            this.fileContent = fileContent;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.context = context;
         }
     }
 
@@ -140,6 +162,21 @@ public class MathematicaRulesSensor implements Sensor {
     }
 
     /**
+     * Queues issue with Quick Fix data.
+     */
+    public void queueIssueWithFix(InputFile inputFile, int line, String ruleKey, String message,
+                                  String fileContent, int startOffset, int endOffset,
+                                  org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
+        try {
+            issueQueue.put(new IssueData(inputFile, line, ruleKey, message, fileContent, startOffset, endOffset, context));
+            queuedIssues.incrementAndGet();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            LOG.error("Interrupted while queueing issue with fix", e);
+        }
+    }
+
+    /**
      * Starts the background thread that creates and saves issues from queued data.
      */
     private void startIssueSaverThread(SensorContext context) {
@@ -164,6 +201,20 @@ public class MathematicaRulesSensor implements Sensor {
                             .message(data.message);
 
                         issue.at(location);
+
+                        // Add Quick Fix if available
+                        if (data.fileContent != null && data.startOffset >= 0 && data.endOffset >= 0) {
+                            try {
+                                org.sonar.plugins.mathematica.fixes.QuickFixProvider quickFixProvider =
+                                    new org.sonar.plugins.mathematica.fixes.QuickFixProvider();
+                                quickFixProvider.addQuickFix(issue, data.inputFile, data.ruleKey,
+                                    data.fileContent, data.startOffset, data.endOffset, data.context);
+                            } catch (Exception e) {
+                                // If Quick Fix fails, just skip it - don't break the issue reporting
+                                LOG.debug("Failed to add Quick Fix for rule {}: {}", data.ruleKey, e.getMessage());
+                            }
+                        }
+
                         issue.save();
 
                         long saveDuration = System.currentTimeMillis() - saveStart;
