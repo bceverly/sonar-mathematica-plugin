@@ -10,7 +10,7 @@
 #   make clean                     # Clean build artifacts
 #   SONARQUBE_HOME=/path make install  # Install to SonarQube
 
-.PHONY: help build clean install test version check-sonarqube-home lint
+.PHONY: help build clean install test version check-sonarqube-home lint self-scan
 
 # Default target - show help
 help:
@@ -26,6 +26,7 @@ help:
 	@echo "  make lint       - Run code style checks with Checkstyle"
 	@echo "  make clean      - Remove all build artifacts and intermediate files"
 	@echo "  make install    - Stop SonarQube, install plugin, restart, wait for ready"
+	@echo "  make self-scan  - Scan this plugin's Java code with SonarQube"
 	@echo "  make version    - Show current version from git tag"
 	@echo ""
 	@echo "Environment Variables:"
@@ -39,6 +40,7 @@ help:
 	@echo "  make build                                  # Build the plugin"
 	@echo "  make clean build                            # Clean and build"
 	@echo "  SONARQUBE_HOME=/opt/sonarqube make install  # Install to SonarQube"
+	@echo "  make self-scan                              # Analyze plugin code with SonarQube"
 	@echo ""
 
 # Build the plugin JAR
@@ -257,4 +259,62 @@ install: check-sonarqube-home build
 			break; \
 		fi; \
 	done
+	@echo ""
+
+# Self-scan: Analyze this plugin's Java code with SonarQube
+self-scan: build
+	@echo "=========================================="
+	@echo "Self-Scanning Java Code with SonarQube"
+	@echo "=========================================="
+	@echo ""
+	@# Check if sonar-scanner is available
+	@if ! command -v sonar-scanner >/dev/null 2>&1; then \
+		echo "ERROR: sonar-scanner not found in PATH"; \
+		echo ""; \
+		echo "Please install sonar-scanner:"; \
+		echo "  - macOS: brew install sonar-scanner"; \
+		echo "  - Linux: Download from https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@# Check if SONAR_TOKEN is set
+	@if [ -z "$$SONAR_TOKEN" ]; then \
+		echo "ERROR: SONAR_TOKEN environment variable is not set"; \
+		echo ""; \
+		echo "To generate a token:"; \
+		echo "  1. Go to http://localhost:9000/account/security"; \
+		echo "  2. Generate a new token (e.g., 'plugin-scan')"; \
+		echo "  3. Set the token:"; \
+		echo "       export SONAR_TOKEN=your_token_here"; \
+		echo "  4. Run 'make self-scan' again"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@# Check if SonarQube is running
+	@echo "Checking if SonarQube is running..."
+	@if ! curl -s http://localhost:9000/api/system/status >/dev/null 2>&1; then \
+		echo ""; \
+		echo "ERROR: Cannot connect to SonarQube at http://localhost:9000"; \
+		echo ""; \
+		echo "Please ensure SonarQube is running:"; \
+		echo "  cd $(SONARQUBE_HOME) && ./bin/macosx-universal-64/sonar.sh start"; \
+		echo ""; \
+		exit 1; \
+	fi
+	@echo "✓ SonarQube is running"
+	@echo "✓ SONAR_TOKEN is set"
+	@echo ""
+	@# Run the scan
+	@echo "Running sonar-scanner..."
+	@echo "Project: sonar-mathematica-plugin"
+	@echo "Server: http://localhost:9000"
+	@echo ""
+	@sonar-scanner -Dsonar.host.url=http://localhost:9000
+	@echo ""
+	@echo "=========================================="
+	@echo "✓ Self-scan complete!"
+	@echo "=========================================="
+	@echo ""
+	@echo "View results at:"
+	@echo "  http://localhost:9000/dashboard?id=sonar-mathematica-plugin"
 	@echo ""
