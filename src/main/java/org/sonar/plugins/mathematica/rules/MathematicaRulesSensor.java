@@ -4,6 +4,11 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.FilePredicates;
@@ -382,7 +387,15 @@ public class MathematicaRulesSensor implements Sensor {
             // Always check file length first
             detectLongFile(context, inputFile);
 
-            // NO SIZE LIMITS - Analyze all files for complete run
+            // PERFORMANCE: Skip extremely large files to prevent hangs
+            // Based on analysis: files >25,000 lines can cause pathological SymbolTable performance
+            final int MAX_LINES = 25000;
+            if (inputFile.lines() > MAX_LINES) {
+                LOG.warn("SKIP: File {} has {} lines (exceeds limit of {}), skipping analysis to prevent timeout",
+                    inputFile.filename(), inputFile.lines(), MAX_LINES);
+                return;
+            }
+
             long readStartTime = System.currentTimeMillis();
             String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
             long readTime = System.currentTimeMillis() - readStartTime;
@@ -892,41 +905,59 @@ public class MathematicaRulesSensor implements Sensor {
 
             // ===== SYMBOL TABLE ANALYSIS (20 rules) =====
             // Symbol table analysis runs separately from main AST analysis
+            // PERFORMANCE: Wrap with 120-second timeout to prevent hangs on pathologically complex files
             long symbolTableStart = System.currentTimeMillis();
+            long symbolTableTime = 0;
 
-            // Build symbol table for advanced variable lifetime and scope analysis
+            ExecutorService executor = Executors.newSingleThreadExecutor();
             try {
-                SymbolTable symbolTable = SymbolTableBuilder.build(inputFile, content);
+                Future<?> future = executor.submit(() -> {
+                    try {
+                        // Build symbol table for advanced variable lifetime and scope analysis
+                        SymbolTable symbolTable = SymbolTableBuilder.build(inputFile, content);
 
-                // Run symbol table-based detectors
-                SymbolTableDetector.detectUnusedVariable(context, inputFile, symbolTable);
-                SymbolTableDetector.detectAssignedButNeverRead(context, inputFile, symbolTable);
-                SymbolTableDetector.detectDeadStore(context, inputFile, symbolTable);
-                SymbolTableDetector.detectUsedBeforeAssignment(context, inputFile, symbolTable);
-                SymbolTableDetector.detectVariableShadowing(context, inputFile, symbolTable);
-                SymbolTableDetector.detectUnusedParameter(context, inputFile, symbolTable);
-                SymbolTableDetector.detectWriteOnlyVariable(context, inputFile, symbolTable);
-                SymbolTableDetector.detectRedundantAssignment(context, inputFile, symbolTable);
-                SymbolTableDetector.detectVariableInWrongScope(context, inputFile, symbolTable);
-                SymbolTableDetector.detectVariableEscapesScope(context, inputFile, symbolTable);
+                        // Run symbol table-based detectors
+                        SymbolTableDetector.detectUnusedVariable(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectAssignedButNeverRead(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectDeadStore(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectUsedBeforeAssignment(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectVariableShadowing(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectUnusedParameter(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectWriteOnlyVariable(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectRedundantAssignment(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectVariableInWrongScope(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectVariableEscapesScope(context, inputFile, symbolTable);
 
-                // Advanced symbol table analysis (10 additional rules)
-                SymbolTableDetector.detectLifetimeExtendsBeyondScope(context, inputFile, symbolTable);
-                SymbolTableDetector.detectModifiedInUnexpectedScope(context, inputFile, symbolTable);
-                SymbolTableDetector.detectGlobalVariablePollution(context, inputFile, symbolTable);
-                SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable);
-                SymbolTableDetector.detectNamingConventionViolations(context, inputFile, symbolTable);
-                SymbolTableDetector.detectConstantNotMarkedAsConstant(context, inputFile, symbolTable);
-                SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable);
-                SymbolTableDetector.detectVariableReuseWithDifferentSemantics(context, inputFile, symbolTable);
-                SymbolTableDetector.detectIncorrectClosureCapture(context, inputFile, symbolTable);
-                SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable);
+                        // Advanced symbol table analysis (10 additional rules)
+                        SymbolTableDetector.detectLifetimeExtendsBeyondScope(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectModifiedInUnexpectedScope(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectGlobalVariablePollution(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectNamingConventionViolations(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectConstantNotMarkedAsConstant(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectVariableReuseWithDifferentSemantics(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectIncorrectClosureCapture(context, inputFile, symbolTable);
+                        SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable);
+                    } catch (Exception e) {
+                        LOG.debug("Error in symbol table analysis for: {}", inputFile.filename());
+                    }
+                });
 
+                // Wait up to 120 seconds for symbol table analysis to complete
+                future.get(120, TimeUnit.SECONDS);
+                symbolTableTime = System.currentTimeMillis() - symbolTableStart;
+
+            } catch (TimeoutException e) {
+                LOG.warn("TIMEOUT: SymbolTable analysis for {} exceeded 120 seconds, skipping (file has {} lines)",
+                    inputFile.filename(), inputFile.lines());
+                symbolTableTime = 120000; // 120 seconds in milliseconds
             } catch (Exception e) {
-                LOG.debug("Error in symbol table analysis for: {}", inputFile.filename());
+                LOG.debug("Interrupted during symbol table analysis for: {}", inputFile.filename());
+                symbolTableTime = System.currentTimeMillis() - symbolTableStart;
+            } finally {
+                executor.shutdownNow();
             }
-
-            long symbolTableTime = System.currentTimeMillis() - symbolTableStart;
 
             // === FINAL TIMING SUMMARY ===
             long totalFileTime = System.currentTimeMillis() - fileStartTime;
