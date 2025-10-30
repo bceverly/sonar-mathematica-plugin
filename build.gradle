@@ -5,9 +5,10 @@ plugins {
 
 group = 'org.sonar.plugins'
 
-// Get version from git tag, fallback to SNAPSHOT
+// Get version from git tag - always use latest tag even with new commits
 def getVersionFromGit() {
     try {
+        // First try exact match (current commit is tagged)
         def process = ['git', 'describe', '--tags', '--exact-match'].execute()
         process.waitFor()
         if (process.exitValue() == 0) {
@@ -16,6 +17,17 @@ def getVersionFromGit() {
                 return gitTag.substring(1) // Remove 'v' prefix
             }
         }
+
+        // If no exact match, get the most recent tag
+        process = ['git', 'describe', '--tags', '--abbrev=0'].execute()
+        process.waitFor()
+        if (process.exitValue() == 0) {
+            def gitTag = process.text.trim()
+            if (gitTag && gitTag.startsWith('v')) {
+                return gitTag.substring(1) // Remove 'v' prefix, use latest tag
+            }
+        }
+
         return '0.1.0-SNAPSHOT'
     } catch (Exception e) {
         return '0.1.0-SNAPSHOT'

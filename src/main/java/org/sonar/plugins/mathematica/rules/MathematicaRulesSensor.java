@@ -393,6 +393,21 @@ public class MathematicaRulesSensor implements Sensor {
             if (inputFile.lines() > MAX_LINES) {
                 LOG.warn("SKIP: File {} has {} lines (exceeds limit of {}), skipping analysis to prevent timeout",
                     inputFile.filename(), inputFile.lines(), MAX_LINES);
+
+                // Report INFO issue to make this visible in SonarQube UI
+                NewIssue issue = context.newIssue()
+                    .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY,
+                                       MathematicaRulesDefinition.FILE_EXCEEDS_ANALYSIS_LIMIT_KEY));
+
+                NewIssueLocation location = issue.newLocation()
+                    .on(inputFile)
+                    .at(inputFile.selectLine(1))
+                    .message(String.format("File exceeds analysis limit (%d lines > %d limit). Analysis skipped to prevent timeout.",
+                                         inputFile.lines(), MAX_LINES));
+
+                issue.at(location);
+                issue.save();
+
                 return;
             }
 
@@ -952,6 +967,21 @@ public class MathematicaRulesSensor implements Sensor {
                 LOG.warn("TIMEOUT: SymbolTable analysis for {} exceeded 120 seconds, skipping (file has {} lines)",
                     inputFile.filename(), inputFile.lines());
                 symbolTableTime = 120000; // 120 seconds in milliseconds
+
+                // Report INFO issue to make this visible in SonarQube UI
+                NewIssue issue = context.newIssue()
+                    .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY,
+                                       MathematicaRulesDefinition.ANALYSIS_TIMEOUT_KEY));
+
+                NewIssueLocation location = issue.newLocation()
+                    .on(inputFile)
+                    .at(inputFile.selectLine(1))
+                    .message(String.format("SymbolTable analysis exceeded 120-second timeout (file has %d lines). Advanced variable analysis rules skipped.",
+                                         inputFile.lines()));
+
+                issue.at(location);
+                issue.save();
+
             } catch (Exception e) {
                 LOG.debug("Interrupted during symbol table analysis for: {}", inputFile.filename());
                 symbolTableTime = System.currentTimeMillis() - symbolTableStart;

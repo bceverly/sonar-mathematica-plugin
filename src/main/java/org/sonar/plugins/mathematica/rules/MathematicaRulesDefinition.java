@@ -486,6 +486,10 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String INCORRECT_CLOSURE_CAPTURE_KEY = "IncorrectClosureCapture";
     public static final String SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY = "ScopeLeakThroughDynamicEvaluation";
 
+    // Rule keys - Performance Limits (INFO-level informational rules)
+    public static final String FILE_EXCEEDS_ANALYSIS_LIMIT_KEY = "FileExceedsAnalysisLimit";
+    public static final String ANALYSIS_TIMEOUT_KEY = "AnalysisTimeout";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -6697,6 +6701,51 @@ public class MathematicaRulesDefinition implements RulesDefinition {
             .setSeverity("CRITICAL")
             .setType(org.sonar.api.rules.RuleType.BUG)
             .setTags("scope", "dynamic", "security");
+
+        // ===== PERFORMANCE LIMITS (INFO-level informational rules) =====
+
+        repository.createRule(FILE_EXCEEDS_ANALYSIS_LIMIT_KEY)
+            .setName("File exceeds analysis size limit")
+            .setHtmlDescription(
+                "<p>This file exceeds the maximum analysis size limit (25,000 lines) and has been skipped to prevent analysis timeouts.</p>" +
+                "<h2>Why This Limit Exists</h2>" +
+                "<p>Extremely large files can cause exponential complexity in advanced symbol table analysis, potentially leading to analysis hangs.</p>" +
+                "<h2>Recommendations</h2>" +
+                "<ul>" +
+                "<li><strong>Refactor large files</strong> into smaller, more maintainable modules</li>" +
+                "<li><strong>Split functionality</strong> across multiple files for better organization</li>" +
+                "<li><strong>Use packages</strong> to group related functions in separate files</li>" +
+                "</ul>" +
+                "<p>This is an <strong>informational message</strong>, not a code quality issue. The file is simply too large for automated analysis.</p>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "file-size", "maintainability");
+
+        repository.createRule(ANALYSIS_TIMEOUT_KEY)
+            .setName("Symbol table analysis timeout")
+            .setHtmlDescription(
+                "<p>Symbol table analysis for this file exceeded the 120-second timeout limit and was terminated.</p>" +
+                "<h2>What This Means</h2>" +
+                "<p>Advanced variable lifetime and scope analysis rules (20 rules) were skipped for this file. All other code quality, security, and bug rules still ran normally.</p>" +
+                "<h2>Why This Happened</h2>" +
+                "<p>Certain code patterns can trigger pathological O(n²) or exponential complexity in symbol table analysis:</p>" +
+                "<ul>" +
+                "<li><strong>Heavy Export/Import usage</strong> with complex variable scoping</li>" +
+                "<li><strong>Deeply nested Module/Block/With constructs</strong></li>" +
+                "<li><strong>Large number of symbol definitions</strong> with complex dependencies</li>" +
+                "</ul>" +
+                "<h2>Recommendations</h2>" +
+                "<ul>" +
+                "<li><strong>Simplify variable scoping</strong> by reducing nesting depth</li>" +
+                "<li><strong>Reduce Export/Import complexity</strong> by using explicit symbol lists</li>" +
+                "<li><strong>Break up complex functions</strong> into smaller, focused units</li>" +
+                "</ul>" +
+                "<p>This is an <strong>informational message</strong>, not a code quality issue. The file's complexity exceeded analysis capacity.</p>"
+            )
+            .setSeverity("INFO")
+            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .setTags("performance", "complexity", "analysis-limits");
 
         repository.done();
     }

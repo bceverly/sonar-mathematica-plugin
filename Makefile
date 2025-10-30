@@ -92,8 +92,10 @@ clean:
 
 # Show version from git tag
 version:
-	@echo -n "Plugin version: "
-	@git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "0.1.0-SNAPSHOT (no git tag)"
+	@printf "Plugin version: "
+	@(git describe --tags --exact-match 2>/dev/null || \
+	  git describe --tags --abbrev=0 2>/dev/null || \
+	  echo "v0.1.0-SNAPSHOT") | sed 's/^v//'
 	@echo ""
 
 # Check if SONARQUBE_HOME is set
@@ -181,8 +183,9 @@ install: check-sonarqube-home build
 	@echo "=========================================="
 	@echo "Step 3/5: Installing new plugin version..."
 	@echo "=========================================="
-	@# Get the current version and copy only that specific JAR
-	@VERSION=$$(git describe --tags --exact-match 2>/dev/null | sed 's/^v//' || echo "0.1.0-SNAPSHOT"); \
+	@# Get the current version and copy only that specific JAR (matches build.gradle logic)
+	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//'); \
+	test -n "$$VERSION" || VERSION="0.1.0-SNAPSHOT"; \
 	JAR_FILE="build/libs/sonar-mathematica-plugin-$$VERSION.jar"; \
 	if [ ! -f "$$JAR_FILE" ]; then \
 		echo ""; \
