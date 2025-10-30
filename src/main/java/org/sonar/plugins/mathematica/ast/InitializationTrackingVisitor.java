@@ -96,8 +96,8 @@ public class InitializationTrackingVisitor implements AstVisitor {
             Set<String> declared = declaredVariables.get(currentFunction);
 
             // If variable is declared but not yet assigned, mark as used-before-assigned
-            if (declared != null && declared.contains(varName) &&
-                !currentlyAssigned.contains(varName)) {
+            if (declared != null && declared.contains(varName)
+                && !currentlyAssigned.contains(varName)) {
                 usedBeforeAssigned.get(currentFunction).add(varName);
             }
         }
@@ -112,10 +112,10 @@ public class InitializationTrackingVisitor implements AstVisitor {
      * Check if a function name represents an assignment operation.
      */
     private boolean isAssignment(String functionName) {
-        return "Set".equals(functionName) ||
-               "SetDelayed".equals(functionName) ||
-               "=".equals(functionName) ||
-               ":=".equals(functionName);
+        return "Set".equals(functionName)
+               || "SetDelayed".equals(functionName) ||
+               "=".equals(functionName)
+               || ":=".equals(functionName);
     }
 
     /**

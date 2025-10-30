@@ -424,8 +424,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 // Check if there's code after the Return in the same scope
                 // Look for the next semicolon or statement
                 int nextStatementStart = returnEnd + 1;
-                while (nextStatementStart < content.length() &&
-                       Character.isWhitespace(content.charAt(nextStatementStart))) {
+                while (nextStatementStart < content.length()
+                       && Character.isWhitespace(content.charAt(nextStatementStart))) {
                     nextStatementStart++;
                 }
 
@@ -455,8 +455,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
                 // Check if there's code after Abort/Throw
                 int nextStatementStart = statementEnd + 1;
-                while (nextStatementStart < content.length() &&
-                       Character.isWhitespace(content.charAt(nextStatementStart))) {
+                while (nextStatementStart < content.length()
+                       && Character.isWhitespace(content.charAt(nextStatementStart))) {
                     nextStatementStart++;
                 }
 
@@ -1281,8 +1281,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                         int line = calculateLineNumber(content, callPos);
                         reportIssue(context, inputFile, line,
                             MathematicaRulesDefinition.FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY,
-                            String.format("Forward reference to '%s' without explicit declaration. " +
-                                "Add 'funcName[args_];' before first use.", funcName));
+                            String.format("Forward reference to '%s' without explicit declaration. "                                 + "Add 'funcName[args_];' before first use.", funcName));
                     }
                 }
             }

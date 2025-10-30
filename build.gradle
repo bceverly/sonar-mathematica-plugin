@@ -1,6 +1,7 @@
 plugins {
     id 'java'
     id 'maven-publish'
+    id 'checkstyle'
 }
 
 group = 'org.sonar.plugins'
@@ -106,4 +107,20 @@ task installPlugin(type: Copy) {
         println "Plugin installed to: ${System.getProperty('user.home')}/.sonar/extensions/plugins"
         println "Restart SonarQube to activate the plugin"
     }
+}
+
+// Checkstyle configuration
+checkstyle {
+    toolVersion = '10.12.3'
+    configFile = file("${rootDir}/config/checkstyle/checkstyle.xml")
+    ignoreFailures = true  // Report issues but don't fail the build
+    showViolations = true
+}
+
+checkstyleMain {
+    source = 'src/main/java'
+}
+
+checkstyleTest {
+    source = 'src/test/java'
 }

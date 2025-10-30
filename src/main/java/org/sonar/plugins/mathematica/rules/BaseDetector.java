@@ -12,7 +12,6 @@ import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.api.rule.RuleKey;
 import org.sonar.api.utils.log.Logger;
 import org.sonar.api.utils.log.Loggers;
-import org.sonar.plugins.mathematica.MathematicaLanguage;
 
 /**
  * Base class for all rule detectors providing shared utilities and patterns.

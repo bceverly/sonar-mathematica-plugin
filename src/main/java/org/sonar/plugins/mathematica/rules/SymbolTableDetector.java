@@ -59,8 +59,8 @@ public class SymbolTableDetector {
 
                 // Check if any reads between these two assignments
                 boolean hasReadBetween = references.stream()
-                    .anyMatch(ref -> ref.getLine() > assignment.getLine() &&
-                                    ref.getLine() < nextAssignment.getLine());
+                    .anyMatch(ref -> ref.getLine() > assignment.getLine()
+                                    && ref.getLine() < nextAssignment.getLine());
 
                 if (!hasReadBetween) {
                     createIssue(context, file, "DeadStore", assignment.getLine(),
@@ -208,8 +208,8 @@ public class SymbolTableDetector {
 
             for (Scope childScope : symbolScope.getChildren()) {
                 boolean allInChild = allRefs.stream()
-                    .allMatch(ref -> ref.getLine() >= childScope.getStartLine() &&
-                                    ref.getLine() <= childScope.getEndLine());
+                    .allMatch(ref -> ref.getLine() >= childScope.getStartLine()
+                                    && ref.getLine() <= childScope.getEndLine());
 
                 if (allInChild) {
                     createIssue(context, file, "VariableInWrongScope", symbol.getDeclarationLine(),
@@ -238,8 +238,8 @@ public class SymbolTableDetector {
                 if (childScope.getType() == ScopeType.FUNCTION) {
                     // Check if symbol is referenced in function
                     for (SymbolReference ref : symbol.getReferences()) {
-                        if (ref.getLine() >= childScope.getStartLine() &&
-                            ref.getLine() <= childScope.getEndLine()) {
+                        if (ref.getLine() >= childScope.getStartLine()
+                            && ref.getLine() <= childScope.getEndLine()) {
                             createIssue(context, file, "VariableEscapesScope", ref.getLine(),
                                 String.format("Module variable '%s' captured in closure may fail after Module exits",
                                     symbol.getName())
@@ -306,8 +306,8 @@ public class SymbolTableDetector {
                 Scope writeScope = declarationScope.getScopeAtLine(writeLine);
                 for (int readLine : readScopeLines) {
                     Scope readScope = declarationScope.getScopeAtLine(readLine);
-                    if (writeScope != null && readScope != null && writeScope != readScope &&
-                        !isParentChildRelation(writeScope, readScope)) {
+                    if (writeScope != null && readScope != null && writeScope != readScope
+                        && !isParentChildRelation(writeScope, readScope)) {
                         createIssue(context, file, "ModifiedInUnexpectedScope", writeLine,
                             String.format("Variable '%s' modified here but read in unrelated scope (line %d)",
                                 symbol.getName(), readLine)
@@ -363,8 +363,8 @@ public class SymbolTableDetector {
                 String context_str = assignment.getContext();
                 // Simple heuristic: find variable names in assignment context
                 for (Symbol otherSymbol : table.getAllSymbols()) {
-                    if (!otherSymbol.getName().equals(symbol.getName()) &&
-                        context_str.contains(otherSymbol.getName())) {
+                    if (!otherSymbol.getName().equals(symbol.getName())
+                        && context_str.contains(otherSymbol.getName())) {
                         deps.add(otherSymbol.getName());
                     }
                 }
@@ -505,15 +505,15 @@ public class SymbolTableDetector {
             }
 
             Scope symbolScope = symbol.getScope();
-            boolean hasLoop = symbolScope.getName() != null &&
-                              (symbolScope.getName().contains("Do") || symbolScope.getName().contains("Table"));
+            boolean hasLoop = symbolScope.getName() != null
+                              && (symbolScope.getName().contains("Do") || symbolScope.getName().contains("Table"));
 
             // Check if used in function definition inside loop
             for (Scope childScope : symbolScope.getChildren()) {
                 if (childScope.getType() == ScopeType.FUNCTION && hasLoop) {
                     for (SymbolReference ref : symbol.getReferences()) {
-                        if (ref.getLine() >= childScope.getStartLine() &&
-                            ref.getLine() <= childScope.getEndLine()) {
+                        if (ref.getLine() >= childScope.getStartLine()
+                            && ref.getLine() <= childScope.getEndLine()) {
                             createIssue(context, file, "IncorrectClosureCapture", ref.getLine(),
                                 String.format("Loop variable '%s' captured in closure, will capture final value only. Use With[] to capture current value.",
                                     symbol.getName())
@@ -540,8 +540,7 @@ public class SymbolTableDetector {
                 String context_str = ref.getContext();
 
                 // Check for dynamic evaluation functions
-                if (context_str.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*" +
-                                       java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
+                if (context_str.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*"                                        + java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
                     createIssue(context, file, "ScopeLeakThroughDynamicEvaluation", ref.getLine(),
                         String.format("Module variable '%s' used in dynamic evaluation, may leak scope",
                             symbol.getName())

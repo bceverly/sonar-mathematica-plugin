@@ -1,6 +1,11 @@
 package org.sonar.plugins.mathematica.symboltable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Represents a lexical scope in Mathematica code.
@@ -191,8 +196,12 @@ public class Scope {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         Scope scope = (Scope) obj;
         return startLine == scope.startLine && endLine == scope.endLine && type == scope.type;
     }

@@ -31,8 +31,7 @@ public class CodeSmellDetector extends BaseDetector {
         Pattern.MULTILINE
     );
     private static final Pattern DEBUG_CODE_PATTERN = Pattern.compile(
-        "(?:Print|Echo|PrintTemporary|TracePrint|Trace|Monitor)\\s*\\[|" +
-        "\\$DebugMessages\\s*=\\s*True"
+        "(?:Print|Echo|PrintTemporary|TracePrint|Trace|Monitor)\\s*\\[|"         + "\\$DebugMessages\\s*=\\s*True"
     );
     private static final Pattern MODULE_BLOCK_WITH_PATTERN = Pattern.compile(
         "(?:Module|Block|With)\\s*\\[\\s*\\{([^}]+)\\}"
@@ -160,8 +159,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = EMPTY_BLOCK_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EMPTY_BLOCK_KEY,
-                    "Remove this empty block.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_BLOCK_KEY,
+                    "Remove this empty block.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping empty block detection due to error in file: {}", inputFile.filename());
@@ -184,8 +183,8 @@ public class CodeSmellDetector extends BaseDetector {
                 int functionLines = calculateLineNumber(content, endPos) - startLine;
 
                 if (functionLines > 100) {
-                    reportIssue(context, inputFile, startLine, MathematicaRulesDefinition.FUNCTION_LENGTH_KEY,
-                        String.format("Function '%s' is %d lines long (max 100 allowed).", functionName, functionLines));
+                    reportIssueWithFix(context, inputFile, startLine, MathematicaRulesDefinition.FUNCTION_LENGTH_KEY,
+                        String.format("Function '%s' is %d lines long (max 100 allowed).", functionName, functionLines), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -202,16 +201,16 @@ public class CodeSmellDetector extends BaseDetector {
             matcher = SIMPLE_CHECK_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
-                    "Empty error handling - consider logging or handling the error.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
+                    "Empty error handling - consider logging or handling the error.", matcher.start(), matcher.end());
             }
 
             matcher = QUIET_PATTERN.matcher(content);
             matcher = QUIET_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
-                    "Quiet[] suppresses errors - consider explicit error handling.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
+                    "Quiet[] suppresses errors - consider explicit error handling.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping empty catch detection due to error in file: {}", inputFile.filename());
@@ -226,8 +225,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = DEBUG_CODE_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.DEBUG_CODE_KEY,
-                    "Remove debug code before committing.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.DEBUG_CODE_KEY,
+                    "Remove debug code before committing.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping debug code detection due to error in file: {}", inputFile.filename());
@@ -339,8 +338,8 @@ public class CodeSmellDetector extends BaseDetector {
 
                 if (paramCount > 7) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.TOO_MANY_PARAMETERS_KEY,
-                        String.format("Function has %d parameters (max 7 allowed).", paramCount));
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.TOO_MANY_PARAMETERS_KEY,
+                        String.format("Function has %d parameters (max 7 allowed).", paramCount), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -397,8 +396,8 @@ public class CodeSmellDetector extends BaseDetector {
 
                     if (!textBefore.contains("(*") || !textBefore.contains("*)")) {
                         int line = calculateLineNumber(content, startPos);
-                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_DOCUMENTATION_KEY,
-                            String.format("Complex function '%s' should have documentation.", functionName));
+                        reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_DOCUMENTATION_KEY,
+                            String.format("Complex function '%s' should have documentation.", functionName), matcher.start(), matcher.end());
                     }
                 }
             }
@@ -448,8 +447,8 @@ public class CodeSmellDetector extends BaseDetector {
 
                 if (trueBranch.equals(falseBranch)) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.IDENTICAL_BRANCHES_KEY,
-                        "If statement has identical true and false branches.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.IDENTICAL_BRANCHES_KEY,
+                        "If statement has identical true and false branches.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -503,8 +502,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = DEPRECATED_FUNCTIONS_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY,
-                    "Use of deprecated $RecursionLimit - use $IterationLimit instead.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY,
+                    "Use of deprecated $RecursionLimit - use $IterationLimit instead.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping deprecated function detection due to error in file: {}", inputFile.filename());
@@ -519,8 +518,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = DOUBLE_SEMICOLON_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EMPTY_STATEMENT_KEY,
-                    "Remove empty statement.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_STATEMENT_KEY,
+                    "Remove empty statement.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping empty statement detection due to error in file: {}", inputFile.filename());
@@ -537,8 +536,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = APPEND_IN_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.APPEND_IN_LOOP_KEY,
-                    "AppendTo in loops creates O(n²) performance. Use Table, Reap/Sow, or pre-allocate.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.APPEND_IN_LOOP_KEY,
+                    "AppendTo in loop creates O(n²) performance. Use Table, Reap/Sow, or pre-allocate.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping AppendInLoop detection due to error in file: {}", inputFile.filename());
@@ -578,8 +577,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = STRING_CONCAT_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY,
-                    "String concatenation in loops is O(n²). Use StringJoin or Table.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY,
+                    "String concatenation in loops is O(n²). Use StringJoin or Table.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping string concat in loop detection due to error in file: {}", inputFile.filename());
@@ -600,8 +599,8 @@ public class CodeSmellDetector extends BaseDetector {
 
                 if (!context_text.contains("Compile")) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY,
-                        "Numerical loop should use Compile for 10-100x speed improvement.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY,
+                        "Numerical loop should use Compile for 10-100x speed improvement.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -632,8 +631,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = NESTED_MAP_TABLE_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY,
-                    "Nested Map/Table can often be replaced with Outer or single vectorized operation.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY,
+                    "Nested Map/Table can often be replaced with Outer or single vectorized operation.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping nested Map/Table detection due to error in file: {}", inputFile.filename());
@@ -667,8 +666,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = PLOT_IN_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.PLOT_IN_LOOP_KEY,
-                    "Plotting in loops is very slow. Collect data first, then plot once.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.PLOT_IN_LOOP_KEY,
+                    "Plotting in loops is very slow. Collect data first, then plot once.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping plot in loop detection due to error in file: {}", inputFile.filename());
@@ -685,8 +684,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = GENERIC_VARIABLE_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY,
-                    "Use meaningful variable names instead of generic names like 'temp', 'data', etc.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY,
+                    "Use meaningful variable names instead of generic names like 'temp', 'data', etc.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping generic variable names detection due to error in file: {}", inputFile.filename());
@@ -705,8 +704,8 @@ public class CodeSmellDetector extends BaseDetector {
                 // Check if ::usage exists for this function
                 if (!content.contains(functionName + "::usage")) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY,
-                        String.format("Public function '%s' should have ::usage documentation.", functionName));
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY,
+                        String.format("Public function '%s' should have ::usage documentation.", functionName), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -723,8 +722,8 @@ public class CodeSmellDetector extends BaseDetector {
             while (matcher.find()) {
                 if (!matcher.group(0).contains("OptionsPattern")) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY,
-                        "Functions with 3+ optional parameters should use OptionsPattern.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY,
+                        "Functions with 3+ optional parameters should use OptionsPattern.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -742,12 +741,11 @@ public class CodeSmellDetector extends BaseDetector {
                 String functionName = matcher.group(1);
 
                 // Check if name indicates side effects
-                if (!functionName.matches("(?i).*(?:set|update|modify|change|clear|reset).*") &&
-                    !functionName.endsWith("!")) {
+                if (!functionName.matches("(?i).*(?:set|update|modify|change|clear|reset).*")
+                    && !functionName.endsWith("!")) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY,
-                        String.format("Function '%s' has side effects but name doesn't indicate this. " +
-                            "Consider Set*/Update* prefix or ! suffix.", functionName));
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY,
+                        String.format("Function '%s' has side effects but name doesn't indicate this. "                             + "Consider Set*/Update* prefix or ! suffix.", functionName), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -763,8 +761,8 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = COMPLEX_BOOLEAN_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY,
-                    "Boolean expression with 5+ operators should be broken into named conditions.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY,
+                    "Boolean expression with 5+ operators should be broken into named conditions.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping complex boolean detection due to error in file: {}", inputFile.filename());
@@ -809,8 +807,8 @@ public class CodeSmellDetector extends BaseDetector {
 
                     if (!functionBody.contains("Return[")) {
                         int line = calculateLineNumber(content, matcher.start());
-                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_RETURN_KEY,
-                            "Complex function with conditionals should use explicit Return[] for clarity.");
+                        reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_RETURN_KEY,
+                            "Complex function with conditionals should use explicit Return[] for clarity.", matcher.start(), matcher.end());
                     }
                 }
             }
@@ -833,8 +831,8 @@ public class CodeSmellDetector extends BaseDetector {
                 int line = calculateLineNumber(content, matcher.start());
                 String patternDef = matcher.group(2);
                 int alternativeCount = patternDef.split("\\|").length;
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.OVERCOMPLEX_PATTERNS_KEY,
-                    String.format("Pattern has %d alternatives (max 5 recommended).", alternativeCount));
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.OVERCOMPLEX_PATTERNS_KEY,
+                    String.format("Pattern has %d alternatives (max 5 recommended).", alternativeCount), matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping overcomplex patterns detection due to error in file: {}", inputFile.filename());
@@ -851,8 +849,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.INCONSISTENT_RULE_TYPES_KEY,
-                    "Mixing Rule (->) and RuleDelayed (:>) in same list is confusing.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.INCONSISTENT_RULE_TYPES_KEY,
+                    "Mixing Rule (->) and RuleDelayed (:>) in same list is confusing.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping inconsistent rule types detection due to error in file: {}", inputFile.filename());
@@ -920,12 +918,12 @@ public class CodeSmellDetector extends BaseDetector {
             while (matcher.find()) {
                 String params = matcher.group(2);
                 // Check if parameters have pattern tests
-                if (!params.contains("?") && !params.contains("_Integer") && !params.contains("_Real") &&
-                    !params.contains("_String") && !params.contains("_List")) {
+                if (!params.contains("?") && !params.contains("_Integer") && !params.contains("_Real")
+                    && !params.contains("_String") && !params.contains("_List")) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_PATTERN_TEST_VALIDATION_KEY,
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_PATTERN_TEST_VALIDATION_KEY,
                         String.format("Function '%s' should validate input types with pattern tests (?NumericQ, ?ListQ, etc.).",
-                            matcher.group(1)));
+                            matcher.group(1)), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -943,8 +941,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.EXCESSIVE_PURE_FUNCTIONS_KEY,
-                    "Complex pure function with multiple # slots should use Function[{x, y, z}, ...] for clarity.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EXCESSIVE_PURE_FUNCTIONS_KEY,
+                    "Complex pure function with multiple # slots should use Function[{x, y, z}, ...] for clarity.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping excessive pure functions detection due to error in file: {}", inputFile.filename());
@@ -961,8 +959,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPERATOR_PRECEDENCE_KEY,
-                    "Complex operator expression should use parentheses for clarity.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPERATOR_PRECEDENCE_KEY,
+                    "Complex operator expression should use parentheses for clarity.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping missing operator precedence detection due to error in file: {}", inputFile.filename());
@@ -1010,9 +1008,9 @@ public class CodeSmellDetector extends BaseDetector {
 
             for (Map.Entry<String, Set<String>> entry : funcReturns.entrySet()) {
                 if (entry.getValue().size() > 1) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.INCONSISTENT_RETURN_TYPES_KEY,
+                    reportIssueWithFix(context, inputFile, 1, MathematicaRulesDefinition.INCONSISTENT_RETURN_TYPES_KEY,
                         String.format("Function '%s' returns inconsistent types: %s",
-                            entry.getKey(), entry.getValue()));
+                            entry.getKey(), entry.getValue()), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1052,8 +1050,8 @@ public class CodeSmellDetector extends BaseDetector {
                     String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 50, content.length()));
                     if (snippet.contains("=") && !snippet.contains("Module[") && !snippet.contains("Block[")) {
                         int line = calculateLineNumber(content, matcher.start());
-                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.GLOBAL_STATE_MODIFICATION_KEY,
-                            String.format("Function '%s' modifies state but lacks ! suffix naming convention.", funcName));
+                        reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.GLOBAL_STATE_MODIFICATION_KEY,
+                            String.format("Function '%s' modifies state but lacks ! suffix naming convention.", funcName), matcher.start(), matcher.end());
                     }
                 }
             }
@@ -1071,8 +1069,8 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = MANIPULATE_PATTERN.matcher(content);
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_LOCALIZATION_KEY,
-                        "Manipulate should consider using LocalizeVariables to prevent variable leakage.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_LOCALIZATION_KEY,
+                        "Manipulate should consider using LocalizeVariables to prevent variable leakage.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1089,8 +1087,8 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = GLOBAL_CONTEXT_PATTERN.matcher(content);
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.EXPLICIT_GLOBAL_CONTEXT_KEY,
-                        "Using Global` explicitly is a code smell indicating namespace confusion.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EXPLICIT_GLOBAL_CONTEXT_KEY,
+                        "Using Global` explicitly is a code smell indicating namespace confusion.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1103,8 +1101,8 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectMissingTemporaryCleanup(SensorContext context, InputFile inputFile, String content) {
         try {
-            if ((content.contains("CreateFile[") || content.contains("CreateDirectory[")) &&
-                !content.contains("DeleteFile") && !content.contains("DeleteDirectory")) {
+            if ((content.contains("CreateFile[") || content.contains("CreateDirectory["))
+                && !content.contains("DeleteFile") && !content.contains("DeleteDirectory")) {
                 reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_TEMPORARY_CLEANUP_KEY,
                     "Temporary files/directories should be cleaned up or use auto-deletion.");
             }
@@ -1151,8 +1149,8 @@ public class CodeSmellDetector extends BaseDetector {
             while (matcher.find()) {
                 if (matcher.group(1).equals(matcher.group(2)) && matcher.group(2).equals(matcher.group(3))) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.REPEATED_PART_EXTRACTION_KEY,
-                        "Multiple Part extractions should use destructuring for clarity.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.REPEATED_PART_EXTRACTION_KEY,
+                        "Multiple Part extractions should use destructuring for clarity.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1172,8 +1170,8 @@ public class CodeSmellDetector extends BaseDetector {
                 String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 100, content.length()));
                 if (!snippet.matches(".*:=.*=.*")) {  // Check for memoization pattern
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_MEMOIZATION_KEY,
-                        String.format("Recursive function '%s' should consider memoization for performance.", matcher.group(1)));
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_MEMOIZATION_KEY,
+                        String.format("Recursive function '%s' should consider memoization for performance.", matcher.group(1)), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1191,8 +1189,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.STRINGJOIN_FOR_TEMPLATES_KEY,
-                    "Multiple StringJoin operations should use StringTemplate for readability.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.STRINGJOIN_FOR_TEMPLATES_KEY,
+                    "Multiple StringJoin operations should use StringTemplate for readability.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping StringJoin for templates detection due to error in file: {}", inputFile.filename());
@@ -1211,8 +1209,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.LINEAR_SEARCH_INSTEAD_LOOKUP_KEY,
-                    "Use Association or Dispatch for O(1) lookup instead of Select (O(n) linear search).");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.LINEAR_SEARCH_INSTEAD_LOOKUP_KEY,
+                    "Use Association or Dispatch for O(1) lookup instead of Select (O(n) linear search).", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping linear search detection due to error in file: {}", inputFile.filename());
@@ -1233,8 +1231,8 @@ public class CodeSmellDetector extends BaseDetector {
                 // Check if function call doesn't contain loop variable
                 if (!funcCall.contains(loopVar)) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.REPEATED_CALCULATIONS_KEY,
-                        "Expensive expression calculated repeatedly in loop should be hoisted out.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.REPEATED_CALCULATIONS_KEY,
+                        "Expensive expression calculated repeatedly in loop should be hoisted out.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1252,8 +1250,8 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = POSITION_PATTERN.matcher(content);
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.POSITION_INSTEAD_PATTERN_KEY,
-                        "Consider using Cases or Select with pattern matching instead of Position + Extract.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.POSITION_INSTEAD_PATTERN_KEY,
+                        "Consider using Cases or Select with pattern matching instead of Position + Extract.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1270,8 +1268,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.FLATTEN_TABLE_ANTIPATTERN_KEY,
-                    "Use Catenate, Join, or vectorization instead of Flatten[Table[...]].");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.FLATTEN_TABLE_ANTIPATTERN_KEY,
+                    "Use Catenate, Join, or vectorization instead of Flatten[Table[...]].", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping Flatten Table antipattern detection due to error in file: {}", inputFile.filename());
@@ -1288,8 +1286,8 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = LARGE_TABLE_PATTERN.matcher(content);
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_PARALLELIZATION_KEY,
-                        "Large independent iterations should use ParallelTable or ParallelMap.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_PARALLELIZATION_KEY,
+                        "Large independent iterations should use ParallelTable or ParallelMap.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1309,8 +1307,8 @@ public class CodeSmellDetector extends BaseDetector {
                 int size = Integer.parseInt(matcher.group(1));
                 if (size > 100) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_SPARSE_ARRAY_KEY,
-                        "Large arrays with many zeros should use SparseArray for efficiency.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_SPARSE_ARRAY_KEY,
+                        "Large arrays with many zeros should use SparseArray for efficiency.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1328,8 +1326,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.UNNECESSARY_TRANSPOSE_KEY,
-                    "Repeated Transpose operations detected - work consistently row-wise or column-wise.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.UNNECESSARY_TRANSPOSE_KEY,
+                    "Repeated Transpose operations detected - work consistently row-wise or column-wise.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping unnecessary Transpose detection due to error in file: {}", inputFile.filename());
@@ -1360,8 +1358,8 @@ public class CodeSmellDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.REPEATED_STRING_PARSING_KEY,
-                    "Parsing the same string repeatedly in loop - cache the result.");
+                reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.REPEATED_STRING_PARSING_KEY,
+                    "Parsing the same string repeatedly in loop - cache the result.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping repeated string parsing detection due to error in file: {}", inputFile.filename());
@@ -1377,8 +1375,8 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = COMPILE_PATTERN.matcher(content);
                 while (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, line, MathematicaRulesDefinition.MISSING_COMPILATION_TARGET_KEY,
-                        "Compile should use CompilationTarget->\"C\" for 10-100x speedup.");
+                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_COMPILATION_TARGET_KEY,
+                        "Compile should use CompilationTarget->\"C\" for 10-100x speedup.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {

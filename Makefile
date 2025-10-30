@@ -10,7 +10,7 @@
 #   make clean                     # Clean build artifacts
 #   SONARQUBE_HOME=/path make install  # Install to SonarQube
 
-.PHONY: help build clean install test version check-sonarqube-home
+.PHONY: help build clean install test version check-sonarqube-home lint
 
 # Default target - show help
 help:
@@ -23,6 +23,7 @@ help:
 	@echo "  make help       - Show this help message (default)"
 	@echo "  make build      - Compile and build the plugin JAR"
 	@echo "  make test       - Run all unit tests"
+	@echo "  make lint       - Run code style checks with Checkstyle"
 	@echo "  make clean      - Remove all build artifacts and intermediate files"
 	@echo "  make install    - Stop SonarQube, install plugin, restart, wait for ready"
 	@echo "  make version    - Show current version from git tag"
@@ -63,6 +64,18 @@ test:
 	@./gradlew test
 	@echo ""
 	@echo "Tests complete!"
+	@echo ""
+
+# Run linter (Checkstyle)
+lint:
+	@echo "Running code style checks with Checkstyle..."
+	@./gradlew checkstyleMain checkstyleTest
+	@echo ""
+	@echo "Lint checks complete!"
+	@echo ""
+	@echo "View detailed reports at:"
+	@echo "  - build/reports/checkstyle/main.html"
+	@echo "  - build/reports/checkstyle/test.html"
 	@echo ""
 
 # Clean build artifacts

@@ -198,7 +198,9 @@ public class MathematicaMetricsSensor implements Sensor {
     private int countChar(String text, char ch) {
         int count = 0;
         for (char c : text.toCharArray()) {
-            if (c == ch) count++;
+            if (c == ch) {
+                count++;
+            }
         }
         return count;
     }

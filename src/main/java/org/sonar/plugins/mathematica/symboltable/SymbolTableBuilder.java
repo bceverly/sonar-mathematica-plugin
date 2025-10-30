@@ -2,7 +2,10 @@ package org.sonar.plugins.mathematica.symboltable;
 
 import org.sonar.api.batch.fs.InputFile;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,7 +13,12 @@ import java.util.regex.Pattern;
  * Builds symbol tables by parsing Mathematica code.
  * Extracts variables, assignments, references, and scopes.
  */
-public class SymbolTableBuilder {
+public final class SymbolTableBuilder {
+
+    // Private constructor to prevent instantiation
+    private SymbolTableBuilder() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     // Patterns for parsing Mathematica code
     private static final Pattern MODULE_PATTERN = Pattern.compile(

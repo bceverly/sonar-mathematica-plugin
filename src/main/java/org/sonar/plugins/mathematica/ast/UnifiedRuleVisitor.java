@@ -259,8 +259,8 @@ public class UnifiedRuleVisitor implements AstVisitor {
 
     private boolean isBuiltin(String name) {
         // Simplified builtin check
-        return name.equals("Print") || name.equals("If") || name.equals("Module") ||
-               name.equals("Block") || name.equals("With") || name.equals("Map") ||
+        return name.equals("Print") || name.equals("If") || name.equals("Module")
+               || name.equals("Block") || name.equals("With") || name.equals("Map") ||
                name.equals("Table") || name.equals("Length") || name.equals("Part");
     }
 

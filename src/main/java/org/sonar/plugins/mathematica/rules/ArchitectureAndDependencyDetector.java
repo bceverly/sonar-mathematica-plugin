@@ -4,10 +4,14 @@ import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 /**
  * Chunk 5 Detector - Cross-File & Architecture Analysis (Items 201-250 from ROADMAP_325.md)
@@ -398,12 +402,16 @@ public class ArchitectureAndDependencyDetector {
         Map<String, List<String>> commonDeps = new HashMap<>();
         for (String dep1 : directDeps) {
             Set<String> dep1Deps = packageDependencies.get(dep1);
-            if (dep1Deps == null) continue;
+            if (dep1Deps == null) {
+                continue;
+            }
 
             for (String dep2 : directDeps) {
                 if (dep1.equals(dep2)) continue;
                 Set<String> dep2Deps = packageDependencies.get(dep2);
-                if (dep2Deps == null) continue;
+                if (dep2Deps == null) {
+                    continue;
+                }
 
                 for (String common : dep1Deps) {
                     if (dep2Deps.contains(common)) {
@@ -855,8 +863,7 @@ public class ArchitectureAndDependencyDetector {
         if (exports.size() > 0 && privateSymbols.size() / exports.size() > 10) {
             createIssue(context, inputFile, MathematicaRulesDefinition.OVER_ABSTRACTED_API_KEY,
                 pkgMatcher.start(), pkgMatcher.end(),
-                "Ratio of private to public functions is very high (" +
-                privateSymbols.size() + "/" + exports.size() + ")");
+                "Ratio of private to public functions is very high ("                 + privateSymbols.size() + "/" + exports.size() + ")");
         }
     }
 

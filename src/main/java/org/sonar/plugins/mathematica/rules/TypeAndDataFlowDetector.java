@@ -333,8 +333,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                 // Check if variable later used in numeric context
                 String afterAssign = content.substring(assignPos, Math.min(assignPos + 200, content.length()));
-                if (afterAssign.contains(varName + " +") || afterAssign.contains(varName + " *") ||
-                    afterAssign.contains(varName + "^")) {
+                if (afterAssign.contains(varName + " +") || afterAssign.contains(varName + " *")
+                    || afterAssign.contains(varName + "^")) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.NULL_ASSIGNMENT_TO_TYPED_VARIABLE_KEY,
@@ -356,8 +356,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 int contextStart = Math.max(0, matcher.start() - 100);
                 String beforeContext = content.substring(contextStart, matcher.start());
 
-                if (!beforeContext.contains("StringQ[" + arg + "]") &&
-                    !beforeContext.contains("If[StringQ")) {
+                if (!beforeContext.contains("StringQ[" + arg + "]")
+                    && !beforeContext.contains("If[StringQ")) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.TYPE_CAST_WITHOUT_VALIDATION_KEY,
@@ -580,8 +580,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                     String between = content.substring(prevPos, pos);
 
                     // Check if variable used between assignments
-                    if (!between.contains(varName + " ") && !between.contains(varName + ")") &&
-                        !between.contains(varName + "]")) {
+                    if (!between.contains(varName + " ") && !between.contains(varName + ")")
+                        && !between.contains(varName + "]")) {
                         int line = calculateLineNumber(content, prevPos);
                         reportIssue(context, inputFile, line,
                             MathematicaRulesDefinition.DEAD_STORE_KEY,
@@ -613,8 +613,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                 // Check if either variable is modified via Part
                 String afterAlias = content.substring(aliasPos, Math.min(aliasPos + 300, content.length()));
-                if (afterAlias.matches(".*" + Pattern.quote(var1) + "\\[\\[.*") ||
-                    afterAlias.matches(".*" + Pattern.quote(var2) + "\\[\\[.*")) {
+                if (afterAlias.matches(".*" + Pattern.quote(var1) + "\\[\\[.*")
+                    || afterAlias.matches(".*" + Pattern.quote(var2) + "\\[\\[.*")) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.VARIABLE_ALIASING_ISSUE_KEY,
@@ -750,8 +750,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
             // Check if these globals are modified inside functions
             for (String varName : globalVars) {
-                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=.*" +
-                    Pattern.quote(varName) + "\\s*[\\+\\-\\*/]?=");
+                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=.*"                     + Pattern.quote(varName) + "\\s*[\\+\\-\\*/]?=");
                 Matcher funcMatcher = funcModPattern.matcher(content);
 
                 int modCount = 0;

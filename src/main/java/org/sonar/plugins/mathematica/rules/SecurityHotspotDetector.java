@@ -20,9 +20,9 @@ public class SecurityHotspotDetector extends BaseDetector {
         "(?:URLRead|URLFetch|URLExecute|URLSubmit|ServiceExecute|ServiceConnect)\\s*\\["
     );
     private static final Pattern KEY_GENERATION_PATTERN = Pattern.compile(
-        "(?:RandomInteger|Random)\\s*\\[|" +
-        "(?:GenerateSymmetricKey|GenerateAsymmetricKeyPair)\\s*\\[|" +
-        "Table\\s*\\[[^\\]]*Random"
+        "(?:RandomInteger|Random)\\s*\\[|"
+        + "(?:GenerateSymmetricKey|GenerateAsymmetricKeyPair)\\s*\\[|"
+        + "Table\\s*\\[[^\\]]*Random"
     );
 
     // Phase 2 Security Hotspot patterns

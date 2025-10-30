@@ -5,8 +5,11 @@ import org.sonar.api.batch.fs.InputFile;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 /**
  * Tests for SymbolTableBuilder - parsing Mathematica code into symbol tables.
@@ -47,11 +50,11 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testModuleScope() {
-        String code = "Module[{x, y},\n" +
-                     "  x = 5;\n" +
-                     "  y = 10;\n" +
-                     "  Print[x + y]\n" +
-                     "]";
+        String code = "Module[{x, y},\n"
+                     + "  x = 5;\n"
+                     + "  y = 10;\n"
+                     + "  Print[x + y]\n"
+                     + "]";
         InputFile file = createMockFile("test.m", 5);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);
@@ -72,13 +75,13 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testNestedScopes() {
-        String code = "Module[{x},\n" +
-                     "  x = 5;\n" +
-                     "  Block[{y},\n" +
-                     "    y = x + 1;\n" +
-                     "    Print[y]\n" +
-                     "  ]\n" +
-                     "]";
+        String code = "Module[{x},\n"
+                     + "  x = 5;\n"
+                     + "  Block[{y},\n"
+                     + "    y = x + 1;\n"
+                     + "    Print[y]\n"
+                     + "  ]\n"
+                     + "]";
         InputFile file = createMockFile("test.m", 7);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);
@@ -123,11 +126,11 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testUnusedVariable() {
-        String code = "Module[{x, y, unused},\n" +
-                     "  x = 5;\n" +
-                     "  y = 10;\n" +
-                     "  Print[x + y]\n" +
-                     "]";
+        String code = "Module[{x, y, unused},\n"
+                     + "  x = 5;\n"
+                     + "  y = 10;\n"
+                     + "  Print[x + y]\n"
+                     + "]";
         InputFile file = createMockFile("test.m", 5);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);
@@ -145,9 +148,9 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testAssignedButNeverRead() {
-        String code = "x = 5;\n" +
-                     "y = 10;\n" +
-                     "Print[x];\n";
+        String code = "x = 5;\n"
+                     + "y = 10;\n"
+                     + "Print[x];\n";
         InputFile file = createMockFile("test.m", 3);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);
@@ -172,11 +175,11 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testShadowing() {
-        String code = "x = 1;\n" +
-                     "Module[{x},\n" +
-                     "  x = 2;\n" +
-                     "  Print[x]\n" +
-                     "]";
+        String code = "x = 1;\n"
+                     + "Module[{x},\n"
+                     + "  x = 2;\n"
+                     + "  Print[x]\n"
+                     + "]";
         InputFile file = createMockFile("test.m", 5);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);
@@ -189,10 +192,10 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testMultipleAssignments() {
-        String code = "x = 5;\n" +
-                     "x = 10;\n" +
-                     "x = 15;\n" +
-                     "Print[x];";
+        String code = "x = 5;\n"
+                     + "x = 10;\n"
+                     + "x = 15;\n"
+                     + "Print[x];";
         InputFile file = createMockFile("test.m", 4);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);
@@ -205,9 +208,9 @@ public class SymbolTableBuilderTest {
 
     @Test
     public void testWithScope() {
-        String code = "With[{x = 5, y = 10},\n" +
-                     "  Print[x + y]\n" +
-                     "]";
+        String code = "With[{x = 5, y = 10},\n"
+                     + "  Print[x + y]\n"
+                     + "]";
         InputFile file = createMockFile("test.m", 3);
 
         SymbolTable table = SymbolTableBuilder.build(file, code);

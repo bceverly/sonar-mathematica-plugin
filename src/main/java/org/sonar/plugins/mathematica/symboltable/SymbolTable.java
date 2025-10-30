@@ -2,7 +2,11 @@ package org.sonar.plugins.mathematica.symboltable;
 
 import org.sonar.api.batch.fs.InputFile;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * Symbol table for a single Mathematica file.

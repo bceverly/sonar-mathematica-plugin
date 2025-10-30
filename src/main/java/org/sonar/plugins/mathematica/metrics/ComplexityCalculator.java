@@ -99,16 +99,36 @@ public class ComplexityCalculator {
         Matcher orMatcher = LOGICAL_OR_PATTERN.matcher(content);
 
         // Count all matches
-        while (ifMatcher.find()) count++;
-        while (whichMatcher.find()) count++;
-        while (switchMatcher.find()) count++;
-        while (whileMatcher.find()) count++;
-        while (doMatcher.find()) count++;
-        while (forMatcher.find()) count++;
-        while (tableMatcher.find()) count++;
-        while (mapMatcher.find()) count++;
-        while (andMatcher.find()) count++;
-        while (orMatcher.find()) count++;
+        while (ifMatcher.find()) {
+            count++;
+        }
+        while (whichMatcher.find()) {
+            count++;
+        }
+        while (switchMatcher.find()) {
+            count++;
+        }
+        while (whileMatcher.find()) {
+            count++;
+        }
+        while (doMatcher.find()) {
+            count++;
+        }
+        while (forMatcher.find()) {
+            count++;
+        }
+        while (tableMatcher.find()) {
+            count++;
+        }
+        while (mapMatcher.find()) {
+            count++;
+        }
+        while (andMatcher.find()) {
+            count++;
+        }
+        while (orMatcher.find()) {
+            count++;
+        }
 
         return count;
     }

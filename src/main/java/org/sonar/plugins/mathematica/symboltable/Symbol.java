@@ -160,8 +160,12 @@ public class Symbol {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         Symbol symbol = (Symbol) obj;
         return name.equals(symbol.name) && scope.equals(symbol.scope);
     }

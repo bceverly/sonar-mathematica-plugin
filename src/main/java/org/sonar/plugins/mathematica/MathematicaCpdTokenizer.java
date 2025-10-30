@@ -106,11 +106,10 @@ public class MathematicaCpdTokenizer implements Sensor {
         private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*(?:[eE][+-]?\\d+)?");
         private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");
         private static final Pattern OPERATOR_PATTERN = Pattern.compile(
-            "->|:>|:=|@@|/@|//@|/\\.|//|/;|@@@|===|=!=|>=|<=|\\+\\+|--|&&|\\|\\||!=|==|" +
-            "[+\\-*/^=<>!&|~@#%;,\\[\\]{}().]"
+            "->|:>|:=|@@|/@|//@|/\\.|//|/;|@@@|===|=!=|>=|<=|\\+\\+|--|&&|\\|\\||!=|==|"             + "[+\\-*/^=<>!&|~@#%;,\\[\\]{}().]"
         );
 
-        public MathematicaTokenizer(String content) {
+        MathematicaTokenizer(String content) {
             this.content = content;
             this.line = 1;
             this.column = 0;  // SonarQube uses 0-based column indexing

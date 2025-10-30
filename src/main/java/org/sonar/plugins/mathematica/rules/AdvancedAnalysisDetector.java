@@ -4,7 +4,8 @@ import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 
-import java.util.*;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -150,8 +151,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     public static void detectNullReturnNotDocumented(SensorContext ctx, InputFile file, String content) {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].matches(".*\\w+\\[.*\\]\\s*:=.*Null") &&
-                (i == 0 || !lines[i-1].contains("::usage"))) {
+            if (lines[i].matches(".*\\w+\\[.*\\]\\s*:=.*Null")
+                && (i == 0 || !lines[i-1].contains("::usage"))) {
                 createIssue(ctx, file, MathematicaRulesDefinition.NULL_RETURN_NOT_DOCUMENTED_KEY, i+1,
                     "Function returns Null without documentation").save();
             }
@@ -423,8 +424,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     public static void detectHoldAttributeMissing(SensorContext ctx, InputFile file, String content) {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*:=\\s*Hold\\[.*") &&
-                (i == 0 || !HOLD_ATTR.matcher(lines[i-1]).find())) {
+            if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*:=\\s*Hold\\[.*")
+                && (i == 0 || !HOLD_ATTR.matcher(lines[i-1]).find())) {
                 createIssue(ctx, file, MathematicaRulesDefinition.HOLD_ATTRIBUTE_MISSING_KEY, i+1,
                     "Function needs Hold attribute").save();
             }
@@ -642,8 +643,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectUntestedPublicFunction(SensorContext ctx, InputFile file, String content) {
-        if (!TEST_FILE_PATTERN.matcher(file.filename()).find() &&
-            content.contains("::usage") && !content.contains("VerificationTest")) {
+        if (!TEST_FILE_PATTERN.matcher(file.filename()).find()
+            && content.contains("::usage") && !content.contains("VerificationTest")) {
             createIssue(ctx, file, MathematicaRulesDefinition.UNTESTED_PUBLIC_FUNCTION_KEY, 1,
                 "Public functions should have tests").save();
         }
@@ -662,8 +663,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectTestOnlyCodeInProduction(SensorContext ctx, InputFile file, String content) {
-        if (!TEST_FILE_PATTERN.matcher(file.filename()).find() &&
-            content.contains("$TestMode") || content.contains("testFlag")) {
+        if (!TEST_FILE_PATTERN.matcher(file.filename()).find()
+            && content.contains("$TestMode") || content.contains("testFlag")) {
             createIssue(ctx, file, MathematicaRulesDefinition.TEST_ONLY_CODE_IN_PRODUCTION_KEY, 1,
                 "Test-only code in production file").save();
         }

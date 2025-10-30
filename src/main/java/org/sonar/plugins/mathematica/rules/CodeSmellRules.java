@@ -6,7 +6,12 @@ import org.sonar.api.server.rule.RulesDefinition.NewRepository;
  * Defines all Code Smell rules (33 rules).
  * Split from MathematicaRulesDefinition for maintainability.
  */
-public class CodeSmellRules {
+public final class CodeSmellRules {
+
+    // Private constructor to prevent instantiation
+    private CodeSmellRules() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all code smell rules in the repository.
@@ -22,8 +27,7 @@ public class CodeSmellRules {
         repository.createRule(MathematicaRulesDefinition.COMMENTED_CODE_KEY)
             .setName("Sections of code should not be commented out")
             .setHtmlDescription(
-                "<p>Programmers should not comment out code as it bloats programs and reduces readability.</p>" +
-                "<p>Unused code should be deleted and can be retrieved from source control history if required.</p>"
+                "<p>Programmers should not comment out code as it bloats programs and reduces readability.</p>"                 + "<p>Unused code should be deleted and can be retrieved from source control history if required.</p>"
             )
             .setSeverity("MAJOR")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
@@ -33,8 +37,7 @@ public class CodeSmellRules {
         repository.createRule(MathematicaRulesDefinition.MAGIC_NUMBER_KEY)
             .setName("Magic numbers should not be used")
             .setHtmlDescription(
-                "<p>Magic numbers are unexplained numeric literals that make code harder to understand and maintain.</p>" +
-                "<p>Replace magic numbers with named constants to improve readability.</p>"
+                "<p>Magic numbers are unexplained numeric literals that make code harder to understand and maintain.</p>"                 + "<p>Replace magic numbers with named constants to improve readability.</p>"
             )
             .setSeverity("MINOR")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)

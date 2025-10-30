@@ -1,7 +1,5 @@
 package org.sonar.plugins.mathematica.ast;
 
-import java.util.List;
-
 /**
  * AST node representing operators (binary, unary, and special Mathematica operators).
  *

@@ -57,8 +57,12 @@ public class SymbolReference {
 
     @Override
     public boolean equals(Object obj) {
-        if (this == obj) return true;
-        if (obj == null || getClass() != obj.getClass()) return false;
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null || getClass() != obj.getClass()) {
+            return false;
+        }
         SymbolReference that = (SymbolReference) obj;
         return line == that.line && column == that.column && type == that.type;
     }
