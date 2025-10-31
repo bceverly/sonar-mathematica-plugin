@@ -523,7 +523,8 @@ public final class SymbolTableDetector {
                         if (ref.getLine() >= childScope.getStartLine()
                             && ref.getLine() <= childScope.getEndLine()) {
                             createIssue(context, file, "IncorrectClosureCapture", ref.getLine(),
-                                String.format("Loop variable '%s' captured in closure, will capture final value only. Use With[] to capture current value.",
+                                String.format(
+                                    "Loop variable '%s' captured in closure, will capture final value only. Use With[] to capture current value.",
                                     symbol.getName())
                             ).save();
                             break;
@@ -548,7 +549,8 @@ public final class SymbolTableDetector {
                 String contextStr = ref.getContext();
 
                 // Check for dynamic evaluation functions
-                if (contextStr.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*"                                        + java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
+                if (contextStr.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*"
+                        + java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
                     createIssue(context, file, "ScopeLeakThroughDynamicEvaluation", ref.getLine(),
                         String.format("Module variable '%s' used in dynamic evaluation, may leak scope",
                             symbol.getName())

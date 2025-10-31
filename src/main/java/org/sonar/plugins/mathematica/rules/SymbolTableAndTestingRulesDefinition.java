@@ -2,13 +2,60 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ANALYSIS_TIMEOUT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNED_BUT_NEVER_READ_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CIRCULAR_VARIABLE_DEPENDENCIES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPILABLE_FUNCTION_NOT_COMPILED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPILATION_TARGET_MISSING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONSTANT_NOT_MARKED_AS_CONSTANT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEAD_STORE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FILE_EXCEEDS_ANALYSIS_LIMIT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GLOBAL_VARIABLE_POLLUTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCORRECT_CLOSURE_CAPTURE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INEFFICIENT_PATTERN_IN_PERFORMANCE_CRITICAL_CODE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INEFFICIENT_STRING_CONCATENATION_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LIFETIME_EXTENDS_BEYOND_SCOPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LIST_CONCATENATION_IN_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOW_TEST_COVERAGE_WARNING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_MEMOIZATION_OPPORTUNITY_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MODIFIED_IN_UNEXPECTED_SCOPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NAMING_CONVENTION_VIOLATIONS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NON_COMPILABLE_CONSTRUCT_IN_COMPILE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.N_APPLIED_TOO_LATE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKED_ARRAY_UNPACKED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REDUNDANT_ASSIGNMENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_SECURITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_UNUSED;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TEST_ONLY_CODE_IN_PRODUCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_15MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TYPE_INCONSISTENCY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNTESTED_BRANCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNTESTED_PUBLIC_FUNCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_PARAMETER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.USED_BEFORE_ASSIGNMENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_ESCAPES_SCOPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_IN_WRONG_SCOPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_REUSE_WITH_DIFFERENT_SEMANTICS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_SHADOWING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRITE_ONLY_VARIABLE_KEY;
 
 /**
  * Chunk7 And SymbolTable Rules definitions.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class SymbolTableAndTestingRulesDefinition {
+final class SymbolTableAndTestingRulesDefinition {
 
     private SymbolTableAndTestingRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
@@ -544,14 +591,16 @@ class SymbolTableAndTestingRulesDefinition {
             .setHtmlDescription(
                 "<p>This file exceeds the maximum analysis size limit (25,000 lines) and has been skipped to prevent analysis timeouts.</p>"
                 + "<h2>Why This Limit Exists</h2>"
-                + "<p>Extremely large files can cause exponential complexity in advanced symbol table analysis, potentially leading to analysis hangs.</p>"
+                + "<p>Extremely large files can cause exponential complexity in advanced symbol table analysis, "
+                + "potentially leading to analysis hangs.</p>"
                 + "<h2>Recommendations</h2>"
                 + "<ul>"
                 + "<li><strong>Refactor large files</strong> into smaller, more maintainable modules</li>"
                 + "<li><strong>Split functionality</strong> across multiple files for better organization</li>"
                 + "<li><strong>Use packages</strong> to group related functions in separate files</li>"
                 + "</ul>"
-                + "<p>This is an <strong>informational message</strong>, not a code quality issue. The file is simply too large for automated analysis.</p>"
+                + "<p>This is an <strong>informational message</strong>, not a code quality issue. "
+                + "The file is simply too large for automated analysis.</p>"
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
@@ -564,7 +613,8 @@ class SymbolTableAndTestingRulesDefinition {
             .setHtmlDescription(
                 "<p>Symbol table analysis for this file exceeded the 120-second timeout limit and was terminated.</p>"
                 + "<h2>What This Means</h2>"
-                + "<p>Advanced variable lifetime and scope analysis rules (20 rules) were skipped for this file. All other code quality, security, and bug rules still ran normally.</p>"
+                + "<p>Advanced variable lifetime and scope analysis rules (20 rules) were skipped for this file. "
+                + "All other code quality, security, and bug rules still ran normally.</p>"
                 + "<h2>Why This Happened</h2>"
                 + "<p>Certain code patterns can trigger pathological O(n²) or exponential complexity in symbol table analysis:</p>"
                 + "<ul>"
@@ -578,7 +628,8 @@ class SymbolTableAndTestingRulesDefinition {
                 + "<li><strong>Reduce Export/Import complexity</strong> by using explicit symbol lists</li>"
                 + "<li><strong>Break up complex functions</strong> into smaller, focused units</li>"
                 + "</ul>"
-                + "<p>This is an <strong>informational message</strong>, not a code quality issue. The file's complexity exceeded analysis capacity.</p>"
+                + "<p>This is an <strong>informational message</strong>, not a code quality issue. "
+                + "The file's complexity exceeded analysis capacity.</p>"
             )
             .setSeverity("INFO")
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)

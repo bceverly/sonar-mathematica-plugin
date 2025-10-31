@@ -84,7 +84,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                         int line = calculateLineNumber(content, matcher.start());
                         reportIssue(context, inputFile, line,
                             MathematicaRulesDefinition.UNRESTRICTED_BLANK_PATTERN_KEY,
-                            String.format("Function '%s' uses unrestricted blank patterns but performs numeric operations. "                                 + "Consider adding type restrictions like '_?NumericQ'.", functionName));
+                            String.format("Function '%s' uses unrestricted blank patterns but performs numeric operations. "
+                                + "Consider adding type restrictions like '_?NumericQ'.", functionName));
                     }
                 }
             }
@@ -306,7 +307,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                                 int line = calculateLineNumber(content, Integer.parseInt(parts2[1]));
                                 reportIssue(context, inputFile, line,
                                     MathematicaRulesDefinition.ORDER_DEPENDENT_PATTERNS_KEY,
-                                    String.format("Function '%s' has more specific pattern defined after general pattern. "                                         + "It will never match. Reorder definitions.", entry.getKey()));
+                                    String.format("Function '%s' has more specific pattern defined after general pattern. "
+                                        + "It will never match. Reorder definitions.", entry.getKey()));
                             }
                         }
                     }
@@ -391,7 +393,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.PATTERN_REPEATED_DIFFERENT_TYPES_KEY,
-                    String.format("Pattern {%s_, %s_} doesn't check for equal values. "                         + "Use {x_, y_} /; x == y if you want to enforce equality.", patternName, patternName));
+                    String.format("Pattern {%s_, %s_} doesn't check for equal values. "
+                        + "Use {x_, y_} /; x == y if you want to enforce equality.", patternName, patternName));
             }
         } catch (Exception e) {
             LOG.debug("Error detecting repeated pattern names in {}", inputFile.filename(), e);
@@ -667,7 +670,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.ASSOCIATION_VS_LIST_CONFUSION_KEY,
-                        String.format("Positional indexing on '%s' may be incorrect for associations. Use Keys/Values or key-based access.", assocVar));
+                        String.format(
+                            "Positional indexing on '%s' may be incorrect for associations. Use Keys/Values or key-based access.", assocVar));
                 }
             }
         } catch (Exception e) {

@@ -504,7 +504,8 @@ public class BugDetector extends BaseDetector {
                 String varName = matcher.group(1);
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.PATTERN_BLANKS_MISUSE_KEY,
-                    String.format("Using __ creates sequence, not list. Use Length[{%s}] or %s_List.", varName, varName), matcher.start(), matcher.end());
+                    String.format(
+                        "Using __ creates sequence, not list. Use Length[{%s}] or %s_List.", varName, varName), matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping pattern blanks misuse detection due to error in file: {}", inputFile.filename());
@@ -537,7 +538,8 @@ public class BugDetector extends BaseDetector {
                 String symbolName = matcher.group(1);
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY,
-                    String.format("Symbol '%s' shadows Mathematica built-in function. Use different name.", symbolName), matcher.start(), matcher.end());
+                    String.format(
+                        "Symbol '%s' shadows Mathematica built-in function. Use different name.", symbolName), matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping symbol name collision detection due to error in file: {}", inputFile.filename());
@@ -688,7 +690,8 @@ public class BugDetector extends BaseDetector {
                 if (!lookback.contains(denominator + " != 0") && !lookback.contains(denominator + " > 0")) {
                     int line = calculateLineNumber(content, pos);
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.ZERO_DENOMINATOR_KEY,
-                        String.format("Division by '%s' without zero check may produce ComplexInfinity.", denominator), matcher.start(), matcher.end());
+                        String.format(
+                            "Division by '%s' without zero check may produce ComplexInfinity.", denominator), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -712,7 +715,8 @@ public class BugDetector extends BaseDetector {
                 if (!lookback.contains("Dimensions[" + mat1) && !lookback.contains("MatrixQ[")) {
                     int line = calculateLineNumber(content, pos);
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_MATRIX_DIMENSION_CHECK_KEY,
-                        String.format("Matrix multiplication %s.%s without dimension compatibility check.", mat1, mat2), matcher.start(), matcher.end());
+                        String.format(
+                            "Matrix multiplication %s.%s without dimension compatibility check.", mat1, mat2), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -826,7 +830,8 @@ public class BugDetector extends BaseDetector {
                     && !funcBody.contains("=== 0") && !funcBody.contains("=== Infinity")) {
                     int line = calculateLineNumber(content, pos);
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_SPECIAL_CASE_HANDLING_KEY,
-                        String.format("Function '%s' may not handle special values (0, Infinity, Indeterminate).", funcName), matcher.start(), matcher.end());
+                        String.format(
+                            "Function '%s' may not handle special values (0, Infinity, Indeterminate).", funcName), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {

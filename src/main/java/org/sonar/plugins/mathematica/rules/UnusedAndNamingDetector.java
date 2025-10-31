@@ -1281,7 +1281,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
                         int line = calculateLineNumber(content, callPos);
                         reportIssue(context, inputFile, line,
                             MathematicaRulesDefinition.FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY,
-                            String.format("Forward reference to '%s' without explicit declaration. "                                 + "Add 'funcName[args_];' before first use.", funcName));
+                            String.format("Forward reference to '%s' without explicit declaration. "
+                                + "Add 'funcName[args_];' before first use.", funcName));
                     }
                 }
             }

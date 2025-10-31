@@ -36,7 +36,8 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     private static final Pattern IMPOSSIBLE_CONDITION = Pattern.compile("([a-z]\\w*)\\s*>\\s*(\\d+)\\s*&&\\s*\\1\\s*<\\s*(\\d+)");
     private static final Pattern CATCH_WITHOUT_THROW = Pattern.compile("\\bCatch\\s*\\[([^\\]]+)\\]");
     private static final Pattern THROW_PATTERN = Pattern.compile("\\bThrow\\s*\\[");
-    private static final Pattern CONDITION_WITH_CONSTANT = Pattern.compile("([a-z]\\w*)\\s*=\\s*([^;\\n]+);[^\\n]*\\bIf\\s*\\[\\s*\\1\\s*(==|!=)\\s*\\2");
+    private static final Pattern CONDITION_WITH_CONSTANT = Pattern.compile(
+            "([a-z]\\w*)\\s*=\\s*([^;\\n]+);[^\\n]*\\bIf\\s*\\[\\s*\\1\\s*(==|!=)\\s*\\2");
     private static final Pattern WHILE_TRUE = Pattern.compile("\\bWhile\\s*\\[\\s*True\\s*,");
     private static final Pattern WHILE_FALSE = Pattern.compile("\\bWhile\\s*\\[\\s*False\\s*,");
     private static final Pattern DO_INVERTED_RANGE = Pattern.compile("\\bDo\\s*\\[[^\\]]+,\\s*\\{[^,]+,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\}");

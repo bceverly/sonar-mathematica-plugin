@@ -69,7 +69,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ZER
  * Covers advanced pattern matching, function attributes, and best practices.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class AdvancedPatternAndFunctionRulesDefinition {
+final class AdvancedPatternAndFunctionRulesDefinition {
 
     private AdvancedPatternAndFunctionRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
@@ -310,7 +310,8 @@ class AdvancedPatternAndFunctionRulesDefinition {
                 + "<h2>Noncompliant Code Example</h2>"
                 + "<pre>\ndata = {\"John\", 25, \"Engineer\", 50000};\nname = data[[1]]; salary = data[[4]];\n</pre>"
                 + "<h2>Compliant Solution</h2>"
-                + "<pre>\ndata = <|\"name\" -> \"John\", \"age\" -> 25, \"salary\" -> 50000|>;\nname = data[\"name\"]; salary = data[\"salary\"];\n</pre>"
+                + "<pre>\ndata = <|\"name\" -> \"John\", \"age\" -> 25, \"salary\" -> 50000|>;\n"
+                + "name = data[\"name\"]; salary = data[\"salary\"];\n</pre>"
             )
             .setSeverity(SEVERITY_MINOR)
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)

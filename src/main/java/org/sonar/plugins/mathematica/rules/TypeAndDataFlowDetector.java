@@ -26,7 +26,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     private static final Pattern STRING_ARITHMETIC = Pattern.compile("\"[^\"]*\"\\s*[\\+\\-\\*/\\^]");
 
     // Pattern for string operations on numbers
-    private static final Pattern STRING_FUNCTION_ON_NUMBER = Pattern.compile("\\b(StringJoin|StringLength|StringTake|StringDrop|StringReplace)\\s*\\[\\s*\\d+");
+    private static final Pattern STRING_FUNCTION_ON_NUMBER = Pattern.compile(
+            "\\b(StringJoin|StringLength|StringTake|StringDrop|StringReplace)\\s*\\[\\s*\\d+");
 
     // Pattern for common type-specific functions
     private static final Pattern MAP_FUNCTION = Pattern.compile("\\bMap\\s*\\[");
@@ -750,7 +751,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
             // Check if these globals are modified inside functions
             for (String varName : globalVars) {
-                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=.*"                     + Pattern.quote(varName) + "\\s*[\\+\\-\\*/]?=");
+                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=.*"
+                    + Pattern.quote(varName) + "\\s*[\\+\\-\\*/]?=");
                 Matcher funcMatcher = funcModPattern.matcher(content);
 
                 int modCount = 0;

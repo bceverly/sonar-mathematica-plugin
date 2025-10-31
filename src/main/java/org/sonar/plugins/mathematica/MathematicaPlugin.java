@@ -35,7 +35,8 @@ public class MathematicaPlugin implements Plugin {
         context.addExtension(
             PropertyDefinition.builder(MathematicaLanguage.FILE_SUFFIXES_KEY)
                 .name("File Suffixes")
-                .description("Comma-separated list of file suffixes to analyze. Default: "                             + MathematicaLanguage.DEFAULT_FILE_SUFFIXES)
+                .description("Comma-separated list of file suffixes to analyze. Default: "
+                    + MathematicaLanguage.DEFAULT_FILE_SUFFIXES)
                 .defaultValue(MathematicaLanguage.DEFAULT_FILE_SUFFIXES)
                 .category("Mathematica")
                 .subCategory("General")

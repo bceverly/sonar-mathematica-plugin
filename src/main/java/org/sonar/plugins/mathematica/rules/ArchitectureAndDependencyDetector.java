@@ -54,7 +54,8 @@ public class ArchitectureAndDependencyDetector {
     private static final Pattern FUNCTION_CALL = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)\\s*\\[");
 
     // Test patterns
-    private static final Pattern TEST_PATTERN = Pattern.compile("(?:Test(?:ID|Match|Report|Create|Suite)|Verify(?:Test|Assert)|Assert(?:True|False|Equal))");
+    private static final Pattern TEST_PATTERN = Pattern.compile(
+            "(?:Test(?:ID|Match|Report|Create|Suite)|Verify(?:Test|Assert)|Assert(?:True|False|Equal))");
     private static final Pattern TEST_FILE = Pattern.compile("(?i)test.*?\\.(?:m|wl|wlt)$");
 
     // Documentation

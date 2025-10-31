@@ -98,7 +98,8 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*\\[");
     private static final Pattern GLOBAL_CONTEXT_PATTERN = Pattern.compile("Global`[a-zA-Z]\\w*");
     private static final Pattern PART_ACCESS_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\[\\[(\\d+)\\]\\]");
-    private static final Pattern REPEATED_PART_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\]");
+    private static final Pattern REPEATED_PART_PATTERN = Pattern.compile(
+            "([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\]");
     private static final Pattern RECURSIVE_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=[^;]*\\1\\s*\\[");
     private static final Pattern STRINGJOIN_PATTERN = Pattern.compile("[^<]*<>[^<]*<>[^<]*<>");
     private static final Pattern SELECT_LINEAR_PATTERN = Pattern.compile("Select\\s*\\[[^,]+,\\s*#\\[\\[[^\\]]+\\]\\]\\s*==");
@@ -184,7 +185,8 @@ public class CodeSmellDetector extends BaseDetector {
 
                 if (functionLines > 100) {
                     reportIssueWithFix(context, inputFile, startLine, MathematicaRulesDefinition.FUNCTION_LENGTH_KEY,
-                        String.format("Function '%s' is %d lines long (max 100 allowed).", functionName, functionLines), matcher.start(), matcher.end());
+                        String.format(
+                            "Function '%s' is %d lines long (max 100 allowed).", functionName, functionLines), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
@@ -1056,7 +1058,8 @@ public class CodeSmellDetector extends BaseDetector {
                     if (snippet.contains("=") && !snippet.contains("Module[") && !snippet.contains("Block[")) {
                         int line = calculateLineNumber(content, matcher.start());
                         reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.GLOBAL_STATE_MODIFICATION_KEY,
-                            String.format("Function '%s' modifies state but lacks ! suffix naming convention.", funcName), matcher.start(), matcher.end());
+                            String.format(
+                                "Function '%s' modifies state but lacks ! suffix naming convention.", funcName), matcher.start(), matcher.end());
                     }
                 }
             }
@@ -1176,7 +1179,8 @@ public class CodeSmellDetector extends BaseDetector {
                 if (!snippet.matches(".*:=.*=.*")) {  // Check for memoization pattern
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_MEMOIZATION_KEY,
-                        String.format("Recursive function '%s' should consider memoization for performance.", matcher.group(1)), matcher.start(), matcher.end());
+                        String.format(
+                            "Recursive function '%s' should consider memoization for performance.", matcher.group(1)), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {

@@ -573,7 +573,8 @@ public class MathematicaRulesSensor implements Sensor {
                 NewIssueLocation location = issue.newLocation()
                     .on(inputFile)
                     .at(inputFile.selectLine(1))
-                    .message(String.format("SymbolTable analysis exceeded 120-second timeout (file has %d lines). Advanced variable analysis rules skipped.",
+                    .message(String.format(
+                        "SymbolTable analysis exceeded 120-second timeout (file has %d lines). Advanced variable analysis rules skipped.",
                                          inputFile.lines()));
 
                 issue.at(location);
