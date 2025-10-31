@@ -43,10 +43,16 @@ java {
     targetCompatibility = JavaVersion.VERSION_11
 }
 
+// Enable all compiler warnings including deprecation
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-Xlint:deprecation' << '-Xlint:unchecked'
+    options.deprecation = true
+}
+
 repositories {
     mavenCentral()
     maven {
-        url 'https://repo1.maven.org/maven2/'
+        url = 'https://repo1.maven.org/maven2/'
     }
 }
 

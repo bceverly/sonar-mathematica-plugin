@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_NEVER_READ_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BUILTIN_NAME_IN_LOCAL_SCOPE_KEY;
@@ -25,9 +27,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PAR
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PRIVATE_CONTEXT_SYMBOL_PUBLIC_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REDEFINED_WITHOUT_USE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RESERVED_NAME_USAGE_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_AFTER_ENDPACKAGE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_MASKED_BY_IMPORT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_NAME_TOO_LONG_KEY;
@@ -92,8 +91,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused function *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule160.setDebtRemediationFunction(rule160.debtRemediationFunctions().constantPerIssue("5min"));
@@ -107,8 +105,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>compute[x_, _] := x^2  (* Use blank for unused parameter *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "parameters");
 
             rule161.setDebtRemediationFunction(rule161.debtRemediationFunctions().constantPerIssue("5min"));
@@ -122,8 +119,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; x^2]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "scoping");
 
             rule162.setDebtRemediationFunction(rule162.debtRemediationFunctions().constantPerIssue("5min"));
@@ -137,8 +133,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{a = 1}, a^2]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "scoping");
 
             rule163.setDebtRemediationFunction(rule163.debtRemediationFunctions().constantPerIssue("5min"));
@@ -152,8 +147,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused Needs *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "imports");
 
             rule164.setDebtRemediationFunction(rule164.debtRemediationFunctions().constantPerIssue("5min"));
@@ -167,8 +161,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_, _] := x  (* Use blank for unused pattern *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_PATTERNS);
 
             rule165.setDebtRemediationFunction(rule165.debtRemediationFunctions().constantPerIssue("5min"));
@@ -185,8 +178,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := x  (* Remove unused optional *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "parameters");
 
             rule166.setDebtRemediationFunction(rule166.debtRemediationFunctions().constantPerIssue("5min"));
@@ -200,8 +192,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := Return[x]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "control-flow");
 
             rule167.setDebtRemediationFunction(rule167.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -215,8 +206,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[!error, processData[]]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "control-flow");
 
             rule168.setDebtRemediationFunction(rule168.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -230,8 +220,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 2; Print[x]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule169.setDebtRemediationFunction(rule169.debtRemediationFunctions().constantPerIssue("5min"));
@@ -245,8 +234,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove or document as public API *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule170.setDebtRemediationFunction(rule170.debtRemediationFunctions().constantPerIssue("2min"));
@@ -260,8 +248,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = Solve[eq2]  (* Remove first assignment *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("logic-error", TAG_DEAD_CODE);
 
             rule171.setDebtRemediationFunction(rule171.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -275,8 +262,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[Print[\"Hello\"], 10]  (* Simpler form *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "loops");
 
             rule172.setDebtRemediationFunction(rule172.debtRemediationFunctions().constantPerIssue("5min"));
@@ -296,8 +282,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = compute[x]  (* Remove unnecessary Catch *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "error-handling");
 
             rule173.setDebtRemediationFunction(rule173.debtRemediationFunctions().constantPerIssue("5min"));
@@ -311,8 +296,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove dead branch or fix condition *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "logic-error");
 
             rule174.setDebtRemediationFunction(rule174.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -328,8 +312,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{localData}, localData = {4,5,6}]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("shadowing", "naming");
 
             rule175.setDebtRemediationFunction(rule175.debtRemediationFunctions().constantPerIssue("5min"));
@@ -343,8 +326,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[list_] := Length[list]  (* Use lowercase *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("shadowing", "built-ins");
 
             rule176.setDebtRemediationFunction(rule176.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -358,8 +340,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := Module[{y}, y = 5; y^2]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("shadowing", "scoping");
 
             rule177.setDebtRemediationFunction(rule177.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -373,8 +354,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_Integer] := x^2;\nf[x_Real] := x^3  (* Pattern-based overloading *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redefinition", TAG_PATTERNS);
 
             rule178.setDebtRemediationFunction(rule178.debtRemediationFunctions().constantPerIssue("2min"));
@@ -391,8 +371,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>largeFunction[input_] := Module[{result, temp, index}, ...]</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", TAG_READABILITY);
 
             rule179.setDebtRemediationFunction(rule179.debtRemediationFunctions().constantPerIssue("2min"));
@@ -406,8 +385,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>computationResult = 5  (* Concise but descriptive *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", TAG_READABILITY);
 
             rule180.setDebtRemediationFunction(rule180.debtRemediationFunctions().constantPerIssue("2min"));
@@ -421,8 +399,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>myVariable = 1;\nmyOtherVariable = 2;\nmyThirdVariable = 3  (* Consistent camelCase *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", "consistency");
 
             rule181.setDebtRemediationFunction(rule181.debtRemediationFunctions().constantPerIssue("2min"));
@@ -436,8 +413,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{mapper, applier}, ...]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("shadowing", "built-ins");
 
             rule182.setDebtRemediationFunction(rule182.debtRemediationFunctions().constantPerIssue("5min"));
@@ -451,8 +427,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use unique names or proper context management *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("contexts", "ambiguity");
 
             rule183.setDebtRemediationFunction(rule183.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -466,8 +441,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>systemID = \"custom\"  (* Use non-reserved name *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("reserved", "system-variables");
 
             rule184.setDebtRemediationFunction(rule184.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -481,8 +455,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Export function or use public API *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("encapsulation", "packages");
 
             rule185.setDebtRemediationFunction(rule185.debtRemediationFunctions().constantPerIssue("5min"));
@@ -502,8 +475,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>BeginPackage[\"MyPackage`\"]\n...\nEndPackage[]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("packages", "contexts");
 
             rule186.setDebtRemediationFunction(rule186.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -517,8 +489,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>BeginPackage[\"MyPackage`\"]\nf[x_] := x\nEndPackage[]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("packages", "contexts");
 
             rule187.setDebtRemediationFunction(rule187.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -532,8 +503,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>temp = 5  (* Uses package context *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("packages", "contexts");
 
             rule188.setDebtRemediationFunction(rule188.debtRemediationFunctions().constantPerIssue("5min"));
@@ -547,8 +517,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>intermediateResult1 = compute1[];\nresult1 = process[intermediateResult1]</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", TAG_READABILITY);
 
             rule189.setDebtRemediationFunction(rule189.debtRemediationFunctions().constantPerIssue("2min"));
@@ -564,8 +533,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Define function or import package *)\nundefinedFunction[x_] := x^2</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("undefined", "runtime-error");
 
             rule190.setDebtRemediationFunction(rule190.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -579,8 +547,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5;\nresult = x + 1</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("undefined", "runtime-error");
 
             rule191.setDebtRemediationFunction(rule191.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -594,8 +561,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>size = Length[list]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("typo", "built-ins");
 
             rule192.setDebtRemediationFunction(rule192.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -612,8 +578,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>size = Length[list]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("capitalization", "built-ins");
 
             rule193.setDebtRemediationFunction(rule193.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -627,8 +592,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Needs[\"ExternalPackage`\"]\nresult = ExternalPackage`Function[x]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("imports", "packages");
 
             rule194.setDebtRemediationFunction(rule194.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -642,8 +606,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use correct package name or create package *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("imports", "runtime-error");
 
             rule195.setDebtRemediationFunction(rule195.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -657,8 +620,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Rename local symbol or manage contexts carefully *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("shadowing", "imports");
 
             rule196.setDebtRemediationFunction(rule196.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -672,8 +634,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Get[FileNameJoin[{Directory[], \"myfile.m\"}]]  (* Use absolute path *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("imports", "file-system");
 
             rule197.setDebtRemediationFunction(rule197.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -687,8 +648,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Refactor to break circular dependency *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("circular-dependency", "packages");
 
             rule198.setDebtRemediationFunction(rule198.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -702,8 +662,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_];  (* Forward declaration *)\ng[x_] := f[x] + 1;\nf[x_] := x^2</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("forward-reference", "declaration");
 
             rule199.setDebtRemediationFunction(rule199.debtRemediationFunctions().constantPerIssue(TIME_20MIN));

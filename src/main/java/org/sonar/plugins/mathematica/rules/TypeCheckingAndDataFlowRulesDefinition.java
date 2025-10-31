@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_AS_RETURN_VALUE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITION_ENHANCED_KEY;
@@ -26,9 +28,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.OVE
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_TYPE_MISMATCH_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.READING_UNSET_VARIABLE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RETURN_TYPE_INCONSISTENT_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SHARED_MUTABLE_STATE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SOUND_OPERATION_ON_NON_SOUND_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.STRING_OPERATION_ON_NUMBER_KEY;
@@ -88,8 +87,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>ToExpression[\"5\"] + 1  (* Convert string to number first *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "runtime-error");
 
             rule200.setDebtRemediationFunction(rule200.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -104,8 +102,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>StringJoin[ToString[123], \"abc\"]  (* Convert to string first *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "runtime-error");
 
             rule201.setDebtRemediationFunction(rule201.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -120,8 +117,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Map[f, {1,2,3}]  (* Use correct type *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "argument-type");
 
             rule202.setDebtRemediationFunction(rule202.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -136,8 +132,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>calculate[x_?Positive] := x  (* Type-safe *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "return-type");
 
             rule203.setDebtRemediationFunction(rule203.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -152,8 +147,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>StringLength[\"hello\"] < 5  (* Compare compatible types *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("type-mismatch", "comparison");
 
             rule204.setDebtRemediationFunction(rule204.debtRemediationFunctions().constantPerIssue("5min"));
@@ -167,8 +161,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>1/3 + 1/2  (* Keep exact *)\nN[1/3] + 0.5  (* Or be explicit *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("numeric-precision", "type-mismatch");
 
             rule205.setDebtRemediationFunction(rule205.debtRemediationFunctions().constantPerIssue("5min"));
@@ -185,8 +178,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>1./2  (* Evaluates to 0.5 *)\nN[1/2]  (* Explicit conversion *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("numeric-precision", "integer-division");
 
             rule206.setDebtRemediationFunction(rule206.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -200,8 +192,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>AssociateTo[<|a->1|>, b->2]  (* Correct for associations *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "associations");
 
             rule207.setDebtRemediationFunction(rule207.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -216,8 +207,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[5]  (* Matches pattern *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS, "type-mismatch");
 
             rule208.setDebtRemediationFunction(rule208.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -231,8 +221,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_Integer : 1] := x  (* Consistent types *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS, "optional-parameters");
 
             rule209.setDebtRemediationFunction(rule209.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -246,8 +235,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := If[x > 0, x, -1]  (* Consistent Integer return *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("return-type", "api-design");
 
             rule210.setDebtRemediationFunction(rule210.debtRemediationFunctions().constantPerIssue("5min"));
@@ -261,8 +249,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 0; result = x + 1  (* Or use Missing[\"NotAvailable\"] *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("null-safety", "type-mismatch");
 
             rule211.setDebtRemediationFunction(rule211.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -282,8 +269,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[StringQ[userInput], ToExpression[userInput], $Failed]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-casting", "validation");
 
             rule212.setDebtRemediationFunction(rule212.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -297,8 +283,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\"hello\"  (* No conversion needed *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redundant", "type-conversion");
 
             rule213.setDebtRemediationFunction(rule213.debtRemediationFunctions().constantPerIssue("5min"));
@@ -312,8 +297,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Extract data first or fix logic error *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "graphics");
 
             rule214.setDebtRemediationFunction(rule214.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -327,8 +311,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; x + 1  (* Assign value first *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("symbolic", "numeric-context");
 
             rule215.setDebtRemediationFunction(rule215.debtRemediationFunctions().constantPerIssue("5min"));
@@ -342,8 +325,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>ImageData[Image[{{0,0},{1,1}}]]  (* Wrap in Image first *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "image-processing");
 
             rule216.setDebtRemediationFunction(rule216.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -357,8 +339,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>AudioData[Audio[{1,2,3}]]  (* Wrap in Audio first *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "audio-processing");
 
             rule217.setDebtRemediationFunction(rule217.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -375,8 +356,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Dataset[data][All, \"col1\"]  (* Wrap in Dataset *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "dataset");
 
             rule218.setDebtRemediationFunction(rule218.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -390,8 +370,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>VertexList[Graph[{{1,2},{2,3}}]]  (* Create Graph first *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type-mismatch", "graph-theory");
 
             rule219.setDebtRemediationFunction(rule219.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -407,8 +386,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 0; result = x + 1  (* Initialize first *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("uninitialized", "data-flow");
 
             rule220.setDebtRemediationFunction(rule220.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -422,8 +400,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = If[condition, 1, 0];\nresult = x  (* Always initialized *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("uninitialized", "data-flow");
 
             rule221.setDebtRemediationFunction(rule221.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -437,8 +414,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused assignment or use the value *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("dead-store", TAG_PERFORMANCE);
 
             rule222.setDebtRemediationFunction(rule222.debtRemediationFunctions().constantPerIssue("5min"));
@@ -452,8 +428,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 2; Print[x]  (* Remove redundant assignment *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redundant", "data-flow");
 
             rule223.setDebtRemediationFunction(rule223.debtRemediationFunctions().constantPerIssue("5min"));
@@ -473,8 +448,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list2 = list1  (* Copy if needed for independent modification *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("aliasing", "mutable-state");
 
             rule224.setDebtRemediationFunction(rule224.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -488,8 +462,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[Print[i], {i, 1, 10}]  (* Don't modify iterator *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("loops", "iterator-modification");
 
             rule225.setDebtRemediationFunction(rule225.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -503,8 +476,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Don't rely on iterator value after loop *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("loops", "iterator-scope");
 
             rule226.setDebtRemediationFunction(rule226.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -518,8 +490,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; Print[x]; Unset[x]  (* Read before unsetting *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("unset", "data-flow");
 
             rule227.setDebtRemediationFunction(rule227.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -533,8 +504,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5;  (* Remove redundant assignment *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redundant", "code-smell");
 
             rule228.setDebtRemediationFunction(rule228.debtRemediationFunctions().constantPerIssue("2min"));
@@ -548,8 +518,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>MapIndexed[...  (* Use stateless approach *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("pure-functions", "side-effects");
 
             rule229.setDebtRemediationFunction(rule229.debtRemediationFunctions().constantPerIssue("5min"));
@@ -566,8 +535,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Pass state as parameters or use Module *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("global-state", "mutable-state");
 
             rule230.setDebtRemediationFunction(rule230.debtRemediationFunctions().constantPerIssue("5min"));
@@ -581,8 +549,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x = 5}, x]  (* Return value, not symbol *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("scope", "module");
 
             rule231.setDebtRemediationFunction(rule231.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -596,8 +563,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>funcs = Table[With[{j = i}, Function[x + j]], {i, 3}]  (* Capture value *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("closures", "variable-capture");
 
             rule232.setDebtRemediationFunction(rule232.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -611,8 +577,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[x == 5, ...]  (* Compare, don't assign *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("assignment", "condition");
 
             rule233.setDebtRemediationFunction(rule233.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -626,8 +591,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := x  (* Return directly *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redundant", "return-value");
 
             rule234.setDebtRemediationFunction(rule234.debtRemediationFunctions().constantPerIssue("2min"));
@@ -641,8 +605,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{x = 1}, computeWith[x]]  (* Immutable *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("immutability", "best-practice");
 
             rule235.setDebtRemediationFunction(rule235.debtRemediationFunctions().constantPerIssue("2min"));

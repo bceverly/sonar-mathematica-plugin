@@ -3,6 +3,7 @@ package org.sonar.plugins.mathematica;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.FilePredicates;
@@ -12,8 +13,8 @@ import org.sonar.api.batch.sensor.Sensor;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.batch.sensor.cpd.NewCpdTokens;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Tokenizer for Mathematica code to enable Copy-Paste Detection (CPD).
@@ -22,7 +23,7 @@ import org.sonar.api.utils.log.Loggers;
  */
 public class MathematicaCpdTokenizer implements Sensor {
 
-    private static final Logger LOG = Loggers.get(MathematicaCpdTokenizer.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MathematicaCpdTokenizer.class);
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -53,7 +54,7 @@ public class MathematicaCpdTokenizer implements Sensor {
                     Error fatalError = (Error) t;
                     LOG.error("========================================");
                     LOG.error("FATAL ERROR in CPD Tokenizer while analyzing file: {}", inputFile.filename());
-                    LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                    LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
                     LOG.error("File URI: {}", inputFile.uri());
                     LOG.error("File size: {} lines", inputFile.lines());
                     LOG.error("Error type: {}", fatalError.getClass().getName());
@@ -72,7 +73,7 @@ public class MathematicaCpdTokenizer implements Sensor {
             // plugin changes, causing CPD to skip files even when tokenization logic changes.
             // This caused duplication detection to silently fail after plugin updates.
 
-            String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
+            String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
 
             NewCpdTokens cpdTokens = context.newCpdTokens().onFile(inputFile);
 

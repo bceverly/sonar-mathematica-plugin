@@ -8,8 +8,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Chunk 4 Detector: Control Flow & Taint Analysis (Items 161-200 from ROADMAP_325.md)
@@ -23,7 +23,7 @@ import org.sonar.api.utils.log.Loggers;
  * and control flow analysis.
  */
 public class ControlFlowAndTaintDetector extends BaseDetector {
-    private static final Logger LOG = Loggers.get(ControlFlowAndTaintDetector.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ControlFlowAndTaintDetector.class);
 
     // ===== PRE-COMPILED PATTERNS FOR PERFORMANCE =====
 

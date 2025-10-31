@@ -1,7 +1,7 @@
 package org.sonar.plugins.mathematica.ast;
 
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
  */
 public class ComprehensiveParser {
 
-    private static final Logger LOG = Loggers.get(ComprehensiveParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ComprehensiveParser.class);
 
     // Token patterns
     private static final Pattern FUNCTION_DEF = Pattern.compile(

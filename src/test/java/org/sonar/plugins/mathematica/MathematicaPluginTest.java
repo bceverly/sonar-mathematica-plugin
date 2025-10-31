@@ -1,5 +1,6 @@
 package org.sonar.plugins.mathematica;
 
+import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.sonar.api.Plugin;
 import org.sonar.api.SonarEdition;
@@ -24,7 +25,9 @@ class MathematicaPluginTest {
         new MathematicaPlugin().define(context);
 
         // Verify that extensions are registered
-        assertThat(context.getExtensions()).isNotEmpty();
-        assertThat(context.getExtensions()).hasSizeGreaterThan(3);
+        // Cast to List<?> to avoid unchecked warning from raw List
+        List<?> extensions = context.getExtensions();
+        assertThat(extensions).isNotEmpty();
+        assertThat(extensions).hasSizeGreaterThan(3);
     }
 }

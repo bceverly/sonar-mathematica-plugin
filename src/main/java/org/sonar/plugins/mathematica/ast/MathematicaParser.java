@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Simple recursive descent parser for Mathematica code.
@@ -27,7 +27,7 @@ import org.sonar.api.utils.log.Loggers;
  */
 public class MathematicaParser {
 
-    private static final Logger LOG = Loggers.get(MathematicaParser.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MathematicaParser.class);
 
     // Patterns for parsing
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");

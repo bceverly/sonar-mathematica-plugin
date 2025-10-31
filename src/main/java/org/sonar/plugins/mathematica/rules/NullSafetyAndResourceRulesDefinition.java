@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ABORT_IN_LIBRARY_CODE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ALL_SPECIFICATION_INEFFICIENT_KEY;
@@ -47,9 +49,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REP
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPLACE_ALL_VS_REPLACE_CONFUSION_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RULE_DOESNT_MATCH_DUE_TO_EVALUATION_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEQUENCE_IN_UNEXPECTED_CONTEXT_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SPAN_SPECIFICATION_INVALID_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
@@ -105,8 +104,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[result =!= Null, result[[1]], defaultValue]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("null-safety", "runtime-error");
 
             rule311.setDebtRemediationFunction(rule311.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -120,8 +118,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>ProcessData[data_] := If[data === Null, Null, data[[1]]]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("null-safety");
 
             rule312.setDebtRemediationFunction(rule312.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -135,8 +132,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[data =!= Null, Length[data], 0]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("null-safety");
 
             rule313.setDebtRemediationFunction(rule313.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -150,8 +146,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[cond && x =!= Null, process[x], defaultValue]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("null-safety", "consistency");
 
             rule314.setDebtRemediationFunction(rule314.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -165,8 +160,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>FindUser::usage = \"Returns user data or Null if not found.\";</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "null-safety");
 
             rule315.setDebtRemediationFunction(rule315.debtRemediationFunctions().constantPerIssue("5min"));
@@ -180,8 +174,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[x === Null, ...]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("null-safety", "semantics");
 
             rule316.setDebtRemediationFunction(rule316.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -198,8 +191,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check each step for Null</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("null-safety", "error-handling");
 
             rule317.setDebtRemediationFunction(rule317.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -213,8 +205,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check[expr, fallback, {f::error1, f::error2}]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("error-handling");
 
             rule318.setDebtRemediationFunction(rule318.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -228,8 +219,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Quiet[operation[], {f::msg1}]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("error-handling", "bad-practice");
 
             rule319.setDebtRemediationFunction(rule319.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -243,8 +233,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Fix the underlying issue instead</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("error-handling", "bad-practice");
 
             rule320.setDebtRemediationFunction(rule320.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -258,8 +247,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Catch[expr, \"myTag\"]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("error-handling");
 
             rule321.setDebtRemediationFunction(rule321.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -273,8 +261,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Log or handle the error appropriately</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("error-handling", "bad-practice");
 
             rule322.setDebtRemediationFunction(rule322.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -294,8 +281,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Catch[code, tag]; Throw[\"error\", tag]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("error-handling");
 
             rule323.setDebtRemediationFunction(rule323.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -309,8 +295,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Return $Failed or Throw with tag</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("error-handling", "library-design");
 
             rule324.setDebtRemediationFunction(rule324.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -325,8 +310,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>f::undefined = \"Error: undefined value\";\n"
                 + "Message[f::undefined]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("error-handling", "messaging");
 
             rule325.setDebtRemediationFunction(rule325.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -340,8 +324,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f::err = \"Error message template\";</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "messaging");
 
             rule326.setDebtRemediationFunction(rule326.debtRemediationFunctions().constantPerIssue("5min"));
@@ -357,8 +340,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove dead branch or fix logic</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("constant-propagation", TAG_DEAD_CODE);
 
             rule327.setDebtRemediationFunction(rule327.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -372,8 +354,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove dead branch or fix logic</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("constant-propagation", TAG_DEAD_CODE);
 
             rule328.setDebtRemediationFunction(rule328.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -390,8 +371,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[..., {i, 1, 100}]</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity");
 
             rule329.setDebtRemediationFunction(rule329.debtRemediationFunctions().constantPerIssue("2min"));
@@ -405,8 +385,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = f[x]; result + result + result</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "caching");
 
             rule330.setDebtRemediationFunction(rule330.debtRemediationFunctions().constantPerIssue("5min"));
@@ -420,8 +399,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>val = Sqrt[2]; Do[... + val * ..., {i, 1, n}]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "loop-optimization");
 
             rule331.setDebtRemediationFunction(rule331.debtRemediationFunctions().constantPerIssue("5min"));
@@ -435,8 +413,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule332.setDebtRemediationFunction(rule332.debtRemediationFunctions().constantPerIssue("2min"));
@@ -450,8 +427,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule333.setDebtRemediationFunction(rule333.debtRemediationFunctions().constantPerIssue("2min"));
@@ -465,8 +441,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check for typo or logic error</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("logic-error");
 
             rule334.setDebtRemediationFunction(rule334.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -486,8 +461,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Fix logic error</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("logic-error");
 
             rule335.setDebtRemediationFunction(rule335.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -501,8 +475,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Fix logic error</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("logic-error");
 
             rule336.setDebtRemediationFunction(rule336.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -516,8 +489,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x > 0</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule337.setDebtRemediationFunction(rule337.debtRemediationFunctions().constantPerIssue("2min"));
@@ -531,8 +503,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>condition</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule338.setDebtRemediationFunction(rule338.debtRemediationFunctions().constantPerIssue("2min"));
@@ -546,8 +517,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Break into intermediate variables</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", TAG_READABILITY);
 
             rule339.setDebtRemediationFunction(rule339.debtRemediationFunctions().constantPerIssue("5min"));
@@ -561,8 +531,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>!valid || !ready</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity");
 
             rule340.setDebtRemediationFunction(rule340.debtRemediationFunctions().constantPerIssue("2min"));
@@ -581,8 +550,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>SetAttributes[MyHold, HoldAll]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("evaluation", "hold");
 
             rule341.setDebtRemediationFunction(rule341.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -597,8 +565,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use HoldAll or fix evaluation order</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("evaluation", "hold");
 
             rule342.setDebtRemediationFunction(rule342.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -612,8 +579,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>heldFunc[Unevaluated[x + 1]]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("evaluation");
 
             rule343.setDebtRemediationFunction(rule343.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -627,8 +593,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>42</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule344.setDebtRemediationFunction(rule344.debtRemediationFunctions().constantPerIssue("2min"));
@@ -642,8 +607,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>expr</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule345.setDebtRemediationFunction(rule345.debtRemediationFunctions().constantPerIssue("2min"));
@@ -657,8 +621,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Ensure this is intentional</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("evaluation", "hold");
 
             rule346.setDebtRemediationFunction(rule346.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -678,8 +641,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use pure pattern test without side effects</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS, "side-effects");
 
             rule347.setDebtRemediationFunction(rule347.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -693,8 +655,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>{2 -> 5, _ -> 0}</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS, "replacement-rules");
 
             rule348.setDebtRemediationFunction(rule348.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -708,8 +669,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Replace[list, rules, {1}]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("replacement-rules");
 
             rule349.setDebtRemediationFunction(rule349.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -723,8 +683,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x /. {2 -> 5}</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("replacement-rules", "evaluation");
 
             rule350.setDebtRemediationFunction(rule350.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -738,8 +697,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Check length first or use Take/Drop</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("bounds-check", "runtime-error");
 
             rule351.setDebtRemediationFunction(rule351.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -753,8 +711,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list[[1;;10]]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("spans");
 
             rule352.setDebtRemediationFunction(rule352.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -768,8 +725,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("simplification");
 
             rule353.setDebtRemediationFunction(rule353.debtRemediationFunctions().constantPerIssue("2min"));
@@ -786,8 +742,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Ensure input type matches expectation</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("listable", "attributes");
 
             rule354.setDebtRemediationFunction(rule354.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -801,8 +756,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>SetAttributes[f, Listable]; f[x_] := operation[x]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "attributes");
 
             rule355.setDebtRemediationFunction(rule355.debtRemediationFunctions().constantPerIssue("5min"));
@@ -816,8 +770,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Only use when truly needed</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("attributes", "semantics");
 
             rule356.setDebtRemediationFunction(rule356.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -831,8 +784,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove Orderless attribute</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("attributes", "semantics");
 
             rule357.setDebtRemediationFunction(rule357.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -846,8 +798,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove Flat attribute</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("attributes", "semantics");
 
             rule358.setDebtRemediationFunction(rule358.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -861,8 +812,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Be aware of flattening behavior</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("sequence", "structure");
 
             rule359.setDebtRemediationFunction(rule359.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -876,8 +826,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[cond, Sequence[a, b], Sequence[]]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("sequence", "idiom");
 
             rule360.setDebtRemediationFunction(rule360.debtRemediationFunctions().constantPerIssue("5min"));

@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ALTERNATIVES_TOO_COMPLEX_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSOCIATETO_ON_NON_SYMBOL_KEY;
@@ -33,8 +35,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.POS
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.QUERY_ON_NON_DATASET_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPEATED_PATTERN_ALTERNATIVES_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REVERSE_TWICE_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SORT_WITHOUT_COMPARISON_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
@@ -84,8 +84,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_?NumericQ] := x^2  (* Type-safe *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, "type-safety");
 
             rule125.setDebtRemediationFunction(rule125.debtRemediationFunctions().constantPerIssue("5min"));
@@ -99,8 +98,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_?IntegerQ] := x  (* More efficient *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule126.setDebtRemediationFunction(rule126.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -114,8 +112,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>sum[x__?NumericQ] := Total[{x}]  (* Type-safe *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule127.setDebtRemediationFunction(rule127.debtRemediationFunctions().constantPerIssue("5min"));
@@ -129,8 +126,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_:1, y_:1] := x + y  (* Independent defaults *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS, "evaluation-order");
 
             rule128.setDebtRemediationFunction(rule128.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -144,8 +140,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_Integer, y_Real] := x + y  (* Use different names *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS);
 
             rule129.setDebtRemediationFunction(rule129.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -162,8 +157,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x:(_Integer | _Real)] := x  (* Correct syntax *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, "clarity");
 
             rule130.setDebtRemediationFunction(rule130.debtRemediationFunctions().constantPerIssue("5min"));
@@ -177,8 +171,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_?Positive] := x  (* Built-in predicate *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule131.setDebtRemediationFunction(rule131.debtRemediationFunctions().constantPerIssue("5min"));
@@ -192,8 +185,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_, opts:OptionsPattern[]] := DoSomething[x, opts]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, "validation");
 
             rule132.setDebtRemediationFunction(rule132.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -207,8 +199,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>\nf[0] := 0;  (* Specific first *)\nf[x_] := x^2;  (* General second *)\n</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS, "unreachable-code");
 
             rule133.setDebtRemediationFunction(rule133.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -220,8 +211,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Example</h2>"
                 + "<pre>Cases[{1, 2, x, y}, Verbatim[x]]  (* Only matches literal x *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS);
 
             rule134.setDebtRemediationFunction(rule134.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -235,8 +225,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Cases[list, _Integer]  (* HoldPattern not needed *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, "clutter");
 
             rule135.setDebtRemediationFunction(rule135.debtRemediationFunctions().constantPerIssue("5min"));
@@ -254,8 +243,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Example</h2>"
                 + "<pre>StringCases[str, Longest[__]]  (* Needs alternatives to be useful *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS);
 
             rule136.setDebtRemediationFunction(rule136.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -269,8 +257,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[{x_, y_} /; x == y] := x  (* Checks equality *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PATTERNS);
 
             rule137.setDebtRemediationFunction(rule137.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -284,8 +271,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x_ /; MemberQ[{a,b,c,d,e,f,g,h,i,j,k,l}, x] := ...</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule138.setDebtRemediationFunction(rule138.debtRemediationFunctions().constantPerIssue("5min"));
@@ -299,8 +285,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Select[Range[10000], # > 100 &]  (* Much faster *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
             rule139.setDebtRemediationFunction(rule139.debtRemediationFunctions().constantPerIssue("5min"));
@@ -315,8 +300,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[Length[list] > 0, result = list[[1]], result = Missing[]]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("lists", "bounds-check");
 
             rule140.setDebtRemediationFunction(rule140.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -333,8 +317,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[n <= Length[list], last = list[[-n]], ...]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("lists", "bounds-check");
 
             rule141.setDebtRemediationFunction(rule141.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -348,8 +331,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list = {1,2,3}; list[[1]] = 5  (* Modifies list *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("lists", "mutation");
 
             rule142.setDebtRemediationFunction(rule142.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -363,8 +345,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = Table[i, {i, 1000}]  (* Linear *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("lists", TAG_PERFORMANCE);
 
             rule143.setDebtRemediationFunction(rule143.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -378,8 +359,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>{a, b, c}  (* No Flatten needed *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("lists", TAG_PERFORMANCE);
 
             rule144.setDebtRemediationFunction(rule144.debtRemediationFunctions().constantPerIssue("5min"));
@@ -393,8 +373,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>n = Length[list]; Do[..., {i, 1, n}]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("lists", TAG_PERFORMANCE);
 
             rule145.setDebtRemediationFunction(rule145.debtRemediationFunctions().constantPerIssue("5min"));
@@ -408,8 +387,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list  (* Remove double Reverse *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("lists", "redundant");
 
             rule146.setDebtRemediationFunction(rule146.debtRemediationFunctions().constantPerIssue("5min"));
@@ -429,8 +407,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Reverse[Sort[list]]  (* Faster *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("lists", TAG_PERFORMANCE);
 
             rule147.setDebtRemediationFunction(rule147.debtRemediationFunctions().constantPerIssue("5min"));
@@ -444,8 +421,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Select[list, EvenQ]  (* Clearer and faster *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("lists", "clarity");
 
             rule148.setDebtRemediationFunction(rule148.debtRemediationFunctions().constantPerIssue("5min"));
@@ -459,8 +435,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>list[[i, j]]  (* Cleaner *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("lists", "clarity");
 
             rule149.setDebtRemediationFunction(rule149.debtRemediationFunctions().constantPerIssue("5min"));
@@ -475,8 +450,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[KeyExistsQ[assoc, \"key\"], value = assoc[\"key\"], ...]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("associations", "validation");
 
             rule150.setDebtRemediationFunction(rule150.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -490,8 +464,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>First[Values[assoc]]  (* Correct *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("associations");
 
             rule151.setDebtRemediationFunction(rule151.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -505,8 +478,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>KeySelect[assoc, StringQ]  (* Faster *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("associations", TAG_PERFORMANCE);
 
             rule152.setDebtRemediationFunction(rule152.debtRemediationFunctions().constantPerIssue("5min"));
@@ -523,8 +495,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Query[All, \"name\"][Dataset[list]]  (* Correct *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("associations", "datasets");
 
             rule153.setDebtRemediationFunction(rule153.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -538,8 +509,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>AssociateTo[assoc, \"key\" -> value]  (* Clear intent *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("associations", "clarity");
 
             rule154.setDebtRemediationFunction(rule154.debtRemediationFunctions().constantPerIssue("5min"));
@@ -553,8 +523,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Merge[{a1, a2}, Total]  (* Explicit strategy *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("associations", "clarity");
 
             rule155.setDebtRemediationFunction(rule155.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -568,8 +537,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>assoc = <|\"a\"->1|>; AssociateTo[assoc, \"b\"->2]  (* Modifies assoc *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("associations", "mutation");
 
             rule156.setDebtRemediationFunction(rule156.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -583,8 +551,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>KeyDrop[assoc, {\"a\", \"b\"}]  (* Single pass *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("associations", TAG_PERFORMANCE);
 
             rule157.setDebtRemediationFunction(rule157.debtRemediationFunctions().constantPerIssue("5min"));
@@ -598,8 +565,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Lookup[assoc, key]  (* Same behavior *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("associations", "redundant");
 
             rule158.setDebtRemediationFunction(rule158.debtRemediationFunctions().constantPerIssue("5min"));
@@ -613,8 +579,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>GatherBy[data, First]  (* Clearer intent *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("associations", "clarity");
 
             rule159.setDebtRemediationFunction(rule159.debtRemediationFunctions().constantPerIssue("5min"));

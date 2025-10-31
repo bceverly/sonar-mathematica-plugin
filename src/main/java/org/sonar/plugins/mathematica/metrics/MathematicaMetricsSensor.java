@@ -3,6 +3,7 @@ package org.sonar.plugins.mathematica.metrics;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.FilePredicates;
 import org.sonar.api.batch.fs.FileSystem;
@@ -12,8 +13,8 @@ import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.measures.CoreMetrics;
 import org.sonar.api.measures.Metric;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.plugins.mathematica.MathematicaLanguage;
 import org.sonar.plugins.mathematica.metrics.ComplexityCalculator.FunctionComplexity;
 
@@ -33,7 +34,7 @@ import org.sonar.plugins.mathematica.metrics.ComplexityCalculator.FunctionComple
  */
 public class MathematicaMetricsSensor implements Sensor {
 
-    private static final Logger LOG = Loggers.get(MathematicaMetricsSensor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MathematicaMetricsSensor.class);
 
     private final ComplexityCalculator complexityCalculator = new ComplexityCalculator();
 
@@ -71,7 +72,7 @@ public class MathematicaMetricsSensor implements Sensor {
                     Error fatalError = (Error) t;
                     LOG.error("========================================");
                     LOG.error("FATAL ERROR in Metrics Sensor while analyzing file: {}", inputFile.filename());
-                    LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                    LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
                     LOG.error("File URI: {}", inputFile.uri());
                     LOG.error("File size: {} lines", inputFile.lines());
                     LOG.error("Error type: {}", fatalError.getClass().getName());
@@ -91,7 +92,7 @@ public class MathematicaMetricsSensor implements Sensor {
             // plugin changes, causing metrics to skip files even when calculation logic changes.
             // Always calculate metrics for consistency and correctness.
 
-            String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
+            String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
 
             // PERFORMANCE: Clear cache before processing new file
             complexityCalculator.clearCache();

@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.APPEND_IN_LOOP_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY;
@@ -20,9 +22,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PAT
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PLOT_IN_LOOP_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY;
@@ -88,8 +87,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/1050.html'>CWE-1050</a> - Excessive Platform Resource Consumption</li></ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_PERFORMANCE, "mathematica-specific");
 
             rule50.setDebtRemediationFunction(rule50.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -109,8 +107,7 @@ final class PerformanceRulesDefinition {
                 + "result = cached + cached\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
             rule51.setDebtRemediationFunction(rule51.debtRemediationFunctions().constantPerIssue("5min"));
@@ -130,8 +127,7 @@ final class PerformanceRulesDefinition {
                 + "result = StringJoin[Table[ToString[i], {i, 1000}]]  (* O(n) *)\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_PERFORMANCE);
 
             rule52.setDebtRemediationFunction(rule52.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -150,8 +146,7 @@ final class PerformanceRulesDefinition {
                 + "result = compiled[]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "optimization");
 
             rule53.setDebtRemediationFunction(rule53.debtRemediationFunctions().constantPerIssue("5min"));
@@ -168,8 +163,7 @@ final class PerformanceRulesDefinition {
                 + "<li>Applying non-numerical functions</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "arrays");
 
             rule54.setDebtRemediationFunction(rule54.debtRemediationFunctions().constantPerIssue("5min"));
@@ -189,8 +183,7 @@ final class PerformanceRulesDefinition {
                 + "result = Outer[Times, Range[10], Range[10]]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, TAG_READABILITY);
 
             rule55.setDebtRemediationFunction(rule55.debtRemediationFunctions().constantPerIssue("5min"));
@@ -201,8 +194,7 @@ final class PerformanceRulesDefinition {
                 "<p>Large intermediate results (>100MB) that aren't assigned can cause memory issues.</p>"
                 + "<p>Assign large results to variables to make memory usage explicit.</p>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("memory", TAG_PERFORMANCE);
 
             rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue("5min"));
@@ -224,8 +216,7 @@ final class PerformanceRulesDefinition {
                 + "ListPlot[data, PlotRange -> All]  (* One plot with all data *)\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_PERFORMANCE, "visualization");
 
             rule57.setDebtRemediationFunction(rule57.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -252,8 +243,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/704.html'>CWE-704</a> - Incorrect Type Conversion</li></ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "type-safety");
 
             rule58.setDebtRemediationFunction(rule58.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -273,8 +263,7 @@ final class PerformanceRulesDefinition {
                 + "f[x_List] := Length[x]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "pattern-matching");
 
             rule59.setDebtRemediationFunction(rule59.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -292,8 +281,7 @@ final class PerformanceRulesDefinition {
                 + "f[x_] := RandomReal[]  (* Evaluates each time function is called *)\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags(TAG_RELIABILITY, "common-mistake");
 
             rule60.setDebtRemediationFunction(rule60.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -317,8 +305,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>Common Built-ins to Avoid</h2>"
                 + "<p>N, D, I, C, O, E, K, Pi, Re, Im, Abs, Min, Max, Log, Sin, Cos</p>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags(TAG_RELIABILITY, "naming");
 
             rule61.setDebtRemediationFunction(rule61.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -359,8 +346,7 @@ final class PerformanceRulesDefinition {
                 + "Block[{$RecursionLimit = 1024}, RecursiveFunction[]]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "scope");
 
             rule62.setDebtRemediationFunction(rule62.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -385,8 +371,7 @@ final class PerformanceRulesDefinition {
                 + "firstQuarterSales = processedSales[[1]];\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, "naming");
 
             rule63.setDebtRemediationFunction(rule63.debtRemediationFunctions().constantPerIssue("5min"));
@@ -405,8 +390,7 @@ final class PerformanceRulesDefinition {
                 + "ProcessUserData[data_, options___] := Module[...]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation");
 
             rule64.setDebtRemediationFunction(rule64.debtRemediationFunctions().constantPerIssue("5min"));
@@ -429,8 +413,7 @@ final class PerformanceRulesDefinition {
                 + "]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("maintainability", "api-design");
 
             rule65.setDebtRemediationFunction(rule65.debtRemediationFunctions().constantPerIssue("5min"));
@@ -450,8 +433,7 @@ final class PerformanceRulesDefinition {
                 + "UpdateCache![data_] := (globalCache = data; data)\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", "side-effects");
 
             rule66.setDebtRemediationFunction(rule66.debtRemediationFunctions().constantPerIssue("5min"));
@@ -472,8 +454,7 @@ final class PerformanceRulesDefinition {
                 + "If[condition1 || condition2 || condition3, ...]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, "complexity");
 
             rule67.setDebtRemediationFunction(rule67.debtRemediationFunctions().constantPerIssue("5min"));
@@ -492,8 +473,7 @@ final class PerformanceRulesDefinition {
                 + "Protect[PublicFunction1, PublicFunction2, PublicConstant];\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api-design", "safety");
 
             rule68.setDebtRemediationFunction(rule68.debtRemediationFunctions().constantPerIssue("5min"));
@@ -512,8 +492,7 @@ final class PerformanceRulesDefinition {
                 + "]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY);
 
             rule69.setDebtRemediationFunction(rule69.debtRemediationFunctions().constantPerIssue("5min"));
@@ -536,8 +515,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/276.html'>CWE-276</a> - Incorrect Default Permissions</li></ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "cloud", "permissions");
 
             rule70.setDebtRemediationFunction(rule70.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -561,8 +539,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li></ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "injection");
 
             rule71.setDebtRemediationFunction(rule71.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -584,8 +561,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/434.html'>CWE-434</a> - Unrestricted Upload of File with Dangerous Type</li></ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-upload");
 
             rule72.setDebtRemediationFunction(rule72.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -614,8 +590,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/772.html'>CWE-772</a> - Missing Release of Resource</li></ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "resource-leak");
 
             rule73.setDebtRemediationFunction(rule73.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -646,8 +621,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/401.html'>CWE-401</a> - Memory Leak</li></ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "memory-leak");
 
             rule74.setDebtRemediationFunction(rule74.debtRemediationFunctions().constantPerIssue(TIME_20MIN));

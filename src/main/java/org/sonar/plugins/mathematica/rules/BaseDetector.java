@@ -10,15 +10,15 @@ import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.api.rule.RuleKey;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Base class for all rule detectors providing shared utilities and patterns.
  */
 public abstract class BaseDetector {
 
-    protected static final Logger LOG = Loggers.get(BaseDetector.class);
+    protected static final Logger LOG = LoggerFactory.getLogger(BaseDetector.class);
 
     // Reference to sensor for queuing issues
     protected MathematicaRulesSensor sensor;

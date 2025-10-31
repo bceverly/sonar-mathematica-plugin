@@ -68,17 +68,80 @@ test:
 	@echo "Tests complete!"
 	@echo ""
 
-# Run linter (Checkstyle)
+# Run linter (Checkstyle + Java Deprecation Warnings)
 lint:
-	@echo "Running code style checks with Checkstyle..."
-	@./gradlew checkstyleMain checkstyleTest
+	@echo "========================================"
+	@echo "Code Quality Checks"
+	@echo "========================================"
 	@echo ""
-	@echo "Lint checks complete!"
+	@echo "[1/3] Compiling with deprecation warnings..."
+	@echo "========================================"
+	@./gradlew compileJava compileTestJava 2>&1 | tee /tmp/lint_compile.log
 	@echo ""
-	@echo "View detailed reports at:"
-	@echo "  - build/reports/checkstyle/main.html"
-	@echo "  - build/reports/checkstyle/test.html"
+	@# Count and display Java warnings
+	@JAVA_WARNINGS=$$(grep -c "warning:" /tmp/lint_compile.log 2>/dev/null || echo "0" | tr -d '\n'); \
+	if [ "$${JAVA_WARNINGS:-0}" -gt 0 ] 2>/dev/null; then \
+		echo "❌ JAVA DEPRECATION WARNINGS: $$JAVA_WARNINGS"; \
+		echo ""; \
+		echo "First 20 warnings:"; \
+		grep "warning:" /tmp/lint_compile.log | head -20; \
+		echo ""; \
+	else \
+		echo "✅ JAVA DEPRECATION WARNINGS: 0"; \
+		echo ""; \
+	fi
+	@echo "[2/3] Running Checkstyle on main sources..."
+	@echo "========================================"
+	@./gradlew checkstyleMain
+	@MAIN_VIOLATIONS=$$(grep -c "<error" build/reports/checkstyle/main.xml 2>/dev/null || echo "0" | tr -d '\n'); \
+	if [ "$${MAIN_VIOLATIONS:-0}" -gt 0 ] 2>/dev/null; then \
+		echo ""; \
+		echo "❌ CHECKSTYLE VIOLATIONS (main): $$MAIN_VIOLATIONS"; \
+	else \
+		echo ""; \
+		echo "✅ CHECKSTYLE VIOLATIONS (main): 0"; \
+	fi
 	@echo ""
+	@echo "[3/3] Running Checkstyle on test sources..."
+	@echo "========================================"
+	@./gradlew checkstyleTest
+	@TEST_VIOLATIONS=$$(grep -c "<error" build/reports/checkstyle/test.xml 2>/dev/null || echo "0" | tr -d '\n'); \
+	echo ""; \
+	if [ "$${TEST_VIOLATIONS:-0}" -gt 0 ] 2>/dev/null; then \
+		echo "❌ CHECKSTYLE VIOLATIONS (test): $$TEST_VIOLATIONS"; \
+	else \
+		echo "✅ CHECKSTYLE VIOLATIONS (test): 0"; \
+	fi
+	@echo ""
+	@echo "========================================"
+	@echo "Summary"
+	@echo "========================================"
+	@# Calculate totals
+	@JAVA_WARNINGS=$$(grep -c "warning:" /tmp/lint_compile.log 2>/dev/null | head -1); \
+	if [ -z "$$JAVA_WARNINGS" ]; then JAVA_WARNINGS=0; fi; \
+	MAIN_VIOLATIONS=$$(grep -c "<error" build/reports/checkstyle/main.xml 2>/dev/null | head -1); \
+	if [ -z "$$MAIN_VIOLATIONS" ]; then MAIN_VIOLATIONS=0; fi; \
+	TEST_VIOLATIONS=$$(grep -c "<error" build/reports/checkstyle/test.xml 2>/dev/null | head -1); \
+	if [ -z "$$TEST_VIOLATIONS" ]; then TEST_VIOLATIONS=0; fi; \
+	TOTAL_CHECKSTYLE=$$((MAIN_VIOLATIONS + TEST_VIOLATIONS)); \
+	TOTAL_ISSUES=$$((JAVA_WARNINGS + TOTAL_CHECKSTYLE)); \
+	echo ""; \
+	echo "Java deprecation warnings: $$JAVA_WARNINGS"; \
+	echo "Checkstyle violations:     $$TOTAL_CHECKSTYLE"; \
+	echo "Total issues:              $$TOTAL_ISSUES"; \
+	echo ""; \
+	if [ "$$TOTAL_ISSUES" -gt 0 ]; then \
+		echo "❌ LINT FAILED - Issues found!"; \
+		echo ""; \
+		echo "View detailed reports:"; \
+		echo "  - build/reports/checkstyle/main.html"; \
+		echo "  - build/reports/checkstyle/test.html"; \
+		echo ""; \
+		exit 1; \
+	else \
+		echo "✅ LINT PASSED - Zero issues!"; \
+		echo ""; \
+	fi
 
 # Clean build artifacts
 clean:

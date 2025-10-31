@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 
 /**
  * Defines all Code Smell rules (33 rules).
@@ -31,8 +33,7 @@ public final class CodeSmellRules {
                 "<p>Programmers should not comment out code as it bloats programs and reduces readability.</p>"
                 + "<p>Unused code should be deleted and can be retrieved from source control history if required.</p>"
             )
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("unused", "clutter");
 
         // Magic Numbers
@@ -42,8 +43,7 @@ public final class CodeSmellRules {
                 "<p>Magic numbers are unexplained numeric literals that make code harder to understand and maintain.</p>"
                 + "<p>Replace magic numbers with named constants to improve readability.</p>"
             )
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("readability");
 
         // TODO/FIXME
@@ -52,8 +52,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>TODO and FIXME comments indicate incomplete or problematic code that needs attention.</p>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("todo");
 
         // Empty Blocks
@@ -62,8 +61,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>Empty code blocks serve no purpose and should be removed.</p>"
             )
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("unused");
 
         // Function Length
@@ -72,8 +70,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>Functions longer than 100 lines are hard to understand and maintain.</p>"
             )
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("complexity");
 
         // File Length
@@ -82,8 +79,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>Files longer than 1000 lines are hard to navigate and maintain.</p>"
             )
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("complexity");
 
         // Empty Catch
@@ -92,8 +88,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>Silently ignoring exceptions makes debugging difficult.</p>"
             )
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("error-handling");
 
         // Debug Code
@@ -102,8 +97,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>Print statements and debug code should be removed before commit.</p>"
             )
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("debug");
 
     }
@@ -113,71 +107,61 @@ public final class CodeSmellRules {
         repository.createRule(MathematicaRulesDefinition.UNUSED_VARIABLES_KEY)
             .setName("Unused variables should be removed")
             .setHtmlDescription("<p>Variables declared but never used clutter code.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("unused");
 
         repository.createRule(MathematicaRulesDefinition.DUPLICATE_FUNCTION_KEY)
             .setName("Duplicate function definitions should be avoided")
             .setHtmlDescription("<p>Multiple identical function definitions indicate copy-paste code.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("duplication");
 
         repository.createRule(MathematicaRulesDefinition.TOO_MANY_PARAMETERS_KEY)
             .setName("Functions should not have too many parameters")
             .setHtmlDescription("<p>Functions with more than 7 parameters are hard to use.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("complexity");
 
         repository.createRule(MathematicaRulesDefinition.DEEPLY_NESTED_KEY)
             .setName("Control structures should not be deeply nested")
             .setHtmlDescription("<p>Nesting deeper than 3 levels makes code hard to understand.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("complexity");
 
         repository.createRule(MathematicaRulesDefinition.MISSING_DOCUMENTATION_KEY)
             .setName("Complex functions should have documentation")
             .setHtmlDescription("<p>Functions with high complexity should have comments explaining their logic.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation");
 
         repository.createRule(MathematicaRulesDefinition.INCONSISTENT_NAMING_KEY)
             .setName("Naming should be consistent")
             .setHtmlDescription("<p>Use consistent naming conventions throughout code.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming");
 
         repository.createRule(MathematicaRulesDefinition.IDENTICAL_BRANCHES_KEY)
             .setName("Identical branches should be merged")
             .setHtmlDescription("<p>If/Switch branches with identical code should be merged.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("duplication");
 
         repository.createRule(MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY)
             .setName("Expressions should not be too complex")
             .setHtmlDescription("<p>Expressions with more than 10 operators are hard to understand.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("complexity");
 
         repository.createRule(MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY)
             .setName("Deprecated functions should not be used")
             .setHtmlDescription("<p>Use current APIs instead of deprecated functions.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("deprecated");
 
         repository.createRule(MathematicaRulesDefinition.EMPTY_STATEMENT_KEY)
             .setName("Empty statements should be removed")
             .setHtmlDescription("<p>Double semicolons create empty statements.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("unused");
     }
 
@@ -188,57 +172,49 @@ public final class CodeSmellRules {
         repository.createRule(MathematicaRulesDefinition.APPEND_IN_LOOP_KEY)
             .setName("AppendTo should not be used in loops")
             .setHtmlDescription("<p>AppendTo in loops creates O(n²) performance. Use Table or Sow/Reap.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("performance");
 
         repository.createRule(MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY)
             .setName("Expensive function calls should not be repeated")
             .setHtmlDescription("<p>Cache repeated expensive computations.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("performance");
 
         repository.createRule(MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY)
             .setName("String concatenation should not be used in loops")
             .setHtmlDescription("<p>String concat in loops is O(n²). Use StringJoin.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("performance");
 
         repository.createRule(MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY)
             .setName("Numerical loops should use Compile")
             .setHtmlDescription("<p>Numerical code can be 10-100x faster with Compile.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("performance");
 
         repository.createRule(MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY)
             .setName("Operations should preserve packed arrays")
             .setHtmlDescription("<p>Packed arrays are 10x+ faster. Avoid unpacking operations.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("performance");
 
         repository.createRule(MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY)
             .setName("Nested Map/Table should be refactored")
             .setHtmlDescription("<p>Nested Map/Table can often be single operation or Outer.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("performance");
 
         repository.createRule(MathematicaRulesDefinition.LARGE_TEMP_EXPRESSIONS_KEY)
             .setName("Large temporary expressions should be assigned to variables")
             .setHtmlDescription("<p>Large intermediate results (>100MB) should be assigned for visibility.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("memory");
 
         repository.createRule(MathematicaRulesDefinition.PLOT_IN_LOOP_KEY)
             .setName("Plotting functions should not be called in loops")
             .setHtmlDescription("<p>Plots in loops are very slow. Collect data first, plot once.</p>")
-            .setSeverity("MAJOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("performance");
     }
 
@@ -246,50 +222,43 @@ public final class CodeSmellRules {
         repository.createRule(MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY)
             .setName("Variables should have meaningful names")
             .setHtmlDescription("<p>Avoid generic names like 'temp', 'data', 'result'.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming");
 
         repository.createRule(MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY)
             .setName("Public functions should have usage messages")
             .setHtmlDescription("<p>Public functions should define ::usage documentation.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation");
 
         repository.createRule(MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY)
             .setName("Functions with multiple optional parameters should use OptionsPattern")
             .setHtmlDescription("<p>3+ optional parameters should use OptionsPattern.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api-design");
 
         repository.createRule(MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY)
             .setName("Functions with side effects should have descriptive names")
             .setHtmlDescription("<p>Functions modifying global state should use Set*/Update* or end with !.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming");
 
         repository.createRule(MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY)
             .setName("Complex boolean expressions should be simplified")
             .setHtmlDescription("<p>Boolean with 5+ operators should be broken into named conditions.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("readability");
 
         repository.createRule(MathematicaRulesDefinition.UNPROTECTED_SYMBOLS_KEY)
             .setName("Public API symbols should be protected")
             .setHtmlDescription("<p>Public functions in packages should use Protect[].</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api-design");
 
         repository.createRule(MathematicaRulesDefinition.MISSING_RETURN_KEY)
             .setName("Complex functions should have explicit Return statements")
             .setHtmlDescription("<p>Functions with conditionals should use explicit Return[] for clarity.</p>")
-            .setSeverity("MINOR")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("readability");
     }
 }

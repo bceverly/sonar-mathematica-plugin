@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ANALYSIS_TIMEOUT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNED_BUT_NEVER_READ_KEY;
@@ -24,9 +26,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.N_A
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKED_ARRAY_UNPACKED_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REDUNDANT_ASSIGNMENT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
@@ -87,8 +86,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Add tests to improve coverage</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("testing", "coverage");
 
             rule361.setDebtRemediationFunction(rule361.debtRemediationFunctions().constantPerIssue("2min"));
@@ -102,8 +100,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Add VerificationTest for the function</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("testing", "coverage");
 
             rule362.setDebtRemediationFunction(rule362.debtRemediationFunctions().constantPerIssue("5min"));
@@ -117,8 +114,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Add test for uncovered branch</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("testing", "coverage");
 
             rule363.setDebtRemediationFunction(rule363.debtRemediationFunctions().constantPerIssue("5min"));
@@ -132,8 +128,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Remove test-only code or make it test utility</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("testing", TAG_DEAD_CODE);
 
             rule364.setDebtRemediationFunction(rule364.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -149,8 +144,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>fastFunc = Compile[{{x, _Real}}, x^2 + Sin[x]]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "compilation");
 
             rule365.setDebtRemediationFunction(rule365.debtRemediationFunctions().constantPerIssue("5min"));
@@ -164,8 +158,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Compile[{x}, expr, CompilationTarget -> \"C\"]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "compilation");
 
             rule366.setDebtRemediationFunction(rule366.debtRemediationFunctions().constantPerIssue("5min"));
@@ -179,8 +172,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use only compilable functions</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_PERFORMANCE, "compilation");
 
             rule367.setDebtRemediationFunction(rule367.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -194,8 +186,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use ReplacePart instead</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_PERFORMANCE, "packed-arrays");
 
             rule368.setDebtRemediationFunction(rule368.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -209,8 +200,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use direct comparison or simplify pattern</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, TAG_PATTERNS);
 
             rule369.setDebtRemediationFunction(rule369.debtRemediationFunctions().constantPerIssue("5min"));
@@ -228,8 +218,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>NIntegrate[f[x], {x, 0, 1}]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "numeric");
 
             rule370.setDebtRemediationFunction(rule370.debtRemediationFunctions().constantPerIssue("5min"));
@@ -243,8 +232,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>fib[n_] := fib[n] = fib[n-1] + fib[n-2]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "memoization");
 
             rule371.setDebtRemediationFunction(rule371.debtRemediationFunctions().constantPerIssue("5min"));
@@ -262,8 +250,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>StringJoin[Table[\"x\", {n}]]  (* O(n) *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "strings");
 
             rule372.setDebtRemediationFunction(rule372.debtRemediationFunctions().constantPerIssue("5min"));
@@ -277,8 +264,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Use Sow/Reap or Table instead</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "lists");
 
             rule373.setDebtRemediationFunction(rule373.debtRemediationFunctions().constantPerIssue("5min"));
@@ -299,8 +285,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; Print[x]]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule374.setDebtRemediationFunction(rule374.debtRemediationFunctions().constantPerIssue("5min"));
@@ -314,8 +299,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; Print[x]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule375.setDebtRemediationFunction(rule375.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -332,8 +316,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5; Print[x]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("uninitialized", "logic-error");
 
             rule376.setDebtRemediationFunction(rule376.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -347,8 +330,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 1; Module[{y}, y = 2; Print[y]]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("confusing", "naming");
 
             rule377.setDebtRemediationFunction(rule377.debtRemediationFunctions().constantPerIssue("5min"));
@@ -370,8 +352,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := x * 2</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "parameters");
 
             rule378.setDebtRemediationFunction(rule378.debtRemediationFunctions().constantPerIssue("5min"));
@@ -385,8 +366,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = expensive[]; Print[x]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule379.setDebtRemediationFunction(rule379.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -400,8 +380,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 5</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redundant", "code-smell");
 
             rule380.setDebtRemediationFunction(rule380.debtRemediationFunctions().constantPerIssue("5min"));
@@ -415,8 +394,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{}, Block[{x}, x = 5; Print[x]]]</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("scope", "best-practice");
 
             rule381.setDebtRemediationFunction(rule381.debtRemediationFunctions().constantPerIssue("2min"));
@@ -430,8 +408,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{x = 5}, f[] := x]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("scope", "closure", "logic-error");
 
             rule382.setDebtRemediationFunction(rule382.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -453,8 +430,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{}, (* 100 lines *); Block[{x}, x = 5; Print[x]]]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("scope", "memory", "maintainability");
 
             rule383.setDebtRemediationFunction(rule383.debtRemediationFunctions().constantPerIssue("5min"));
@@ -468,8 +444,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; Block[{y}, y = 10; x = y]; Print[x]]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("scope", "data-flow", "maintainability");
 
             rule384.setDebtRemediationFunction(rule384.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -483,8 +458,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>BeginPackage[\"MyPackage`\"]; x=1; y=2; EndPackage[]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("global", "namespace", "architecture");
 
             rule385.setDebtRemediationFunction(rule385.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -498,8 +472,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>x = 0; y = x + 1; z = y + 1</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("circular-dependency", "logic-error");
 
             rule386.setDebtRemediationFunction(rule386.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -513,8 +486,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{result, count, tempValue}, ...]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", TAG_READABILITY);
 
             rule387.setDebtRemediationFunction(rule387.debtRemediationFunctions().constantPerIssue("5min"));
@@ -528,8 +500,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>With[{pi = 3.14159}, f[x_] := pi * x; ...]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("constants", "best-practice");
 
             rule388.setDebtRemediationFunction(rule388.debtRemediationFunctions().constantPerIssue("5min"));
@@ -547,8 +518,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>num = 5; num = num + 1; str = \"result: \" <> ToString[num]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("type", "logic-error");
 
             rule389.setDebtRemediationFunction(rule389.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -562,8 +532,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>count = 0; Do[count++, {10}]; sum = Total[data]; Print[sum]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity", "maintainability");
 
             rule390.setDebtRemediationFunction(rule390.debtRemediationFunctions().constantPerIssue("5min"));
@@ -577,8 +546,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Do[With[{j = i}, funcs[[i]] = Function[j]], {i, 5}]  (* Each captures own j *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("closure", "loop", "logic-error");
 
             rule391.setDebtRemediationFunction(rule391.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -592,8 +560,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Module[{x}, x = 5; With[{val = x}, ToExpression[\"val + 1\"]]]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("scope", "dynamic", TAG_SECURITY);
 
             rule392.setDebtRemediationFunction(rule392.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -621,8 +588,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<p>This is an <strong>informational message</strong>, not a code quality issue. "
                 + "The file is simply too large for automated analysis.</p>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "file-size", "maintainability");
 
             rule393.setDebtRemediationFunction(rule393.debtRemediationFunctions().constantPerIssue("2min"));
@@ -650,8 +616,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<p>This is an <strong>informational message</strong>, not a code quality issue. "
                 + "The file's complexity exceeded analysis capacity.</p>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "complexity", "analysis-limits");
 
             rule394.setDebtRemediationFunction(rule394.debtRemediationFunctions().constantPerIssue("2min"));

@@ -1,5 +1,7 @@
 package org.sonar.plugins.mathematica.rules;
 
+import java.nio.file.Paths;
+
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
@@ -1330,7 +1332,7 @@ public final class ArchitectureAndDependencyDetector {
                 .forRule(org.sonar.api.rule.RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, ruleKey));
 
             // Calculate line number from offset
-            String content = new String(java.nio.file.Files.readAllBytes(inputFile.path()), java.nio.charset.StandardCharsets.UTF_8);
+            String content = new String(java.nio.file.Files.readAllBytes(Paths.get(inputFile.uri())), java.nio.charset.StandardCharsets.UTF_8);
             int line = 1;
             for (int i = 0; i < startOffset && i < content.length(); i++) {
                 if (content.charAt(i) == '\n') {

@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BREAK_OUTSIDE_LOOP_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CODE_AFTER_ABORT_KEY;
@@ -26,9 +28,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PAT
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_DEFINITION_SHADOWED_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REGEX_DOS_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SENSITIVE_DATA_IN_LOGS_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SQL_INJECTION_TAINT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SSRF_TAINT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SWITCH_CASE_SHADOWED_KEY;
@@ -96,8 +95,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "  x^2\n"
                 + "]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "unreachable");
 
             rule236.setDebtRemediationFunction(rule236.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -113,8 +111,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>action1[]  (* Remove the conditional *)\n"
                 + "\"yes\"  (* Simplify to constant *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "logic-error");
 
             rule237.setDebtRemediationFunction(rule237.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -130,8 +127,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>action2[]  (* Remove the conditional *)\n"
                 + "\"no\"  (* Simplify to constant *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "logic-error");
 
             rule238.setDebtRemediationFunction(rule238.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -147,8 +143,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>f[x_Integer] := x  (* Remove contradictory test *)\n"
                 + "f[x_ /; x &gt; 10] := x  (* Remove contradiction *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "pattern-matching");
 
             rule239.setDebtRemediationFunction(rule239.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -162,8 +157,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>computation[]  (* Remove unnecessary Catch *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "error-handling");
 
             rule240.setDebtRemediationFunction(rule240.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -181,8 +175,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "(* Remove always-true condition *)\n"
                 + "(* Remove never-executing loop *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("logic-error", "control-flow");
 
             rule241.setDebtRemediationFunction(rule241.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -201,8 +194,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>While[condition[], process[]]  (* Add exit condition *)\n"
                 + "While[x &lt; 10, x++]  (* Fix increment direction *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("infinite-loop", "hang");
 
             rule242.setDebtRemediationFunction(rule242.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -218,8 +210,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>While[condition[], process[]]  (* Fix condition *)\n"
                 + "Do[action[], {i, 1, 10}]  (* Fix range *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "loop");
 
             rule243.setDebtRemediationFunction(rule243.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -236,8 +227,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>If[error, Return[$Failed]];\n"
                 + "Print[\"Continuing\"];</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "abort");
 
             rule244.setDebtRemediationFunction(rule244.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -260,8 +250,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "  result\n"
                 + ")</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_DEAD_CODE, "return");
 
             rule245.setDebtRemediationFunction(rule245.debtRemediationFunctions().constantPerIssue("5min"));
@@ -277,8 +266,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>x = 5;\n"
                 + "actionA[]  (* Remove unreachable branch *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "conditional");
 
             rule246.setDebtRemediationFunction(rule246.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -304,8 +292,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "  _, \"default\"  (* Default last *)\n"
                 + "]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "switch");
 
             rule247.setDebtRemediationFunction(rule247.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -321,8 +308,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>f[0] := 0;  (* Specific case first *)\n"
                 + "f[x_] := x^2;  (* General case last *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_DEAD_CODE, "pattern-matching");
 
             rule248.setDebtRemediationFunction(rule248.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -336,8 +322,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>normalComputation[]  (* Remove unnecessary Catch *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_DEAD_CODE, "exception");
 
             rule249.setDebtRemediationFunction(rule249.debtRemediationFunctions().constantPerIssue("5min"));
@@ -351,8 +336,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>f[x_] := If[x &lt; 0, Return[$Failed]];  (* Use Return instead *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("runtime-error", "control-flow");
 
             rule250.setDebtRemediationFunction(rule250.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -370,8 +354,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>userInput = Import[\"https://example.com/data\", \"String\"];\n"
                 + "SQLExecute[conn, \"SELECT * FROM users WHERE name=?\", {userInput}]  (* Parameterized *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("sql-injection", "cwe-89", "owasp-a03");
 
             rule251.setDebtRemediationFunction(rule251.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -392,8 +375,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "  RunProcess[{\"cat\", fileName}]\n"
                 + "]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("command-injection", "cwe-78", "owasp-a03");
 
             rule252.setDebtRemediationFunction(rule252.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -409,8 +391,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>(* Avoid ToExpression on untrusted data entirely *)\n"
                 + "(* Or use sandboxing: ToExpression[userCode, StandardForm, HoldForm] *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("code-injection", "cwe-94", "owasp-a03");
 
             rule253.setDebtRemediationFunction(rule253.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -427,8 +408,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "fileName = FileNameJoin[{$BaseDirectory, \"data\", FileNameTake[fileName]}];\n"
                 + "Import[fileName]  (* Confined to safe directory *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("path-traversal", "cwe-22", "owasp-a01");
 
             rule254.setDebtRemediationFunction(rule254.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -445,8 +425,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "safe = StringReplace[userName, {\"&lt;\" -&gt; \"&amp;lt;\", \"&gt;\" -&gt; \"&amp;gt;\"}];\n"
                 + "ExportString[XMLElement[\"p\", {}, {safe}], \"HTML\"]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("xss", "cwe-79", "owasp-a03");
 
             rule255.setDebtRemediationFunction(rule255.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -462,8 +441,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>(* Sanitize LDAP special characters: *, (, ), \\, NUL *)\n"
                 + "safe = StringReplace[userName, {\"*\" -&gt; \"\\\\*\", \"(\" -&gt; \"\\\\(\"}]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("ldap-injection", "cwe-90", "owasp-a03");
 
             rule256.setDebtRemediationFunction(rule256.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -477,8 +455,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Disable external entity processing or validate XML structure first *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("xxe", "cwe-611", "owasp-a05");
 
             rule257.setDebtRemediationFunction(rule257.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -500,8 +477,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>(* Never deserialize untrusted MX files *)\n"
                 + "(* Use JSON or other safe formats *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("deserialization", "cwe-502", "owasp-a08");
 
             rule258.setDebtRemediationFunction(rule258.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -519,8 +495,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "  URLFetch[url]\n"
                 + "]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("ssrf", "cwe-918", "owasp-a10");
 
             rule259.setDebtRemediationFunction(rule259.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -535,8 +510,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>Needs[\"Cryptography`\"];\n"
                 + "sessionToken = RandomBytes[16]  (* Cryptographically secure *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags("randomness", "cwe-330", "crypto");
 
             rule260.setDebtRemediationFunction(rule260.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -551,8 +525,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>hash = Hash[password, \"SHA256\"]  (* Use SHA-256 or stronger *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags("crypto", "cwe-327", "owasp-a02");
 
             rule261.setDebtRemediationFunction(rule261.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -568,8 +541,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>password = Environment[\"DB_PASSWORD\"];\n"
                 + "DatabaseConnect[\"server\", Username -&gt; \"user\", Password -&gt; password]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("credentials", "cwe-798", "owasp-a07");
 
             rule262.setDebtRemediationFunction(rule262.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -585,8 +557,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>password = getPassword[];\n"
                 + "Print[\"Authenticating\"]  (* Don't log sensitive data *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags("sensitive-data", "cwe-532", "logging");
 
             rule263.setDebtRemediationFunction(rule263.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -606,8 +577,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "allowed = KeyTake[userData, {\"name\", \"email\"}];\n"
                 + "SQLExecute[conn, \"UPDATE users SET ...\", allowed]</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("mass-assignment", "cwe-915", "owasp-a04");
 
             rule264.setDebtRemediationFunction(rule264.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -623,8 +593,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>(* Validate pattern complexity or use fixed patterns only *)\n"
                 + "StringMatchQ[text, RegularExpression[\"^[a-z]+$\"]]</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags("redos", "cwe-1333", "dos");
 
             rule265.setDebtRemediationFunction(rule265.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -640,8 +609,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = Switch[x, 1, \"one\", 2, \"two\", _, \"other\"]  (* Add default *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("switch", "completeness");
 
             rule266.setDebtRemediationFunction(rule266.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -655,8 +623,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>If[!condition, elseAction[]]  (* Inverted, clearer *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, "conditional");
 
             rule267.setDebtRemediationFunction(rule267.debtRemediationFunctions().constantPerIssue("5min"));
@@ -671,8 +638,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>If[a &amp;&amp; b &amp;&amp; c &amp;&amp; d &amp;&amp; e, action[]]  (* Flatten conditions *)\n"
                 + "(* Or use Which for multiple cases *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", "nesting");
 
             rule268.setDebtRemediationFunction(rule268.debtRemediationFunctions().constantPerIssue("5min"));
@@ -700,8 +666,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "  True, 4\n"
                 + "]</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", "return");
 
             rule269.setDebtRemediationFunction(rule269.debtRemediationFunctions().constantPerIssue("5min"));
@@ -718,8 +683,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "(* Or use pattern: *)\n"
                 + "If[condition, action[]; result, result]</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity", "conditional");
 
             rule270.setDebtRemediationFunction(rule270.debtRemediationFunctions().constantPerIssue("2min"));

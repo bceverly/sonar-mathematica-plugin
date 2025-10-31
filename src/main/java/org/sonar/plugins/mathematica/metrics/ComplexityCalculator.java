@@ -2,8 +2,8 @@ package org.sonar.plugins.mathematica.metrics;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Calculates complexity metrics for Mathematica code.
@@ -20,7 +20,7 @@ import org.sonar.api.utils.log.Loggers;
  */
 public class ComplexityCalculator {
 
-    private static final Logger LOG = Loggers.get(ComplexityCalculator.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ComplexityCalculator.class);
 
     // Patterns for complexity calculation
     // NOTE: COMMENT_PATTERN removed - using character-based parser to avoid catastrophic backtracking

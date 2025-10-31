@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITIONAL_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CODE_INJECTION_KEY;
@@ -21,9 +23,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INS
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LIST_INDEX_OUT_OF_BOUNDS_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MAGIC_NUMBER_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATH_TRAVERSAL_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SQL_INJECTION_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SSRF_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
@@ -82,8 +81,7 @@ final class CoreRulesDefinition {
                 + "result = ImprovedSolve[equation, x];\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_UNUSED, "clutter");
 
             rule1.setDebtRemediationFunction(rule1.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -107,8 +105,7 @@ final class CoreRulesDefinition {
                 + "threshold = defaultThreshold;\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY);
 
             rule2.setDebtRemediationFunction(rule2.debtRemediationFunctions().constantPerIssue("5min"));
@@ -125,8 +122,7 @@ final class CoreRulesDefinition {
                 + "(* FIXME: This algorithm has performance issues *)\n"
                 + "</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("todo");
 
             rule3.setDebtRemediationFunction(rule3.debtRemediationFunctions().constantPerIssue("2min"));
@@ -149,8 +145,7 @@ final class CoreRulesDefinition {
                 + "If[condition, action, defaultAction]\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("suspicious");
 
             rule4.setDebtRemediationFunction(rule4.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -163,8 +158,7 @@ final class CoreRulesDefinition {
                 + "<p>Consider splitting large functions into smaller, focused functions.</p>"
                 + "<p>Default maximum: 150 lines (configurable via sonar.mathematica.function.maximumLines)</p>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("brain-overload");
 
             rule5.setDebtRemediationFunction(rule5.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -181,8 +175,7 @@ final class CoreRulesDefinition {
                 + "<p>Consider splitting large files into multiple focused modules.</p>"
                 + "<p>Default maximum: 1000 lines (configurable via sonar.mathematica.file.maximumLines)</p>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("brain-overload");
 
             rule6.setDebtRemediationFunction(rule6.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -227,8 +220,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A09_2021-Security_Logging_and_Monitoring_Failures/'>OWASP Top 10 2021 A09</a> - Security Logging and Monitoring Failures</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("error-handling", TAG_SECURITY, "owasp");
 
             rule7.setDebtRemediationFunction(rule7.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -273,8 +265,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A05_2021-Security_Misconfiguration/'>OWASP Top 10 2021 A05</a> - Security Misconfiguration</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "owasp", "production-readiness");
 
             rule8.setDebtRemediationFunction(rule8.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -310,8 +301,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A07_2021-Identification_and_Authentication_Failures/'>OWASP Top 10 2021 A07</a></li>"
                 + "</ul>"
             )
-            .setSeverity("BLOCKER")
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", TAG_SECURITY);
 
             rule9.setDebtRemediationFunction(rule9.debtRemediationFunctions().constantPerIssue("60min"));
@@ -340,8 +330,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A03_2021-Injection/'>OWASP Top 10 2021 A03</a> - Injection</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "injection", TAG_SECURITY);
 
             rule10.setDebtRemediationFunction(rule10.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -369,8 +358,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A03_2021-Injection/'>OWASP Top 10 2021 A03</a> - Injection</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "sql", "injection", TAG_SECURITY);
 
             rule11.setDebtRemediationFunction(rule11.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -398,8 +386,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A03_2021-Injection/'>OWASP Top 10 2021 A03</a> - Injection</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "injection", TAG_SECURITY);
 
             rule12.setDebtRemediationFunction(rule12.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -433,8 +420,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A01_2021-Broken_Access_Control/'>OWASP Top 10 2021 A01</a> - Broken Access Control</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "path-traversal", TAG_SECURITY);
 
             rule13.setDebtRemediationFunction(rule13.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -473,8 +459,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'>OWASP Top 10 2021 A02</a> - Cryptographic Failures</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "cryptography", TAG_SECURITY);
 
             rule14.setDebtRemediationFunction(rule14.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -515,8 +500,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A10_2021-Server-Side_Request_Forgery_%28SSRF%29/'>OWASP Top 10 2021 A10</a> - SSRF</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "ssrf", TAG_SECURITY);
 
             rule15.setDebtRemediationFunction(rule15.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -570,8 +554,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A08_2021-Software_and_Data_Integrity_Failures/'>OWASP Top 10 2021 A08</a> - Software and Data Integrity Failures</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.VULNERABILITY)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags("cwe", "owasp", "deserialization", TAG_SECURITY);
 
             rule16.setDebtRemediationFunction(rule16.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
@@ -608,8 +591,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/369.html'>CWE-369</a> - Divide By Zero</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "error-handling");
 
             rule17.setDebtRemediationFunction(rule17.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -640,8 +622,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/480.html'>CWE-480</a> - Use of Incorrect Operator</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags(TAG_RELIABILITY, "logic-error");
 
             rule18.setDebtRemediationFunction(rule18.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -675,8 +656,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/125.html'>CWE-125</a> - Out-of-bounds Read</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "error-handling");
 
             rule19.setDebtRemediationFunction(rule19.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -711,8 +691,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://cwe.mitre.org/data/definitions/674.html'>CWE-674</a> - Uncontrolled Recursion</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags(TAG_RELIABILITY, "stack-overflow");
 
             rule20.setDebtRemediationFunction(rule20.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -750,8 +729,7 @@ final class CoreRulesDefinition {
                 + "calculate[n_] := n^2;\n"
                 + "</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags(TAG_RELIABILITY, "logic-error", "pattern-matching");
 
             rule21.setDebtRemediationFunction(rule21.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -807,8 +785,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload'>OWASP</a> - Unrestricted File Upload</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-upload", "owasp");
 
             rule22.setDebtRemediationFunction(rule22.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -859,8 +836,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/controls/Blocking_Brute_Force_Attacks'>OWASP</a> - Rate Limiting</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "api", "availability");
 
             rule23.setDebtRemediationFunction(rule23.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -912,8 +888,7 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'>OWASP Top 10 2021 A02</a> - Cryptographic Failures</li>"
                 + "</ul>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
+            .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "cryptography", "owasp");
 
             rule24.setDebtRemediationFunction(rule24.debtRemediationFunctions().constantPerIssue(TIME_15MIN));

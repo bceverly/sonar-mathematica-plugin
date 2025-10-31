@@ -1,6 +1,8 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
+import org.sonar.api.issue.impact.SoftwareQuality;
+import org.sonar.api.issue.impact.Severity;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CIRCULAR_PACKAGE_DEPENDENCY_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMMENTED_OUT_PACKAGE_LOAD_KEY;
@@ -35,9 +37,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUB
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_EXPORT_MISSING_USAGE_MESSAGE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_FUNCTION_WITH_IMPLEMENTATION_DETAILS_IN_NAME_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_REDEFINITION_AFTER_IMPORT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_UNUSED;
@@ -96,8 +95,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "BeginPackage[\"A`\"];\n"
                 + "Needs[\"C`\"];</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("architecture", "circular-dependency");
 
             rule271.setDebtRemediationFunction(rule271.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -111,8 +109,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove unused import *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "dependency");
 
             rule272.setDebtRemediationFunction(rule272.debtRemediationFunctions().constantPerIssue("5min"));
@@ -127,8 +124,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>Needs[\"MyPackage`\"];\n"
                 + "result = MyPackage`MyFunction[x];</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("missing-import", "runtime-error");
 
             rule273.setDebtRemediationFunction(rule273.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -145,8 +141,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "Needs[\"B`\"];  (* Explicit dependency *)\n"
                 + "B`MyFunction[];</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("dependency", "fragile");
 
             rule274.setDebtRemediationFunction(rule274.debtRemediationFunctions().constantPerIssue("5min"));
@@ -160,8 +155,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Coordinate dependency versions or refactor to avoid diamond *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("architecture", "dependency");
 
             rule275.setDebtRemediationFunction(rule275.debtRemediationFunctions().constantPerIssue("2min"));
@@ -177,8 +171,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Split package or reduce dependencies *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("architecture", "coupling");
 
             rule276.setDebtRemediationFunction(rule276.debtRemediationFunctions().constantPerIssue("5min"));
@@ -196,8 +189,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Application depends on library, not vice versa *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("architecture", "dependency-direction");
 
             rule277.setDebtRemediationFunction(rule277.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -211,8 +203,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Extract shared logic to a third package *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("architecture", "coupling");
 
             rule278.setDebtRemediationFunction(rule278.debtRemediationFunctions().constantPerIssue("5min"));
@@ -226,8 +217,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* UILayer depends on DataLayer *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("architecture", "layering");
 
             rule279.setDebtRemediationFunction(rule279.debtRemediationFunctions().constantPerIssue("5min"));
@@ -241,8 +231,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Invert dependency or stabilize the unstable package *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("architecture", "stability");
 
             rule280.setDebtRemediationFunction(rule280.debtRemediationFunctions().constantPerIssue("5min"));
@@ -256,8 +245,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Split into MyPackageCore.m, MyPackageUtils.m, etc. *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("size", "maintainability");
 
             rule281.setDebtRemediationFunction(rule281.debtRemediationFunctions().constantPerIssue("2min"));
@@ -271,8 +259,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Consider merging with related package *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("size", "over-modularization");
 
             rule282.setDebtRemediationFunction(rule282.debtRemediationFunctions().constantPerIssue("2min"));
@@ -288,8 +275,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>BeginPackage[\"MyPackage`\"];  (* consistent PascalCase *)\n"
                 + "BeginPackage[\"AnotherPackage`\"];</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", "consistency");
 
             rule283.setDebtRemediationFunction(rule283.debtRemediationFunctions().constantPerIssue("2min"));
@@ -309,8 +295,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Split into multiple focused packages *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api", "cohesion");
 
             rule284.setDebtRemediationFunction(rule284.debtRemediationFunctions().constantPerIssue("2min"));
@@ -324,8 +309,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Consider merging with another package or adding more API *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api", "design");
 
             rule285.setDebtRemediationFunction(rule285.debtRemediationFunctions().constantPerIssue("2min"));
@@ -339,8 +323,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>PublicFunc[] := Module[{result}, result = Private`HelperFunc[]; result];</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("encapsulation", "api");
 
             rule286.setDebtRemediationFunction(rule286.debtRemediationFunctions().constantPerIssue("5min"));
@@ -354,8 +337,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>result = MyPackage`PublicFunc[];  (* Use public API *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("encapsulation", "private-access");
 
             rule287.setDebtRemediationFunction(rule287.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -369,8 +351,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use public API or request feature be made public *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
             .setTags("api", "stability");
 
             rule288.setDebtRemediationFunction(rule288.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
@@ -386,8 +367,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>BeginPackage[\"MyPackage`\"];\n"
                 + "MyPackage::usage = \"MyPackage provides utilities for...\";</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "discoverability");
 
             rule289.setDebtRemediationFunction(rule289.debtRemediationFunctions().constantPerIssue("2min"));
@@ -404,8 +384,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Increment major version when breaking changes occur *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("versioning", "api");
 
             rule290.setDebtRemediationFunction(rule290.debtRemediationFunctions().constantPerIssue("5min"));
@@ -421,8 +400,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Make private or remove if truly unused *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule291.setDebtRemediationFunction(rule291.debtRemediationFunctions().constantPerIssue("5min"));
@@ -436,8 +414,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove from exports if truly unused *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "api");
 
             rule292.setDebtRemediationFunction(rule292.debtRemediationFunctions().constantPerIssue("5min"));
@@ -451,8 +428,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove dead package or add usage *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
             rule293.setDebtRemediationFunction(rule293.debtRemediationFunctions().constantPerIssue("5min"));
@@ -467,8 +443,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Main[] := ... (* inline Helper logic *) ...;</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("abstraction", "yagni");
 
             rule294.setDebtRemediationFunction(rule294.debtRemediationFunctions().constantPerIssue("2min"));
@@ -483,8 +458,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use concrete implementation directly until 2nd impl needed *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("abstraction", "yagni");
 
             rule295.setDebtRemediationFunction(rule295.debtRemediationFunctions().constantPerIssue("2min"));
@@ -498,8 +472,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove orphaned test or restore implementation *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("testing", "orphaned");
 
             rule296.setDebtRemediationFunction(rule296.debtRemediationFunctions().constantPerIssue("5min"));
@@ -519,8 +492,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Create MyFunctionTest.m with tests *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("testing", "coverage");
 
             rule297.setDebtRemediationFunction(rule297.debtRemediationFunctions().constantPerIssue("2min"));
@@ -535,8 +507,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>InternalFunc[] := ... NewFunc[] ...;  (* Migrated *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("deprecated", "migration");
 
             rule298.setDebtRemediationFunction(rule298.debtRemediationFunctions().constantPerIssue("5min"));
@@ -550,8 +521,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Make it public: PackageA`SharedFunc *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
             .setTags("api", "encapsulation");
 
             rule299.setDebtRemediationFunction(rule299.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
@@ -565,8 +535,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Remove if dead, uncomment if needed *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("commented-code", "dependency");
 
             rule300.setDebtRemediationFunction(rule300.debtRemediationFunctions().constantPerIssue("2min"));
@@ -580,8 +549,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>Needs[\"MyPackage`\"];  (* Unconditional *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("dependency", "fragile");
 
             rule301.setDebtRemediationFunction(rule301.debtRemediationFunctions().constantPerIssue("5min"));
@@ -595,8 +563,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Add \"MyPackage\" to PacletInfo.m Extensions list *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("metadata", "dependency");
 
             rule302.setDebtRemediationFunction(rule302.debtRemediationFunctions().constantPerIssue("5min"));
@@ -610,8 +577,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Rename to PackageA`MyFunc and PackageB`MyFunc *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("conflict", "naming");
 
             rule303.setDebtRemediationFunction(rule303.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -629,8 +595,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Use different name or explicit context *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("shadowing", "conflict");
 
             rule304.setDebtRemediationFunction(rule304.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -644,8 +609,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Ensure compatible versions or add version checks *)</pre>"
             )
-            .setSeverity(SEVERITY_CRITICAL)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
             .setTags("versioning", "compatibility");
 
             rule305.setDebtRemediationFunction(rule305.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
@@ -668,8 +632,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "End[];\n"
                 + "EndPackage[];</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "api", "package");
 
             rule306.setDebtRemediationFunction(rule306.debtRemediationFunctions().constantPerIssue("2min"));
@@ -685,8 +648,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>f[x_] := x^2;\n"
                 + "f[x_, y_] := x + y;  (* Consistent *)</pre>"
             )
-            .setSeverity("INFO")
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", "consistency");
 
             rule307.setDebtRemediationFunction(rule307.debtRemediationFunctions().constantPerIssue("2min"));
@@ -700,8 +662,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>PublicUtilityFunc[] := ...;  (* Better abstraction *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", "abstraction");
 
             rule308.setDebtRemediationFunction(rule308.debtRemediationFunctions().constantPerIssue("5min"));
@@ -720,8 +681,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "Begin[\"Private`\"];\n"
                 + "PublicFunc[] := ...;  (* Define *)</pre>"
             )
-            .setSeverity(SEVERITY_MAJOR)
-            .setType(org.sonar.api.rules.RuleType.BUG)
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
             .setTags("context", "api");
 
             rule309.setDebtRemediationFunction(rule309.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
@@ -736,8 +696,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<h2>Compliant Solution</h2>"
                 + "<pre>(* Move to MyPackageTest.m *)</pre>"
             )
-            .setSeverity(SEVERITY_MINOR)
-            .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("testing", "organization");
 
             rule310.setDebtRemediationFunction(rule310.debtRemediationFunctions().constantPerIssue("5min"));

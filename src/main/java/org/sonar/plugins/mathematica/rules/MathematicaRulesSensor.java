@@ -2,6 +2,7 @@ package org.sonar.plugins.mathematica.rules;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
@@ -20,8 +21,8 @@ import org.sonar.api.batch.sensor.SensorDescriptor;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.api.rule.RuleKey;
-import org.sonar.api.utils.log.Logger;
-import org.sonar.api.utils.log.Loggers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.sonar.plugins.mathematica.MathematicaLanguage;
 import org.sonar.plugins.mathematica.symboltable.SymbolTable;
 import org.sonar.plugins.mathematica.symboltable.SymbolTableBuilder;
@@ -44,7 +45,7 @@ import org.sonar.plugins.mathematica.ast.AstNode;
  */
 public class MathematicaRulesSensor implements Sensor {
 
-    private static final Logger LOG = Loggers.get(MathematicaRulesSensor.class);
+    private static final Logger LOG = LoggerFactory.getLogger(MathematicaRulesSensor.class);
 
     // Comment pattern for comment analysis
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
@@ -307,7 +308,7 @@ public class MathematicaRulesSensor implements Sensor {
                 if (inputFile.lines() < 3 || inputFile.lines() > 35000) {
                     return;
                 }
-                String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
+                String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
                 if (content.trim().isEmpty()) {
                     return;
                 }
@@ -414,7 +415,7 @@ public class MathematicaRulesSensor implements Sensor {
             }
 
             long readStartTime = System.currentTimeMillis();
-            String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
+            String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
             long readTime = System.currentTimeMillis() - readStartTime;
 
             // Skip empty or whitespace-only files
@@ -510,7 +511,7 @@ public class MathematicaRulesSensor implements Sensor {
                 Error fatalError = (Error) t;
                 LOG.error("========================================");
                 LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
-                LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
                 LOG.error("File URI: {}", inputFile.uri());
                 LOG.error("File size: {} lines", inputFile.lines());
                 LOG.error("Error type: {}", fatalError.getClass().getName());
