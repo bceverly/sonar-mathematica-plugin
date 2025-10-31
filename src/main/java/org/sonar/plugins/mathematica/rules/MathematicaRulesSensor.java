@@ -233,7 +233,7 @@ public class MathematicaRulesSensor implements Sensor {
                         } else if (saved % 10000 == 0) {
                             long elapsed = System.currentTimeMillis() - lastLogTime;
                             // Fix rate calculation to avoid overflow/nonsense values
-                            int rate = elapsed > 0 ? (int)(10000000.0 / elapsed) : 0;
+                            int rate = elapsed > 0 ? (int) (10000000.0 / elapsed) : 0;
                             LOG.debug("Issue saver progress: {}/{} saved ({} issues/sec, queue: {})",
                                 saved, queuedIssues.get(), rate, issueQueue.size());
                             lastLogTime = System.currentTimeMillis();
@@ -306,9 +306,13 @@ public class MathematicaRulesSensor implements Sensor {
 
         fileList.stream().forEach(inputFile -> {
             try {
-                if (inputFile.lines() < 3 || inputFile.lines() > 35000) return;
+                if (inputFile.lines() < 3 || inputFile.lines() > 35000) {
+                    return;
+                }
                 String content = new String(Files.readAllBytes(inputFile.path()), StandardCharsets.UTF_8);
-                if (content.trim().isEmpty()) return;
+                if (content.trim().isEmpty()) {
+                    return;
+                }
 
                 ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
             } catch (Exception e) {
@@ -333,12 +337,12 @@ public class MathematicaRulesSensor implements Sensor {
                     long elapsedMs = System.currentTimeMillis() - startTime;
                     double filesPerSec = count / (elapsedMs / 1000.0);
                     int remainingFiles = totalFiles - count;
-                    long estimatedRemainingMs = (long)(remainingFiles / filesPerSec * 1000);
+                    long estimatedRemainingMs = (long) (remainingFiles / filesPerSec * 1000);
 
                     LOG.info("Progress: {}/{} files analyzed ({} %) | Speed: {} files/sec | Est. remaining: {} min",
                         count,
                         totalFiles,
-                        (int)((count * 100.0) / totalFiles),
+                        (int) ((count * 100.0) / totalFiles),
                         String.format("%.1f", filesPerSec),
                         estimatedRemainingMs / 60000);
                 }
@@ -389,10 +393,10 @@ public class MathematicaRulesSensor implements Sensor {
 
             // PERFORMANCE: Skip extremely large files to prevent hangs
             // Based on analysis: files >25,000 lines can cause pathological SymbolTable performance
-            final int MAX_LINES = 25000;
-            if (inputFile.lines() > MAX_LINES) {
+            final int maxLines = 25000;
+            if (inputFile.lines() > maxLines) {
                 LOG.warn("SKIP: File {} has {} lines (exceeds limit of {}), skipping analysis to prevent timeout",
-                    inputFile.filename(), inputFile.lines(), MAX_LINES);
+                    inputFile.filename(), inputFile.lines(), maxLines);
 
                 // Report INFO issue to make this visible in SonarQube UI
                 NewIssue issue = context.newIssue()
@@ -403,7 +407,7 @@ public class MathematicaRulesSensor implements Sensor {
                     .on(inputFile)
                     .at(inputFile.selectLine(1))
                     .message(String.format("File exceeds analysis limit (%d lines > %d limit). Analysis skipped to prevent timeout.",
-                                         inputFile.lines(), MAX_LINES));
+                                         inputFile.lines(), maxLines));
 
                 issue.at(location);
                 issue.save();
@@ -738,7 +742,7 @@ public class MathematicaRulesSensor implements Sensor {
         }
 
         // Check for mathematical operators
-        if (commentText.matches(".*[-+*/^]\\s*[a-zA-Z0-9].*")) {
+        if (commentText.matches(".*[-+*/^]\\s*[a-zA-Z0 - 9].*")) {
             codeIndicators++;
         }
 

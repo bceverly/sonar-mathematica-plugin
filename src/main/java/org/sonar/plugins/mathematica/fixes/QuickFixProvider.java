@@ -1747,13 +1747,28 @@ public class QuickFixProvider {
             this.metadata = new HashMap<>();
         }
 
-        public String getMatchedText() { return matchedText; }
-        public void setMatchedText(String text) { this.matchedText = text; }
+        public String getMatchedText() {
+            return matchedText;
+        }
 
-        public String[] getRegexGroups() { return regexGroups; }
-        public void setRegexGroups(String[] groups) { this.regexGroups = groups; }
+        public void setMatchedText(String text) {
+            this.matchedText = text;
+        }
 
-        public void putMetadata(String key, String value) { metadata.put(key, value); }
-        public String getMetadata(String key) { return metadata.get(key); }
+        public String[] getRegexGroups() {
+            return regexGroups;
+        }
+
+        public void setRegexGroups(String[] groups) {
+            this.regexGroups = groups;
+        }
+
+        public void putMetadata(String key, String value) {
+            metadata.put(key, value);
+        }
+
+        public String getMetadata(String key) {
+            return metadata.get(key);
+        }
     }
 }

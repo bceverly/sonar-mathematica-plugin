@@ -113,8 +113,8 @@ public class InitializationTrackingVisitor implements AstVisitor {
      */
     private boolean isAssignment(String functionName) {
         return "Set".equals(functionName)
-               || "SetDelayed".equals(functionName) ||
-               "=".equals(functionName)
+               || "SetDelayed".equals(functionName)
+               || "=".equals(functionName)
                || ":=".equals(functionName);
     }
 

@@ -10,17 +10,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Combined Chunk 6 & 7 Detector - Advanced Semantics & Polish (Items 251-325 from ROADMAP_325.md)
+ * Combined Chunk 6 & 7 Detector - Advanced Semantics & Polish (Items 251 - 325 from ROADMAP_325.md)
  *
  * This detector implements 62 rules across six categories:
  * CHUNK 6:
- * 1. Null Safety (Items 251-265): 15 rules
- * 2. Constant & Expression Analysis (Items 267-280): 14 rules
- * 3. Mathematica-Specific Patterns (Items 281-300): 20 rules
+ * 1. Null Safety (Items 251 - 265): 15 rules
+ * 2. Constant & Expression Analysis (Items 267 - 280): 14 rules
+ * 3. Mathematica-Specific Patterns (Items 281 - 300): 20 rules
  *
  * CHUNK 7:
- * 4. Test Coverage Integration (Items 307-310): 4 rules
- * 5. Performance Analysis (Items 312-320): 9 rules
+ * 4. Test Coverage Integration (Items 307 - 310): 4 rules
+ * 5. Performance Analysis (Items 312 - 320): 9 rules
  */
 public class AdvancedAnalysisDetector extends BaseDetector {
 
@@ -108,8 +108,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].contains("[[") && !lines[i].contains("Null")) {
                 Matcher m = NULL_DEREF.matcher(lines[i]);
-                if (m.find() && (i > 0 && lines[i-1].contains("Null") || lines[i].contains("If["))) {
-                    createIssue(ctx, file, MathematicaRulesDefinition.NULL_DEREFERENCE_KEY, i+1,
+                if (m.find() && (i > 0 && lines[i - 1].contains("Null") || lines[i].contains("If["))) {
+                    createIssue(ctx, file, MathematicaRulesDefinition.NULL_DEREFERENCE_KEY, i + 1,
                         "Potential null dereference").save();
                 }
             }
@@ -120,7 +120,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*:=.*\\[\\[") && !NULL_CHECK.matcher(lines[i]).find()) {
-                createIssue(ctx, file, MathematicaRulesDefinition.MISSING_NULL_CHECK_KEY, i+1,
+                createIssue(ctx, file, MathematicaRulesDefinition.MISSING_NULL_CHECK_KEY, i + 1,
                     "Missing null check before indexing").save();
             }
         }
@@ -142,7 +142,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].contains("If[") && lines[i].contains(",") && !lines[i].contains("Null")) {
-                createIssue(ctx, file, MathematicaRulesDefinition.INCONSISTENT_NULL_HANDLING_KEY, i+1,
+                createIssue(ctx, file, MathematicaRulesDefinition.INCONSISTENT_NULL_HANDLING_KEY, i + 1,
                     "Consider null safety in branches").save();
             }
         }
@@ -152,8 +152,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].matches(".*\\w+\\[.*\\]\\s*:=.*Null")
-                && (i == 0 || !lines[i-1].contains("::usage"))) {
-                createIssue(ctx, file, MathematicaRulesDefinition.NULL_RETURN_NOT_DOCUMENTED_KEY, i+1,
+                && (i == 0 || !lines[i - 1].contains("::usage"))) {
+                createIssue(ctx, file, MathematicaRulesDefinition.NULL_RETURN_NOT_DOCUMENTED_KEY, i + 1,
                     "Function returns Null without documentation").save();
             }
         }
@@ -401,7 +401,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         for (int i = 0; i < lines.length; i++) {
             int boolOps = lines[i].split("&&|\\|\\||!").length - 1;
             if (boolOps > 5) {
-                createIssue(ctx, file, MathematicaRulesDefinition.COMPLEX_BOOLEAN_EXPRESSION_ENHANCED_KEY, i+1,
+                createIssue(ctx, file, MathematicaRulesDefinition.COMPLEX_BOOLEAN_EXPRESSION_ENHANCED_KEY, i + 1,
                     "Boolean expression too complex: " + boolOps + " operators").save();
             }
         }
@@ -425,8 +425,8 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*:=\\s*Hold\\[.*")
-                && (i == 0 || !HOLD_ATTR.matcher(lines[i-1]).find())) {
-                createIssue(ctx, file, MathematicaRulesDefinition.HOLD_ATTRIBUTE_MISSING_KEY, i+1,
+                && (i == 0 || !HOLD_ATTR.matcher(lines[i - 1]).find())) {
+                createIssue(ctx, file, MathematicaRulesDefinition.HOLD_ATTRIBUTE_MISSING_KEY, i + 1,
                     "Function needs Hold attribute").save();
             }
         }
@@ -450,7 +450,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
             String[] lines = content.split("\n");
             for (int i = 0; i < lines.length; i++) {
                 if (lines[i].contains("heldFunc[") && !lines[i].contains("Unevaluated")) {
-                    createIssue(ctx, file, MathematicaRulesDefinition.MISSING_UNEVALUATED_WRAPPER_KEY, i+1,
+                    createIssue(ctx, file, MathematicaRulesDefinition.MISSING_UNEVALUATED_WRAPPER_KEY, i + 1,
                         "Consider Unevaluated wrapper").save();
                 }
             }
@@ -560,7 +560,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
             String[] lines = content.split("\n");
             for (int i = 0; i < lines.length; i++) {
                 if (lines[i].matches(".*listableFunc\\[\\d+\\].*")) {
-                    createIssue(ctx, file, MathematicaRulesDefinition.THREADING_OVER_NON_LISTS_KEY, i+1,
+                    createIssue(ctx, file, MathematicaRulesDefinition.THREADING_OVER_NON_LISTS_KEY, i + 1,
                         "Listable function on scalar").save();
                 }
             }
@@ -572,7 +572,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
             String[] lines = content.split("\n");
             for (int i = 0; i < lines.length; i++) {
                 if (lines[i].contains("Map[operation,")) {
-                    createIssue(ctx, file, MathematicaRulesDefinition.MISSING_ATTRIBUTES_DECLARATION_KEY, i+1,
+                    createIssue(ctx, file, MathematicaRulesDefinition.MISSING_ATTRIBUTES_DECLARATION_KEY, i + 1,
                         "Consider Listable attribute").save();
                 }
             }
@@ -655,7 +655,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
             if (lines[i].contains("If[") && !content.contains("VerificationTest")) {
-                createIssue(ctx, file, MathematicaRulesDefinition.UNTESTED_BRANCH_KEY, i+1,
+                createIssue(ctx, file, MathematicaRulesDefinition.UNTESTED_BRANCH_KEY, i + 1,
                     "Branch should be tested").save();
                 break;
             }

@@ -4,7 +4,11 @@ import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.rule.RuleKey;
-import org.sonar.plugins.mathematica.symboltable.*;
+import org.sonar.plugins.mathematica.symboltable.Scope;
+import org.sonar.plugins.mathematica.symboltable.ScopeType;
+import org.sonar.plugins.mathematica.symboltable.Symbol;
+import org.sonar.plugins.mathematica.symboltable.SymbolReference;
+import org.sonar.plugins.mathematica.symboltable.SymbolTable;
 
 import java.util.List;
 import java.util.Map;
@@ -15,6 +19,10 @@ import java.util.Set;
  * Implements advanced variable lifetime and scope analysis rules.
  */
 public class SymbolTableDetector {
+
+    private SymbolTableDetector() {
+        // Utility class - prevent instantiation
+    }
 
     /**
      * Rule 1: Variable declared but never used.
@@ -360,11 +368,11 @@ public class SymbolTableDetector {
 
             // For each assignment, find what variables are referenced
             for (SymbolReference assignment : symbol.getAssignments()) {
-                String context_str = assignment.getContext();
+                String contextStr = assignment.getContext();
                 // Simple heuristic: find variable names in assignment context
                 for (Symbol otherSymbol : table.getAllSymbols()) {
                     if (!otherSymbol.getName().equals(symbol.getName())
-                        && context_str.contains(otherSymbol.getName())) {
+                        && contextStr.contains(otherSymbol.getName())) {
                         deps.add(otherSymbol.getName());
                     }
                 }
@@ -448,14 +456,14 @@ public class SymbolTableDetector {
             Set<String> suspectedTypes = new java.util.HashSet<>();
 
             for (SymbolReference ref : symbol.getAllReferencesSorted()) {
-                String context_str = ref.getContext();
+                String contextStr = ref.getContext();
 
                 // Heuristics for type detection
-                if (context_str.matches(".*\\+\\s*\".*") || context_str.matches(".*\".*\\+.*")) {
+                if (contextStr.matches(".*\\+\\s*\".*") || contextStr.matches(".*\".*\\+.*")) {
                     suspectedTypes.add("string");
-                } else if (context_str.matches(".*\\[\\[.*\\]\\].*") || context_str.matches(".*Part\\[.*")) {
+                } else if (contextStr.matches(".*\\[\\[.*\\]\\].*") || contextStr.matches(".*Part\\[.*")) {
                     suspectedTypes.add("list");
-                } else if (context_str.matches(".*[\\+\\-\\*/]\\s*\\d+.*")) {
+                } else if (contextStr.matches(".*[\\+\\-\\*/]\\s*\\d+.*")) {
                     suspectedTypes.add("number");
                 }
             }
@@ -537,10 +545,10 @@ public class SymbolTableDetector {
             }
 
             for (SymbolReference ref : symbol.getAllReferencesSorted()) {
-                String context_str = ref.getContext();
+                String contextStr = ref.getContext();
 
                 // Check for dynamic evaluation functions
-                if (context_str.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*"                                        + java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
+                if (contextStr.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*"                                        + java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
                     createIssue(context, file, "ScopeLeakThroughDynamicEvaluation", ref.getLine(),
                         String.format("Module variable '%s' used in dynamic evaluation, may leak scope",
                             symbol.getName())

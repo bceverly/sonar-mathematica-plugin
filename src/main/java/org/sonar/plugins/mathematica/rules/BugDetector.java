@@ -115,7 +115,9 @@ public class BugDetector extends BaseDetector {
                 // Check if there's validation
                 int lineStart = content.lastIndexOf('\n', position) + 1;
                 int lineEnd = content.indexOf('\n', position);
-                if (lineEnd == -1) lineEnd = content.length();
+                if (lineEnd == -1) {
+                    lineEnd = content.length();
+                }
                 String line = content.substring(lineStart, lineEnd);
 
                 if (line.contains("Check[") || line.contains("!= 0") || line.contains("> 0")) {
@@ -161,7 +163,9 @@ public class BugDetector extends BaseDetector {
                 // Check if bounds are validated
                 int lineStart = content.lastIndexOf('\n', position) + 1;
                 int lineEnd = content.indexOf('\n', position);
-                if (lineEnd == -1) lineEnd = content.length();
+                if (lineEnd == -1) {
+                    lineEnd = content.length();
+                }
                 String line = content.substring(lineStart, lineEnd);
 
                 if (line.contains("Length[") || line.contains("Check[")
@@ -194,7 +198,9 @@ public class BugDetector extends BaseDetector {
 
                 // Look for recursion
                 int bodyEnd = content.indexOf(";", defStart);
-                if (bodyEnd == -1) bodyEnd = content.length();
+                if (bodyEnd == -1) {
+                    bodyEnd = content.length();
+                }
                 int nextDef = content.indexOf(functionName + "[", defStart + functionName.length());
 
                 if (nextDef > 0 && nextDef < bodyEnd) {
@@ -249,7 +255,9 @@ public class BugDetector extends BaseDetector {
             // Check each function's patterns
             for (Map.Entry<String, List<PatternInfo>> entry : functionPatterns.entrySet()) {
                 List<PatternInfo> patterns = entry.getValue();
-                if (patterns.size() < 2) continue;
+                if (patterns.size() < 2) {
+                    continue;
+                }
 
                 // Check if general pattern comes before specific patterns
                 for (int i = 0; i < patterns.size() - 1; i++) {
@@ -258,8 +266,8 @@ public class BugDetector extends BaseDetector {
                         for (int j = i + 1; j < patterns.size(); j++) {
                             String laterPattern = patterns.get(j).pattern;
                             if (laterPattern.contains("_Integer") || laterPattern.contains("_String")
-                                || laterPattern.contains("_Real") || laterPattern.contains("_?") ||
-                                laterPattern.contains("_Symbol")) {
+                                || laterPattern.contains("_Real") || laterPattern.contains("_?")
+                                || laterPattern.contains("_Symbol")) {
                                 reportIssue(context, inputFile, patterns.get(j).lineNumber,
                                     MathematicaRulesDefinition.UNREACHABLE_PATTERN_KEY,
                                     "This specific pattern will never match because a more general pattern was defined earlier.");

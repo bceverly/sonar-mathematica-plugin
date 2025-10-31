@@ -1,6 +1,9 @@
 package org.sonar.plugins.mathematica.rules;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.InputFile;
@@ -794,8 +797,12 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
                     for (int j = Math.max(0, i - 3); j <= Math.min(lines.length - 1, i + 3); j++) {
                         Matcher contextMatcher = NESTED_IF.matcher(lines[j]);
                         int count = 0;
-                        while (contextMatcher.find()) count++;
-                        if (j != i) contextDepth += count;
+                        while (contextMatcher.find()) {
+                            count++;
+                        }
+                        if (j != i) {
+                            contextDepth += count;
+                        }
                     }
 
                     if (contextDepth >= 5) {
@@ -822,12 +829,16 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
             while (funcMatcher.find()) {
                 int funcStart = funcMatcher.start();
                 int funcEnd = content.indexOf("\n\n", funcStart);
-                if (funcEnd == -1) funcEnd = content.length();
+                if (funcEnd == -1) {
+                    funcEnd = content.length();
+                }
 
                 String funcBody = content.substring(funcStart, Math.min(funcEnd, content.length()));
                 Matcher returnMatcher = RETURN_STATEMENT.matcher(funcBody);
                 int returnCount = 0;
-                while (returnMatcher.find()) returnCount++;
+                while (returnMatcher.find()) {
+                    returnCount++;
+                }
 
                 if (returnCount > 5) {
                     int line = calculateLineNumber(content, funcStart);

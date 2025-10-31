@@ -5,7 +5,12 @@ import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesSensor;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.Deque;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Unified visitor that checks ALL ~400 rules in a single AST traversal.
@@ -260,8 +265,8 @@ public class UnifiedRuleVisitor implements AstVisitor {
     private boolean isBuiltin(String name) {
         // Simplified builtin check
         return name.equals("Print") || name.equals("If") || name.equals("Module")
-               || name.equals("Block") || name.equals("With") || name.equals("Map") ||
-               name.equals("Table") || name.equals("Length") || name.equals("Part");
+               || name.equals("Block") || name.equals("With") || name.equals("Map")
+               || name.equals("Table") || name.equals("Length") || name.equals("Part");
     }
 
     private void checkListIndexOutOfBounds(FunctionCallNode node) {

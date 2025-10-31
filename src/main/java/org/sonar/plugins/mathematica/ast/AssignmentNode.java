@@ -15,8 +15,12 @@ public class AssignmentNode extends AstNode {
         this.operator = operator;
         this.lhs = lhs;
         this.rhs = rhs;
-        if (lhs != null) addChild(lhs);
-        if (rhs != null) addChild(rhs);
+        if (lhs != null) {
+            addChild(lhs);
+        }
+        if (rhs != null) {
+            addChild(rhs);
+        }
     }
 
     public String getOperator() {
@@ -34,8 +38,12 @@ public class AssignmentNode extends AstNode {
     @Override
     public void accept(AstVisitor visitor) {
         // Assignment is a type of operator, visitor handles it
-        if (lhs != null) lhs.accept(visitor);
-        if (rhs != null) rhs.accept(visitor);
+        if (lhs != null) {
+            lhs.accept(visitor);
+        }
+        if (rhs != null) {
+            rhs.accept(visitor);
+        }
     }
 
     @Override

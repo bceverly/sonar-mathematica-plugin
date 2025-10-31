@@ -359,8 +359,12 @@ public class CodeSmellDetector extends BaseDetector {
                 int maxDepth = 0;
 
                 for (char c : line.toCharArray()) {
-                    if (c == '[') depth++;
-                    if (c == ']') depth--;
+                    if (c == '[') {
+                        depth++;
+                    }
+                    if (c == ']') {
+                        depth--;
+                    }
                     maxDepth = Math.max(maxDepth, depth);
                 }
 
@@ -595,9 +599,9 @@ public class CodeSmellDetector extends BaseDetector {
                 // Check if Compile is nearby
                 int start = Math.max(0, matcher.start() - 200);
                 int end = Math.min(content.length(), matcher.end() + 200);
-                String context_text = content.substring(start, end);
+                String contextText = content.substring(start, end);
 
-                if (!context_text.contains("Compile")) {
+                if (!contextText.contains("Compile")) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY,
                         "Numerical loop should use Compile for 10-100x speed improvement.", matcher.start(), matcher.end());

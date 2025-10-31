@@ -824,8 +824,12 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private int findStatementEnd(String content, int start) {
         int semicolon = content.indexOf(';', start);
         int newline = content.indexOf('\n', start);
-        if (semicolon == -1) return newline == -1 ? content.length() : newline;
-        if (newline == -1) return semicolon;
+        if (semicolon == -1) {
+            return newline == -1 ? content.length() : newline;
+        }
+        if (newline == -1) {
+            return semicolon;
+        }
         return Math.min(semicolon, newline);
     }
 
