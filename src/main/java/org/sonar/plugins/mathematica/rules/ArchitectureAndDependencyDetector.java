@@ -28,7 +28,11 @@ import java.util.regex.Pattern;
  * - Unused export detection
  * - API consistency validation
  */
-public class ArchitectureAndDependencyDetector {
+public final class ArchitectureAndDependencyDetector {
+
+    private ArchitectureAndDependencyDetector() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     // ========================================
     // PRE-COMPILED PATTERNS FOR PERFORMANCE

@@ -44,7 +44,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNS
  * Covers performance issues, optimization patterns, and efficient coding practices.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class PerformanceRulesDefinition {
+final class PerformanceRulesDefinition {
 
     private PerformanceRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

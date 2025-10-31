@@ -52,7 +52,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRO
  * Covers type mismatch detection and data flow analysis.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class TypeCheckingAndDataFlowRulesDefinition {
+final class TypeCheckingAndDataFlowRulesDefinition {
 
     private TypeCheckingAndDataFlowRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

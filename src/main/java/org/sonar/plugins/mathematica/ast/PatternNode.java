@@ -44,12 +44,9 @@ public class PatternNode extends AstNode {
         AstNode testFunction,
         AstNode condition,
         AstNode defaultValue,
-        int startLine,
-        int startColumn,
-        int endLine,
-        int endColumn
+        SourceLocation location
     ) {
-        super(NodeType.PATTERN, startLine, startColumn, endLine, endColumn);
+        super(NodeType.PATTERN, location);
         this.patternType = patternType;
         this.patternName = patternName;
         this.headType = headType;

@@ -81,11 +81,13 @@ public class CodeSmellDetector extends BaseDetector {
     // Pre-compiled patterns for performance
     private static final Pattern ASSIGNMENT_PATTERN = Pattern.compile("\\w+\\s*=\\s*[^=]");
     private static final Pattern FUNCTION_CALL_PATTERN = Pattern.compile("[a-zA-Z]\\w*\\s*\\[");
-    private static final Pattern KEYWORD_PATTERN = Pattern.compile("\\b(?:Module|Block|With|Table|Map|Apply|Function|If|While|Do|For|Return|Print|Plot|Solve)\\s*\\[");
+    private static final Pattern KEYWORD_PATTERN = Pattern.compile(
+        "\\b(?:Module|Block|With|Table|Map|Apply|Function|If|While|Do|For|Return|Print|Plot|Solve)\\s*\\[");
     private static final Pattern OPERATOR_PATTERN_OPTIMIZED = Pattern.compile("[-+*/^]\\s*[a-zA-Z0-9]");
 
     // Phase 4 patterns (performance optimization - pre-compiled)
-    private static final Pattern OVERCOMPLEX_PATTERN_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*(_\\w*\\s*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*)\\]");
+    private static final Pattern OVERCOMPLEX_PATTERN_PATTERN = Pattern.compile(
+        "([a-zA-Z]\\w*)\\s*\\[[^\\]]*(_\\w*\\s*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*\\|[^\\]]*)\\]");
     private static final Pattern MIXED_RULE_TYPES_PATTERN = Pattern.compile("\\{[^}]*->\\s*[^}]*:>[^}]*\\}|\\{[^}]*:>\\s*[^}]*->[^}]*\\}");
     private static final Pattern DOWNVALUES_FUNC_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*_[^\\]]*\\]\\s*:=");
     private static final Pattern PATTERN_TEST_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*_[a-zA-Z]\\w*[^\\]]*)\\]\\s*:=");
@@ -103,7 +105,8 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern RECURSIVE_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=[^;]*\\1\\s*\\[");
     private static final Pattern STRINGJOIN_PATTERN = Pattern.compile("[^<]*<>[^<]*<>[^<]*<>");
     private static final Pattern SELECT_LINEAR_PATTERN = Pattern.compile("Select\\s*\\[[^,]+,\\s*#\\[\\[[^\\]]+\\]\\]\\s*==");
-    private static final Pattern REPEATED_CALC_PATTERN = Pattern.compile("Do\\s*\\[[^,]*([A-Z][a-zA-Z0-9]+)\\s*\\[[^\\]]*\\][^,]*,\\s*\\{([a-z]\\w*),");
+    private static final Pattern REPEATED_CALC_PATTERN = Pattern.compile(
+        "Do\\s*\\[[^,]*([A-Z][a-zA-Z0-9]+)\\s*\\[[^\\]]*\\][^,]*,\\s*\\{([a-z]\\w*),");
     private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*\\[[^\\]]+\\]");
     private static final Pattern FLATTEN_TABLE_PATTERN = Pattern.compile("Flatten\\s*\\[\\s*Table\\s*\\[");
     private static final Pattern LARGE_TABLE_PATTERN = Pattern.compile("Table\\s*\\[[^,]+,\\s*\\{[^,]+,\\s*\\d{4,}");
@@ -115,7 +118,8 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern SIMPLE_CHECK_PATTERN = Pattern.compile("Check\\s*\\[[^,]+,\\s*(?:\\$Failed|Null|None)\\s*\\]");
     private static final Pattern QUIET_PATTERN = Pattern.compile("Quiet\\s*\\[");
     private static final Pattern IF_PATTERN = Pattern.compile("If\\s*\\[([^\\[]+),\\s*([^,]+),\\s*([^\\]]+)\\]");
-    private static final Pattern FUNCTION_WITH_IF_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=\\s*(?:Module|Block)?\\s*\\[[^\\]]*If\\[");
+    private static final Pattern FUNCTION_WITH_IF_PATTERN = Pattern.compile(
+        "([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=\\s*(?:Module|Block)?\\s*\\[[^\\]]*If\\[");
 
 
     /**
@@ -1178,9 +1182,11 @@ public class CodeSmellDetector extends BaseDetector {
                 String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 100, content.length()));
                 if (!snippet.matches(".*:=.*=.*")) {  // Check for memoization pattern
                     int line = calculateLineNumber(content, matcher.start());
-                    reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_MEMOIZATION_KEY,
-                        String.format(
-                            "Recursive function '%s' should consider memoization for performance.", matcher.group(1)), matcher.start(), matcher.end());
+                    reportIssueWithFix(context, inputFile, line,
+                        MathematicaRulesDefinition.MISSING_MEMOIZATION_KEY,
+                        String.format("Recursive function '%s' should consider memoization for performance.",
+                            matcher.group(1)),
+                        matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {

@@ -8,7 +8,6 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CIR
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPILABLE_FUNCTION_NOT_COMPILED_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPILATION_TARGET_MISSING_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONSTANT_NOT_MARKED_AS_CONSTANT_KEY;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEAD_STORE_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FILE_EXCEEDS_ANALYSIS_LIMIT_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GLOBAL_VARIABLE_POLLUTION_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCORRECT_CLOSURE_CAPTURE_KEY;

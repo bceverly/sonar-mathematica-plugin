@@ -52,7 +52,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE
  * Covers dead code, reachability, taint analysis, and control flow patterns.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class ControlFlowAndTaintRulesDefinition {
+final class ControlFlowAndTaintRulesDefinition {
 
     private ControlFlowAndTaintRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

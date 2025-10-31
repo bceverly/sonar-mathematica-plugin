@@ -57,7 +57,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRO
  * Covers unused code detection, shadowing, naming conventions, and undefined symbols.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class UnusedCodeAndNamingRulesDefinition {
+final class UnusedCodeAndNamingRulesDefinition {
 
     private UnusedCodeAndNamingRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

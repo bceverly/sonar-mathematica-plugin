@@ -57,7 +57,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNU
  * Covers package dependencies, architecture violations, and layering rules.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class DependencyAndArchitectureRulesDefinition {
+final class DependencyAndArchitectureRulesDefinition {
 
     private DependencyAndArchitectureRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

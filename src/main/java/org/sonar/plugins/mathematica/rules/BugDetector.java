@@ -88,7 +88,8 @@ public class BugDetector extends BaseDetector {
     private static final Pattern ASSOCIATION_JOIN_PATTERN = Pattern.compile("Join\\s*\\[\\s*<\\|");
     private static final Pattern DATE_OBJECT_PATTERN = Pattern.compile("DateObject\\s*\\[\\s*\\{(\\d+),\\s*(\\d+),\\s*(\\d+)");
     private static final Pattern STATS_ON_VAR_PATTERN = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*\\[([a-zA-Z]\\w*)\\]");
-    private static final Pattern QUANTITY_MISMATCH_PATTERN = Pattern.compile("Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]\\s*[+\\-]\\s*Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]");
+    private static final Pattern QUANTITY_MISMATCH_PATTERN = Pattern.compile(
+        "Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]\\s*[+\\-]\\s*Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]");
 
     /**
      * Detect potential division by zero.
@@ -396,7 +397,8 @@ public class BugDetector extends BaseDetector {
                     ? "Loop starts at 0 but Mathematica lists are 1-indexed."
                     : "Loop goes beyond Length, causing out-of-bounds access.";
                 int lineNumber = calculateLineNumber(content, matcher.start());
-                reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.OFF_BY_ONE_KEY, message, matcher.start(), matcher.end());
+                reportIssueWithFix(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.OFF_BY_ONE_KEY, message, matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping off-by-one detection due to error in file: {}", inputFile.filename());
@@ -520,8 +522,10 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = SET_FUNCTION_DEFINITION_PATTERN.matcher(content);
             while (matcher.find()) {
                 int lineNumber = calculateLineNumber(content, matcher.start());
-                reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY,
-                    "Function definition uses = instead of :=. RHS evaluates once, not each call. Use := for functions.", matcher.start(), matcher.end());
+                reportIssueWithFix(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY,
+                    "Function definition uses = instead of :=. RHS evaluates once, not each call. Use := for functions.",
+                    matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping set/delayed confusion detection due to error in file: {}", inputFile.filename());
@@ -598,8 +602,10 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = DEFINITION_IN_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
                 int lineNumber = calculateLineNumber(content, matcher.start());
-                reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY,
-                    "Function redefined in loop creates growing definition chain (memory leak). Clear definitions or restructure.", matcher.start(), matcher.end());
+                reportIssueWithFix(context, inputFile, lineNumber,
+                    MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY,
+                    "Function redefined in loop creates growing definition chain (memory leak). Clear definitions or restructure.",
+                    matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping growing definition chain detection due to error in file: {}", inputFile.filename());

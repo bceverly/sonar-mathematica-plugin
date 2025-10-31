@@ -50,7 +50,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VER
  * Covers pattern matching, list/array operations, and association rules.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class PatternAndDataStructureRulesDefinition {
+final class PatternAndDataStructureRulesDefinition {
 
     private PatternAndDataStructureRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

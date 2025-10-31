@@ -36,12 +36,9 @@ public class LoopNode extends AstNode {
         AstNode end,
         AstNode step,
         AstNode body,
-        int startLine,
-        int startColumn,
-        int endLine,
-        int endColumn
+        SourceLocation location
     ) {
-        super(NodeType.LOOP, startLine, startColumn, endLine, endColumn);
+        super(NodeType.LOOP, location);
         this.loopType = loopType;
         this.iteratorVariable = iteratorVariable;
         this.start = start;

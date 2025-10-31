@@ -42,7 +42,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WEA
  * Core Rules definitions.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class CoreRulesDefinition {
+final class CoreRulesDefinition {
 
     private CoreRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

@@ -68,7 +68,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNN
  * Covers null safety, exception handling, and resource management patterns.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class NullSafetyAndResourceRulesDefinition {
+final class NullSafetyAndResourceRulesDefinition {
 
     private NullSafetyAndResourceRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");

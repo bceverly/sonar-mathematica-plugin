@@ -55,6 +55,11 @@ public abstract class AstNode {
         this.children = new ArrayList<>();
     }
 
+    protected AstNode(NodeType type, SourceLocation location) {
+        this(type, location.getStartLine(), location.getStartColumn(),
+            location.getEndLine(), location.getEndColumn());
+    }
+
     public NodeType getType() {
         return type;
     }

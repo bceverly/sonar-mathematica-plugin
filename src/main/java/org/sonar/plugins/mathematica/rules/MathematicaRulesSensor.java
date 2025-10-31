@@ -140,8 +140,6 @@ public class MathematicaRulesSensor implements Sensor {
         d.setSensor(this);
         return d;
     });
-    private final ThreadLocal<ArchitectureAndDependencyDetector> architectureAndDependencyDetector =
-        ThreadLocal.withInitial(ArchitectureAndDependencyDetector::new);
     private final ThreadLocal<AdvancedAnalysisDetector> advancedAnalysisDetector =
         ThreadLocal.withInitial(AdvancedAnalysisDetector::new);
 

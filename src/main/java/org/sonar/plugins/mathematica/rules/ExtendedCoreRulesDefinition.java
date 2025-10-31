@@ -44,7 +44,7 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE
  * Extensions of code smell, bug, vulnerability, and security hotspot rules.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
-class ExtendedCoreRulesDefinition {
+final class ExtendedCoreRulesDefinition {
 
     private ExtendedCoreRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
