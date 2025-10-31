@@ -2,7 +2,42 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.APPEND_IN_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DYNAMIC_INJECTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LARGE_TEMP_EXPRESSIONS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_PATTERN_TEST_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_RETURN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_BLANKS_MISUSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PLOT_IN_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_RELIABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_SECURITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_15MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_45MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNCLOSED_FILE_HANDLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNPROTECTED_SYMBOLS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNSAFE_CLOUD_DEPLOY_KEY;
 
 /**
  * Performance rule definitions.
@@ -10,6 +45,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class PerformanceRulesDefinition {
+
+    private PerformanceRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

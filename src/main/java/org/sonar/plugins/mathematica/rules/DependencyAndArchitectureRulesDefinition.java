@@ -2,7 +2,55 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CIRCULAR_PACKAGE_DEPENDENCY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMMENTED_OUT_PACKAGE_LOAD_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONDITIONAL_PACKAGE_LOAD_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CYCLIC_CALL_BETWEEN_PACKAGES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEAD_PACKAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEPRECATED_API_STILL_USED_INTERNALLY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DIAMOND_DEPENDENCY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DUPLICATE_SYMBOL_DEFINITION_ACROSS_PACKAGES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FUNCTION_ONLY_CALLED_ONCE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GOD_PACKAGE_TOO_MANY_DEPENDENCIES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IMPLEMENTATION_WITHOUT_TESTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCOMPLETE_PUBLIC_API_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCONSISTENT_PACKAGE_NAMING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCONSISTENT_PARAMETER_NAMES_ACROSS_OVERLOADS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INTERNAL_API_USED_LIKE_PUBLIC_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INTERNAL_IMPLEMENTATION_EXPOSED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LAYER_VIOLATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_PACKAGE_DOCUMENTATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_PACKAGE_IMPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ORPHANED_TEST_FILE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.OVER_ABSTRACTED_API_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_DEPENDS_ON_APPLICATION_CODE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_EXPORTS_TOO_LITTLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_EXPORTS_TOO_MUCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_LOADED_BUT_NOT_LISTED_IN_METADATA_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_TOO_LARGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_TOO_SMALL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PACKAGE_VERSION_MISMATCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PRIVATE_SYMBOL_USED_EXTERNALLY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_API_CHANGED_WITHOUT_VERSION_BUMP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_EXPORT_MISSING_USAGE_MESSAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PUBLIC_FUNCTION_WITH_IMPLEMENTATION_DETAILS_IN_NAME_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_REDEFINITION_AFTER_IMPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_UNUSED;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TEST_FUNCTION_IN_PRODUCTION_CODE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_15MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TRANSITIVE_DEPENDENCY_COULD_BE_DIRECT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNSTABLE_DEPENDENCY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_EXPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_PACKAGE_IMPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_PUBLIC_FUNCTION_KEY;
 
 /**
  * Dependency and Architecture rule definitions.
@@ -10,6 +58,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class DependencyAndArchitectureRulesDefinition {
+
+    private DependencyAndArchitectureRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

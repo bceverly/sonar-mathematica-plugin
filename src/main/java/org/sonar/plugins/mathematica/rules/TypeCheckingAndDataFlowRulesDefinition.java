@@ -2,7 +2,50 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_AS_RETURN_VALUE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITION_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CLOSURE_OVER_MUTABLE_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPARISON_INCOMPATIBLE_TYPES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DATASET_OPERATION_ON_LIST_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEAD_STORE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DOUBLE_ASSIGNMENT_SAME_VALUE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FUNCTION_RETURNS_WRONG_TYPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GRAPHICS_OBJECT_IN_NUMERIC_CONTEXT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GRAPH_OPERATION_ON_NON_GRAPH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IMAGE_OPERATION_ON_NON_IMAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IMPLICIT_TYPE_CONVERSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INTEGER_DIVISION_EXPECTING_REAL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LIST_FUNCTION_ON_ASSOCIATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MIXED_NUMERIC_TYPES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MODIFICATION_OF_LOOP_ITERATOR_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MUTATION_IN_PURE_FUNCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NULL_ASSIGNMENT_TO_TYPED_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NUMERIC_OPERATION_ON_STRING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.OPTIONAL_TYPE_INCONSISTENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.OVERWRITTEN_BEFORE_READ_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_TYPE_MISMATCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.READING_UNSET_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RETURN_TYPE_INCONSISTENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SHARED_MUTABLE_STATE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SOUND_OPERATION_ON_NON_SOUND_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.STRING_OPERATION_ON_NUMBER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_IN_NUMERIC_CONTEXT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TYPE_CAST_WITHOUT_VALIDATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNINITIALIZED_VARIABLE_USE_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.USE_OF_ITERATOR_OUTSIDE_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_ALIASING_ISSUE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_MAY_BE_UNINITIALIZED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_NEVER_MODIFIED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_SCOPE_ESCAPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRONG_ARGUMENT_TYPE_KEY;
 
 /**
  * Type Checking and Data Flow rule definitions.
@@ -10,6 +53,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class TypeCheckingAndDataFlowRulesDefinition {
+
+    private TypeCheckingAndDataFlowRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

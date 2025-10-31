@@ -2,7 +2,48 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ALTERNATIVES_TOO_COMPLEX_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSOCIATETO_ON_NON_SYMBOL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSOCIATION_UPDATE_PATTERN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSOCIATION_VS_LIST_CONFUSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BLANKSEQUENCE_WITHOUT_RESTRICTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_LIST_INDEXING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GROUPBY_WITHOUT_AGGREGATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.HOLDPATTERN_UNNECESSARY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INEFFICIENT_KEY_LOOKUP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INEFFICIENT_LIST_CONCATENATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.KEYDROP_MULTIPLE_TIMES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LENGTH_IN_LOOP_CONDITION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LONGEST_SHORTEST_WITHOUT_ORDERING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOOKUP_WITH_MISSING_DEFAULT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MERGE_WITHOUT_CONFLICT_STRATEGY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_KEY_CHECK_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_PATTERN_DEFAULTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NEGATIVE_INDEX_WITHOUT_VALIDATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NESTED_OPTIONAL_PATTERNS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NESTED_PART_EXTRACTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ORDER_DEPENDENT_PATTERNS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PART_ASSIGNMENT_TO_IMMUTABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_MATCHING_LARGE_LISTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_NAMING_CONFLICTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_REPEATED_DIFFERENT_TYPES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_TEST_PURE_FUNCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_TEST_VS_CONDITION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.POSITION_VS_SELECT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.QUERY_ON_NON_DATASET_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPEATED_PATTERN_ALTERNATIVES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REVERSE_TWICE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SORT_WITHOUT_COMPARISON_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_15MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNNECESSARY_FLATTEN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNRESTRICTED_BLANK_PATTERN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VERBATIM_PATTERN_MISUSE_KEY;
 
 /**
  * Pattern and Data Structure rule definitions.
@@ -10,6 +51,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class PatternAndDataStructureRulesDefinition {
+
+    private PatternAndDataStructureRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

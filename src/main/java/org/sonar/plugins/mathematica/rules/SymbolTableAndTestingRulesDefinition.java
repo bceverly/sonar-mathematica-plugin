@@ -10,6 +10,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  */
 class SymbolTableAndTestingRulesDefinition {
 
+    private SymbolTableAndTestingRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
+
     /**
      * Define all rules in this group.
      */

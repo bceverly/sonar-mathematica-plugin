@@ -2,7 +2,66 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ABORT_IN_LIBRARY_CODE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ALL_SPECIFICATION_INEFFICIENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BOOLEAN_EXPRESSION_ALWAYS_FALSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BOOLEAN_EXPRESSION_ALWAYS_TRUE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CATCH_ALL_EXCEPTION_HANDLER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CHECK_PATTERN_DOESNT_HANDLE_ALL_CASES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPARISON_OF_IDENTICAL_EXPRESSIONS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPARISON_WITH_NULL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMPLEX_BOOLEAN_EXPRESSION_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONDITION_ALWAYS_FALSE_CONSTANT_PROPAGATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONDITION_ALWAYS_TRUE_CONSTANT_PROPAGATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONSTANT_EXPRESSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DE_MORGANS_LAW_OPPORTUNITY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DOUBLE_NEGATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_EXCEPTION_HANDLER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EVALUATE_IN_HELD_CONTEXT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FLAT_ATTRIBUTE_MISUSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.HOLD_ATTRIBUTE_MISSING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.HOLD_FIRST_BUT_USES_SECOND_ARGUMENT_FIRST_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IDENTITY_OPERATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCONSISTENT_NULL_HANDLING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOOP_BOUND_CONSTANT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MESSAGE_WITHOUT_DEFINITION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_ATTRIBUTES_DECLARATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_CHECK_LEADS_TO_NULL_PROPAGATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_MESSAGE_DEFINITION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_NULL_CHECK_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_SEQUENCE_WRAPPER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_UNEVALUATED_WRAPPER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NULL_DEREFERENCE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NULL_PASSED_TO_NON_NULLABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NULL_RETURN_NOT_DOCUMENTED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.OFF_DISABLING_IMPORTANT_WARNINGS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ONE_IDENTITY_ATTRIBUTE_MISUSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ORDERLESS_ATTRIBUTE_ON_NON_COMMUTATIVE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PART_SPECIFICATION_OUT_OF_BOUNDS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_WITH_SIDE_EFFECT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PURE_EXPRESSION_IN_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.QUIET_SUPPRESSING_IMPORTANT_MESSAGES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REDUNDANT_COMPUTATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RELEASE_HOLD_AFTER_HOLD_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPLACEMENT_RULE_ORDER_MATTERS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPLACE_ALL_VS_REPLACE_CONFUSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RULE_DOESNT_MATCH_DUE_TO_EVALUATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEQUENCE_IN_UNEXPECTED_CONTEXT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SPAN_SPECIFICATION_INVALID_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PERFORMANCE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.THREADING_OVER_NON_LISTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.THROW_WITHOUT_CATCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNNECESSARY_BOOLEAN_CONVERSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNNECESSARY_HOLD_KEY;
 
 /**
  * Null Safety and Resource Management rule definitions.
@@ -10,6 +69,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class NullSafetyAndResourceRulesDefinition {
+
+    private NullSafetyAndResourceRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

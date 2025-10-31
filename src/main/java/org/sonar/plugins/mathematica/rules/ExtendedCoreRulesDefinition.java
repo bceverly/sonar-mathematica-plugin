@@ -2,7 +2,42 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEEPLY_NESTED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DUPLICATE_FUNCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_STATEMENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FLOATING_POINT_EQUALITY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FUNCTION_WITHOUT_RETURN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IDENTICAL_BRANCHES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCONSISTENT_NAMING_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INFINITE_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INSECURE_RANDOM_EXPANDED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISMATCHED_DIMENSIONS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_DOCUMENTATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_SANITIZATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.OFF_BY_ONE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SUSPICIOUS_PATTERN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_RELIABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_SECURITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_UNUSED;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_15MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_45MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TOO_MANY_PARAMETERS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TYPE_MISMATCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNSAFE_SYMBOL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_VARIABLES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VARIABLE_BEFORE_ASSIGNMENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE_KEY;
 
 /**
  * Extended Core rule definitions.
@@ -10,6 +45,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class ExtendedCoreRulesDefinition {
+
+    private ExtendedCoreRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

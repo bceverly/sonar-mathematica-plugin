@@ -2,7 +2,50 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BREAK_OUTSIDE_LOOP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CODE_AFTER_ABORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CODE_INJECTION_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMMAND_INJECTION_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONDITION_ALWAYS_EVALUATES_SAME_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ELSE_BRANCH_NEVER_TAKEN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_CATCH_BLOCK_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_IF_BRANCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EXCEPTION_NEVER_THROWN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.HARD_CODED_CREDENTIALS_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.IMPOSSIBLE_PATTERN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INFINITE_LOOP_PROVEN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INSECURE_RANDOMNESS_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LDAP_INJECTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOOP_NEVER_EXECUTES_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MASS_ASSIGNMENT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_DEFAULT_CASE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_ELSE_CONSIDERED_HARMFUL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MULTIPLE_RETURNS_MAKE_CODE_UNREACHABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.NESTED_IF_DEPTH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATH_TRAVERSAL_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATTERN_DEFINITION_SHADOWED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REGEX_DOS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SENSITIVE_DATA_IN_LOGS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SQL_INJECTION_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SSRF_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SWITCH_CASE_SHADOWED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_10MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_45MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TOO_MANY_RETURN_POINTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNREACHABLE_BRANCH_ALWAYS_FALSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNREACHABLE_BRANCH_ALWAYS_TRUE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNREACHABLE_CODE_AFTER_RETURN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNSAFE_DESERIALIZATION_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WEAK_CRYPTOGRAPHY_ENHANCED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XSS_TAINT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE_TAINT_KEY;
 
 /**
  * Control Flow and Taint Analysis rule definitions.
@@ -10,6 +53,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class ControlFlowAndTaintRulesDefinition {
+
+    private ControlFlowAndTaintRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

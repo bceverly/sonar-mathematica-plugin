@@ -2,7 +2,55 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_NEVER_READ_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BUILTIN_NAME_IN_LOCAL_SCOPE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CATCH_WITHOUT_THROW_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CIRCULAR_NEEDS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONDITION_ALWAYS_FALSE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONTEXT_CONFLICTS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CONTEXT_NOT_FOUND_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEAD_AFTER_RETURN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FORWARD_REFERENCE_WITHOUT_DECLARATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FUNCTION_DEFINED_NEVER_CALLED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.GLOBAL_IN_PACKAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INCONSISTENT_NAMING_CONVENTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOCAL_SHADOWS_GLOBAL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOCAL_SHADOWS_PARAMETER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LOOP_VARIABLE_UNUSED_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISMATCHED_BEGIN_END_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_IMPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MISSING_PATH_ENTRY_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MULTIPLE_DEFINITIONS_SAME_SYMBOL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PARAMETER_SHADOWS_BUILTIN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PRIVATE_CONTEXT_SYMBOL_PUBLIC_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REDEFINED_WITHOUT_USE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.RESERVED_NAME_USAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_AFTER_ENDPACKAGE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_MASKED_BY_IMPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_NAME_TOO_LONG_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SYMBOL_NAME_TOO_SHORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_DEAD_CODE;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_PATTERNS;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_UNUSED;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TEMP_VARIABLE_NOT_TEMP_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TYPO_IN_BUILTIN_NAME_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNDEFINED_FUNCTION_CALL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNDEFINED_VARIABLE_REFERENCE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNREACHABLE_AFTER_ABORT_THROW_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_FUNCTION_PARAMETER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_IMPORT_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_MODULE_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_OPTIONAL_PARAMETER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_PATTERN_NAME_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_PRIVATE_FUNCTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNUSED_WITH_VARIABLE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRONG_CAPITALIZATION_KEY;
 
 /**
  * Unused Code and Naming rule definitions.
@@ -10,6 +58,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class UnusedCodeAndNamingRulesDefinition {
+
+    private UnusedCodeAndNamingRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

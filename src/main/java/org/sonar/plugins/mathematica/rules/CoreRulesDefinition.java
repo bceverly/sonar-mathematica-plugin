@@ -2,13 +2,51 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
-import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.*;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITIONAL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CODE_INJECTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMMAND_INJECTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.COMMENTED_CODE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEBUG_CODE_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_BLOCK_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EMPTY_CATCH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FILE_LENGTH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FILE_UPLOAD_VALIDATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.FUNCTION_LENGTH_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.HARDCODED_CREDENTIALS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INFINITE_RECURSION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.INSECURE_DESERIALIZATION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.LIST_INDEX_OUT_OF_BOUNDS_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.MAGIC_NUMBER_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.PATH_TRAVERSAL_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_CRITICAL;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MAJOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SEVERITY_MINOR;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SQL_INJECTION_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.SSRF_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_READABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_RELIABILITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_SECURITY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TAG_UNUSED;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_15MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_20MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_30MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TIME_45MIN;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.TODO_FIXME_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNREACHABLE_PATTERN_KEY;
+import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WEAK_CRYPTOGRAPHY_KEY;
 
 /**
  * Core Rules definitions.
  * Extracted from MathematicaRulesDefinition for maintainability.
  */
 class CoreRulesDefinition {
+
+    private CoreRulesDefinition() {
+        throw new UnsupportedOperationException("Utility class");
+    }
 
     /**
      * Define all rules in this group.

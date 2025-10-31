@@ -18,7 +18,7 @@ import java.util.Set;
  * Detector for symbol table-based rules.
  * Implements advanced variable lifetime and scope analysis rules.
  */
-public class SymbolTableDetector {
+public final class SymbolTableDetector {
 
     private SymbolTableDetector() {
         // Utility class - prevent instantiation

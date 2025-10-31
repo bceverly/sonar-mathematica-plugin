@@ -749,7 +749,8 @@ public class CodeSmellDetector extends BaseDetector {
                     && !functionName.endsWith("!")) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY,
-                        String.format("Function '%s' has side effects but name doesn't indicate this. "                             + "Consider Set*/Update* prefix or ! suffix.", functionName), matcher.start(), matcher.end());
+                        String.format("Function '%s' has side effects but name doesn't indicate this. "
+                + "Consider Set*/Update* prefix or ! suffix.", functionName), matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
