@@ -60,15 +60,18 @@ final class PatternAndDataStructureRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk1Rules(repository);
-        defineChunk1Rules2(repository);
-        defineChunk1Rules3(repository);
+        definePatternMatchingRules(repository);
+        definePatternOrderingAndSyntaxRules(repository);
+        defineAdvancedPatternAndListRules(repository);
+        defineListIndexingAndConcatenationRules(repository);
+        defineListOperationAndAssociationRules(repository);
+        defineAssociationOperationRules(repository);
     }
 
     /**
      * CHUNK 1 RULES (Items 16-50 from ROADMAP_325.md) (Part 1) (11 rules)
      */
-    private static void defineChunk1Rules(NewRepository repository) {
+    private static void definePatternMatchingRules(NewRepository repository) {
         // ===== CHUNK 1 RULES (Items 16-50 from ROADMAP_325.md) =====
 
         // Pattern System Rules (Items 16-30)
@@ -147,6 +150,9 @@ final class PatternAndDataStructureRulesDefinition {
 
             rule129.setDebtRemediationFunction(rule129.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+    }
+
+    private static void definePatternOrderingAndSyntaxRules(NewRepository repository) {
         NewRule rule130 = repository.createRule(REPEATED_PATTERN_ALTERNATIVES_KEY)
             .setName("Pattern alternatives should use correct syntax")
             .setHtmlDescription(
@@ -239,7 +245,7 @@ final class PatternAndDataStructureRulesDefinition {
     /**
      * CHUNK 1 RULES (Items 16-50 from ROADMAP_325.md) (Part 2) (11 rules)
      */
-    private static void defineChunk1Rules2(NewRepository repository) {
+    private static void defineAdvancedPatternAndListRules(NewRepository repository) {
 
         NewRule rule136 = repository.createRule(LONGEST_SHORTEST_WITHOUT_ORDERING_KEY)
             .setName("Longest and Shortest require proper context")
@@ -315,6 +321,9 @@ final class PatternAndDataStructureRulesDefinition {
 
             rule140.setDebtRemediationFunction(rule140.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+    }
+
+    private static void defineListIndexingAndConcatenationRules(NewRepository repository) {
         NewRule rule141 = repository.createRule(NEGATIVE_INDEX_WITHOUT_VALIDATION_KEY)
             .setName("Validate negative indices against list length")
             .setHtmlDescription(
@@ -409,7 +418,7 @@ final class PatternAndDataStructureRulesDefinition {
     /**
      * CHUNK 1 RULES (Items 16-50 from ROADMAP_325.md) (Part 3) (13 rules)
      */
-    private static void defineChunk1Rules3(NewRepository repository) {
+    private static void defineListOperationAndAssociationRules(NewRepository repository) {
 
         NewRule rule147 = repository.createRule(SORT_WITHOUT_COMPARISON_KEY)
             .setName("Use Reverse[Sort[list]] instead of Sort with Greater")
@@ -502,6 +511,9 @@ final class PatternAndDataStructureRulesDefinition {
 
             rule152.setDebtRemediationFunction(rule152.debtRemediationFunctions().constantPerIssue("5min"));
 
+    }
+
+    private static void defineAssociationOperationRules(NewRepository repository) {
         NewRule rule153 = repository.createRule(QUERY_ON_NON_DATASET_KEY)
             .setName("Query requires Dataset wrapper")
             .setHtmlDescription(

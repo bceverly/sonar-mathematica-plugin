@@ -78,19 +78,20 @@ final class NullSafetyAndResourceRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk6RuleDefinitions(repository);
-        defineChunk6RuleDefinitionsPart2(repository);
-        defineChunk6RuleDefinitions2(repository);
-        defineChunk6RuleDefinitions2Part2(repository);
-        defineChunk6RuleDefinitions3(repository);
-        defineChunk6RuleDefinitions3Part2(repository);
-        defineChunk6RuleDefinitions4(repository);
+        defineNullSafetyRules(repository);
+        defineNullSafetyRulesContinued(repository);
+        defineResourceManagementRules(repository);
+        defineResourceManagementRulesContinued(repository);
+        defineErrorHandlingRules(repository);
+        defineErrorHandlingRulesContinued(repository);
+        defineStateManagementRules(repository);
+        defineStateManagementRulesContinued(repository);
     }
 
     /**
      * CHUNK 6 RULE DEFINITIONS (Items 251-300) (Part 1) (12 rules)
      */
-    private static void defineChunk6RuleDefinitions(NewRepository repository) {
+    private static void defineNullSafetyRules(NewRepository repository) {
         // ===== CHUNK 6 RULE DEFINITIONS (Items 251-300) =====
 
         // Null Safety (Items 251-265)
@@ -187,7 +188,7 @@ final class NullSafetyAndResourceRulesDefinition {
 
     }
 
-    private static void defineChunk6RuleDefinitionsPart2(NewRepository repository) {
+    private static void defineNullSafetyRulesContinued(NewRepository repository) {
         NewRule rule317 = repository.createRule(MISSING_CHECK_LEADS_TO_NULL_PROPAGATION_KEY)
             .setName("Missing null check causes error cascade")
             .setHtmlDescription(
@@ -282,7 +283,7 @@ final class NullSafetyAndResourceRulesDefinition {
     /**
      * CHUNK 6 RULE DEFINITIONS (Items 251-300) (Part 2) (12 rules)
      */
-    private static void defineChunk6RuleDefinitions2(NewRepository repository) {
+    private static void defineResourceManagementRules(NewRepository repository) {
 
         NewRule rule323 = repository.createRule(THROW_WITHOUT_CATCH_KEY)
             .setName("Throw without surrounding Catch aborts evaluation")
@@ -379,7 +380,7 @@ final class NullSafetyAndResourceRulesDefinition {
 
     }
 
-    private static void defineChunk6RuleDefinitions2Part2(NewRepository repository) {
+    private static void defineResourceManagementRulesContinued(NewRepository repository) {
         NewRule rule329 = repository.createRule(LOOP_BOUND_CONSTANT_KEY)
             .setName("Loop bound is constant - use literal")
             .setHtmlDescription(
@@ -474,7 +475,7 @@ final class NullSafetyAndResourceRulesDefinition {
     /**
      * CHUNK 6 RULE DEFINITIONS (Items 251-300) (Part 3) (12 rules)
      */
-    private static void defineChunk6RuleDefinitions3(NewRepository repository) {
+    private static void defineErrorHandlingRules(NewRepository repository) {
 
         NewRule rule335 = repository.createRule(BOOLEAN_EXPRESSION_ALWAYS_TRUE_KEY)
             .setName("Boolean expression is tautology")
@@ -570,7 +571,7 @@ final class NullSafetyAndResourceRulesDefinition {
 
     }
 
-    private static void defineChunk6RuleDefinitions3Part2(NewRepository repository) {
+    private static void defineErrorHandlingRulesContinued(NewRepository repository) {
         NewRule rule341 = repository.createRule(HOLD_ATTRIBUTE_MISSING_KEY)
             .setName("Function manipulates unevaluated expressions without Hold attribute")
             .setHtmlDescription(
@@ -666,7 +667,7 @@ final class NullSafetyAndResourceRulesDefinition {
     /**
      * CHUNK 6 RULE DEFINITIONS (Items 251-300) (Part 4) (14 rules)
      */
-    private static void defineChunk6RuleDefinitions4(NewRepository repository) {
+    private static void defineStateManagementRules(NewRepository repository) {
 
         NewRule rule347 = repository.createRule(PATTERN_WITH_SIDE_EFFECT_KEY)
             .setName("Pattern test with side effects evaluated multiple times")
@@ -773,6 +774,9 @@ final class NullSafetyAndResourceRulesDefinition {
 
             rule353.setDebtRemediationFunction(rule353.debtRemediationFunctions().constantPerIssue("2min"));
 
+    }
+
+    private static void defineStateManagementRulesContinued(NewRepository repository) {
         NewRule rule354 = repository.createRule(THREADING_OVER_NON_LISTS_KEY)
             .setName("Threading over non-list with Listable attribute")
             .setHtmlDescription(

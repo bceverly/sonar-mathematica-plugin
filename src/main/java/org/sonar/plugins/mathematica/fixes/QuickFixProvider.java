@@ -158,6 +158,27 @@ public class QuickFixProvider {
                     break;
 
                 // ===== PHASE 5: ADDING SAFETY =====
+                default:
+                    addAdditionalQuickFixes(issue, inputFile, ruleKey, fileContent, issueStartOffset, issueEndOffset, context);
+                    break;
+            }
+        } catch (Exception e) {
+            // If fix generation fails, just skip it (don't break the analysis)
+            // The issue will still be reported, just without a quick fix
+        }
+    }
+
+    private void addAdditionalQuickFixes(
+            NewIssue issue,
+            InputFile inputFile,
+            String ruleKey,
+            String fileContent,
+            int issueStartOffset,
+            int issueEndOffset,
+            QuickFixContext context) {
+
+        try {
+            switch (ruleKey) {
                 case "MissingFailedCheck":
                     addMissingFailedCheckFix(issue, inputFile, fileContent, issueStartOffset, issueEndOffset);
                     break;
@@ -275,8 +296,7 @@ public class QuickFixProvider {
                     break;
             }
         } catch (Exception e) {
-            // If fix generation fails, just skip it (don't break the analysis)
-            // The issue will still be reported, just without a quick fix
+            // Quick fix generation failed - skip silently
         }
     }
 

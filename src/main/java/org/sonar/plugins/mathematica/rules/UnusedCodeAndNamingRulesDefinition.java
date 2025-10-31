@@ -67,15 +67,18 @@ final class UnusedCodeAndNamingRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk2RuleDefinitions(repository);
-        defineChunk2RuleDefinitions2(repository);
-        defineChunk2RuleDefinitions3(repository);
+        defineUnusedCodeRules(repository);
+        defineUnusedCodeRulesContinued(repository);
+        defineNamingConventionRules(repository);
+        defineNamingConventionRulesContinued(repository);
+        defineCodeQualityRules(repository);
+        defineCodeQualityRulesContinued(repository);
     }
 
     /**
      * CHUNK 2 RULE DEFINITIONS (Items 61-100 from ROADMAP_325.md) (Part 1) (13 rules)
      */
-    private static void defineChunk2RuleDefinitions(NewRepository repository) {
+    private static void defineUnusedCodeRules(NewRepository repository) {
         // ===== CHUNK 2 RULE DEFINITIONS (Items 61-100 from ROADMAP_325.md) =====
 
         // Unused Code Detection Rules (Items 61-75)
@@ -170,6 +173,9 @@ final class UnusedCodeAndNamingRulesDefinition {
 
             rule165.setDebtRemediationFunction(rule165.debtRemediationFunctions().constantPerIssue("5min"));
 
+    }
+
+    private static void defineUnusedCodeRulesContinued(NewRepository repository) {
         NewRule rule166 = repository.createRule(UNUSED_OPTIONAL_PARAMETER_KEY)
             .setName("Unused optional parameters should be removed")
             .setHtmlDescription(
@@ -279,7 +285,7 @@ final class UnusedCodeAndNamingRulesDefinition {
     /**
      * CHUNK 2 RULE DEFINITIONS (Items 61-100 from ROADMAP_325.md) (Part 2) (13 rules)
      */
-    private static void defineChunk2RuleDefinitions2(NewRepository repository) {
+    private static void defineNamingConventionRules(NewRepository repository) {
 
         NewRule rule173 = repository.createRule(CATCH_WITHOUT_THROW_KEY)
             .setName("Catch statement without corresponding Throw")
@@ -373,6 +379,9 @@ final class UnusedCodeAndNamingRulesDefinition {
 
             rule178.setDebtRemediationFunction(rule178.debtRemediationFunctions().constantPerIssue("2min"));
 
+    }
+
+    private static void defineNamingConventionRulesContinued(NewRepository repository) {
         NewRule rule179 = repository.createRule(SYMBOL_NAME_TOO_SHORT_KEY)
             .setName("Symbol name is too short in large function")
             .setHtmlDescription(
@@ -482,7 +491,7 @@ final class UnusedCodeAndNamingRulesDefinition {
     /**
      * CHUNK 2 RULE DEFINITIONS (Items 61-100 from ROADMAP_325.md) (Part 3) (14 rules)
      */
-    private static void defineChunk2RuleDefinitions3(NewRepository repository) {
+    private static void defineCodeQualityRules(NewRepository repository) {
 
         NewRule rule186 = repository.createRule(MISMATCHED_BEGIN_END_KEY)
             .setName("Mismatched BeginPackage/EndPackage or Begin/End")
@@ -591,6 +600,9 @@ final class UnusedCodeAndNamingRulesDefinition {
 
             rule192.setDebtRemediationFunction(rule192.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
+    }
+
+    private static void defineCodeQualityRulesContinued(NewRepository repository) {
         NewRule rule193 = repository.createRule(WRONG_CAPITALIZATION_KEY)
             .setName("Wrong capitalization of built-in function")
             .setHtmlDescription(

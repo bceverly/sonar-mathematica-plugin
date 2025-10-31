@@ -67,15 +67,18 @@ final class DependencyAndArchitectureRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk5RuleDefinitions(repository);
-        defineChunk5RuleDefinitions2(repository);
-        defineChunk5RuleDefinitions3(repository);
+        defineDependencyRules(repository);
+        defineDependencyRulesContinued(repository);
+        defineArchitectureRules(repository);
+        defineArchitectureRulesContinued(repository);
+        defineModularityRules(repository);
+        defineModularityRulesContinued(repository);
     }
 
     /**
      * CHUNK 5 RULE DEFINITIONS (Items 211-250 from ROADMAP_325.md) (Part 1) (13 rules)
      */
-    private static void defineChunk5RuleDefinitions(NewRepository repository) {
+    private static void defineDependencyRules(NewRepository repository) {
         // ===== CHUNK 5 RULE DEFINITIONS (Items 211-250 from ROADMAP_325.md) =====
 
         // Dependency & Architecture Rules (Items 211-230)
@@ -180,6 +183,9 @@ final class DependencyAndArchitectureRulesDefinition {
 
             rule276.setDebtRemediationFunction(rule276.debtRemediationFunctions().constantPerIssue("5min"));
 
+    }
+
+    private static void defineDependencyRulesContinued(NewRepository repository) {
         NewRule rule277 = repository.createRule(PACKAGE_DEPENDS_ON_APPLICATION_CODE_KEY)
             .setName("Library package should not depend on application-specific code")
             .setHtmlDescription(
@@ -292,7 +298,7 @@ final class DependencyAndArchitectureRulesDefinition {
     /**
      * CHUNK 5 RULE DEFINITIONS (Items 211-250 from ROADMAP_325.md) (Part 2) (13 rules)
      */
-    private static void defineChunk5RuleDefinitions2(NewRepository repository) {
+    private static void defineArchitectureRules(NewRepository repository) {
 
         NewRule rule284 = repository.createRule(PACKAGE_EXPORTS_TOO_MUCH_KEY)
             .setName("Package exporting more than 50 symbols has poor cohesion")
@@ -386,6 +392,9 @@ final class DependencyAndArchitectureRulesDefinition {
 
             rule289.setDebtRemediationFunction(rule289.debtRemediationFunctions().constantPerIssue("2min"));
 
+    }
+
+    private static void defineArchitectureRulesContinued(NewRepository repository) {
         NewRule rule290 = repository.createRule(PUBLIC_API_CHANGED_WITHOUT_VERSION_BUMP_KEY)
             .setName("Breaking changes to public API should bump version")
             .setHtmlDescription(
@@ -499,7 +508,7 @@ final class DependencyAndArchitectureRulesDefinition {
     /**
      * CHUNK 5 RULE DEFINITIONS (Items 211-250 from ROADMAP_325.md) (Part 3) (14 rules)
      */
-    private static void defineChunk5RuleDefinitions3(NewRepository repository) {
+    private static void defineModularityRules(NewRepository repository) {
 
         NewRule rule297 = repository.createRule(IMPLEMENTATION_WITHOUT_TESTS_KEY)
             .setName("Implementation file without corresponding test file")
@@ -607,6 +616,9 @@ final class DependencyAndArchitectureRulesDefinition {
 
             rule303.setDebtRemediationFunction(rule303.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+    }
+
+    private static void defineModularityRulesContinued(NewRepository repository) {
         NewRule rule304 = repository.createRule(SYMBOL_REDEFINITION_AFTER_IMPORT_KEY)
             .setName("Symbol defined locally after importing package with same symbol")
             .setHtmlDescription(

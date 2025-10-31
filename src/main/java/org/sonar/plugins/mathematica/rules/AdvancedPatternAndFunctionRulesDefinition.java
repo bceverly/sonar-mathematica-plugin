@@ -79,16 +79,18 @@ final class AdvancedPatternAndFunctionRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        definePhase450NewRules(repository);
-        definePhase450NewRules2(repository);
-        definePhase450NewRules3(repository);
-        definePhase450NewRules4(repository);
+        defineAdvancedFunctionDesignAndClarityRules(repository);
+        defineDataStructureAndPerformanceOptimizationRules(repository);
+        defineEvaluationAndArrayOptimizationRules(repository);
+        definePerformanceOptimizationAndSecurityVulnerabilityRules(repository);
+        defineAdvancedPatternRulesContinued(repository);
+        defineDataStructureRulesContinued(repository);
     }
 
     /**
      * PHASE 4: 50 NEW RULES (Part 1) (12 rules)
      */
-    private static void definePhase450NewRules(NewRepository repository) {
+    private static void defineAdvancedFunctionDesignAndClarityRules(NewRepository repository) {
         // ===== PHASE 4: 50 NEW RULES =====
 
         // Pattern Matching & Function Definition Rules (5 rules)
@@ -226,6 +228,10 @@ final class AdvancedPatternAndFunctionRulesDefinition {
 
             rule83.setDebtRemediationFunction(rule83.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
+        defineAdvancedPatternRules2(repository);
+    }
+
+    private static void defineAdvancedPatternRules2(NewRepository repository) {
         NewRule rule84 = repository.createRule(MISSING_ERROR_MESSAGES_KEY)
             .setName("Custom functions should define error messages")
             .setHtmlDescription(
@@ -271,7 +277,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
     /**
      * PHASE 4: 50 NEW RULES (Part 2) (12 rules)
      */
-    private static void definePhase450NewRules2(NewRepository repository) {
+    private static void defineDataStructureAndPerformanceOptimizationRules(NewRepository repository) {
 
         NewRule rule87 = repository.createRule(EXPLICIT_GLOBAL_CONTEXT_KEY)
             .setName("Global` context should not be used explicitly")
@@ -334,6 +340,10 @@ final class AdvancedPatternAndFunctionRulesDefinition {
 
             rule90.setDebtRemediationFunction(rule90.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineHoldAttributesAndEvaluationRules(repository);
+    }
+
+    private static void defineHoldAttributesAndEvaluationRules(NewRepository repository) {
         NewRule rule91 = repository.createRule(MISSING_MEMOIZATION_KEY)
             .setName("Expensive pure computations should use memoization")
             .setHtmlDescription(
@@ -456,8 +466,12 @@ final class AdvancedPatternAndFunctionRulesDefinition {
     /**
      * PHASE 4: 50 NEW RULES (Part 3) (12 rules)
      */
-    private static void definePhase450NewRules3(NewRepository repository) {
+    private static void defineEvaluationAndArrayOptimizationRules(NewRepository repository) {
 
+        defineEvaluationAndEdgeCaseRules(repository);
+    }
+
+    private static void defineEvaluationAndEdgeCaseRules(NewRepository repository) {
         NewRule rule99 = repository.createRule(MISSING_HOLD_ATTRIBUTES_KEY)
             .setName("Functions delaying evaluation should use Hold attributes")
             .setHtmlDescription(
@@ -471,6 +485,18 @@ final class AdvancedPatternAndFunctionRulesDefinition {
 
             rule99.setDebtRemediationFunction(rule99.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+        defineAdvancedPatternRulesContinued(repository);
+    }
+
+    private static void defineAdvancedPatternRulesContinued(NewRepository repository) {
+        defineAdvancedPatternRulesAdditional(repository);
+    }
+
+    private static void defineAdvancedPatternRulesAdditional(NewRepository repository) {
+        defineAdvancedPatternRulesFinal(repository);
+    }
+
+    private static void defineAdvancedPatternRulesFinal(NewRepository repository) {
         NewRule rule100 = repository.createRule(EVALUATION_ORDER_ASSUMPTION_KEY)
             .setName("Do not rely on implicit evaluation order")
             .setHtmlDescription(
@@ -553,6 +579,18 @@ final class AdvancedPatternAndFunctionRulesDefinition {
 
             rule105.setDebtRemediationFunction(rule105.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
+        defineDataStructureRulesContinued(repository);
+    }
+
+    private static void defineDataStructureRulesContinued(NewRepository repository) {
+        defineDataStructureRulesAdditional(repository);
+    }
+
+    private static void defineDataStructureRulesAdditional(NewRepository repository) {
+        defineDataStructureRulesFinal(repository);
+    }
+
+    private static void defineDataStructureRulesFinal(NewRepository repository) {
         NewRule rule106 = repository.createRule(TOTAL_MEAN_ON_NON_NUMERIC_KEY)
             .setName("Total, Mean should only operate on numeric data")
             .setHtmlDescription(
@@ -630,7 +668,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
     /**
      * PHASE 4: 50 NEW RULES (Part 4) (14 rules)
      */
-    private static void definePhase450NewRules4(NewRepository repository) {
+    private static void definePerformanceOptimizationAndSecurityVulnerabilityRules(NewRepository repository) {
 
         NewRule rule111 = repository.createRule(FLATTEN_TABLE_ANTIPATTERN_KEY)
             .setName("Avoid Flatten[Table[...]] pattern")
@@ -729,6 +767,10 @@ final class AdvancedPatternAndFunctionRulesDefinition {
 
         // Security Vulnerability Rules (7 rules)
 
+        defineSecurityAndCompilationRules(repository);
+    }
+
+    private static void defineSecurityAndCompilationRules(NewRepository repository) {
         NewRule rule118 = repository.createRule(TOEXPRESSION_ON_INPUT_KEY)
             .setName("ToExpression on external input enables code injection")
             .setHtmlDescription(
@@ -843,4 +885,4 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             rule124.setDebtRemediationFunction(rule124.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
     }
 
-}
+    }

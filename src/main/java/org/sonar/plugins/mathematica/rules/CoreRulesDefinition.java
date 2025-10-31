@@ -169,6 +169,10 @@ final class CoreRulesDefinition {
 
             rule5.setDebtRemediationFunction(rule5.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
+        defineInitialCodeSmellAdditionalRules(repository);
+    }
+
+    private static void defineInitialCodeSmellAdditionalRules(NewRepository repository) {
         // Define the file length rule
         NewRule rule6 = repository.createRule(FILE_LENGTH_KEY)
             .setName("Files should not be too long")
@@ -400,6 +404,10 @@ final class CoreRulesDefinition {
 
             rule12.setDebtRemediationFunction(rule12.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
+        defineSecurityAdditionalRules(repository);
+    }
+
+    private static void defineSecurityAdditionalRules(NewRepository repository) {
         // Define path traversal rule
         NewRule rule13 = repository.createRule(PATH_TRAVERSAL_KEY)
             .setName("File paths should not be constructed from user input")
@@ -513,6 +521,10 @@ final class CoreRulesDefinition {
 
             rule15.setDebtRemediationFunction(rule15.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
+        defineSecurityDeserializationRule(repository);
+    }
+
+    private static void defineSecurityDeserializationRule(NewRepository repository) {
         // Define insecure deserialization rule
         NewRule rule16 = repository.createRule(INSECURE_DESERIALIZATION_KEY)
             .setName("Deserialization of untrusted data should be avoided")
@@ -705,6 +717,10 @@ final class CoreRulesDefinition {
 
             rule20.setDebtRemediationFunction(rule20.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
+        defineBugUnreachablePatternRule(repository);
+    }
+
+    private static void defineBugUnreachablePatternRule(NewRepository repository) {
         // Define unreachable pattern rule
         NewRule rule21 = repository.createRule(UNREACHABLE_PATTERN_KEY)
             .setName("Pattern definitions should not be unreachable")
@@ -849,6 +865,10 @@ final class CoreRulesDefinition {
 
             rule23.setDebtRemediationFunction(rule23.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
+        defineSecurityHotspotCryptoKeyRule(repository);
+    }
+
+    private static void defineSecurityHotspotCryptoKeyRule(NewRepository repository) {
         // Define crypto key generation rule
         NewRule rule24 = repository.createRule(CRYPTO_KEY_GENERATION_KEY)
             .setName("Cryptographic keys should be generated securely")

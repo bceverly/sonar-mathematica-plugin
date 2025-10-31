@@ -423,16 +423,7 @@ public class MathematicaRulesSensor implements Sensor {
             }
 
             // Initialize caches in all detectors for this file
-            codeSmellDetector.get().initializeCaches(content);
-            bugDetector.get().initializeCaches(content);
-            vulnerabilityDetector.get().initializeCaches(content);
-            securityHotspotDetector.get().initializeCaches(content);
-            patternAndDataStructureDetector.get().initializeCaches(content);
-            unusedAndNamingDetector.get().initializeCaches(content);
-            typeAndDataFlowDetector.get().initializeCaches(content);
-            controlFlowAndTaintDetector.get().initializeCaches(content);
-            advancedAnalysisDetector.get().initializeCaches(content);
-            // Note: ArchitectureAndDependencyDetector uses static caches (no per-file init needed)
+            initializeDetectorCaches(content);
 
             // Analyze comments once and cache for reuse
             List<int[]> commentRanges = analyzeComments(context, inputFile, content);
@@ -511,15 +502,48 @@ public class MathematicaRulesSensor implements Sensor {
 
 
 
+            performSymbolTableAnalysis(context, inputFile, content, fileStartTime, analysisTime);
 
+        } catch (Throwable t) {
+            // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
+            if (t instanceof Error) {
+                Error fatalError = (Error) t;
+                LOG.error("========================================");
+                LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
+                LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
+                LOG.error("File URI: {}", inputFile.uri());
+                LOG.error("File size: {} lines", inputFile.lines());
+                LOG.error("Error type: {}", fatalError.getClass().getName());
+                LOG.error("========================================");
+                // Re-throw fatal errors to crash the scanner
+                throw fatalError;
+            }
+            // Non-fatal exceptions: log and continue
+            LOG.error("Error analyzing file: {}", inputFile, t);
+        }
+    }
 
-            // ===== SYMBOL TABLE ANALYSIS (20 rules) =====
-            // Symbol table analysis runs separately from main AST analysis
-            // PERFORMANCE: Wrap with 120-second timeout to prevent hangs on pathologically complex files
-            long symbolTableStart = System.currentTimeMillis();
-            long symbolTableTime = 0;
+    private void initializeDetectorCaches(String content) {
+        codeSmellDetector.get().initializeCaches(content);
+        bugDetector.get().initializeCaches(content);
+        vulnerabilityDetector.get().initializeCaches(content);
+        securityHotspotDetector.get().initializeCaches(content);
+        patternAndDataStructureDetector.get().initializeCaches(content);
+        unusedAndNamingDetector.get().initializeCaches(content);
+        typeAndDataFlowDetector.get().initializeCaches(content);
+        controlFlowAndTaintDetector.get().initializeCaches(content);
+        advancedAnalysisDetector.get().initializeCaches(content);
+        // Note: ArchitectureAndDependencyDetector uses static caches (no per-file init needed)
+    }
 
-            ExecutorService executor = Executors.newSingleThreadExecutor();
+    private void performSymbolTableAnalysis(SensorContext context, InputFile inputFile, String content, long fileStartTime, long analysisTime) {
+        // ===== SYMBOL TABLE ANALYSIS (20 rules) =====
+        // Symbol table analysis runs separately from main AST analysis
+        // PERFORMANCE: Wrap with 120-second timeout to prevent hangs on pathologically complex files
+        long symbolTableStart = System.currentTimeMillis();
+        long symbolTableTime = 0;
+
+        ExecutorService executor = Executors.newSingleThreadExecutor();
             try {
                 Future<?> future = executor.submit(() -> {
                     try {
@@ -608,24 +632,6 @@ public class MathematicaRulesSensor implements Sensor {
             controlFlowAndTaintDetector.get().clearCaches();
             advancedAnalysisDetector.get().clearCaches();
             // Note: ArchitectureAndDependencyDetector uses static caches cleared at end of execute()
-
-        } catch (Throwable t) {
-            // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
-            if (t instanceof Error) {
-                Error fatalError = (Error) t;
-                LOG.error("========================================");
-                LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
-                LOG.error("Full file path: {}", inputFile.path().toAbsolutePath());
-                LOG.error("File URI: {}", inputFile.uri());
-                LOG.error("File size: {} lines", inputFile.lines());
-                LOG.error("Error type: {}", fatalError.getClass().getName());
-                LOG.error("========================================");
-                // Re-throw fatal errors to crash the scanner
-                throw fatalError;
-            }
-            // Non-fatal exceptions: log and continue
-            LOG.error("Error analyzing file: {}", inputFile, t);
-        }
     }
 
     /**

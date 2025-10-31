@@ -54,16 +54,18 @@ final class ExtendedCoreRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineNewCodeSmellRules(repository);
-        defineNewBugRules(repository);
+        defineExtendedCodeSmellRules(repository);
+        defineExtendedBugRules(repository);
         defineNewVulnerabilityRules(repository);
         defineNewSecurityHotspotRules(repository);
+        defineExtendedCodeSmellRulesContinued(repository);
+        defineExtendedBugRulesContinued(repository);
     }
 
     /**
      * NEW CODE SMELL RULES (Phase 2) (10 rules)
      */
-    private static void defineNewCodeSmellRules(NewRepository repository) {
+    private static void defineExtendedCodeSmellRules(NewRepository repository) {
         // ===== NEW CODE SMELL RULES (Phase 2) =====
 
         // Unused Variables
@@ -206,6 +208,10 @@ final class ExtendedCoreRulesDefinition {
             rule29.setDebtRemediationFunction(rule29.debtRemediationFunctions().constantPerIssue("5min"));
 
         // Inconsistent Naming
+        defineNewCodeSmellRules2(repository);
+    }
+
+    private static void defineNewCodeSmellRules2(NewRepository repository) {
         NewRule rule30 = repository.createRule(INCONSISTENT_NAMING_KEY)
             .setName("Naming conventions should be consistent")
             .setHtmlDescription(
@@ -279,6 +285,10 @@ final class ExtendedCoreRulesDefinition {
             rule32.setDebtRemediationFunction(rule32.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
         // Deprecated Functions
+        defineExtendedCodeSmellRulesExtra(repository);
+    }
+
+    private static void defineExtendedCodeSmellRulesExtra(NewRepository repository) {
         NewRule rule33 = repository.createRule(DEPRECATED_FUNCTION_KEY)
             .setName("Deprecated functions should not be used")
             .setHtmlDescription(
@@ -322,7 +332,7 @@ final class ExtendedCoreRulesDefinition {
     /**
      * NEW BUG RULES (Phase 2) (8 rules)
      */
-    private static void defineNewBugRules(NewRepository repository) {
+    private static void defineExtendedBugRules(NewRepository repository) {
         // ===== NEW BUG RULES (Phase 2) =====
 
         // Floating Point Equality
@@ -382,6 +392,18 @@ final class ExtendedCoreRulesDefinition {
             rule36.setDebtRemediationFunction(rule36.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Variable Before Assignment
+        defineExtendedCodeSmellRulesContinued(repository);
+    }
+
+    private static void defineExtendedCodeSmellRulesContinued(NewRepository repository) {
+        defineExtendedCodeSmellRulesAdditional(repository);
+    }
+
+    private static void defineExtendedCodeSmellRulesAdditional(NewRepository repository) {
+        defineExtendedCodeSmellRulesFinal(repository);
+    }
+
+    private static void defineExtendedCodeSmellRulesFinal(NewRepository repository) {
         NewRule rule37 = repository.createRule(VARIABLE_BEFORE_ASSIGNMENT_KEY)
             .setName("Variables should not be used before assignment")
             .setHtmlDescription(
@@ -503,6 +525,10 @@ final class ExtendedCoreRulesDefinition {
             rule41.setDebtRemediationFunction(rule41.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
         // Suspicious Pattern
+        defineExtendedBugRulesContinued(repository);
+    }
+
+    private static void defineExtendedBugRulesContinued(NewRepository repository) {
         NewRule rule42 = repository.createRule(SUSPICIOUS_PATTERN_KEY)
             .setName("Pattern matching should not have contradictions")
             .setHtmlDescription(
@@ -752,4 +778,4 @@ final class ExtendedCoreRulesDefinition {
             rule49.setDebtRemediationFunction(rule49.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
     }
 
-}
+    }

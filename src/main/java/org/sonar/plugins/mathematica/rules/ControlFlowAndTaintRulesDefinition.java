@@ -62,18 +62,18 @@ final class ControlFlowAndTaintRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk4RuleDefinitions(repository);
-        defineChunk4RuleDefinitionsPart2(repository);
-        defineChunk4RuleDefinitions2(repository);
-        defineChunk4RuleDefinitions2Part2(repository);
-        defineChunk4RuleDefinitions3(repository);
-        defineChunk4RuleDefinitions3Part2(repository);
+        defineControlFlowRules(repository);
+        defineControlFlowRulesContinued(repository);
+        defineTaintAnalysisRules(repository);
+        defineTaintAnalysisRulesContinued(repository);
+        defineComplexityRules(repository);
+        defineComplexityRulesContinued(repository);
     }
 
     /**
      * CHUNK 4 RULE DEFINITIONS (Items 161-200 from ROADMAP_325.md) (Part 1) (11 rules)
      */
-    private static void defineChunk4RuleDefinitions(NewRepository repository) {
+    private static void defineControlFlowRules(NewRepository repository) {
         // ===== CHUNK 4 RULE DEFINITIONS (Items 161-200 from ROADMAP_325.md) =====
 
         // Dead Code & Reachability (Items 161-175)
@@ -189,7 +189,7 @@ final class ControlFlowAndTaintRulesDefinition {
 
     }
 
-    private static void defineChunk4RuleDefinitionsPart2(NewRepository repository) {
+    private static void defineControlFlowRulesContinued(NewRepository repository) {
         NewRule rule242 = repository.createRule(INFINITE_LOOP_PROVEN_KEY)
             .setName("Loop has no exit condition (proven infinite)")
             .setHtmlDescription(
@@ -287,7 +287,7 @@ final class ControlFlowAndTaintRulesDefinition {
     /**
      * CHUNK 4 RULE DEFINITIONS (Items 161-200 from ROADMAP_325.md) (Part 2) (11 rules)
      */
-    private static void defineChunk4RuleDefinitions2(NewRepository repository) {
+    private static void defineTaintAnalysisRules(NewRepository repository) {
 
         NewRule rule247 = repository.createRule(SWITCH_CASE_SHADOWED_KEY)
             .setName("Switch case is shadowed by earlier more general case")
@@ -378,7 +378,7 @@ final class ControlFlowAndTaintRulesDefinition {
 
     }
 
-    private static void defineChunk4RuleDefinitions2Part2(NewRepository repository) {
+    private static void defineTaintAnalysisRulesContinued(NewRepository repository) {
         NewRule rule252 = repository.createRule(COMMAND_INJECTION_TAINT_KEY)
             .setName("Command injection: untrusted data flows to RunProcess")
             .setHtmlDescription(
@@ -487,7 +487,7 @@ final class ControlFlowAndTaintRulesDefinition {
     /**
      * CHUNK 4 RULE DEFINITIONS (Items 161-200 from ROADMAP_325.md) (Part 3) (13 rules)
      */
-    private static void defineChunk4RuleDefinitions3(NewRepository repository) {
+    private static void defineComplexityRules(NewRepository repository) {
 
         NewRule rule258 = repository.createRule(UNSAFE_DESERIALIZATION_TAINT_KEY)
             .setName("Unsafe deserialization: untrusted data to Import[..., \"MX\"]")
@@ -593,7 +593,7 @@ final class ControlFlowAndTaintRulesDefinition {
 
     }
 
-    private static void defineChunk4RuleDefinitions3Part2(NewRepository repository) {
+    private static void defineComplexityRulesContinued(NewRepository repository) {
         NewRule rule264 = repository.createRule(MASS_ASSIGNMENT_KEY)
             .setName("Mass assignment: untrusted association directly used in updates")
             .setHtmlDescription(

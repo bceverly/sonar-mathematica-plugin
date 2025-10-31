@@ -62,18 +62,18 @@ final class TypeCheckingAndDataFlowRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk3RuleDefinitions(repository);
-        defineChunk3RuleDefinitionsPart2(repository);
-        defineChunk3RuleDefinitions2(repository);
-        defineChunk3RuleDefinitions2Part2(repository);
-        defineChunk3RuleDefinitions3(repository);
-        defineChunk3RuleDefinitions3Part2(repository);
+        defineTypeCheckingRules(repository);
+        defineTypeCheckingRulesContinued(repository);
+        defineDataFlowRules(repository);
+        defineDataFlowRulesContinued(repository);
+        defineNumericAndEdgeCaseRules(repository);
+        defineNumericAndEdgeCaseRulesContinued(repository);
     }
 
     /**
      * CHUNK 3 RULE DEFINITIONS (Items 111-150 from ROADMAP_325.md) (Part 1) (12 rules)
      */
-    private static void defineChunk3RuleDefinitions(NewRepository repository) {
+    private static void defineTypeCheckingRules(NewRepository repository) {
         // ===== CHUNK 3 RULE DEFINITIONS (Items 111-150 from ROADMAP_325.md) =====
 
         // Type Mismatch Detection Rules (Items 111-130)
@@ -175,7 +175,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
 
     }
 
-    private static void defineChunk3RuleDefinitionsPart2(NewRepository repository) {
+    private static void defineTypeCheckingRulesContinued(NewRepository repository) {
         NewRule rule206 = repository.createRule(INTEGER_DIVISION_EXPECTING_REAL_KEY)
             .setName("Integer division stays symbolic, use real division for numeric result")
             .setHtmlDescription(
@@ -271,7 +271,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
     /**
      * CHUNK 3 RULE DEFINITIONS (Items 111-150 from ROADMAP_325.md) (Part 2) (12 rules)
      */
-    private static void defineChunk3RuleDefinitions2(NewRepository repository) {
+    private static void defineDataFlowRules(NewRepository repository) {
 
         NewRule rule212 = repository.createRule(TYPE_CAST_WITHOUT_VALIDATION_KEY)
             .setName("Type conversion without validation")
@@ -365,7 +365,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
 
     }
 
-    private static void defineChunk3RuleDefinitions2Part2(NewRepository repository) {
+    private static void defineDataFlowRulesContinued(NewRepository repository) {
         NewRule rule218 = repository.createRule(DATASET_OPERATION_ON_LIST_KEY)
             .setName("Dataset operations require Dataset wrapper")
             .setHtmlDescription(
@@ -462,7 +462,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
     /**
      * CHUNK 3 RULE DEFINITIONS (Items 111-150 from ROADMAP_325.md) (Part 3) (12 rules)
      */
-    private static void defineChunk3RuleDefinitions3(NewRepository repository) {
+    private static void defineNumericAndEdgeCaseRules(NewRepository repository) {
 
         NewRule rule224 = repository.createRule(VARIABLE_ALIASING_ISSUE_KEY)
             .setName("Multiple variables point to same mutable structure")
@@ -556,7 +556,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
 
     }
 
-    private static void defineChunk3RuleDefinitions3Part2(NewRepository repository) {
+    private static void defineNumericAndEdgeCaseRulesContinued(NewRepository repository) {
         NewRule rule230 = repository.createRule(SHARED_MUTABLE_STATE_KEY)
             .setName("Global mutable state accessed from multiple functions")
             .setHtmlDescription(

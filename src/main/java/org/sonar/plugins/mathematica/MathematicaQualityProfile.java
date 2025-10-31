@@ -149,6 +149,10 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
             MathematicaRulesDefinition.UNUSED_VARIABLES_KEY
         );
 
+        defineActivations(profile);
+    }
+
+    private void defineActivations(NewBuiltInQualityProfile profile) {
         profile.activateRule(
             MathematicaRulesDefinition.REPOSITORY_KEY,
             MathematicaRulesDefinition.DUPLICATE_FUNCTION_KEY
@@ -173,6 +177,11 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
             MathematicaRulesDefinition.REPOSITORY_KEY,
             MathematicaRulesDefinition.INCONSISTENT_NAMING_KEY
         );
+
+        definePerformanceAndPatternRules(profile);
+    }
+
+    private void definePerformanceAndPatternRules(NewBuiltInQualityProfile profile) {
 
         profile.activateRule(
             MathematicaRulesDefinition.REPOSITORY_KEY,
@@ -255,6 +264,11 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
             MathematicaRulesDefinition.REPOSITORY_KEY,
             MathematicaRulesDefinition.INSECURE_RANDOM_EXPANDED_KEY
         );
+
+        defineAdvancedRules(profile);
+    }
+
+    private void defineAdvancedRules(NewBuiltInQualityProfile profile) {
 
         // Activate NEW SECURITY_HOTSPOT rules (Phase 2)
         profile.activateRule(

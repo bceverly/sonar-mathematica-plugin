@@ -64,16 +64,16 @@ final class SymbolTableAndTestingRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        defineChunk7RuleDefinitions(repository);
-        defineSymbolTableAnalysisRules(repository);
-        defineSymbolTableAnalysisRules2(repository);
+        defineSymbolTableRules(repository);
+        defineAdvancedSymbolTableRules(repository);
+        defineTestingAndValidationRules(repository);
         definePerformanceLimits(repository);
     }
 
     /**
      * CHUNK 7 RULE DEFINITIONS (Items 307-310, 312-320) (13 rules)
      */
-    private static void defineChunk7RuleDefinitions(NewRepository repository) {
+    private static void defineSymbolTableRules(NewRepository repository) {
         // ===== CHUNK 7 RULE DEFINITIONS (Items 307-310, 312-320) =====
 
         // Test Coverage Integration (Items 307-310)
@@ -215,6 +215,10 @@ final class SymbolTableAndTestingRulesDefinition {
 
             rule369.setDebtRemediationFunction(rule369.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineSymbolTableRules2(repository);
+    }
+
+    private static void defineSymbolTableRules2(NewRepository repository) {
         NewRule rule370 = repository.createRule(N_APPLIED_TOO_LATE_KEY)
             .setName("N[] applied after symbolic computation")
             .setHtmlDescription(
@@ -245,6 +249,10 @@ final class SymbolTableAndTestingRulesDefinition {
 
             rule371.setDebtRemediationFunction(rule371.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineSymbolTableRulesFinal(repository);
+    }
+
+    private static void defineSymbolTableRulesFinal(NewRepository repository) {
         NewRule rule372 = repository.createRule(INEFFICIENT_STRING_CONCATENATION_ENHANCED_KEY)
             .setName("Repeated string concatenation in loop")
             .setHtmlDescription(
@@ -279,7 +287,7 @@ final class SymbolTableAndTestingRulesDefinition {
     /**
      * SYMBOL TABLE ANALYSIS RULES (10 new rules) (Part 1) (9 rules)
      */
-    private static void defineSymbolTableAnalysisRules(NewRepository repository) {
+    private static void defineAdvancedSymbolTableRules(NewRepository repository) {
         // ===== SYMBOL TABLE ANALYSIS RULES (10 new rules) =====
 
         NewRule rule374 = repository.createRule(UNUSED_VARIABLE_KEY)
@@ -345,6 +353,14 @@ final class SymbolTableAndTestingRulesDefinition {
 
             rule377.setDebtRemediationFunction(rule377.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineSymbolTableRulesContinued(repository);
+    }
+
+    private static void defineSymbolTableRulesContinued(NewRepository repository) {
+        defineSymbolTableRulesAdditional(repository);
+    }
+
+    private static void defineSymbolTableRulesAdditional(NewRepository repository) {
         NewRule rule378 = repository.createRule(UNUSED_PARAMETER_KEY)
             .setName("Function parameter is never used")
             .setHtmlDescription(
@@ -424,7 +440,7 @@ final class SymbolTableAndTestingRulesDefinition {
     /**
      * SYMBOL TABLE ANALYSIS RULES (10 new rules) (Part 2) (10 rules)
      */
-    private static void defineSymbolTableAnalysisRules2(NewRepository repository) {
+    private static void defineTestingAndValidationRules(NewRepository repository) {
 
         // Advanced Symbol Table Analysis Rules (10 rules)
 
@@ -518,6 +534,10 @@ final class SymbolTableAndTestingRulesDefinition {
 
             rule388.setDebtRemediationFunction(rule388.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineTestingRulesContinued(repository);
+    }
+
+    private static void defineTestingRulesContinued(NewRepository repository) {
         NewRule rule389 = repository.createRule(TYPE_INCONSISTENCY_KEY)
             .setName("Variable used with inconsistent types")
             .setHtmlDescription(
@@ -637,4 +657,4 @@ final class SymbolTableAndTestingRulesDefinition {
             rule394.setDebtRemediationFunction(rule394.debtRemediationFunctions().constantPerIssue("2min"));
     }
 
-}
+    }

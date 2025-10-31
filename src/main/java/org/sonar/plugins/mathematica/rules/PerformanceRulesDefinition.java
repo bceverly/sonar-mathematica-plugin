@@ -54,15 +54,17 @@ final class PerformanceRulesDefinition {
      * Define all rules in this group.
      */
     static void defineRules(NewRepository repository) {
-        definePhase3Rules(repository);
-        definePhase3Rules2(repository);
+        defineLoopPerformanceAndPatternRules(repository);
+        defineReliabilityAndBestPracticesRules(repository);
+        defineBlockModuleAndScopeRules(repository);
+        defineSecurityVulnerabilityRules(repository);
     }
 
     /**
-     * PHASE 3 RULES (25 rules) (Part 1) (12 rules)
+     * Loop performance and pattern matching rules (12 rules)
      */
-    private static void definePhase3Rules(NewRepository repository) {
-        // ===== PHASE 3 RULES (25 rules) =====
+    private static void defineLoopPerformanceAndPatternRules(NewRepository repository) {
+        // ===== LOOP PERFORMANCE AND PATTERN MATCHING RULES =====
 
         // PERFORMANCE ISSUES (8 rules)
 
@@ -205,6 +207,10 @@ final class PerformanceRulesDefinition {
 
             rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineVisualizationAndInputValidationRules(repository);
+    }
+
+    private static void defineVisualizationAndInputValidationRules(NewRepository repository) {
         NewRule rule57 = repository.createRule(PLOT_IN_LOOP_KEY)
             .setName("Plotting functions should not be called in loops")
             .setHtmlDescription(
@@ -226,6 +232,10 @@ final class PerformanceRulesDefinition {
 
         // PATTERN MATCHING ISSUES (5 rules)
 
+        definePatternMatchingAndDefinitionRules(repository);
+    }
+
+    private static void definePatternMatchingAndDefinitionRules(NewRepository repository) {
         NewRule rule58 = repository.createRule(MISSING_PATTERN_TEST_KEY)
             .setName("Numeric functions should test argument types")
             .setHtmlDescription(
@@ -315,10 +325,22 @@ final class PerformanceRulesDefinition {
     }
 
     /**
-     * PHASE 3 RULES (25 rules) (Part 2) (13 rules)
+     * Reliability and best practices rules
      */
-    private static void definePhase3Rules2(NewRepository repository) {
+    private static void defineReliabilityAndBestPracticesRules(NewRepository repository) {
 
+        defineBlockModuleAndScopeRules(repository);
+    }
+
+    private static void defineBlockModuleAndScopeRules(NewRepository repository) {
+        defineSecurityAndResourceManagementRules(repository);
+    }
+
+    private static void defineSecurityAndResourceManagementRules(NewRepository repository) {
+        defineNamingConventionAndDocumentationRules(repository);
+    }
+
+    private static void defineNamingConventionAndDocumentationRules(NewRepository repository) {
         NewRule rule62 = repository.createRule(BLOCK_MODULE_MISUSE_KEY)
             .setName("Block and Module should be used correctly")
             .setHtmlDescription(
@@ -456,6 +478,10 @@ final class PerformanceRulesDefinition {
 
             rule67.setDebtRemediationFunction(rule67.debtRemediationFunctions().constantPerIssue("5min"));
 
+        defineSecurityVulnerabilityRules(repository);
+    }
+
+    private static void defineSecurityVulnerabilityRules(NewRepository repository) {
         NewRule rule68 = repository.createRule(UNPROTECTED_SYMBOLS_KEY)
             .setName("Public API symbols should be protected")
             .setHtmlDescription(
@@ -516,6 +542,10 @@ final class PerformanceRulesDefinition {
 
             rule70.setDebtRemediationFunction(rule70.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
+        defineResourceAndMemoryManagementRules(repository);
+    }
+
+    private static void defineResourceAndMemoryManagementRules(NewRepository repository) {
         NewRule rule71 = repository.createRule(DYNAMIC_INJECTION_KEY)
             .setName("Dynamic content should not use ToExpression on user input")
             .setHtmlDescription(
@@ -623,4 +653,4 @@ final class PerformanceRulesDefinition {
             rule74.setDebtRemediationFunction(rule74.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
     }
 
-}
+    }
