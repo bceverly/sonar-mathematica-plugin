@@ -55,8 +55,8 @@ final class PerformanceRulesDefinition {
     static void defineRules(NewRepository repository) {
         defineLoopPerformanceAndPatternRules(repository);
         defineReliabilityAndBestPracticesRules(repository);
-        defineBlockModuleAndScopeRules(repository);
-        defineSecurityVulnerabilityRules(repository);
+        // Note: defineBlockModuleAndScopeRules() and defineSecurityVulnerabilityRules()
+        // are already called by defineReliabilityAndBestPracticesRules() via its chain
     }
 
     /**

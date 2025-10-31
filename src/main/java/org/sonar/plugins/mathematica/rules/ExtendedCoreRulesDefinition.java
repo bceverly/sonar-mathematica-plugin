@@ -57,8 +57,8 @@ final class ExtendedCoreRulesDefinition {
         defineExtendedBugRules(repository);
         defineNewVulnerabilityRules(repository);
         defineNewSecurityHotspotRules(repository);
-        defineExtendedCodeSmellRulesContinued(repository);
-        defineExtendedBugRulesContinued(repository);
+        // Note: defineExtendedCodeSmellRulesContinued and defineExtendedBugRulesContinued
+        // are already called from their respective parent methods above
     }
 
     /**

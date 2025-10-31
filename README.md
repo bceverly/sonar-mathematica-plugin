@@ -36,7 +36,7 @@ A comprehensive SonarQube plugin providing code quality analysis, security scann
 | **Performance Analysis** | 9 rules | Performance | ✅ Active | Issues → Search "compile" or "packed" |
 | **Symbol Table Analysis** | 19 rules (+ 1 reused) | Advanced Variable Analysis | ✅ Active | Issues → Search "unused" or "shadow" |
 | **OWASP Top 10 2021 Coverage** | 9 of 10 categories | Security | ✅ Active | Issues → Type: Vulnerability |
-| **Total Rules** | **430+ rules** + CPD + Metrics | All | ✅ Active | Issues tab |
+| **Total Rules** | **394 rules** + CPD + Metrics | All | ✅ Active | Issues tab |
 | **Quick Fixes (SonarLint)** | 10 fixes | IDE Productivity | ✅ Active | SonarLint → "Quick Fix" button |
 
 ## Quick Navigation Cheat Sheet

@@ -82,8 +82,8 @@ final class AdvancedPatternAndFunctionRulesDefinition {
         defineDataStructureAndPerformanceOptimizationRules(repository);
         defineEvaluationAndArrayOptimizationRules(repository);
         definePerformanceOptimizationAndSecurityVulnerabilityRules(repository);
-        defineAdvancedPatternRulesContinued(repository);
-        defineDataStructureRulesContinued(repository);
+        // Note: defineAdvancedPatternRulesContinued and defineDataStructureRulesContinued
+        // are already called from their respective parent methods above
     }
 
     /**
