@@ -63,8 +63,11 @@ final class TypeCheckingAndDataFlowRulesDefinition {
      */
     static void defineRules(NewRepository repository) {
         defineChunk3RuleDefinitions(repository);
+        defineChunk3RuleDefinitionsPart2(repository);
         defineChunk3RuleDefinitions2(repository);
+        defineChunk3RuleDefinitions2Part2(repository);
         defineChunk3RuleDefinitions3(repository);
+        defineChunk3RuleDefinitions3Part2(repository);
     }
 
     /**
@@ -170,6 +173,9 @@ final class TypeCheckingAndDataFlowRulesDefinition {
 
             rule205.setDebtRemediationFunction(rule205.debtRemediationFunctions().constantPerIssue("5min"));
 
+    }
+
+    private static void defineChunk3RuleDefinitionsPart2(NewRepository repository) {
         NewRule rule206 = repository.createRule(INTEGER_DIVISION_EXPECTING_REAL_KEY)
             .setName("Integer division stays symbolic, use real division for numeric result")
             .setHtmlDescription(
@@ -357,6 +363,9 @@ final class TypeCheckingAndDataFlowRulesDefinition {
 
             rule217.setDebtRemediationFunction(rule217.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+    }
+
+    private static void defineChunk3RuleDefinitions2Part2(NewRepository repository) {
         NewRule rule218 = repository.createRule(DATASET_OPERATION_ON_LIST_KEY)
             .setName("Dataset operations require Dataset wrapper")
             .setHtmlDescription(
@@ -545,6 +554,9 @@ final class TypeCheckingAndDataFlowRulesDefinition {
 
             rule229.setDebtRemediationFunction(rule229.debtRemediationFunctions().constantPerIssue("5min"));
 
+    }
+
+    private static void defineChunk3RuleDefinitions3Part2(NewRepository repository) {
         NewRule rule230 = repository.createRule(SHARED_MUTABLE_STATE_KEY)
             .setName("Global mutable state accessed from multiple functions")
             .setHtmlDescription(

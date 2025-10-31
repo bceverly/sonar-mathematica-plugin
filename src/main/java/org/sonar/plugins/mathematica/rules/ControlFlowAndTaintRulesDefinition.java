@@ -63,8 +63,11 @@ final class ControlFlowAndTaintRulesDefinition {
      */
     static void defineRules(NewRepository repository) {
         defineChunk4RuleDefinitions(repository);
+        defineChunk4RuleDefinitionsPart2(repository);
         defineChunk4RuleDefinitions2(repository);
+        defineChunk4RuleDefinitions2Part2(repository);
         defineChunk4RuleDefinitions3(repository);
+        defineChunk4RuleDefinitions3Part2(repository);
     }
 
     /**
@@ -184,6 +187,9 @@ final class ControlFlowAndTaintRulesDefinition {
 
             rule241.setDebtRemediationFunction(rule241.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+    }
+
+    private static void defineChunk4RuleDefinitionsPart2(NewRepository repository) {
         NewRule rule242 = repository.createRule(INFINITE_LOOP_PROVEN_KEY)
             .setName("Loop has no exit condition (proven infinite)")
             .setHtmlDescription(
@@ -370,6 +376,9 @@ final class ControlFlowAndTaintRulesDefinition {
 
             rule251.setDebtRemediationFunction(rule251.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
+    }
+
+    private static void defineChunk4RuleDefinitions2Part2(NewRepository repository) {
         NewRule rule252 = repository.createRule(COMMAND_INJECTION_TAINT_KEY)
             .setName("Command injection: untrusted data flows to RunProcess")
             .setHtmlDescription(
@@ -582,6 +591,9 @@ final class ControlFlowAndTaintRulesDefinition {
 
             rule263.setDebtRemediationFunction(rule263.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
+    }
+
+    private static void defineChunk4RuleDefinitions3Part2(NewRepository repository) {
         NewRule rule264 = repository.createRule(MASS_ASSIGNMENT_KEY)
             .setName("Mass assignment: untrusted association directly used in updates")
             .setHtmlDescription(

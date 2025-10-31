@@ -18,6 +18,7 @@ public final class CodeSmellRules {
      */
     public static void define(NewRepository repository) {
         defineBasicCodeSmells(repository);
+        definePhase2CodeSmells(repository);
         definePerformanceRules(repository);
         defineBestPracticeRules(repository);
     }
@@ -105,6 +106,9 @@ public final class CodeSmellRules {
             .setType(org.sonar.api.rules.RuleType.CODE_SMELL)
             .setTags("debug");
 
+    }
+
+    private static void definePhase2CodeSmells(NewRepository repository) {
         // Phase 2 Code Smells
         repository.createRule(MathematicaRulesDefinition.UNUSED_VARIABLES_KEY)
             .setName("Unused variables should be removed")

@@ -79,8 +79,11 @@ final class NullSafetyAndResourceRulesDefinition {
      */
     static void defineRules(NewRepository repository) {
         defineChunk6RuleDefinitions(repository);
+        defineChunk6RuleDefinitionsPart2(repository);
         defineChunk6RuleDefinitions2(repository);
+        defineChunk6RuleDefinitions2Part2(repository);
         defineChunk6RuleDefinitions3(repository);
+        defineChunk6RuleDefinitions3Part2(repository);
         defineChunk6RuleDefinitions4(repository);
     }
 
@@ -182,6 +185,9 @@ final class NullSafetyAndResourceRulesDefinition {
 
             rule316.setDebtRemediationFunction(rule316.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
+    }
+
+    private static void defineChunk6RuleDefinitionsPart2(NewRepository repository) {
         NewRule rule317 = repository.createRule(MISSING_CHECK_LEADS_TO_NULL_PROPAGATION_KEY)
             .setName("Missing null check causes error cascade")
             .setHtmlDescription(
@@ -371,6 +377,9 @@ final class NullSafetyAndResourceRulesDefinition {
 
             rule328.setDebtRemediationFunction(rule328.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
+    }
+
+    private static void defineChunk6RuleDefinitions2Part2(NewRepository repository) {
         NewRule rule329 = repository.createRule(LOOP_BOUND_CONSTANT_KEY)
             .setName("Loop bound is constant - use literal")
             .setHtmlDescription(
@@ -559,6 +568,9 @@ final class NullSafetyAndResourceRulesDefinition {
 
         // Mathematica-Specific Patterns (Items 281-300)
 
+    }
+
+    private static void defineChunk6RuleDefinitions3Part2(NewRepository repository) {
         NewRule rule341 = repository.createRule(HOLD_ATTRIBUTE_MISSING_KEY)
             .setName("Function manipulates unevaluated expressions without Hold attribute")
             .setHtmlDescription(
