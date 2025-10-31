@@ -27,52 +27,61 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Check for deprecation warnings (ZERO TOLERANCE)
+      - name: Check for Java compiler warnings (ZERO TOLERANCE)
         run: |
           echo "========================================="
-          echo "JAVA DEPRECATION CHECK - ZERO TOLERANCE"
+          echo "JAVA COMPILER WARNING CHECK - ZERO TOLERANCE"
           echo "========================================="
           echo ""
-          echo "Compiling with deprecation warnings enabled..."
+          echo "Compiling with all warnings enabled..."
           ./gradlew compileJava compileTestJava --no-daemon --console=plain > /tmp/compile_output.log 2>&1
 
-          # Count deprecation warnings (excluding test unchecked warnings)
+          # Count ALL warnings (deprecation, unchecked, etc.)
+          TOTAL_WARNINGS=$(grep -c "warning:" /tmp/compile_output.log || echo "0")
           DEPRECATION_WARNINGS=$(grep -c "warning: \[deprecation\]" /tmp/compile_output.log || echo "0")
+          UNCHECKED_WARNINGS=$(grep -c "warning: \[unchecked\]" /tmp/compile_output.log || echo "0")
+          OTHER_WARNINGS=$((TOTAL_WARNINGS - DEPRECATION_WARNINGS - UNCHECKED_WARNINGS))
 
           echo ""
-          echo "Deprecation warnings found: $DEPRECATION_WARNINGS"
+          echo "Deprecation warnings: $DEPRECATION_WARNINGS"
+          echo "Unchecked warnings:   $UNCHECKED_WARNINGS"
+          echo "Other warnings:       $OTHER_WARNINGS"
+          echo "Total warnings:       $TOTAL_WARNINGS"
           echo ""
 
-          if [ "$DEPRECATION_WARNINGS" -gt 0 ]; then
-            echo "❌ FAILURE: Deprecation warnings detected!"
+          if [ "$TOTAL_WARNINGS" -gt 0 ]; then
+            echo "❌ FAILURE: Java compiler warnings detected!"
             echo ""
-            echo "This repository enforces ZERO-TOLERANCE for deprecation warnings."
-            echo "Even a single deprecation warning will fail the build."
+            echo "This repository enforces ZERO-TOLERANCE for ALL compiler warnings."
+            echo "Even a single warning will fail the build."
             echo ""
             echo "==============================================="
-            echo "DEPRECATION WARNING DETAILS:"
+            echo "WARNING DETAILS:"
             echo "==============================================="
             echo ""
-            grep "warning: \[deprecation\]" /tmp/compile_output.log -B2 -A2 | head -50
-            if [ "$DEPRECATION_WARNINGS" -gt 10 ]; then
+            grep "warning:" /tmp/compile_output.log -B2 -A2 | head -80
+            if [ "$TOTAL_WARNINGS" -gt 20 ]; then
               echo ""
-              echo "... and $((DEPRECATION_WARNINGS - 10)) more warnings"
+              echo "... and $((TOTAL_WARNINGS - 20)) more warnings"
             fi
             echo ""
             echo "==============================================="
             echo "HOW TO FIX:"
             echo "==============================================="
-            echo "1. Run locally: ./gradlew compileJava -Xlint:deprecation"
-            echo "2. Update deprecated API usage to current API"
-            echo "3. Run 'make lint' to verify all warnings are fixed"
-            echo "4. Push changes after achieving zero warnings"
+            echo "1. Run locally: make lint"
+            echo "2. Fix all warnings by updating code (not by disabling checks)"
+            echo "3. Common fixes:"
+            echo "   - Deprecation: Update to current API"
+            echo "   - Unchecked: Add proper generic types (e.g., List<?> instead of raw List)"
+            echo "   - Other: Follow compiler suggestions"
+            echo "4. Verify: make lint should show ZERO issues"
             echo ""
             exit 1
           else
-            echo "✅ SUCCESS: ZERO deprecation warnings!"
+            echo "✅ SUCCESS: ZERO compiler warnings!"
             echo ""
-            echo "🎉 All code uses current APIs!"
-            echo "✨ No deprecated API usage detected!"
+            echo "🎉 All code is warning-free!"
+            echo "✨ No deprecation, unchecked, or other warnings detected!"
             echo ""
           fi
 
@@ -188,8 +197,11 @@ jobs:
           echo "✅ ALL CHECKS PASSED!"
           echo "================================================"
           echo ""
-          echo "✓ Deprecation warnings: ZERO"
-          echo "✓ Checkstyle: ZERO violations"
+          echo "✓ Java compiler warnings: ZERO"
+          echo "  - Deprecation warnings: ZERO"
+          echo "  - Unchecked warnings: ZERO"
+          echo "  - Other warnings: ZERO"
+          echo "✓ Checkstyle violations: ZERO"
           echo "✓ Build: SUCCESS"
           echo "✓ Tests: PASSED"
           echo ""
