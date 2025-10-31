@@ -3,6 +3,7 @@ package org.sonar.plugins.mathematica.rules;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.issue.impact.Severity;
+import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.APPEND_IN_LOOP_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY;
@@ -523,6 +524,13 @@ final class PerformanceRulesDefinition {
         defineResourceAndMemoryManagementRules(repository);
     }
 
+    /**
+     * Note: Uses deprecated RuleType.SECURITY_HOTSPOT for ImportWithoutFormat rule.
+     * This is still the only way to mark rules as Security Hotspots in SonarQube.
+     * The new impact-based API (addDefaultImpact) works alongside this, but doesn't
+     * replace the type designation.
+     */
+    @SuppressWarnings("deprecation")
     private static void defineResourceAndMemoryManagementRules(NewRepository repository) {
         NewRule rule71 = repository.createRule(DYNAMIC_INJECTION_KEY)
             .setName("Dynamic content should not use ToExpression on user input")
@@ -561,6 +569,7 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/434.html'>CWE-434</a> - Unrestricted Upload of File with Dangerous Type</li></ul>"
             )
+            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-upload");
 

@@ -3,6 +3,7 @@ package org.sonar.plugins.mathematica.rules;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.issue.impact.Severity;
+import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEEPLY_NESTED_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY;
@@ -659,7 +660,12 @@ final class ExtendedCoreRulesDefinition {
 
     /**
      * NEW SECURITY HOTSPOT RULES (Phase 2) (3 rules)
+     *
+     * Note: Uses deprecated RuleType.SECURITY_HOTSPOT which is still the only way
+     * to mark rules as Security Hotspots in SonarQube. The new impact-based API
+     * (addDefaultImpact) works alongside this, but doesn't replace the type designation.
      */
+    @SuppressWarnings("deprecation")
     private static void defineNewSecurityHotspotRules(NewRepository repository) {
         // ===== NEW SECURITY HOTSPOT RULES (Phase 2) =====
 
@@ -685,6 +691,7 @@ final class ExtendedCoreRulesDefinition {
                 + "WebExecute[session, \"Click\", ...]  (* Check: Auth? Session security? *)\n"
                 + "</pre>"
             )
+            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "network");
 
@@ -713,6 +720,7 @@ final class ExtendedCoreRulesDefinition {
                 + "CopyFile[src, dst]  (* Check: Destination validated? *)\n"
                 + "</pre>"
             )
+            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-system");
 
@@ -746,6 +754,7 @@ final class ExtendedCoreRulesDefinition {
                 + "URLFetch[url, \"Headers\" -> {\"Authorization\" -> \"Bearer \" <> apiKey}]\n"
                 + "</pre>"
             )
+            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.LOW)
             .setTags(TAG_SECURITY, "secrets");
 
