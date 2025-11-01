@@ -620,6 +620,82 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String PARAMETER_NOT_DOCUMENTED_KEY = "ParameterNotDocumented";
     public static final String RETURN_NOT_DOCUMENTED_KEY = "ReturnNotDocumented";
 
+    // ===== CODE SMELL 2 RULES (70 additional rules for Tier 1 parity) =====
+
+    // Rule keys - Style and Formatting (15 rules)
+    public static final String LINE_TOO_LONG_KEY = "LineTooLong";
+    public static final String INCONSISTENT_INDENTATION_KEY = "InconsistentIndentation";
+    public static final String TRAILING_WHITESPACE_KEY = "TrailingWhitespace";
+    public static final String MULTIPLE_BLANK_LINES_KEY = "MultipleBlankLines";
+    public static final String MISSING_BLANK_LINE_AFTER_FUNCTION_KEY = "MissingBlankLineAfterFunction";
+    public static final String OPERATOR_SPACING_KEY = "OperatorSpacing";
+    public static final String COMMA_SPACING_KEY = "CommaSpacing";
+    public static final String BRACKET_SPACING_KEY = "BracketSpacing";
+    public static final String SEMICOLON_STYLE_KEY = "SemicolonStyle";
+    public static final String FILE_ENDS_WITHOUT_NEWLINE_KEY = "FileEndsWithoutNewline";
+    public static final String ALIGNMENT_INCONSISTENT_KEY = "AlignmentInconsistent";
+    public static final String PARENTHESES_UNNECESSARY_KEY = "ParenthesesUnnecessary";
+    public static final String BRACE_STYLE_KEY = "BraceStyle";
+    public static final String LONG_STRING_LITERAL_KEY = "LongStringLiteral";
+    public static final String NESTED_BRACKETS_EXCESSIVE_KEY = "NestedBracketsExcessive";
+
+    // Rule keys - Naming Conventions (15 rules)
+    public static final String FUNCTION_NAME_TOO_SHORT_KEY = "FunctionNameTooShort";
+    public static final String FUNCTION_NAME_TOO_LONG_KEY = "FunctionNameTooLong";
+    public static final String VARIABLE_NAME_TOO_SHORT_KEY = "VariableNameTooShort";
+    public static final String BOOLEAN_NAME_NON_DESCRIPTIVE_KEY = "BooleanNameNonDescriptive";
+    public static final String CONSTANT_NOT_UPPERCASE_KEY = "ConstantNotUppercase";
+    public static final String PACKAGE_NAME_CASE_KEY = "PackageNameCase";
+    public static final String ACRONYM_STYLE_KEY = "AcronymStyle";
+    public static final String VARIABLE_NAME_MATCHES_BUILTIN_KEY = "VariableNameMatchesBuiltin";
+    public static final String PARAMETER_NAME_SAME_AS_FUNCTION_KEY = "ParameterNameSameAsFunction";
+    public static final String INCONSISTENT_NAMING_STYLE_KEY = "InconsistentNamingStyle";
+    public static final String NUMBER_IN_NAME_KEY = "NumberInName";
+    public static final String HUNGARIAN_NOTATION_KEY = "HungarianNotation";
+    public static final String ABBREVIATION_UNCLEAR_KEY = "AbbreviationUnclear";
+    public static final String GENERIC_NAME_KEY = "GenericName";
+    public static final String NEGATED_BOOLEAN_NAME_KEY = "NegatedBooleanName";
+
+    // Rule keys - Complexity & Organization (4 new rules, 6 already exist)
+    public static final String TOO_MANY_VARIABLES_KEY = "TooManyVariables";
+    public static final String NESTING_TOO_DEEP_KEY = "NestingTooDeep";
+    public static final String FILE_TOO_MANY_FUNCTIONS_KEY = "FileTooManyFunctions";
+    public static final String PACKAGE_TOO_MANY_EXPORTS_KEY = "PackageTooManyExports";
+    public static final String SWITCH_TOO_MANY_CASES_KEY = "SwitchTooManyCases";
+    public static final String BOOLEAN_EXPRESSION_TOO_COMPLEX_KEY = "BooleanExpressionTooComplex";
+    public static final String CHAINED_CALLS_TOO_LONG_KEY = "ChainedCallsTooLong";
+
+    // Rule keys - Maintainability (14 new rules, 1 already exists)
+    public static final String MAGIC_STRING_KEY = "MagicString";
+    public static final String DUPLICATE_STRING_LITERAL_KEY = "DuplicateStringLiteral";
+    public static final String HARDCODED_PATH_KEY = "HardcodedPath";
+    public static final String HARDCODED_URL_KEY = "HardcodedUrl";
+    public static final String CONDITIONAL_COMPLEXITY_KEY = "ConditionalComplexity";
+    public static final String IDENTICAL_IF_BRANCHES_KEY = "IdenticalIfBranches";
+    public static final String DUPLICATE_CODE_BLOCK_KEY = "DuplicateCodeBlock";
+    public static final String GOD_FUNCTION_KEY = "GodFunction";
+    public static final String FEATURE_ENVY_KEY = "FeatureEnvy";
+    public static final String PRIMITIVE_OBSESSION_KEY = "PrimitiveObsession";
+    public static final String SIDE_EFFECT_IN_EXPRESSION_KEY = "SideEffectInExpression";
+    public static final String INCOMPLETE_PATTERN_MATCH_KEY = "IncompletePatternMatch";
+    public static final String MISSING_OPTION_DEFAULT_KEY = "MissingOptionDefault";
+    public static final String OPTION_NAME_UNCLEAR_KEY = "OptionNameUnclear";
+
+    // Rule keys - Best Practices (13 new rules, 2 already exist)
+    public static final String STRING_CONCATENATION_IN_LOOP_KEY = "StringConcatenationInLoop";
+    public static final String BOOLEAN_COMPARISON_KEY = "BooleanComparison";
+    public static final String NEGATED_BOOLEAN_COMPARISON_KEY = "NegatedBooleanComparison";
+    public static final String REDUNDANT_CONDITIONAL_KEY = "RedundantConditional";
+    public static final String EMPTY_CATCH_BLOCK_KEY = "EmptyCatchBlock";
+    public static final String DEPRECATED_OPTION_USAGE_KEY = "DeprecatedOptionUsage";
+    public static final String LIST_QUERY_INEFFICIENT_KEY = "ListQueryInefficient";
+    public static final String EQUALITY_CHECK_ON_REALS_KEY = "EqualityCheckOnReals";
+    public static final String SYMBOLIC_VS_NUMERIC_MISMATCH_KEY = "SymbolicVsNumericMismatch";
+    public static final String GRAPHICS_OPTIONS_EXCESSIVE_KEY = "GraphicsOptionsExcessive";
+    public static final String PLOT_WITHOUT_LABELS_KEY = "PlotWithoutLabels";
+    public static final String DATASET_WITHOUT_HEADERS_KEY = "DatasetWithoutHeaders";
+    public static final String ASSOCIATION_KEY_NOT_STRING_KEY = "AssociationKeyNotString";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -638,6 +714,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
         SymbolTableAndTestingRulesDefinition.defineRules(repository);
         PerformanceRulesDefinition.defineRules(repository);
         Tier1GapClosureRulesDefinition.defineRules(repository); // NEW: 70 rules for Tier 1
+        StyleAndConventionsRulesDefinition.defineRules(repository); // NEW: 70 more code smells for Tier 1 parity
 
         repository.done();
     }

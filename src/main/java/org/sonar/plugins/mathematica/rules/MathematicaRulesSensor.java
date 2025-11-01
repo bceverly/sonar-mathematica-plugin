@@ -153,6 +153,11 @@ public class MathematicaRulesSensor implements Sensor {
         d.setSensor(this);
         return d;
     });
+    private final ThreadLocal<StyleAndConventionsDetector> styleAndConventionsDetector = ThreadLocal.withInitial(() -> {
+        StyleAndConventionsDetector d = new StyleAndConventionsDetector();
+        d.setSensor(this);
+        return d;
+    });
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -474,9 +479,8 @@ public class MathematicaRulesSensor implements Sensor {
             // ===== TIER 1 GAP CLOSURE - NEW DETECTION METHODS (70 rules) =====
             runTier1GapClosureDetectors(context, inputFile, content);
 
-
-
-
+            // ===== CODE SMELL 2 - ADDITIONAL 70 CODE SMELLS FOR TIER 1 PARITY =====
+            runStyleAndConventionsDetectors(context, inputFile, content);
 
 
 
@@ -549,6 +553,7 @@ public class MathematicaRulesSensor implements Sensor {
         advancedAnalysisDetector.get().initializeCaches(content);
         testingQualityDetector.get().initializeCaches(content);
         frameworkDetector.get().initializeCaches(content);
+        styleAndConventionsDetector.get().initializeCaches(content);
         // Note: ArchitectureAndDependencyDetector uses static caches (no per-file init needed)
     }
 
@@ -636,6 +641,85 @@ public class MathematicaRulesSensor implements Sensor {
         codeSmellDetector.get().detectDocumentationOutdated(context, inputFile, content);
         codeSmellDetector.get().detectParameterNotDocumented(context, inputFile, content);
         codeSmellDetector.get().detectReturnNotDocumented(context, inputFile, content);
+    }
+
+    /**
+     * Run all 70 StyleAndConventions detection methods for Tier 1 parity.
+     * Additional code smell rules to approach Java's 458 code smells.
+     */
+    private void runStyleAndConventionsDetectors(SensorContext context, InputFile inputFile, String content) {
+        // Style & Formatting (15 rules)
+        styleAndConventionsDetector.get().detectLineTooLong(context, inputFile, content);
+        styleAndConventionsDetector.get().detectInconsistentIndentation(context, inputFile, content);
+        styleAndConventionsDetector.get().detectTrailingWhitespace(context, inputFile, content);
+        styleAndConventionsDetector.get().detectMultipleBlankLines(context, inputFile, content);
+        styleAndConventionsDetector.get().detectMissingBlankLineAfterFunction(context, inputFile, content);
+        styleAndConventionsDetector.get().detectOperatorSpacing(context, inputFile, content);
+        styleAndConventionsDetector.get().detectCommaSpacing(context, inputFile, content);
+        styleAndConventionsDetector.get().detectBracketSpacing(context, inputFile, content);
+        styleAndConventionsDetector.get().detectSemicolonStyle(context, inputFile, content);
+        styleAndConventionsDetector.get().detectFileEndsWithoutNewline(context, inputFile, content);
+        styleAndConventionsDetector.get().detectAlignmentInconsistent(context, inputFile, content);
+        styleAndConventionsDetector.get().detectParenthesesUnnecessary(context, inputFile, content);
+        styleAndConventionsDetector.get().detectBraceStyle(context, inputFile, content);
+        styleAndConventionsDetector.get().detectLongStringLiteral(context, inputFile, content);
+        styleAndConventionsDetector.get().detectNestedBracketsExcessive(context, inputFile, content);
+
+        // Naming Conventions (15 rules)
+        styleAndConventionsDetector.get().detectFunctionNameTooShort(context, inputFile, content);
+        styleAndConventionsDetector.get().detectFunctionNameTooLong(context, inputFile, content);
+        styleAndConventionsDetector.get().detectVariableNameTooShort(context, inputFile, content);
+        styleAndConventionsDetector.get().detectBooleanNameNonDescriptive(context, inputFile, content);
+        styleAndConventionsDetector.get().detectConstantNotUppercase(context, inputFile, content);
+        styleAndConventionsDetector.get().detectPackageNameCase(context, inputFile, content);
+        styleAndConventionsDetector.get().detectAcronymStyle(context, inputFile, content);
+        styleAndConventionsDetector.get().detectVariableNameMatchesBuiltin(context, inputFile, content);
+        styleAndConventionsDetector.get().detectParameterNameSameAsFunction(context, inputFile, content);
+        styleAndConventionsDetector.get().detectInconsistentNamingStyle(context, inputFile, content);
+        styleAndConventionsDetector.get().detectNumberInName(context, inputFile, content);
+        styleAndConventionsDetector.get().detectHungarianNotation(context, inputFile, content);
+        styleAndConventionsDetector.get().detectAbbreviationUnclear(context, inputFile, content);
+        styleAndConventionsDetector.get().detectGenericName(context, inputFile, content);
+        styleAndConventionsDetector.get().detectNegatedBooleanName(context, inputFile, content);
+
+        // Complexity & Organization (7 rules, 3 duplicates removed)
+        styleAndConventionsDetector.get().detectTooManyVariables(context, inputFile, content);
+        styleAndConventionsDetector.get().detectNestingTooDeep(context, inputFile, content);
+        styleAndConventionsDetector.get().detectFileTooManyFunctions(context, inputFile, content);
+        styleAndConventionsDetector.get().detectPackageTooManyExports(context, inputFile, content);
+        styleAndConventionsDetector.get().detectSwitchTooManyCases(context, inputFile, content);
+        styleAndConventionsDetector.get().detectBooleanExpressionTooComplex(context, inputFile, content);
+        styleAndConventionsDetector.get().detectChainedCallsTooLong(context, inputFile, content);
+
+        // Maintainability (14 rules, 1 duplicate removed)
+        styleAndConventionsDetector.get().detectMagicString(context, inputFile, content);
+        styleAndConventionsDetector.get().detectDuplicateStringLiteral(context, inputFile, content);
+        styleAndConventionsDetector.get().detectHardcodedPath(context, inputFile, content);
+        styleAndConventionsDetector.get().detectHardcodedUrl(context, inputFile, content);
+        styleAndConventionsDetector.get().detectConditionalComplexity(context, inputFile, content);
+        styleAndConventionsDetector.get().detectIdenticalIfBranches(context, inputFile, content);
+        styleAndConventionsDetector.get().detectDuplicateCodeBlock(context, inputFile, content);
+        styleAndConventionsDetector.get().detectGodFunction(context, inputFile, content);
+        styleAndConventionsDetector.get().detectFeatureEnvy(context, inputFile, content);
+        styleAndConventionsDetector.get().detectPrimitiveObsession(context, inputFile, content);
+        styleAndConventionsDetector.get().detectSideEffectInExpression(context, inputFile, content);
+        styleAndConventionsDetector.get().detectIncompletePatternMatch(context, inputFile, content);
+        styleAndConventionsDetector.get().detectMissingOptionDefault(context, inputFile, content);
+        styleAndConventionsDetector.get().detectOptionNameUnclear(context, inputFile, content);
+
+        // Best Practices (12 rules, 3 duplicates removed)
+        styleAndConventionsDetector.get().detectStringConcatenationInLoop(context, inputFile, content);
+        styleAndConventionsDetector.get().detectBooleanComparison(context, inputFile, content);
+        styleAndConventionsDetector.get().detectNegatedBooleanComparison(context, inputFile, content);
+        styleAndConventionsDetector.get().detectRedundantConditional(context, inputFile, content);
+        styleAndConventionsDetector.get().detectDeprecatedOptionUsage(context, inputFile, content);
+        styleAndConventionsDetector.get().detectListQueryInefficient(context, inputFile, content);
+        styleAndConventionsDetector.get().detectEqualityCheckOnReals(context, inputFile, content);
+        styleAndConventionsDetector.get().detectSymbolicVsNumericMismatch(context, inputFile, content);
+        styleAndConventionsDetector.get().detectGraphicsOptionsExcessive(context, inputFile, content);
+        styleAndConventionsDetector.get().detectPlotWithoutLabels(context, inputFile, content);
+        styleAndConventionsDetector.get().detectDatasetWithoutHeaders(context, inputFile, content);
+        styleAndConventionsDetector.get().detectAssociationKeyNotString(context, inputFile, content);
     }
 
     private void performSymbolTableAnalysis(SensorContext context, InputFile inputFile, String content, long fileStartTime, long analysisTime) {

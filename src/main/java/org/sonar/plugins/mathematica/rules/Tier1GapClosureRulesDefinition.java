@@ -1,10 +1,9 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.rule.RuleStatus;
-import org.sonar.api.rules.RuleType;
+import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.issue.impact.Severity;
-import org.sonar.api.issue.impact.SoftwareQuality;
 
 /**
  * Tier 1 Gap Closure Rules - Added 2025-10-31.
@@ -149,7 +148,6 @@ public final class Tier1GapClosureRulesDefinition {
                 + "<li>Use strong authentication mechanisms (OAuth, JWT with proper validation)</li>"
                 + "<li>Implement multi-factor authentication for sensitive operations</li>"
                 + "<li>Use secure session management</li></ul>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "authentication", "owasp")
             .setStatus(RuleStatus.READY);
@@ -158,7 +156,6 @@ public final class Tier1GapClosureRulesDefinition {
             .setName("Authorization checks should be present")
             .setHtmlDescription("<p>Review whether proper authorization checks are implemented. "
                 + "Missing authorization can lead to privilege escalation.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "authorization", "owasp")
             .setStatus(RuleStatus.READY);
@@ -166,7 +163,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(INSECURE_SESSION_KEY)
             .setName("Session management should be secure")
             .setHtmlDescription("<p>Review session management implementation. Insecure sessions can be hijacked or fixated.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "session", "owasp")
             .setStatus(RuleStatus.READY);
@@ -174,7 +170,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(DEFAULT_CREDENTIALS_KEY)
             .setName("Default credentials should not be used")
             .setHtmlDescription("<p>Review for use of default or hardcoded credentials. These are easily discovered and exploited.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "credentials", "cwe")
             .setStatus(RuleStatus.READY);
@@ -182,7 +177,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(PASSWORD_PLAIN_TEXT_KEY)
             .setName("Passwords should not be stored in plain text")
             .setHtmlDescription("<p>Review password storage. Plain text passwords can be easily compromised if the system is breached.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "passwords", "cwe")
             .setStatus(RuleStatus.READY);
@@ -190,7 +184,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(WEAK_SESSION_TOKEN_KEY)
             .setName("Session tokens should be generated securely")
             .setHtmlDescription("<p>Review session token generation. Weak tokens can be predicted or brute-forced.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "session", "random")
             .setStatus(RuleStatus.READY);
@@ -198,7 +191,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(MISSING_ACCESS_CONTROL_KEY)
             .setName("Access control checks should be implemented")
             .setHtmlDescription("<p>Review access control implementation. Missing checks can allow unauthorized data access.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "access-control", "owasp")
             .setStatus(RuleStatus.READY);
@@ -210,7 +202,6 @@ public final class Tier1GapClosureRulesDefinition {
             .setHtmlDescription("<p>Review use of hashing algorithms. MD5 and SHA1 are cryptographically broken and should not be used.</p>"
                 + "<h2>Noncompliant Code Example</h2><pre>Hash[data, \"MD5\"]  (* Weak *)\nHash[data, \"SHA1\"] (* Weak *)</pre>"
                 + "<h2>Compliant Solution</h2><pre>Hash[data, \"SHA256\"]\nHash[data, \"SHA3-256\"]</pre>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "cryptography", "cwe")
             .setStatus(RuleStatus.READY);
@@ -219,7 +210,6 @@ public final class Tier1GapClosureRulesDefinition {
             .setName("Random number generation should be cryptographically secure")
             .setHtmlDescription("<p>Review random number generation for security-sensitive operations. "
                 + "RandomReal/RandomInteger are not cryptographically secure.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "random", "cryptography")
             .setStatus(RuleStatus.READY);
@@ -227,7 +217,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(HARDCODED_CRYPTO_KEY_KEY)
             .setName("Cryptographic keys should not be hardcoded")
             .setHtmlDescription("<p>Review for hardcoded cryptographic keys. Keys should be stored securely, not in code.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "cryptography", "keys")
             .setStatus(RuleStatus.READY);
@@ -235,7 +224,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(WEAK_CIPHER_MODE_KEY)
             .setName("Weak cipher modes should not be used")
             .setHtmlDescription("<p>Review cipher mode usage. ECB mode is insecure and should not be used.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "cryptography", "cipher")
             .setStatus(RuleStatus.READY);
@@ -243,7 +231,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(INSUFFICIENT_KEY_SIZE_KEY)
             .setName("Cryptographic key size should be sufficient")
             .setHtmlDescription("<p>Review cryptographic key sizes. Keys smaller than 2048 bits (RSA) or 256 bits (AES) are considered weak.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "cryptography", "keys")
             .setStatus(RuleStatus.READY);
@@ -251,7 +238,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(WEAK_SSL_PROTOCOL_KEY)
             .setName("Weak SSL/TLS protocol versions should not be used")
             .setHtmlDescription("<p>Review SSL/TLS configuration. SSLv2, SSLv3, TLS 1.0, and TLS 1.1 are deprecated and insecure.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "tls", "ssl")
             .setStatus(RuleStatus.READY);
@@ -259,7 +245,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(CERTIFICATE_VALIDATION_DISABLED_KEY)
             .setName("Certificate validation should not be disabled")
             .setHtmlDescription("<p>Review certificate validation settings. Disabling validation defeats the purpose of SSL/TLS.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "tls", "certificates")
             .setStatus(RuleStatus.READY);
@@ -281,7 +266,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(HTTP_WITHOUT_TLS_KEY)
             .setName("HTTP connections should use TLS")
             .setHtmlDescription("<p>Review network connections. HTTP transmits data in plain text which can be intercepted.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "http", "tls")
             .setStatus(RuleStatus.READY);
@@ -289,7 +273,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(CORS_PERMISSIVE_KEY)
             .setName("CORS policy should not be overly permissive")
             .setHtmlDescription("<p>Review CORS configuration. Permissive policies can enable cross-site attacks.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "cors", "web")
             .setStatus(RuleStatus.READY);
@@ -297,7 +280,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(OPEN_REDIRECT_KEY)
             .setName("Open redirects should be reviewed")
             .setHtmlDescription("<p>Review redirects based on user input. Open redirects can be used in phishing attacks.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "redirect", "owasp")
             .setStatus(RuleStatus.READY);
@@ -305,7 +287,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(DNS_REBINDING_KEY)
             .setName("DNS rebinding attacks should be prevented")
             .setHtmlDescription("<p>Review DNS resolution in security contexts. DNS rebinding can bypass same-origin policies.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "dns", "network")
             .setStatus(RuleStatus.READY);
@@ -313,7 +294,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(INSECURE_WEBSOCKET_KEY)
             .setName("WebSocket connections should be secure")
             .setHtmlDescription("<p>Review WebSocket connections. Use wss:// instead of ws:// for encrypted connections.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "websocket", "network")
             .setStatus(RuleStatus.READY);
@@ -321,7 +301,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(MISSING_SECURITY_HEADERS_KEY)
             .setName("Security HTTP headers should be set")
             .setHtmlDescription("<p>Review HTTP security headers. Missing headers can make applications vulnerable to various attacks.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "http", "headers")
             .setStatus(RuleStatus.READY);
@@ -331,7 +310,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(SENSITIVE_DATA_LOG_KEY)
             .setName("Sensitive data should not be logged")
             .setHtmlDescription("<p>Review logging statements for sensitive data. Passwords, tokens, and PII should not appear in logs.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "logging", "privacy")
             .setStatus(RuleStatus.READY);
@@ -339,7 +317,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(PII_EXPOSURE_KEY)
             .setName("Personally Identifiable Information exposure should be reviewed")
             .setHtmlDescription("<p>Review handling of PII. Ensure proper encryption, access controls, and compliance with privacy regulations.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
             .setTags(TAG_SECURITY, "privacy", "gdpr")
             .setStatus(RuleStatus.READY);
@@ -347,7 +324,6 @@ public final class Tier1GapClosureRulesDefinition {
         repository.createRule(CLEAR_TEXT_PROTOCOL_KEY)
             .setName("Clear-text protocols should not be used")
             .setHtmlDescription("<p>Review use of clear-text protocols. FTP, Telnet, and similar protocols transmit data unencrypted.</p>")
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "protocol", "network")
             .setStatus(RuleStatus.READY);

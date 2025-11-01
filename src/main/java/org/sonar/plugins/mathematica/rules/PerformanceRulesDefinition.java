@@ -3,7 +3,6 @@ package org.sonar.plugins.mathematica.rules;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.issue.impact.Severity;
-import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.APPEND_IN_LOOP_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY;
@@ -569,7 +568,6 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/434.html'>CWE-434</a> - Unrestricted Upload of File with Dangerous Type</li></ul>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-upload");
 

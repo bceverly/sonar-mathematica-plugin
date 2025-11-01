@@ -3,7 +3,6 @@ package org.sonar.plugins.mathematica.rules;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.issue.impact.Severity;
-import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ASSIGNMENT_IN_CONDITIONAL_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.CODE_INJECTION_KEY;
@@ -791,7 +790,6 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/vulnerabilities/Unrestricted_File_Upload'>OWASP</a> - Unrestricted File Upload</li>"
                 + "</ul>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-upload", "owasp");
 
@@ -843,7 +841,6 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/www-community/controls/Blocking_Brute_Force_Attacks'>OWASP</a> - Rate Limiting</li>"
                 + "</ul>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "api", "availability");
 
@@ -902,7 +899,6 @@ final class CoreRulesDefinition {
                 + "<li><a href='https://owasp.org/Top10/A02_2021-Cryptographic_Failures/'>OWASP Top 10 2021 A02</a> - Cryptographic Failures</li>"
                 + "</ul>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "cryptography", "owasp");
 

@@ -3,7 +3,6 @@ package org.sonar.plugins.mathematica.rules;
 import org.sonar.api.server.rule.RulesDefinition.NewRepository;
 import org.sonar.api.issue.impact.SoftwareQuality;
 import org.sonar.api.issue.impact.Severity;
-import org.sonar.api.rules.RuleType;
 import org.sonar.api.server.rule.RulesDefinition.NewRule;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEEPLY_NESTED_KEY;
 import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY;
@@ -691,7 +690,6 @@ final class ExtendedCoreRulesDefinition {
                 + "WebExecute[session, \"Click\", ...]  (* Check: Auth? Session security? *)\n"
                 + "</pre>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "network");
 
@@ -720,7 +718,6 @@ final class ExtendedCoreRulesDefinition {
                 + "CopyFile[src, dst]  (* Check: Destination validated? *)\n"
                 + "</pre>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
             .setTags(TAG_SECURITY, "file-system");
 
@@ -754,7 +751,6 @@ final class ExtendedCoreRulesDefinition {
                 + "URLFetch[url, \"Headers\" -> {\"Authorization\" -> \"Bearer \" <> apiKey}]\n"
                 + "</pre>"
             )
-            .setType(RuleType.SECURITY_HOTSPOT)
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.LOW)
             .setTags(TAG_SECURITY, "secrets");
 
