@@ -512,6 +512,114 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String FILE_EXCEEDS_ANALYSIS_LIMIT_KEY = "FileExceedsAnalysisLimit";
     public static final String ANALYSIS_TIMEOUT_KEY = "AnalysisTimeout";
 
+    // ============================================================================
+    // TIER 1 GAP CLOSURE - NEW RULES (2025-10-31)
+    // ============================================================================
+
+    // Rule keys - Security Hotspots: Authentication & Authorization (7 rules)
+    public static final String WEAK_AUTHENTICATION_KEY = "WeakAuthentication";
+    public static final String MISSING_AUTHORIZATION_KEY = "MissingAuthorization";
+    public static final String INSECURE_SESSION_KEY = "InsecureSession";
+    public static final String DEFAULT_CREDENTIALS_KEY = "DefaultCredentials";
+    public static final String PASSWORD_PLAIN_TEXT_KEY = "PasswordPlainText";
+    public static final String WEAK_SESSION_TOKEN_KEY = "WeakSessionToken";
+    public static final String MISSING_ACCESS_CONTROL_KEY = "MissingAccessControl";
+
+    // Rule keys - Security Hotspots: Cryptography (7 rules)
+    public static final String WEAK_HASHING_KEY = "WeakHashing";
+    public static final String INSECURE_RANDOM_HOTSPOT_KEY = "InsecureRandomHotspot";
+    public static final String HARDCODED_CRYPTO_KEY_KEY = "HardcodedCryptoKey";
+    public static final String WEAK_CIPHER_MODE_KEY = "WeakCipherMode";
+    public static final String INSUFFICIENT_KEY_SIZE_KEY = "InsufficientKeySize";
+    public static final String WEAK_SSL_PROTOCOL_KEY = "WeakSslProtocol";
+    public static final String CERTIFICATE_VALIDATION_DISABLED_KEY = "CertificateValidationDisabled";
+
+    // Rule keys - Security Hotspots: Network Security (6 rules)
+    public static final String HTTP_WITHOUT_TLS_KEY = "HttpWithoutTls";
+    public static final String CORS_PERMISSIVE_KEY = "CorsPermissive";
+    public static final String OPEN_REDIRECT_KEY = "OpenRedirect";
+    public static final String DNS_REBINDING_KEY = "DnsRebinding";
+    public static final String INSECURE_WEBSOCKET_KEY = "InsecureWebSocket";
+    public static final String MISSING_SECURITY_HEADERS_KEY = "MissingSecurityHeaders";
+
+    // Rule keys - Security Hotspots: Data Protection (3 rules)
+    public static final String SENSITIVE_DATA_LOG_KEY = "SensitiveDataLog";
+    public static final String PII_EXPOSURE_KEY = "PiiExposure";
+    public static final String CLEAR_TEXT_PROTOCOL_KEY = "ClearTextProtocol";
+
+    // Rule keys - Framework: Notebook Patterns (4 rules)
+    public static final String NOTEBOOK_CELL_SIZE_KEY = "NotebookCellSize";
+    public static final String NOTEBOOK_UNORGANIZED_KEY = "NotebookUnorganized";
+    public static final String NOTEBOOK_NO_SECTIONS_KEY = "NotebookNoSections";
+    public static final String NOTEBOOK_INIT_CELL_MISUSE_KEY = "NotebookInitCellMisuse";
+
+    // Rule keys - Framework: Manipulate/Dynamic (4 rules)
+    public static final String MANIPULATE_PERFORMANCE_KEY = "ManipulatePerformance";
+    public static final String DYNAMIC_HEAVY_COMPUTATION_KEY = "DynamicHeavyComputation";
+    public static final String DYNAMIC_NO_TRACKING_KEY = "DynamicNoTracking";
+    public static final String MANIPULATE_TOO_COMPLEX_KEY = "ManipulateTooComplex";
+
+    // Rule keys - Framework: Package Development (4 rules)
+    public static final String PACKAGE_NO_BEGIN_KEY = "PackageNoBegin";
+    public static final String PACKAGE_PUBLIC_PRIVATE_MIX_KEY = "PackagePublicPrivateMix";
+    public static final String PACKAGE_NO_USAGE_KEY = "PackageNoUsage";
+    public static final String PACKAGE_CIRCULAR_DEPENDENCY_KEY = "PackageCircularDependency";
+
+    // Rule keys - Framework: Parallel Computing (3 rules)
+    public static final String PARALLEL_NO_GAIN_KEY = "ParallelNoGain";
+    public static final String PARALLEL_RACE_CONDITION_KEY = "ParallelRaceCondition";
+    public static final String PARALLEL_SHARED_STATE_KEY = "ParallelSharedState";
+
+    // Rule keys - Framework: Wolfram Cloud (3 rules)
+    public static final String CLOUD_API_MISSING_AUTH_KEY = "CloudApiMissingAuth";
+    public static final String CLOUD_PERMISSIONS_TOO_OPEN_KEY = "CloudPermissionsTooOpen";
+    public static final String CLOUD_DEPLOY_NO_VALIDATION_KEY = "CloudDeployNoValidation";
+
+    // Rule keys - Testing: Organization (4 rules)
+    public static final String TEST_NAMING_CONVENTION_KEY = "TestNamingConvention";
+    public static final String TEST_NO_ISOLATION_KEY = "TestNoIsolation";
+    public static final String TEST_DATA_HARDCODED_KEY = "TestDataHardcoded";
+    public static final String TEST_IGNORED_KEY = "TestIgnored";
+
+    // Rule keys - Testing: VerificationTest Patterns (4 rules)
+    public static final String VERIFICATION_TEST_NO_EXPECTED_KEY = "VerificationTestNoExpected";
+    public static final String VERIFICATION_TEST_TOO_BROAD_KEY = "VerificationTestTooBroad";
+    public static final String VERIFICATION_TEST_NO_DESCRIPTION_KEY = "VerificationTestNoDescription";
+    public static final String VERIFICATION_TEST_EMPTY_KEY = "VerificationTestEmpty";
+
+    // Rule keys - Testing: Quality (4 rules)
+    public static final String TEST_ASSERT_COUNT_KEY = "TestAssertCount";
+    public static final String TEST_TOO_LONG_KEY = "TestTooLong";
+    public static final String TEST_MULTIPLE_CONCERNS_KEY = "TestMultipleConcerns";
+    public static final String TEST_MAGIC_NUMBER_KEY = "TestMagicNumber";
+
+    // Rule keys - Resource Management: Stream/File (4 rules)
+    public static final String STREAM_NOT_CLOSED_KEY = "StreamNotClosed";
+    public static final String FILE_HANDLE_LEAK_KEY = "FileHandleLeak";
+    public static final String CLOSE_IN_FINALLY_MISSING_KEY = "CloseInFinallyMissing";
+    public static final String STREAM_REOPEN_ATTEMPT_KEY = "StreamReopenAttempt";
+
+    // Rule keys - Resource Management: Memory (3 rules)
+    public static final String DYNAMIC_MEMORY_LEAK_KEY = "DynamicMemoryLeak";
+    public static final String LARGE_DATA_IN_NOTEBOOK_KEY = "LargeDataInNotebook";
+    public static final String NO_CLEAR_AFTER_USE_KEY = "NoClearAfterUse";
+
+    // Rule keys - Comment Quality: Tracking (3 rules)
+    public static final String TODO_TRACKING_KEY = "TodoTracking";
+    public static final String FIXME_TRACKING_KEY = "FixmeTracking";
+    public static final String HACK_COMMENT_KEY = "HackComment";
+
+    // Rule keys - Comment Quality: Commented Code (2 rules)
+    public static final String COMMENTED_OUT_CODE_KEY = "CommentedOutCode";
+    public static final String LARGE_COMMENTED_BLOCK_KEY = "LargeCommentedBlock";
+
+    // Rule keys - Comment Quality: Documentation (5 rules)
+    public static final String API_MISSING_DOCUMENTATION_KEY = "ApiMissingDocumentation";
+    public static final String DOCUMENTATION_TOO_SHORT_KEY = "DocumentationTooShort";
+    public static final String DOCUMENTATION_OUTDATED_KEY = "DocumentationOutdated";
+    public static final String PARAMETER_NOT_DOCUMENTED_KEY = "ParameterNotDocumented";
+    public static final String RETURN_NOT_DOCUMENTED_KEY = "ReturnNotDocumented";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -529,6 +637,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
         NullSafetyAndResourceRulesDefinition.defineRules(repository);
         SymbolTableAndTestingRulesDefinition.defineRules(repository);
         PerformanceRulesDefinition.defineRules(repository);
+        Tier1GapClosureRulesDefinition.defineRules(repository); // NEW: 70 rules for Tier 1
 
         repository.done();
     }

@@ -1399,6 +1399,243 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
+    // ==========================================================================
+    // TIER 1 GAP CLOSURE - COMMENT QUALITY (10 rules)
+    // ==========================================================================
+
+    private static final Pattern TODO_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*TODO[^\\*]*\\*\\)");
+    private static final Pattern FIXME_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*FIXME[^\\*]*\\*\\)");
+    private static final Pattern HACK_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*(?:HACK|XXX|FIXME)[^\\*]*\\*\\)");
+    private static final Pattern COMMENTED_CODE_PATTERN = Pattern.compile("\\(\\*[^\\*]*(?::=|=|\\[|;)[^\\*]*\\*\\)");
+    private static final Pattern PUBLIC_API_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
+    private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage");
+    private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[([^\\]]*)\\]\\s*:=");
+
+    /**
+     * Detect TODO comments that should be tracked.
+     */
+    public void detectTodoTracking(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = TODO_COMMENT_PATTERN.matcher(content);
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+                String comment = matcher.group();
+                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TODO_TRACKING_KEY,
+                    "TODO comment found. Track in issue tracker and add reference.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping TODO tracking detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect FIXME comments that should be tracked.
+     */
+    public void detectFixmeTracking(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = FIXME_COMMENT_PATTERN.matcher(content);
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.FIXME_TRACKING_KEY,
+                    "FIXME comment found. Create bug ticket and fix or document workaround.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping FIXME tracking detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect HACK/XXX comments indicating code smell.
+     */
+    public void detectHackComment(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = HACK_COMMENT_PATTERN.matcher(content);
+            while (matcher.find()) {
+                int lineNumber = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HACK_COMMENT_KEY,
+                    "HACK/XXX comment indicates code smell. Refactor or document why necessary.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping HACK comment detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect commented-out code blocks.
+     */
+    public void detectCommentedOutCode(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher matcher = COMMENTED_CODE_PATTERN.matcher(content);
+            while (matcher.find()) {
+                String comment = matcher.group();
+                // Heuristic: contains code-like syntax
+                if (comment.matches(".*[a-zA-Z]\\w*\\s*:?=.*") || comment.matches(".*\\w+\\s*\\[.*\\].*")) {
+                    // Skip if it looks like natural language
+                    if (!looksLikeNaturalLanguage(comment)) {
+                        int lineNumber = calculateLineNumber(content, matcher.start());
+                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.COMMENTED_OUT_CODE_KEY,
+                            "Commented-out code found. Remove it or use version control to retrieve.");
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping commented-out code detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect large commented blocks that should be documentation.
+     */
+    public void detectLargeCommentedBlock(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Pattern largeCommentPattern = Pattern.compile("\\(\\*([^\\*]|\\*[^\\)]){500,}\\*\\)");
+            Matcher matcher = largeCommentPattern.matcher(content);
+            while (matcher.find()) {
+                int lineCount = matcher.group().split("\n").length;
+                if (lineCount > 20) {
+                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.LARGE_COMMENTED_BLOCK_KEY,
+                        String.format("Large comment block (%d lines). Consider external documentation.", lineCount));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping large commented block detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect public APIs without ::usage documentation.
+     */
+    public void detectApiMissingDocumentation(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Find public functions
+            Matcher funcMatcher = PUBLIC_API_PATTERN.matcher(content);
+            java.util.Set<String> publicFunctions = new java.util.HashSet<>();
+            while (funcMatcher.find()) {
+                publicFunctions.add(funcMatcher.group(1));
+            }
+
+            // Find documented functions
+            Matcher usageMatcher = USAGE_MESSAGE_PATTERN.matcher(content);
+            java.util.Set<String> documented = new java.util.HashSet<>();
+            while (usageMatcher.find()) {
+                documented.add(usageMatcher.group(1));
+            }
+
+            // Report undocumented public APIs
+            for (String funcName : publicFunctions) {
+                if (!documented.contains(funcName)) {
+                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.API_MISSING_DOCUMENTATION_KEY,
+                        String.format("Public API '%s' missing ::usage documentation.", funcName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping API documentation detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect documentation that is too short.
+     */
+    public void detectDocumentationTooShort(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*=\\s*\"([^\"]*)\"");
+            Matcher matcher = usagePattern.matcher(content);
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                String doc = matcher.group(2);
+                if (doc.length() < 20) {
+                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.DOCUMENTATION_TOO_SHORT_KEY,
+                        String.format("Documentation for '%s' is too short (%d chars). Provide meaningful description.", funcName, doc.length()));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping documentation too short detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect outdated documentation (contains "old", "deprecated", "obsolete").
+     */
+    public void detectDocumentationOutdated(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*=\\s*\"([^\"]*)\"");
+            Matcher matcher = usagePattern.matcher(content);
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                String doc = matcher.group(2).toLowerCase();
+                if (doc.contains("old") || doc.contains("deprecated") || doc.contains("obsolete") || doc.contains("outdated")) {
+                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.DOCUMENTATION_OUTDATED_KEY,
+                        String.format("Documentation for '%s' appears outdated. Update or remove function.", funcName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping outdated documentation detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect parameters not documented in ::usage.
+     */
+    public void detectParameterNotDocumented(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher funcMatcher = FUNCTION_PARAMS_PATTERN.matcher(content);
+            while (funcMatcher.find()) {
+                String funcName = funcMatcher.group(1);
+                String params = funcMatcher.group(2);
+                // Extract parameter names (handle patterns like x_, y_?NumericQ, etc.)
+                Pattern paramPattern = Pattern.compile("([a-z]\\w*)_");
+                Matcher paramMatcher = paramPattern.matcher(params);
+                java.util.Set<String> paramNames = new java.util.HashSet<>();
+                while (paramMatcher.find()) {
+                    paramNames.add(paramMatcher.group(1));
+                }
+
+                if (!paramNames.isEmpty()) {
+                    // Check if ::usage exists and mentions parameters
+                    Pattern usagePattern = Pattern.compile(funcName + "::usage\\s*=\\s*\"([^\"]*)\"");
+                    Matcher usageMatcher = usagePattern.matcher(content);
+                    if (usageMatcher.find()) {
+                        String usageDoc = usageMatcher.group(1);
+                        for (String param : paramNames) {
+                            if (!usageDoc.contains(param)) {
+                                int lineNumber = calculateLineNumber(content, funcMatcher.start());
+                                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PARAMETER_NOT_DOCUMENTED_KEY,
+                                    String.format("Parameter '%s' of '%s' not documented in ::usage.", param, funcName));
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping parameter documentation detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect return value not documented in ::usage.
+     */
+    public void detectReturnNotDocumented(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*=\\s*\"([^\"]*)\"");
+            Matcher matcher = usagePattern.matcher(content);
+            while (matcher.find()) {
+                String funcName = matcher.group(1);
+                String doc = matcher.group(2).toLowerCase();
+                // Check if documentation mentions return value
+                if (!doc.contains("return") && !doc.contains("gives") && !doc.contains("yields") && !doc.contains("produces")) {
+                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.RETURN_NOT_DOCUMENTED_KEY,
+                        String.format("Function '%s' documentation doesn't describe return value.", funcName));
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping return documentation detection: {}", inputFile.filename());
+        }
+    }
+
     /**
      * Checks if a number is part of an association mapping (enum-like pattern).
      * Examples: <| Location -> 1, Boundary -> 2 |>

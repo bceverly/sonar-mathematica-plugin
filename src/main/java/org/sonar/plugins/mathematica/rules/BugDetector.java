@@ -934,6 +934,197 @@ public class BugDetector extends BaseDetector {
         }
     }
 
+    // ==========================================================================
+    // TIER 1 GAP CLOSURE - RESOURCE MANAGEMENT (7 rules)
+    // ==========================================================================
+
+    private static final Pattern STREAM_PATTERN = Pattern.compile(
+        "(?:OpenRead|OpenWrite|OpenAppend|OutputStream|InputStream)\\s*\\["
+    );
+    private static final Pattern FILE_HANDLE_PATTERN = Pattern.compile(
+        "(?:OpenRead|OpenWrite|OpenAppend|File)\\s*\\["
+    );
+    private static final Pattern CLOSE_PATTERN = Pattern.compile("Close\\s*\\[");
+    private static final Pattern CHECK_PATTERN = Pattern.compile("Check\\s*\\[");
+    private static final Pattern STREAM_VAR_PATTERN = Pattern.compile(
+        "([a-zA-Z]\\w*)\\s*=\\s*(?:OpenRead|OpenWrite|OpenAppend)\\s*\\["
+    );
+    private static final Pattern NOTEBOOK_PUT_PATTERN = Pattern.compile(
+        "(?:Table|Range|Array)\\s*\\[[^\\]]*(?:Table|Range|Array).*NotebookWrite"
+    );
+    private static final Pattern CLEAR_PATTERN = Pattern.compile("Clear\\s*\\[|ClearAll\\s*\\[|Remove\\s*\\[");
+
+    /**
+     * Detect streams that are not closed.
+     */
+    public void detectStreamNotClosed(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher streamMatcher = STREAM_PATTERN.matcher(content);
+            while (streamMatcher.find()) {
+                int streamPos = streamMatcher.start();
+                // Look for Close within reasonable range
+                String contextWindow = content.substring(streamPos,
+                    Math.min(content.length(), streamPos + 1000));
+
+                if (!contextWindow.contains("Close[")) {
+                    int lineNumber = calculateLineNumber(content, streamPos);
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.STREAM_NOT_CLOSED_KEY,
+                        "Stream opened but not closed. Use Close[] to prevent resource leak.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping stream not closed detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect file handle leaks (similar to stream but more specific).
+     */
+    public void detectFileHandleLeak(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher handleMatcher = FILE_HANDLE_PATTERN.matcher(content);
+            int openCount = 0;
+            while (handleMatcher.find()) {
+                openCount++;
+            }
+
+            Matcher closeMatcher = CLOSE_PATTERN.matcher(content);
+            int closeCount = 0;
+            while (closeMatcher.find()) {
+                closeCount++;
+            }
+
+            // Simple heuristic: more opens than closes suggests leak
+            if (openCount > closeCount && openCount > 0) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.FILE_HANDLE_LEAK_KEY,
+                    String.format("File handle leak detected: %d Open operations but only %d Close operations.", openCount, closeCount));
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping file handle leak detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect missing Close in Finally/Check block.
+     */
+    public void detectCloseInFinallyMissing(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Look for stream operations not wrapped in Check
+            Matcher streamMatcher = STREAM_VAR_PATTERN.matcher(content);
+            while (streamMatcher.find()) {
+                int streamPos = streamMatcher.start();
+                String varName = streamMatcher.group(1);
+
+                // Look back for Check[
+                String lookback = content.substring(Math.max(0, streamPos - 100), streamPos);
+                if (!lookback.contains("Check[")) {
+                    // Look forward for Close without Check protection
+                    String lookahead = content.substring(streamPos,
+                        Math.min(content.length(), streamPos + 500));
+
+                    if (!lookahead.contains("Check[") && lookahead.contains("Close[" + varName)) {
+                        int lineNumber = calculateLineNumber(content, streamPos);
+                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CLOSE_IN_FINALLY_MISSING_KEY,
+                            String.format("Stream '%s' should use Check[] or Catch[] to ensure Close on error.", varName));
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping Close in Finally detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect attempts to reopen an already-open stream.
+     */
+    public void detectStreamReopenAttempt(SensorContext context, InputFile inputFile, String content) {
+        try {
+            Matcher streamMatcher = STREAM_VAR_PATTERN.matcher(content);
+            java.util.Map<String, java.util.List<Integer>> streamAssignments = new java.util.HashMap<>();
+
+            while (streamMatcher.find()) {
+                String varName = streamMatcher.group(1);
+                int pos = streamMatcher.start();
+                streamAssignments.computeIfAbsent(varName, k -> new java.util.ArrayList<>()).add(pos);
+            }
+
+            // Check for variables assigned multiple times without Close
+            for (java.util.Map.Entry<String, java.util.List<Integer>> entry : streamAssignments.entrySet()) {
+                if (entry.getValue().size() > 1) {
+                    String varName = entry.getKey();
+                    // Check if Close[] appears between assignments
+                    for (int i = 0; i < entry.getValue().size() - 1; i++) {
+                        int firstAssign = entry.getValue().get(i);
+                        int secondAssign = entry.getValue().get(i + 1);
+                        String between = content.substring(firstAssign, secondAssign);
+
+                        if (!between.contains("Close[" + varName)) {
+                            int lineNumber = calculateLineNumber(content, secondAssign);
+                            reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.STREAM_REOPEN_ATTEMPT_KEY,
+                                String.format("Stream '%s' reassigned without closing previous stream.", varName));
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping stream reopen detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect Dynamic expressions that accumulate memory.
+     */
+    public void detectDynamicMemoryLeak(SensorContext context, InputFile inputFile, String content) {
+        try {
+            if (content.contains("Dynamic[")
+                && (content.contains("AppendTo[") || content.contains("Prepend To["))) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.DYNAMIC_MEMORY_LEAK_KEY,
+                    "Dynamic with AppendTo creates unbounded memory growth. Use fixed-size buffer.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping Dynamic memory leak detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect large data embedded in notebooks.
+     */
+    public void detectLargeDataInNotebook(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Check if this looks like a notebook file
+            if ((content.contains("Cell[") || content.contains("Notebook["))
+                && content.contains("GraphicsData")) {
+
+                Matcher tableMatcher = NOTEBOOK_PUT_PATTERN.matcher(content);
+                if (tableMatcher.find()) {
+                    int lineNumber = calculateLineNumber(content, tableMatcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.LARGE_DATA_IN_NOTEBOOK_KEY,
+                        "Large data generated in notebook. Store in external file and Import instead.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping large data in notebook detection: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect symbols not cleared after use.
+     */
+    public void detectNoClearAfterUse(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Look for large assignments without Clear
+            if (!content.contains("Clear") && !content.contains("ClearAll")) {
+                Matcher matcher = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*=\\s*(?:Table|Range|Array)\\s*\\[[^\\]]{100,}").matcher(content);
+                if (matcher.find()) {
+                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.NO_CLEAR_AFTER_USE_KEY,
+                        "Large data structures created but never cleared. Use Clear[] to free memory.");
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping no Clear after use detection: {}", inputFile.filename());
+        }
+    }
+
     /**
      * Helper class for pattern tracking.
      */

@@ -143,6 +143,16 @@ public class MathematicaRulesSensor implements Sensor {
     });
     private final ThreadLocal<AdvancedAnalysisDetector> advancedAnalysisDetector =
         ThreadLocal.withInitial(AdvancedAnalysisDetector::new);
+    private final ThreadLocal<TestingQualityDetector> testingQualityDetector = ThreadLocal.withInitial(() -> {
+        TestingQualityDetector d = new TestingQualityDetector();
+        d.setSensor(this);
+        return d;
+    });
+    private final ThreadLocal<FrameworkDetector> frameworkDetector = ThreadLocal.withInitial(() -> {
+        FrameworkDetector d = new FrameworkDetector();
+        d.setSensor(this);
+        return d;
+    });
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -461,6 +471,9 @@ public class MathematicaRulesSensor implements Sensor {
 
             // Delegate to Code Smell detector (33 rules) - NOW IN UnifiedRuleVisitor
 
+            // ===== TIER 1 GAP CLOSURE - NEW DETECTION METHODS (70 rules) =====
+            runTier1GapClosureDetectors(context, inputFile, content);
+
 
 
 
@@ -534,7 +547,95 @@ public class MathematicaRulesSensor implements Sensor {
         typeAndDataFlowDetector.get().initializeCaches(content);
         controlFlowAndTaintDetector.get().initializeCaches(content);
         advancedAnalysisDetector.get().initializeCaches(content);
+        testingQualityDetector.get().initializeCaches(content);
+        frameworkDetector.get().initializeCaches(content);
         // Note: ArchitectureAndDependencyDetector uses static caches (no per-file init needed)
+    }
+
+    /**
+     * Run all 70 Tier 1 gap closure detection methods.
+     * Extracted from analyzeFile() to reduce method complexity.
+     */
+    private void runTier1GapClosureDetectors(SensorContext context, InputFile inputFile, String content) {
+        // SecurityHotspotDetector (23 new rules)
+        securityHotspotDetector.get().detectWeakHashing(context, inputFile, content);
+        securityHotspotDetector.get().detectWeakAuthentication(context, inputFile, content);
+        securityHotspotDetector.get().detectDefaultCredentials(context, inputFile, content);
+        securityHotspotDetector.get().detectPasswordPlainText(context, inputFile, content);
+        securityHotspotDetector.get().detectInsecureSession(context, inputFile, content);
+        securityHotspotDetector.get().detectMissingAuthorization(context, inputFile, content);
+        securityHotspotDetector.get().detectWeakSessionToken(context, inputFile, content);
+        securityHotspotDetector.get().detectMissingAccessControl(context, inputFile, content);
+        securityHotspotDetector.get().detectInsecureRandomHotspot(context, inputFile, content);
+        securityHotspotDetector.get().detectHardcodedCryptoKey(context, inputFile, content);
+        securityHotspotDetector.get().detectWeakCipherMode(context, inputFile, content);
+        securityHotspotDetector.get().detectInsufficientKeySize(context, inputFile, content);
+        securityHotspotDetector.get().detectWeakSslProtocol(context, inputFile, content);
+        securityHotspotDetector.get().detectCertificateValidationDisabled(context, inputFile, content);
+        securityHotspotDetector.get().detectHttpWithoutTls(context, inputFile, content);
+        securityHotspotDetector.get().detectCorsPermissive(context, inputFile, content);
+        securityHotspotDetector.get().detectOpenRedirect(context, inputFile, content);
+        securityHotspotDetector.get().detectDnsRebinding(context, inputFile, content);
+        securityHotspotDetector.get().detectInsecureWebsocket(context, inputFile, content);
+        securityHotspotDetector.get().detectMissingSecurityHeaders(context, inputFile, content);
+        securityHotspotDetector.get().detectSensitiveDataLog(context, inputFile, content);
+        securityHotspotDetector.get().detectPiiExposure(context, inputFile, content);
+        securityHotspotDetector.get().detectClearTextProtocol(context, inputFile, content);
+
+        // FrameworkDetector (18 new rules)
+        frameworkDetector.get().detectNotebookCellSize(context, inputFile, content);
+        frameworkDetector.get().detectNotebookUnorganized(context, inputFile, content);
+        frameworkDetector.get().detectNotebookNoSections(context, inputFile, content);
+        frameworkDetector.get().detectNotebookInitCellMisuse(context, inputFile, content);
+        frameworkDetector.get().detectManipulatePerformance(context, inputFile, content);
+        frameworkDetector.get().detectDynamicHeavyComputation(context, inputFile, content);
+        frameworkDetector.get().detectDynamicNoTracking(context, inputFile, content);
+        frameworkDetector.get().detectManipulateTooComplex(context, inputFile, content);
+        frameworkDetector.get().detectPackageNoBegin(context, inputFile, content);
+        frameworkDetector.get().detectPackagePublicPrivateMix(context, inputFile, content);
+        frameworkDetector.get().detectPackageNoUsage(context, inputFile, content);
+        frameworkDetector.get().detectPackageCircularDependency(context, inputFile, content);
+        frameworkDetector.get().detectParallelNoGain(context, inputFile, content);
+        frameworkDetector.get().detectParallelRaceCondition(context, inputFile, content);
+        frameworkDetector.get().detectParallelSharedState(context, inputFile, content);
+        frameworkDetector.get().detectCloudApiMissingAuth(context, inputFile, content);
+        frameworkDetector.get().detectCloudPermissionsTooOpen(context, inputFile, content);
+        frameworkDetector.get().detectCloudDeployNoValidation(context, inputFile, content);
+
+        // TestingQualityDetector (12 new rules)
+        testingQualityDetector.get().detectTestNamingConvention(context, inputFile, content);
+        testingQualityDetector.get().detectTestNoIsolation(context, inputFile, content);
+        testingQualityDetector.get().detectTestDataHardcoded(context, inputFile, content);
+        testingQualityDetector.get().detectTestIgnored(context, inputFile, content);
+        testingQualityDetector.get().detectVerificationTestNoExpected(context, inputFile, content);
+        testingQualityDetector.get().detectVerificationTestTooBroad(context, inputFile, content);
+        testingQualityDetector.get().detectVerificationTestNoDescription(context, inputFile, content);
+        testingQualityDetector.get().detectVerificationTestEmpty(context, inputFile, content);
+        testingQualityDetector.get().detectTestAssertCount(context, inputFile, content);
+        testingQualityDetector.get().detectTestTooLong(context, inputFile, content);
+        testingQualityDetector.get().detectTestMultipleConcerns(context, inputFile, content);
+        testingQualityDetector.get().detectTestMagicNumber(context, inputFile, content);
+
+        // BugDetector (7 new resource management rules)
+        bugDetector.get().detectStreamNotClosed(context, inputFile, content);
+        bugDetector.get().detectFileHandleLeak(context, inputFile, content);
+        bugDetector.get().detectCloseInFinallyMissing(context, inputFile, content);
+        bugDetector.get().detectStreamReopenAttempt(context, inputFile, content);
+        bugDetector.get().detectDynamicMemoryLeak(context, inputFile, content);
+        bugDetector.get().detectLargeDataInNotebook(context, inputFile, content);
+        bugDetector.get().detectNoClearAfterUse(context, inputFile, content);
+
+        // CodeSmellDetector (10 new comment quality rules)
+        codeSmellDetector.get().detectTodoTracking(context, inputFile, content);
+        codeSmellDetector.get().detectFixmeTracking(context, inputFile, content);
+        codeSmellDetector.get().detectHackComment(context, inputFile, content);
+        codeSmellDetector.get().detectCommentedOutCode(context, inputFile, content);
+        codeSmellDetector.get().detectLargeCommentedBlock(context, inputFile, content);
+        codeSmellDetector.get().detectApiMissingDocumentation(context, inputFile, content);
+        codeSmellDetector.get().detectDocumentationTooShort(context, inputFile, content);
+        codeSmellDetector.get().detectDocumentationOutdated(context, inputFile, content);
+        codeSmellDetector.get().detectParameterNotDocumented(context, inputFile, content);
+        codeSmellDetector.get().detectReturnNotDocumented(context, inputFile, content);
     }
 
     private void performSymbolTableAnalysis(SensorContext context, InputFile inputFile, String content, long fileStartTime, long analysisTime) {
