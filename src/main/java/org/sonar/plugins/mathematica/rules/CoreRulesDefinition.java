@@ -748,6 +748,7 @@ final class CoreRulesDefinition {
 
         // Define file upload validation rule
         NewRule rule22 = repository.createRule(FILE_UPLOAD_VALIDATION_KEY)
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
             .setName("File uploads should be validated")
             .setHtmlDescription(
                 "<p>File uploads from users should be validated for type, size, and content before processing.</p>"
@@ -797,6 +798,7 @@ final class CoreRulesDefinition {
 
         // Define external API safeguards rule
         NewRule rule23 = repository.createRule(EXTERNAL_API_SAFEGUARDS_KEY)
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
             .setName("External API calls should have proper safeguards")
             .setHtmlDescription(
                 "<p>Calls to external APIs should have proper error handling, timeouts, and rate limiting.</p>"
@@ -858,6 +860,7 @@ final class CoreRulesDefinition {
     private static void defineSecurityHotspotCryptoKeyRule(NewRepository repository) {
         // Define crypto key generation rule
         NewRule rule24 = repository.createRule(CRYPTO_KEY_GENERATION_KEY)
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
             .setName("Cryptographic keys should be generated securely")
             .setHtmlDescription(
                 "<p>Cryptographic keys and secrets must be generated using secure methods with sufficient entropy.</p>"

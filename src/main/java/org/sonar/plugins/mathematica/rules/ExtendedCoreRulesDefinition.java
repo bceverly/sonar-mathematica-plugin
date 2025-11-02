@@ -670,6 +670,7 @@ final class ExtendedCoreRulesDefinition {
 
         // Network Operations
         NewRule rule47 = repository.createRule(NETWORK_OPERATIONS_KEY)
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
             .setName("Network operations should be reviewed for security")
             .setHtmlDescription(
                 "<p>Network operations expose the application to external systems and should be reviewed.</p>"
@@ -697,6 +698,7 @@ final class ExtendedCoreRulesDefinition {
 
         // File System Modifications
         NewRule rule48 = repository.createRule(FILE_SYSTEM_MODIFICATIONS_KEY)
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
             .setName("Destructive file operations should be reviewed")
             .setHtmlDescription(
                 "<p>Destructive file system operations should be reviewed for security and safety.</p>"
@@ -725,6 +727,7 @@ final class ExtendedCoreRulesDefinition {
 
         // Environment Variables
         NewRule rule49 = repository.createRule(ENVIRONMENT_VARIABLE_KEY)
+            .setType(org.sonar.api.rules.RuleType.SECURITY_HOTSPOT)
             .setName("Environment variable access should be reviewed")
             .setHtmlDescription(
                 "<p>Environment variables may contain secrets and should be reviewed for proper handling.</p>"
