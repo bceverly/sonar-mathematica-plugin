@@ -715,6 +715,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
         PerformanceRulesDefinition.defineRules(repository);
         Tier1GapClosureRulesDefinition.defineRules(repository); // NEW: 70 rules for Tier 1
         StyleAndConventionsRulesDefinition.defineRules(repository); // NEW: 70 more code smells for Tier 1 parity
+        CustomRuleTemplatesDefinition.defineTemplates(repository); // NEW: Custom rule templates for user-defined rules
 
         repository.done();
     }

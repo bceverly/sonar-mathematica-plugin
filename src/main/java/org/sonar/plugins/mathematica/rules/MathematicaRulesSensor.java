@@ -4,6 +4,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -482,6 +483,8 @@ public class MathematicaRulesSensor implements Sensor {
             // ===== CODE SMELL 2 - ADDITIONAL 70 CODE SMELLS FOR TIER 1 PARITY =====
             runStyleAndConventionsDetectors(context, inputFile, content);
 
+            // ===== CUSTOM RULES - USER-DEFINED RULES FROM TEMPLATES =====
+            runCustomRules(context, inputFile, content);
 
 
 
@@ -720,6 +723,34 @@ public class MathematicaRulesSensor implements Sensor {
         styleAndConventionsDetector.get().detectPlotWithoutLabels(context, inputFile, content);
         styleAndConventionsDetector.get().detectDatasetWithoutHeaders(context, inputFile, content);
         styleAndConventionsDetector.get().detectAssociationKeyNotString(context, inputFile, content);
+    }
+
+    /**
+     * Execute user-defined custom rules based on rule templates.
+     */
+    private void runCustomRules(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Get all active rules for this quality profile
+            Collection<org.sonar.api.batch.rule.ActiveRule> activeRules =
+                context.activeRules().findByRepository(MathematicaRulesDefinition.REPOSITORY_KEY);
+
+            // Filter to only custom rules (rules created from templates)
+            Collection<org.sonar.api.batch.rule.ActiveRule> customRules = new java.util.ArrayList<>();
+            for (org.sonar.api.batch.rule.ActiveRule rule : activeRules) {
+                if (rule.templateRuleKey() != null) {
+                    customRules.add(rule);
+                }
+            }
+
+            if (!customRules.isEmpty()) {
+                CustomRuleDetector customRuleDetector = new CustomRuleDetector();
+                customRuleDetector.setSensor(this);
+                customRuleDetector.executeCustomRules(context, inputFile, content, customRules);
+                LOG.debug("Executed {} custom rules for {}", customRules.size(), inputFile.filename());
+            }
+        } catch (Exception e) {
+            LOG.error("Error executing custom rules for {}: {}", inputFile.filename(), e.getMessage());
+        }
     }
 
     private void performSymbolTableAnalysis(SensorContext context, InputFile inputFile, String content, long fileStartTime, long analysisTime) {
