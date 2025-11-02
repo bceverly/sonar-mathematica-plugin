@@ -34,7 +34,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*\\[([^\\]]*)\\]");
     private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*\\[");
     private static final Pattern REPEATED_PATTERN_NAME = Pattern.compile("\\{\\s*(\\w+)_,\\s*\\1_\\s*\\}");
-    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\(([^|]+\\|){10,}");
+    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\(([^|]++\\|){10,}");
     private static final Pattern CASES_LARGE_LIST = Pattern.compile("Cases\\s*\\[\\s*Range\\s*\\[\\s*(\\d+)\\s*\\]");
 
     // Pre-compiled patterns for List/Array Rules
@@ -42,7 +42,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern NEGATIVE_INDEX = Pattern.compile("\\[\\[\\s*-\\s*(\\d+|\\w+)\\s*\\]\\]");
     private static final Pattern PART_ASSIGNMENT = Pattern.compile("([^\\w]\\{[^}]+\\}|[A-Z]\\w*\\s*\\[[^\\]]+\\])\\s*\\[\\[");
     private static final Pattern JOIN_IN_LOOP = Pattern.compile("(Do|While|Table)\\s*\\[[^\\]]*Join\\s*\\[");
-    private static final Pattern FLATTEN_USAGE = Pattern.compile("Flatten\\s*\\[\\s*\\{\\s*([^,}]+)(?:,\\s*([^,}]+))*\\s*\\}\\s*\\]");
+    private static final Pattern FLATTEN_USAGE = Pattern.compile("Flatten\\s*\\[\\s*\\{\\s*([^,}]++)(?:,\\s*([^,}]++))*+\\s*\\}\\s*\\]");
     private static final Pattern LENGTH_IN_DO = Pattern.compile("Do\\s*\\[[^,]*,\\s*\\{[^,]*,\\s*[^,]*,\\s*Length\\s*\\[");
     private static final Pattern REVERSE_TWICE = Pattern.compile("Reverse\\s*\\[\\s*Reverse\\s*\\[");
     private static final Pattern SORT_GREATER = Pattern.compile("Sort\\s*\\[\\s*\\w+\\s*,\\s*Greater\\s*\\]");

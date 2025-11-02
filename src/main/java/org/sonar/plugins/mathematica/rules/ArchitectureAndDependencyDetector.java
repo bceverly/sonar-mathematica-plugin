@@ -79,7 +79,7 @@ public final class ArchitectureAndDependencyDetector {
     private static final Pattern LAYER_DATA = Pattern.compile("(?i)(?:Data|Persistence|Repository|DAO|Database)");
 
     // Conditional loading
-    private static final Pattern CONDITIONAL_LOAD = Pattern.compile("(?:If|Which|Switch)\\s*\\[.*?(?:Needs|Get|<<)");
+    private static final Pattern CONDITIONAL_LOAD = Pattern.compile("(?:If|Which|Switch)\\s*\\[[^\\]]*+(?:Needs|Get|<<)");
 
     // ========================================
     // CROSS-FILE ANALYSIS STATE
@@ -1037,7 +1037,7 @@ public final class ArchitectureAndDependencyDetector {
      * Rule 240: Commented-out package load
      */
     public static void detectCommentedOutPackageLoad(SensorContext context, InputFile inputFile, String content) {
-        Pattern commentedNeeds = Pattern.compile("\\(\\*.*?(?:Needs|Get|<<).*?\\*\\)");
+        Pattern commentedNeeds = Pattern.compile("\\(\\*[^*]*+(?:Needs|Get|<<)[^*]*+\\*\\)");
         Matcher matcher = commentedNeeds.matcher(content);
 
         while (matcher.find()) {

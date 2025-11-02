@@ -51,7 +51,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // Pattern/replacement patterns
     private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*\\([^)]*(?:Print|Message|Set)");
     private static final Pattern REPLACE_ALL = Pattern.compile("/\\.");
-    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*->.*?,\\s*\\w+\\s*->");
+    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*+_\\s*->[^,]*+,\\s*\\w+\\s*->");
 
     // Part/list patterns
     private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*(\\d+)\\s*\\]\\]");
@@ -302,7 +302,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectLoopBoundConstant(SensorContext ctx, InputFile file, String content) {
-        Pattern constBound = Pattern.compile("(\\w+)\\s*=\\s*(\\d+);.*Do\\s*\\[.*\\{\\w+,.*,\\s*\\1\\s*\\}");
+        Pattern constBound = Pattern.compile("(\\w+)\\s*=\\s*(\\d+);[^D]*+Do\\s*\\[[^\\{]*+\\{\\w+,[^,]*+,\\s*\\1\\s*\\}");
         Matcher m = constBound.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;

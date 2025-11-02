@@ -38,7 +38,7 @@ public abstract class BaseDetector {
 
     // Common patterns used across detectors
     // NOTE: COMMENT_PATTERN removed - use removeCommentsCharBased() to avoid catastrophic backtracking
-    protected static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*\"");
+    protected static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)++\"");
 
     /**
      * Initialize caches for a file.

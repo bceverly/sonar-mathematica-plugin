@@ -1488,7 +1488,7 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectLargeCommentedBlock(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern largeCommentPattern = Pattern.compile("\\(\\*([^\\*]|\\*[^\\)]){500,}\\*\\)");
+            Pattern largeCommentPattern = Pattern.compile("\\(\\*(?:[^\\*]++|\\*(?!\\))){500,}\\*\\)");
             Matcher matcher = largeCommentPattern.matcher(content);
             while (matcher.find()) {
                 int lineCount = matcher.group().split("\n").length;
