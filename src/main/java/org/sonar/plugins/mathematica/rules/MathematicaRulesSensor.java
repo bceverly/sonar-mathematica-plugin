@@ -473,9 +473,9 @@ public class MathematicaRulesSensor implements Sensor {
 
             long analysisTime = System.currentTimeMillis() - analysisStart;
 
-            // OLD DETECTOR APPROACH - REPLACED WITH UNIFIED AST ABOVE
-
-            // Delegate to Code Smell detector (33 rules) - NOW IN UnifiedRuleVisitor
+            // ===== PATTERN-BASED DETECTORS (with Quick Fixes) =====
+            // These complement the UnifiedRuleVisitor and provide Quick Fixes
+            runPatternBasedDetectors(context, inputFile, content, commentRanges);
 
             // ===== TIER 1 GAP CLOSURE - NEW DETECTION METHODS (70 rules) =====
             runTier1GapClosureDetectors(context, inputFile, content);
@@ -751,6 +751,160 @@ public class MathematicaRulesSensor implements Sensor {
         } catch (Exception e) {
             LOG.error("Error executing custom rules for {}: {}", inputFile.filename(), e.getMessage());
         }
+    }
+
+    /**
+     * Run pattern-based detectors that provide Quick Fixes.
+     * These complement the UnifiedRuleVisitor semantic analysis.
+     */
+    private void runPatternBasedDetectors(SensorContext context, InputFile inputFile, String content, List<int[]> commentRanges) {
+        // ===== CODE SMELL DETECTOR (68 rules with Quick Fixes) =====
+
+        // Basic code smells
+        codeSmellDetector.get().detectEmptyBlocks(context, inputFile, content);
+        codeSmellDetector.get().detectDebugCode(context, inputFile, content);
+        codeSmellDetector.get().detectEmptyStatement(context, inputFile, content);
+        codeSmellDetector.get().detectDeprecatedFunctions(context, inputFile, content);
+        codeSmellDetector.get().detectExplicitGlobalContext(context, inputFile, content);
+
+        // Performance anti-patterns
+        codeSmellDetector.get().detectStringConcatInLoop(context, inputFile, content);
+        codeSmellDetector.get().detectAppendInLoop(context, inputFile, content);
+        codeSmellDetector.get().detectStringJoinForTemplates(context, inputFile, content);
+        codeSmellDetector.get().detectPositionInsteadPattern(context, inputFile, content);
+        codeSmellDetector.get().detectFlattenTableAntipattern(context, inputFile, content);
+        codeSmellDetector.get().detectUnnecessaryTranspose(context, inputFile, content);
+        codeSmellDetector.get().detectLinearSearchInsteadLookup(context, inputFile, content);
+        codeSmellDetector.get().detectDeleteDuplicatesOnLargeData(context, inputFile, content);
+        codeSmellDetector.get().detectNestedMapTable(context, inputFile, content);
+        codeSmellDetector.get().detectRepeatedCalculations(context, inputFile, content);
+        codeSmellDetector.get().detectRepeatedFunctionCalls(context, inputFile, content);
+        codeSmellDetector.get().detectRepeatedPartExtraction(context, inputFile, content);
+        codeSmellDetector.get().detectRepeatedStringParsing(context, inputFile, content);
+        codeSmellDetector.get().detectPackedArrayBreaking(context, inputFile, content);
+        codeSmellDetector.get().detectPlotInLoop(context, inputFile, content);
+        codeSmellDetector.get().detectUncompiledNumerical(context, inputFile, content);
+        codeSmellDetector.get().detectMissingParallelization(context, inputFile, content);
+        codeSmellDetector.get().detectMissingSparseArray(context, inputFile, content);
+        codeSmellDetector.get().detectLargeTempExpressions(context, inputFile, content);
+
+        // Code organization
+        codeSmellDetector.get().detectLongFunctions(context, inputFile, content);
+        codeSmellDetector.get().detectDeeplyNested(context, inputFile, content);
+        codeSmellDetector.get().detectExpressionTooComplex(context, inputFile, content, commentRanges);
+        codeSmellDetector.get().detectComplexBoolean(context, inputFile, content);
+        codeSmellDetector.get().detectTooManyParameters(context, inputFile, content);
+        codeSmellDetector.get().detectOvercomplexPatterns(context, inputFile, content);
+        codeSmellDetector.get().detectDuplicateFunctions(context, inputFile, content);
+        codeSmellDetector.get().detectIdenticalBranches(context, inputFile, content);
+        codeSmellDetector.get().detectMissingReturn(context, inputFile, content);
+        codeSmellDetector.get().detectSideEffectsNaming(context, inputFile, content);
+        codeSmellDetector.get().detectGlobalStateModification(context, inputFile, content);
+
+        // Naming and conventions
+        codeSmellDetector.get().detectGenericVariableNames(context, inputFile, content);
+        codeSmellDetector.get().detectMagicNumbers(context, inputFile, content, commentRanges);
+        codeSmellDetector.get().detectInconsistentNaming(context, inputFile, content);
+        codeSmellDetector.get().detectInconsistentReturnTypes(context, inputFile, content);
+        codeSmellDetector.get().detectInconsistentRuleTypes(context, inputFile, content);
+
+        // Missing features
+        codeSmellDetector.get().detectMissingDocumentation(context, inputFile, content);
+        codeSmellDetector.get().detectMissingUsageMessage(context, inputFile, content);
+        codeSmellDetector.get().detectMissingDownValuesDoc(context, inputFile, content);
+        codeSmellDetector.get().detectMissingOptionsPattern(context, inputFile, content);
+        codeSmellDetector.get().detectMissingFunctionAttributes(context, inputFile, content);
+        codeSmellDetector.get().detectMissingErrorMessages(context, inputFile, content);
+        codeSmellDetector.get().detectMissingLocalization(context, inputFile, content);
+        codeSmellDetector.get().detectMissingTemporaryCleanup(context, inputFile, content);
+        codeSmellDetector.get().detectMissingCompilationTarget(context, inputFile, content);
+        codeSmellDetector.get().detectMissingMemoization(context, inputFile, content);
+        codeSmellDetector.get().detectMissingPatternTestValidation(context, inputFile, content);
+        codeSmellDetector.get().detectMissingOperatorPrecedence(context, inputFile, content);
+
+        // Data structures
+        codeSmellDetector.get().detectNestedListsInsteadAssociation(context, inputFile, content);
+        codeSmellDetector.get().detectHardcodedFilePaths(context, inputFile, content);
+        codeSmellDetector.get().detectUnprotectedSymbols(context, inputFile, content);
+        codeSmellDetector.get().detectUnusedVariables(context, inputFile, content);
+        codeSmellDetector.get().detectExcessivePureFunctions(context, inputFile, content);
+
+        // Error handling
+        codeSmellDetector.get().detectEmptyCatchBlocks(context, inputFile, content);
+
+        // Comments and documentation (from Tier 1)
+        codeSmellDetector.get().detectTodoTracking(context, inputFile, content);
+        codeSmellDetector.get().detectFixmeTracking(context, inputFile, content);
+        codeSmellDetector.get().detectHackComment(context, inputFile, content);
+        codeSmellDetector.get().detectCommentedOutCode(context, inputFile, content);
+        codeSmellDetector.get().detectLargeCommentedBlock(context, inputFile, content);
+        codeSmellDetector.get().detectApiMissingDocumentation(context, inputFile, content);
+        codeSmellDetector.get().detectDocumentationTooShort(context, inputFile, content);
+        codeSmellDetector.get().detectDocumentationOutdated(context, inputFile, content);
+        codeSmellDetector.get().detectParameterNotDocumented(context, inputFile, content);
+        codeSmellDetector.get().detectReturnNotDocumented(context, inputFile, content);
+
+        // ===== BUG DETECTOR (42 rules with Quick Fixes) =====
+
+        // Assignment and conditional bugs
+        bugDetector.get().detectAssignmentInConditional(context, inputFile, content);
+        bugDetector.get().detectSetDelayedConfusion(context, inputFile, content);
+        bugDetector.get().detectIncorrectSetInScoping(context, inputFile, content);
+        bugDetector.get().detectFunctionWithoutReturn(context, inputFile, content);
+
+        // Type and comparison bugs
+        bugDetector.get().detectFloatingPointEquality(context, inputFile, content);
+        bugDetector.get().detectTypeMismatch(context, inputFile, content);
+        bugDetector.get().detectMachinePrecisionInSymbolic(context, inputFile, content);
+
+        // Pattern and evaluation bugs
+        bugDetector.get().detectBlockModuleMisuse(context, inputFile, content);
+        bugDetector.get().detectPatternBlanksMisuse(context, inputFile, content);
+        bugDetector.get().detectSuspiciousPattern(context, inputFile, content);
+        bugDetector.get().detectUnreachablePatterns(context, inputFile, content);
+        bugDetector.get().detectEvaluationOrderAssumption(context, inputFile, content);
+
+        // Index and bounds bugs
+        bugDetector.get().detectOffByOne(context, inputFile, content);
+        bugDetector.get().detectListIndexOutOfBounds(context, inputFile, content);
+        bugDetector.get().detectDivisionByZero(context, inputFile, content);
+        bugDetector.get().detectZeroDenominator(context, inputFile, content);
+
+        // Missing checks
+        bugDetector.get().detectMissingFailedCheck(context, inputFile, content);
+        bugDetector.get().detectMissingEmptyListCheck(context, inputFile, content);
+        bugDetector.get().detectMissingPatternTest(context, inputFile, content);
+        bugDetector.get().detectMissingHoldAttributes(context, inputFile, content);
+        bugDetector.get().detectMissingSpecialCaseHandling(context, inputFile, content);
+        bugDetector.get().detectMissingMatrixDimensionCheck(context, inputFile, content);
+
+        // Data structure bugs
+        bugDetector.get().detectIncorrectLevelSpecification(context, inputFile, content);
+        bugDetector.get().detectIncorrectAssociationOperations(context, inputFile, content);
+        bugDetector.get().detectMismatchedDimensions(context, inputFile, content);
+        bugDetector.get().detectTotalMeanOnNonNumeric(context, inputFile, content);
+        bugDetector.get().detectQuantityUnitMismatch(context, inputFile, content);
+        bugDetector.get().detectDateObjectValidation(context, inputFile, content);
+
+        // Control flow bugs
+        bugDetector.get().detectInfiniteLoop(context, inputFile, content);
+        bugDetector.get().detectInfiniteRecursion(context, inputFile, content);
+        bugDetector.get().detectGrowingDefinitionChain(context, inputFile, content);
+        bugDetector.get().detectVariableBeforeAssignment(context, inputFile, content);
+
+        // Resource management (from Tier 1)
+        bugDetector.get().detectStreamNotClosed(context, inputFile, content);
+        bugDetector.get().detectFileHandleLeak(context, inputFile, content);
+        bugDetector.get().detectCloseInFinallyMissing(context, inputFile, content);
+        bugDetector.get().detectStreamReopenAttempt(context, inputFile, content);
+        bugDetector.get().detectDynamicMemoryLeak(context, inputFile, content);
+        bugDetector.get().detectLargeDataInNotebook(context, inputFile, content);
+        bugDetector.get().detectNoClearAfterUse(context, inputFile, content);
+        bugDetector.get().detectUnclosedFileHandle(context, inputFile, content);
+
+        // Array and performance bugs
+        bugDetector.get().detectUnpackingPackedArrays(context, inputFile, content);
+        bugDetector.get().detectSymbolNameCollision(context, inputFile, content);
     }
 
     private void performSymbolTableAnalysis(SensorContext context, InputFile inputFile, String content, long fileStartTime, long analysisTime) {

@@ -103,7 +103,9 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern REPEATED_PART_PATTERN = Pattern.compile(
             "([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\];[^;]*([a-zA-Z]\\w*)\\[\\[\\d+\\]\\]");
     private static final Pattern RECURSIVE_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=[^;]*\\1\\s*\\[");
-    private static final Pattern STRINGJOIN_PATTERN = Pattern.compile("[^<]*<>[^<]*<>[^<]*<>");
+    // Fixed: Use possessive quantifiers to prevent catastrophic backtracking
+    // Matches 3+ consecutive <> operators (StringJoin): "a" <> "b" <> "c" <> "d"
+    private static final Pattern STRINGJOIN_PATTERN = Pattern.compile("[^<>]*+<>[^<>]*+<>[^<>]*+<>");
     private static final Pattern SELECT_LINEAR_PATTERN = Pattern.compile("Select\\s*\\[[^,]+,\\s*#\\[\\[[^\\]]+\\]\\]\\s*==");
     private static final Pattern REPEATED_CALC_PATTERN = Pattern.compile(
         "Do\\s*\\[[^,]*([A-Z][a-zA-Z0-9]+)\\s*\\[[^\\]]*\\][^,]*,\\s*\\{([a-z]\\w*),");
