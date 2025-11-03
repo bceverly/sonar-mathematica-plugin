@@ -41,7 +41,7 @@ class CodeSmellDetectorTest {
     }
 
     @Test
-    void testDetectMagicNumbers_IgnoresCommonNumbers() {
+    void testDetectMagicNumbersIgnoresCommonNumbers() {
         String content = "x = 0; y = 1; z = 2;";
         List<int[]> commentRanges = new ArrayList<>();
 
@@ -51,7 +51,7 @@ class CodeSmellDetectorTest {
     }
 
     @Test
-    void testDetectMagicNumbers_SkipsCommentsAndStrings() {
+    void testDetectMagicNumbersSkipsCommentsAndStrings() {
         String content = "(* 42 *) str = \"100\"; result = 999;";
         List<int[]> commentRanges = detector.analyzeComments(content);
 
@@ -694,7 +694,7 @@ class CodeSmellDetectorTest {
     // ===== EDGE CASES AND ERROR HANDLING =====
 
     @Test
-    void testAllDetectors_EmptyContent() {
+    void testAllDetectorsEmptyContent() {
         String content = "";
         List<int[]> commentRanges = new ArrayList<>();
 
@@ -708,7 +708,7 @@ class CodeSmellDetectorTest {
     }
 
     @Test
-    void testAllDetectors_InvalidSyntax() {
+    void testAllDetectorsInvalidSyntax() {
         String content = "]]]][[[[invalid{{{{";
         List<int[]> commentRanges = new ArrayList<>();
 

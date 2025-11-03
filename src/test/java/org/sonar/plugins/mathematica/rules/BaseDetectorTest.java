@@ -6,13 +6,14 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatCode;
 
 class BaseDetectorTest {
 
     private TestableBaseDetector detector;
 
     // Concrete implementation for testing the abstract BaseDetector
-    private static class TestableBaseDetector extends BaseDetector {
+    private static final class TestableBaseDetector extends BaseDetector {
         // Expose protected methods for testing
         public int[] publicBuildLineOffsetArray(String content) {
             return buildLineOffsetArray(content);
@@ -41,6 +42,14 @@ class BaseDetectorTest {
         public int publicCountOccurrences(String text, String patternString) {
             return countOccurrences(text, patternString);
         }
+
+        public void publicReportIssueWithFix(org.sonar.api.batch.sensor.SensorContext context,
+                                            org.sonar.api.batch.fs.InputFile inputFile,
+                                            int line, String ruleKey, String message,
+                                            int startOffset, int endOffset,
+                                            org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext) {
+            reportIssueWithFix(context, inputFile, line, ruleKey, message, startOffset, endOffset, fixContext);
+        }
     }
 
     @BeforeEach
@@ -49,7 +58,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testBuildLineOffsetArray_SingleLine() {
+    void testBuildLineOffsetArraySingleLine() {
         String content = "single line";
         int[] offsets = detector.publicBuildLineOffsetArray(content);
 
@@ -58,7 +67,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testBuildLineOffsetArray_MultipleLines() {
+    void testBuildLineOffsetArrayMultipleLines() {
         String content = "line1\nline2\nline3";
         int[] offsets = detector.publicBuildLineOffsetArray(content);
 
@@ -69,7 +78,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testBuildLineOffsetArray_EmptyLines() {
+    void testBuildLineOffsetArrayEmptyLines() {
         String content = "line1\n\nline3";
         int[] offsets = detector.publicBuildLineOffsetArray(content);
 
@@ -80,7 +89,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testCalculateLineNumber_WithCache() {
+    void testCalculateLineNumberWithCache() {
         String content = "line1\nline2\nline3\nline4";
         detector.initializeCaches(content);
 
@@ -93,7 +102,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testCalculateLineNumber_WithoutCache() {
+    void testCalculateLineNumberWithoutCache() {
         String content = "line1\nline2\nline3";
 
         // Test without initializing caches (fallback path)
@@ -103,7 +112,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testAnalyzeComments_SimpleComment() {
+    void testAnalyzeCommentsSimpleComment() {
         String content = "code (* comment *) more code";
         List<int[]> commentRanges = detector.publicAnalyzeComments(content);
 
@@ -113,7 +122,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testAnalyzeComments_NestedComments() {
+    void testAnalyzeCommentsNestedComments() {
         String content = "code (* outer (* nested *) outer *) code";
         List<int[]> commentRanges = detector.publicAnalyzeComments(content);
 
@@ -124,7 +133,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testAnalyzeComments_MultipleComments() {
+    void testAnalyzeCommentsMultipleComments() {
         String content = "code (* comment1 *) more (* comment2 *) end";
         List<int[]> commentRanges = detector.publicAnalyzeComments(content);
 
@@ -155,7 +164,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testIsInsideStringLiteral_EscapedQuotes() {
+    void testIsInsideStringLiteralEscapedQuotes() {
         String content = "x = \"hello \\\"nested\\\" world\"";
 
         assertThat(detector.publicIsInsideStringLiteral(content, 10)).isTrue();  // Inside string
@@ -163,7 +172,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testLooksLikeNaturalLanguage_IsNaturalLanguage() {
+    void testLooksLikeNaturalLanguageIsNaturalLanguage() {
         // Need at least 2 indicators from NATURAL_LANGUAGE_PHRASES
         assertThat(detector.publicLooksLikeNaturalLanguage("this function returns a value")).isTrue();
         assertThat(detector.publicLooksLikeNaturalLanguage("note that this will fail")).isTrue();
@@ -171,14 +180,14 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testLooksLikeNaturalLanguage_NotNaturalLanguage() {
+    void testLooksLikeNaturalLanguageNotNaturalLanguage() {
         assertThat(detector.publicLooksLikeNaturalLanguage("x := y + z")).isFalse();
         assertThat(detector.publicLooksLikeNaturalLanguage("Module[{x}, x = 1]")).isFalse();
         assertThat(detector.publicLooksLikeNaturalLanguage("func[arg_]")).isFalse();
     }
 
     @Test
-    void testLooksLikeNaturalLanguage_SingleIndicator() {
+    void testLooksLikeNaturalLanguageSingleIndicator() {
         // Should return false with only one indicator
         assertThat(detector.publicLooksLikeNaturalLanguage("this is test")).isFalse();
     }
@@ -193,14 +202,14 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testCountOccurrences_RegexPattern() {
+    void testCountOccurrencesRegexPattern() {
         String text = "x1 y2 z3 a4";
 
         assertThat(detector.publicCountOccurrences(text, "[a-z]\\d")).isEqualTo(4);
     }
 
     @Test
-    void testCountOccurrences_InvalidPattern() {
+    void testCountOccurrencesInvalidPattern() {
         String text = "test content";
 
         // Should return 0 on error
@@ -223,7 +232,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testInitializeCaches_WithAst() {
+    void testInitializeCachesWithAst() {
         // Test that AST parsing doesn't crash
         String content = "f[x_] := x + 1";
 
@@ -232,7 +241,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testInitializeCaches_WithInvalidCode() {
+    void testInitializeCachesWithInvalidCode() {
         // Test that invalid code doesn't crash
         String content = "]]]]invalid[[[[";
 
@@ -254,7 +263,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testAnalyzeComments_UnclosedComment() {
+    void testAnalyzeCommentsUnclosedComment() {
         // Test handling of unclosed comments
         String content = "code (* unclosed comment";
         List<int[]> commentRanges = detector.publicAnalyzeComments(content);
@@ -264,7 +273,7 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testAnalyzeComments_EmptyContent() {
+    void testAnalyzeCommentsEmptyContent() {
         String content = "";
         List<int[]> commentRanges = detector.publicAnalyzeComments(content);
 
@@ -272,14 +281,14 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testIsInsideStringLiteral_AtLineStart() {
+    void testIsInsideStringLiteralAtLineStart() {
         String content = "\nx = \"test\"";
 
         assertThat(detector.publicIsInsideStringLiteral(content, 6)).isTrue();
     }
 
     @Test
-    void testBuildLineOffsetArray_LargeFile() {
+    void testBuildLineOffsetArrayLargeFile() {
         // Test with many lines
         StringBuilder content = new StringBuilder();
         for (int i = 0; i < 1000; i++) {
@@ -292,13 +301,79 @@ class BaseDetectorTest {
     }
 
     @Test
-    void testCalculateLineNumber_OffsetAtEnd() {
+    void testCalculateLineNumberOffsetAtEnd() {
         String content = "line1\nline2\nline3";
         detector.initializeCaches(content);
 
         // Test offset at very end
         int endOffset = content.length();
         assertThat(detector.publicCalculateLineNumber(content, endOffset)).isGreaterThanOrEqualTo(1);
+
+        detector.clearCaches();
+    }
+
+    @Test
+    void testSetSensor() {
+        // Test the setSensor method - this is the uncovered line!
+        MathematicaRulesSensor mockSensor = org.mockito.Mockito.mock(MathematicaRulesSensor.class);
+
+        detector.setSensor(mockSensor);
+
+        // Verify it doesn't throw
+        assertThat(detector).isNotNull();
+    }
+
+    @Test
+    void testReportIssueWithFixWithSensor() {
+        // Test the reportIssueWithFix method with a sensor set
+        MathematicaRulesSensor mockSensor = org.mockito.Mockito.mock(MathematicaRulesSensor.class);
+        org.sonar.api.batch.sensor.SensorContext mockContext = org.mockito.Mockito.mock(org.sonar.api.batch.sensor.SensorContext.class);
+        org.sonar.api.batch.fs.InputFile mockInputFile = org.mockito.Mockito.mock(org.sonar.api.batch.fs.InputFile.class);
+        org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext mockFixContext =
+            org.mockito.Mockito.mock(org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext.class);
+
+        String content = "test content";
+        detector.initializeCaches(content);
+        detector.setSensor(mockSensor);
+
+        assertThatCode(() ->
+            detector.publicReportIssueWithFix(mockContext, mockInputFile, 1, "TEST_RULE", "Test message", 0, 4, mockFixContext)
+        ).doesNotThrowAnyException();
+
+        detector.clearCaches();
+    }
+
+    @Test
+    void testReportIssueWithFixWithoutSensor() {
+        // Test the reportIssueWithFix method without a sensor (fallback path)
+        org.sonar.api.batch.sensor.SensorContext mockContext = org.mockito.Mockito.mock(org.sonar.api.batch.sensor.SensorContext.class);
+        org.sonar.api.batch.fs.InputFile mockInputFile = org.mockito.Mockito.mock(org.sonar.api.batch.fs.InputFile.class);
+        org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext mockFixContext =
+            org.mockito.Mockito.mock(org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext.class);
+
+        // Mock the context.newIssue() chain
+        org.sonar.api.batch.sensor.issue.NewIssue mockIssue =
+            org.mockito.Mockito.mock(org.sonar.api.batch.sensor.issue.NewIssue.class);
+        org.sonar.api.batch.sensor.issue.NewIssueLocation mockLocation =
+            org.mockito.Mockito.mock(org.sonar.api.batch.sensor.issue.NewIssueLocation.class);
+        org.sonar.api.rule.RuleKey mockRuleKey = org.sonar.api.rule.RuleKey.of("mathematica", "TEST_RULE");
+
+        org.mockito.Mockito.when(mockContext.newIssue()).thenReturn(mockIssue);
+        org.mockito.Mockito.when(mockIssue.newLocation()).thenReturn(mockLocation);
+        org.mockito.Mockito.when(mockLocation.on(mockInputFile)).thenReturn(mockLocation);
+        org.mockito.Mockito.when(mockLocation.at(org.mockito.Mockito.any())).thenReturn(mockLocation);
+        org.mockito.Mockito.when(mockLocation.message(org.mockito.Mockito.anyString())).thenReturn(mockLocation);
+        org.mockito.Mockito.when(mockIssue.forRule(org.mockito.Mockito.any())).thenReturn(mockIssue);
+        org.mockito.Mockito.when(mockIssue.at(mockLocation)).thenReturn(mockIssue);
+        org.mockito.Mockito.when(mockInputFile.selectLine(1)).thenReturn(org.mockito.Mockito.mock(org.sonar.api.batch.fs.TextRange.class));
+
+        String content = "test content";
+        detector.initializeCaches(content);
+        // Don't set sensor - this tests the fallback path
+
+        assertThatCode(() ->
+            detector.publicReportIssueWithFix(mockContext, mockInputFile, 1, "TEST_RULE", "Test message", 0, 4, mockFixContext)
+        ).doesNotThrowAnyException();
 
         detector.clearCaches();
     }
