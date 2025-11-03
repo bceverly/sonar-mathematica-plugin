@@ -15,15 +15,29 @@ class MathematicaRulesSensorTest {
 
     @Test
     void testCodeSmellDetectorCanBeInstantiated() {
-        // Test that detector can be created (tests ThreadLocal cleanup code paths)
+        // Test that detector can be created
         CodeSmellDetector detector = new CodeSmellDetector();
         assertThat(detector).isNotNull();
     }
 
     @Test
     void testBugDetectorCanBeInstantiated() {
-        // Test that detector can be created (tests ThreadLocal cleanup code paths)
+        // Test that detector can be created
         BugDetector detector = new BugDetector();
+        assertThat(detector).isNotNull();
+    }
+
+    @Test
+    void testVulnerabilityDetectorCanBeInstantiated() {
+        // Test that detector can be created
+        VulnerabilityDetector detector = new VulnerabilityDetector();
+        assertThat(detector).isNotNull();
+    }
+
+    @Test
+    void testSecurityHotspotDetectorCanBeInstantiated() {
+        // Test that detector can be created
+        SecurityHotspotDetector detector = new SecurityHotspotDetector();
         assertThat(detector).isNotNull();
     }
 }
