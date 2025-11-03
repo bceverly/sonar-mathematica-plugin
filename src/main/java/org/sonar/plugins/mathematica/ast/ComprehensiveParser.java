@@ -44,8 +44,10 @@ public class ComprehensiveParser {
     private static final Pattern STRING = Pattern.compile(
         "\"(?:[^\"\\\\]|\\\\.)*+\""
     );
+    // FIXED: Removed redundant single-char alternatives already covered by character class
+    // The character class [+\-*/^&|<>=;,] is checked last, so multi-char operators take precedence
     private static final Pattern OPERATOR = Pattern.compile(
-        ":=|->|@@|@|//|/.|\\.\\.\\.|\\.\\.|==|!=|<=|>=|&&|\\|\\||!|\\+\\+|--|\\+=|-=|\\*=|/=|\\^=|[+\\-*/^&|<>=;,]"
+        ":=|->|@@|@|//|/.|\\.\\.\\.|\\.\\.|==|!=|<=|>=|&&|\\|\\||\\+\\+|--|\\+=|-=|\\*=|/=|\\^=|[+\\-*/^&|<>=;,!]"
     );
 
     private int[] lineOffsets;

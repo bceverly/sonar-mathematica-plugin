@@ -1487,17 +1487,23 @@ public class CodeSmellDetector extends BaseDetector {
 
     /**
      * Detect large commented blocks that should be documentation.
+     * FIXED: Removed quantifier on complex group to avoid stack overflow. Instead check length after match.
      */
     public void detectLargeCommentedBlock(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern largeCommentPattern = Pattern.compile("\\(\\*(?>(?:[^\\*]++|\\*(?!\\))){500,})\\*\\)");
+            // Match any comment, then check its length (safer than quantifier on complex group)
+            Pattern largeCommentPattern = Pattern.compile("\\(\\*(?>[^\\*]++|\\*(?!\\)))*+\\*\\)");
             Matcher matcher = largeCommentPattern.matcher(content);
             while (matcher.find()) {
-                int lineCount = matcher.group().split("\n").length;
-                if (lineCount > 20) {
-                    int lineNumber = calculateLineNumber(content, matcher.start());
-                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.LARGE_COMMENTED_BLOCK_KEY,
-                        String.format("Large comment block (%d lines). Consider external documentation.", lineCount));
+                String comment = matcher.group();
+                // Check if comment is large enough (approximately 500+ chars or 20+ lines)
+                if (comment.length() >= 500) {
+                    int lineCount = comment.split("\n").length;
+                    if (lineCount > 20) {
+                        int lineNumber = calculateLineNumber(content, matcher.start());
+                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.LARGE_COMMENTED_BLOCK_KEY,
+                            String.format("Large comment block (%d lines). Consider external documentation.", lineCount));
+                    }
                 }
             }
         } catch (Exception e) {

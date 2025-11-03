@@ -34,7 +34,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*\\[([^\\]]*)\\]");
     private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*\\[");
     private static final Pattern REPEATED_PATTERN_NAME = Pattern.compile("\\{\\s*(\\w+)_,\\s*\\1_\\s*\\}");
-    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\((?>([^|]++\\|){10,})");
+    // FIXED: Match pattern alternatives without nested quantifiers, then count pipes in code
+    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\([^|)]*+(?:\\|[^|)]*+)*+\\)");
     private static final Pattern CASES_LARGE_LIST = Pattern.compile("Cases\\s*\\[\\s*Range\\s*\\[\\s*(\\d+)\\s*\\]");
 
     // Pre-compiled patterns for List/Array Rules
