@@ -114,6 +114,14 @@ public class MathematicaMetricsSensor implements Sensor {
             int statements = estimateStatements(content);
             saveMeasure(context, inputFile, CoreMetrics.STATEMENTS, statements);
 
+            // Calculate NCLOC (non-comment lines of code) - REQUIRED by SonarQube Marketplace
+            int ncloc = calculateNcloc(content);
+            saveMeasure(context, inputFile, CoreMetrics.NCLOC, ncloc);
+
+            // Calculate NCLOC_DATA (line-by-line data) - REQUIRED by SonarQube Marketplace
+            String nclocData = calculateNclocData(content);
+            saveMeasure(context, inputFile, CoreMetrics.NCLOC_DATA, nclocData);
+
             // Log high complexity functions for debugging
             for (FunctionComplexity fc : functionComplexities) {
                 if (fc.getCyclomaticComplexity() > 15 || fc.getCognitiveComplexity() > 15) {
@@ -121,14 +129,53 @@ public class MathematicaMetricsSensor implements Sensor {
                 }
             }
 
-            LOG.debug("Metrics for {}: cyclomatic={}, cognitive={}, functions={}",
-                inputFile.filename(), cyclomaticComplexity, cognitiveComplexity, functionComplexities.size());
+            LOG.debug("Metrics for {}: cyclomatic={}, cognitive={}, functions={}, ncloc={}",
+                inputFile.filename(), cyclomaticComplexity, cognitiveComplexity, functionComplexities.size(), ncloc);
 
         } catch (IOException e) {
             LOG.error("Error reading file: {}", inputFile, e);
         } catch (Exception e) {
             LOG.warn("Error calculating metrics for file: {}", inputFile, e);
         }
+    }
+
+    /**
+     * Calculate NCLOC (Non-Comment Lines of Code) for the file.
+     * This counts all non-blank lines that are not comments.
+     * Required by SonarQube Marketplace for language plugins.
+     */
+    private int calculateNcloc(String content) {
+        String cleanContent = removeCommentsCharBased(content);
+        String[] lines = cleanContent.split("\n", -1);
+        int ncloc = 0;
+        for (String line : lines) {
+            if (!line.trim().isEmpty()) {
+                ncloc++;
+            }
+        }
+        return ncloc;
+    }
+
+    /**
+     * Calculate NCLOC_DATA (line-by-line mapping of code lines).
+     * Format: "line_number=1" for each line with code, separated by semicolons.
+     * Example: "1=1;3=1;5=1" means lines 1, 3, and 5 have code.
+     * Required by SonarQube Marketplace for language plugins.
+     */
+    private String calculateNclocData(String content) {
+        String cleanContent = removeCommentsCharBased(content);
+        String[] lines = cleanContent.split("\n", -1);
+
+        StringBuilder nclocData = new StringBuilder();
+        for (int i = 0; i < lines.length; i++) {
+            if (!lines[i].trim().isEmpty()) {
+                if (nclocData.length() > 0) {
+                    nclocData.append(";");
+                }
+                nclocData.append(i + 1).append("=1");
+            }
+        }
+        return nclocData.toString();
     }
 
     /**
