@@ -696,6 +696,9 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String DATASET_WITHOUT_HEADERS_KEY = "DatasetWithoutHeaders";
     public static final String ASSOCIATION_KEY_NOT_STRING_KEY = "AssociationKeyNotString";
 
+    // SCA (Software Composition Analysis) - Vulnerable Dependencies
+    public static final String VULNERABLE_DEPENDENCY_KEY = "VulnerableDependency";
+
     @Override
     public void define(Context context) {
         NewRepository repository = context
@@ -716,6 +719,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
         Tier1GapClosureRulesDefinition.defineRules(repository); // NEW: 70 rules for Tier 1
         StyleAndConventionsRulesDefinition.defineRules(repository); // NEW: 70 more code smells for Tier 1 parity
         CustomRuleTemplatesDefinition.defineTemplates(repository); // NEW: Custom rule templates for user-defined rules
+        SCADependencyRulesDefinition.defineRules(repository); // NEW: Software Composition Analysis for paclet dependencies
 
         repository.done();
     }

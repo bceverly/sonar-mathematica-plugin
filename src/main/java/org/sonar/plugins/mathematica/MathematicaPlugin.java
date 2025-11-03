@@ -6,6 +6,7 @@ import org.sonar.api.config.PropertyDefinition;
 import org.sonar.plugins.mathematica.metrics.MathematicaMetricsSensor;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesSensor;
+import org.sonar.plugins.mathematica.sca.PacletSCASensor;
 
 /**
  * Main plugin entry point for the Mathematica SonarQube plugin.
@@ -24,6 +25,9 @@ public class MathematicaPlugin implements Plugin {
         // Register rules and rules sensor
         context.addExtension(MathematicaRulesDefinition.class);
         context.addExtension(MathematicaRulesSensor.class);
+
+        // Register SCA sensor for paclet dependency analysis
+        context.addExtension(PacletSCASensor.class);
 
         // Register metrics sensor for complexity and other metrics
         context.addExtension(MathematicaMetricsSensor.class);

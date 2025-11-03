@@ -470,12 +470,11 @@ You've already achieved Tier 2+! To reach **Tier 1.5** (best-in-class):
 
 ## Contributors
 
-- Original Plugin: [Your Name]
-- Tier 3 Enhancements: Claude Code (AI Assistant)
+- Original Plugin: bceverly
 - Date: October 28, 2025
 
 ---
 
 ## License
 
-Same as parent project (likely MIT or Apache 2.0)
+Same as parent project (likely GPLv3) 
