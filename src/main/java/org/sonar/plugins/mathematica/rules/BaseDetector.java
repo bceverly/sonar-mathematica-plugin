@@ -57,7 +57,7 @@ public abstract class BaseDetector {
             astCache.set(ast);
         } catch (Exception e) {
             LOG.debug("Failed to cache AST: {}", e.getMessage());
-            astCache.set(null);
+            astCache.remove();
         }
     }
 

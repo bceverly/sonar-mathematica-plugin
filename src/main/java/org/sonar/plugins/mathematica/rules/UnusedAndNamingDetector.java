@@ -76,9 +76,9 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern SYMBOL_NAME = Pattern.compile("([a-zA-Z]\\w*)\\s*(?:=|:=|\\[)");
 
     // Pattern for camelCase, snake_case, PascalCase
-    private static final Pattern CAMEL_CASE = Pattern.compile("^[a-z]+([A-Z][a-z0-9]*)+$");
-    private static final Pattern SNAKE_CASE = Pattern.compile("^[a-z]+(_[a-z0-9]+)+$");
-    private static final Pattern PASCAL_CASE = Pattern.compile("^[A-Z][a-z0-9]*([A-Z][a-z0-9]*)*$");
+    private static final Pattern CAMEL_CASE = Pattern.compile("^[a-z]+(?>([A-Z][a-z0-9]*)+)$");
+    private static final Pattern SNAKE_CASE = Pattern.compile("^[a-z]+(?>((?:_[a-z0-9]+)+))$");
+    private static final Pattern PASCAL_CASE = Pattern.compile("^[A-Z][a-z0-9]*(?>([A-Z][a-z0-9]*)*)$");
 
     // Pattern for Private` context
     private static final Pattern PRIVATE_CONTEXT = Pattern.compile("(\\w+)`Private`(\\w+)");

@@ -90,7 +90,8 @@ public class MathematicaRulesSensor implements Sensor {
 
     private final java.util.concurrent.BlockingQueue<IssueData> issueQueue =
         new java.util.concurrent.LinkedBlockingQueue<>();
-    private volatile Thread issueSaverThread;
+    private final java.util.concurrent.atomic.AtomicReference<Thread> issueSaverThread =
+        new java.util.concurrent.atomic.AtomicReference<>();
     private volatile boolean shutdownSaver = false;
     private final java.util.concurrent.atomic.AtomicLong queuedIssues = new java.util.concurrent.atomic.AtomicLong(0);
     private final java.util.concurrent.atomic.AtomicLong savedIssues = new java.util.concurrent.atomic.AtomicLong(0);
@@ -202,7 +203,7 @@ public class MathematicaRulesSensor implements Sensor {
     private void startIssueSaverThread(SensorContext context) {
         this.sensorContext = context;
         shutdownSaver = false;
-        issueSaverThread = new Thread(() -> {
+        Thread thread = new Thread(() -> {
             LOG.debug("Issue saver thread started");
             long lastLogTime = System.currentTimeMillis();
             try {
@@ -264,8 +265,9 @@ public class MathematicaRulesSensor implements Sensor {
             LOG.info("Issue saver thread finished. Saved {}/{} issues", savedIssues.get(), queuedIssues.get());
         }, "MathematicaIssueSaver");
 
-        issueSaverThread.setDaemon(false); // Ensure it completes before shutdown
-        issueSaverThread.start();
+        thread.setDaemon(false); // Ensure it completes before shutdown
+        thread.start();
+        issueSaverThread.set(thread);
     }
 
     /**
@@ -277,11 +279,12 @@ public class MathematicaRulesSensor implements Sensor {
         shutdownSaver = true;
 
         try {
-            if (issueSaverThread != null) {
+            Thread thread = issueSaverThread.get();
+            if (thread != null) {
                 // Wait up to 5 minutes for large codebases with many issues
                 // At 5000 issues/sec, this allows ~1.5M issues to be saved
-                issueSaverThread.join(300000); // Wait up to 5 minutes
-                if (issueSaverThread.isAlive()) {
+                thread.join(300000); // Wait up to 5 minutes
+                if (thread.isAlive()) {
                     LOG.warn("Issue saver thread did not finish in time (still {} issues in queue, saved {}/{})",
                         issueQueue.size(), savedIssues.get(), queuedIssues.get());
                 } else {
@@ -293,6 +296,26 @@ public class MathematicaRulesSensor implements Sensor {
             Thread.currentThread().interrupt();
             LOG.error("Interrupted waiting for issue saver thread", e);
         }
+    }
+
+    /**
+     * Clean up all ThreadLocal variables to prevent memory leaks in thread pool.
+     * Must be called after processing each file when using parallel streams.
+     */
+    private void cleanupThreadLocals() {
+        codeSmellDetector.remove();
+        bugDetector.remove();
+        vulnerabilityDetector.remove();
+        vulnerabilityDetectorAst.remove();
+        securityHotspotDetector.remove();
+        patternAndDataStructureDetector.remove();
+        unusedAndNamingDetector.remove();
+        typeAndDataFlowDetector.remove();
+        controlFlowAndTaintDetector.remove();
+        advancedAnalysisDetector.remove();
+        testingQualityDetector.remove();
+        frameworkDetector.remove();
+        styleAndConventionsDetector.remove();
     }
 
     @Override
@@ -369,6 +392,9 @@ public class MathematicaRulesSensor implements Sensor {
                 }
             } catch (Exception e) {
                 LOG.error("Error processing file: {}", inputFile.filename(), e);
+            } finally {
+                // Clean up ThreadLocal variables to prevent memory leaks in thread pool
+                cleanupThreadLocals();
             }
         });
 
@@ -980,8 +1006,12 @@ public class MathematicaRulesSensor implements Sensor {
                 issue.at(location);
                 issue.save();
 
-            } catch (Exception e) {
+            } catch (InterruptedException e) {
+                Thread.currentThread().interrupt();
                 LOG.debug("Interrupted during symbol table analysis for: {}", inputFile.filename());
+                symbolTableTime = System.currentTimeMillis() - symbolTableStart;
+            } catch (Exception e) {
+                LOG.debug("Error during symbol table analysis for: {}", inputFile.filename());
                 symbolTableTime = System.currentTimeMillis() - symbolTableStart;
             } finally {
                 executor.shutdownNow();
