@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'checkstyle'
+    id 'jacoco'
     id 'org.sonarqube' version '5.1.0.4882'
 }
 
@@ -75,6 +76,16 @@ dependencies {
 
 test {
     useJUnitPlatform()
+    finalizedBy jacocoTestReport
+}
+
+jacocoTestReport {
+    dependsOn test
+    reports {
+        xml.required = true
+        html.required = true
+        csv.required = false
+    }
 }
 
 jar {
@@ -144,6 +155,7 @@ sonar {
         property 'sonar.tests', 'src/test/java'
         property 'sonar.java.binaries', 'build/classes/java/main'
         property 'sonar.java.test.binaries', 'build/classes/java/test'
+        property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
         property 'sonar.sourceEncoding', 'UTF-8'
         property 'sonar.links.homepage', 'https://github.com/bceverly/sonar-mathematica-plugin'
         property 'sonar.links.ci', 'https://github.com/bceverly/sonar-mathematica-plugin/actions'
