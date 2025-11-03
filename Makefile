@@ -10,7 +10,7 @@
 #   make clean                     # Clean build artifacts
 #   SONARQUBE_HOME=/path make install  # Install to SonarQube
 
-.PHONY: help build clean install test version check-sonarqube-home lint self-scan
+.PHONY: help build clean install test version check-sonarqube-home lint self-scan update-wiki
 
 # Default target - show help
 help:
@@ -20,14 +20,15 @@ help:
 	@echo ""
 	@echo "Available targets:"
 	@echo ""
-	@echo "  make help       - Show this help message (default)"
-	@echo "  make build      - Compile and build the plugin JAR"
-	@echo "  make test       - Run all unit tests"
-	@echo "  make lint       - Run code style checks with Checkstyle"
-	@echo "  make clean      - Remove all build artifacts and intermediate files"
-	@echo "  make install    - Stop SonarQube, install plugin, restart, wait for ready"
-	@echo "  make self-scan  - Scan this plugin's Java code with SonarQube"
-	@echo "  make version    - Show current version from git tag"
+	@echo "  make help        - Show this help message (default)"
+	@echo "  make build       - Compile and build the plugin JAR"
+	@echo "  make test        - Run all unit tests"
+	@echo "  make lint        - Run code style checks with Checkstyle"
+	@echo "  make clean       - Remove all build artifacts and intermediate files"
+	@echo "  make install     - Stop SonarQube, install plugin, restart, wait for ready"
+	@echo "  make self-scan   - Scan this plugin's Java code with SonarQube"
+	@echo "  make update-wiki - Update GitHub Wiki with latest documentation"
+	@echo "  make version     - Show current version from git tag"
 	@echo ""
 	@echo "Environment Variables:"
 	@echo ""
@@ -381,3 +382,98 @@ self-scan: build
 	@echo "View results at:"
 	@echo "  http://localhost:9000/dashboard?id=sonar-mathematica-plugin"
 	@echo ""
+
+# Update GitHub Wiki with latest documentation
+WIKI_DIR := .wiki-temp
+WIKI_REPO := git@github.com:bceverly/sonar-mathematica-plugin.wiki.git
+
+update-wiki:
+	@echo "=========================================="
+	@echo "Updating GitHub Wiki Documentation"
+	@echo "=========================================="
+	@echo ""
+	@# Run the entire process in a single shell to allow early exit
+	@set -e; \
+	echo "Step 1/5: Cloning/updating wiki repository..."; \
+	if [ -d "$(WIKI_DIR)" ]; then \
+		echo "Cleaning up old wiki directory..."; \
+		rm -rf $(WIKI_DIR); \
+	fi; \
+	echo "Cloning wiki from $(WIKI_REPO)..."; \
+	if ! git clone $(WIKI_REPO) $(WIKI_DIR) 2>/dev/null; then \
+		echo ""; \
+		echo "ERROR: Failed to clone wiki repository"; \
+		echo ""; \
+		echo "Make sure:"; \
+		echo "  1. Wiki is initialized (create first page at https://github.com/bceverly/sonar-mathematica-plugin/wiki)"; \
+		echo "  2. SSH key is configured for git@github.com"; \
+		echo "  3. You have write access to the repository"; \
+		echo ""; \
+		rm -rf $(WIKI_DIR); \
+		exit 1; \
+	fi; \
+	echo "✓ Wiki repository ready"; \
+	echo ""; \
+	echo "Step 2/5: Copying documentation files..."; \
+	for file in docs/*.md; do \
+		filename=$$(basename "$$file"); \
+		if [ "$$filename" != "README.md" ]; then \
+			cp "$$file" "$(WIKI_DIR)/$$filename"; \
+			echo "  ✓ $$filename"; \
+		fi; \
+	done; \
+	echo ""; \
+	echo "Step 3/5: Checking for changes..."; \
+	cd $(WIKI_DIR); \
+	if [ -z "$$(git status --porcelain)" ]; then \
+		echo "✓ No changes detected - wiki is already up to date"; \
+		cd ..; \
+		rm -rf $(WIKI_DIR); \
+		echo ""; \
+		echo "=========================================="; \
+		echo "✓ Wiki is already up to date!"; \
+		echo "=========================================="; \
+		echo ""; \
+		echo "View wiki at:"; \
+		echo "  https://github.com/bceverly/sonar-mathematica-plugin/wiki"; \
+		echo ""; \
+		exit 0; \
+	fi; \
+	echo "✓ Changes detected"; \
+	echo ""; \
+	echo "Changed files:"; \
+	git status --short | sed 's/^/  /'; \
+	echo ""; \
+	echo "Step 4/5: Committing changes..."; \
+	git add *.md; \
+	git commit -m "Update documentation (automated via make update-wiki)" -m "- Updated from docs/ directory" -m "- Generated: $$(date '+%Y-%m-%d %H:%M:%S')"; \
+	echo "✓ Changes committed"; \
+	echo ""; \
+	echo "Step 5/5: Pushing to GitHub..."; \
+	if git push origin master; then \
+		echo "✓ Wiki updated successfully"; \
+	else \
+		echo ""; \
+		echo "ERROR: Failed to push to wiki repository"; \
+		echo ""; \
+		cd ..; \
+		rm -rf $(WIKI_DIR); \
+		exit 1; \
+	fi; \
+	echo ""; \
+	echo "Cleaning up temporary files..."; \
+	cd ..; \
+	rm -rf $(WIKI_DIR); \
+	echo "✓ Cleanup complete"; \
+	echo ""; \
+	echo "=========================================="; \
+	echo "✓ Wiki Update Complete!"; \
+	echo "=========================================="; \
+	echo ""; \
+	echo "Documentation published:"; \
+	WIKI_PAGES=$$(ls -1 docs/*.md | grep -v README.md | wc -l | tr -d ' '); \
+	echo "  $$WIKI_PAGES wiki pages updated"; \
+	echo ""; \
+	echo "View wiki at:"; \
+	echo "  https://github.com/bceverly/sonar-mathematica-plugin/wiki"; \
+	echo ""

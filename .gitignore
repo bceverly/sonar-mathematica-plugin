@@ -33,3 +33,6 @@ bin/
 *.tmp
 *.swp
 *~
+
+# Wiki automation temporary directory
+.wiki-temp/
