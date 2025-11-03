@@ -51,7 +51,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // Pattern/replacement patterns
     private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*\\([^)]*(?:Print|Message|Set)");
     private static final Pattern REPLACE_ALL = Pattern.compile("/\\.");
-    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*+_\\s*->[^,]*+,\\s*\\w+\\s*->");
+    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*->[^,]*,\\s*\\w+\\s*->");
 
     // Part/list patterns
     private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*(\\d+)\\s*\\]\\]");
