@@ -539,7 +539,7 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String CORS_PERMISSIVE_KEY = "CorsPermissive";
     public static final String OPEN_REDIRECT_KEY = "OpenRedirect";
     public static final String DNS_REBINDING_KEY = "DnsRebinding";
-    public static final String INSECURE_WEBSOCKET_KEY = "InsecureWebSocket";
+    public static final String INSECURE_WEBSOCKET_KEY = "InsecureWebsocket";
     public static final String MISSING_SECURITY_HEADERS_KEY = "MissingSecurityHeaders";
 
     // Rule keys - Security Hotspots: Data Protection (3 rules)
@@ -716,7 +716,11 @@ public class MathematicaRulesDefinition implements RulesDefinition {
         NullSafetyAndResourceRulesDefinition.defineRules(repository);
         SymbolTableAndTestingRulesDefinition.defineRules(repository);
         PerformanceRulesDefinition.defineRules(repository);
-        Tier1GapClosureRulesDefinition.defineRules(repository); // NEW: 70 rules for Tier 1
+        SecurityHotspotRulesDefinition.define(repository); // 23 security hotspot rules
+        FrameworkIntegrationRulesDefinition.define(repository); // 18 framework-specific rules
+        TestingQualityRulesDefinition.define(repository); // 12 testing quality rules
+        ResourceManagementRulesDefinition.define(repository); // 7 resource management rules
+        DocumentationQualityRulesDefinition.define(repository); // 10 documentation quality rules
         StyleAndConventionsRulesDefinition.defineRules(repository); // NEW: 70 more code smells for Tier 1 parity
         CustomRuleTemplatesDefinition.defineTemplates(repository); // NEW: Custom rule templates for user-defined rules
         SCADependencyRulesDefinition.defineRules(repository); // NEW: Software Composition Analysis for paclet dependencies

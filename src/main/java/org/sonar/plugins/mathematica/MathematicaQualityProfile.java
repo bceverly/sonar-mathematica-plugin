@@ -37,7 +37,10 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
         defineVariableAndScopeRules(profile);
         definePackageStructureRules(profile);
         defineTestingRules(profile);
-        defineSecurityAndScaRules(profile);
+        defineInjectionSecurityRules(profile);
+        defineCryptographySecurityRules(profile);
+        defineDataSecurityRules(profile);
+        defineNetworkSecurityRules(profile);
         profile.done();
     }
 
@@ -277,7 +280,6 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_BLOCK_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_CATCH_BLOCK_ENHANCED_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_CATCH_BLOCK_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_CATCH_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_EXCEPTION_HANDLER_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_IF_BRANCH_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EMPTY_STATEMENT_KEY);
@@ -570,89 +572,96 @@ public class MathematicaQualityProfile implements BuiltInQualityProfilesDefiniti
     }
 
     /**
-     * Security Vulnerabilities, Security Hotspots, and SCA (67 rules)
-     * Covers injection attacks, cryptography, authentication, data exposure, and vulnerable dependencies.
-     * This method is preserved from the original implementation.
+     * Injection Security Rules (18 rules)
+     * SQL, XSS, XXE, Command, Code, LDAP, SSRF, Path Traversal, and other injection vulnerabilities
      */
-    private void defineSecurityAndScaRules(NewBuiltInQualityProfile profile) {
-        // Activate NEW SECURITY_HOTSPOT rules (Phase 2)
-        profile.activateRule(
-            MathematicaRulesDefinition.REPOSITORY_KEY,
-            MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY
-        );
-
-        profile.activateRule(
-            MathematicaRulesDefinition.REPOSITORY_KEY,
-            MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY
-        );
-
-        profile.activateRule(
-            MathematicaRulesDefinition.REPOSITORY_KEY,
-            MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY
-        );
-
-        // Activate PHASE 3 RULES (25 rules)
-
-        // Performance rules (8 rules - CODE_SMELL)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.APPEND_IN_LOOP_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.LARGE_TEMP_EXPRESSIONS_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PLOT_IN_LOOP_KEY);
-
-        // Pattern matching rules (5 rules - 4 BUG, 1 CODE_SMELL)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_PATTERN_TEST_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PATTERN_BLANKS_MISUSE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.BLOCK_MODULE_MISUSE_KEY);
-
-        // Best practices rules (7 rules - CODE_SMELL)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNPROTECTED_SYMBOLS_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_RETURN_KEY);
-
-        // Security & Safety rules (2 VULNERABILITY, 1 SECURITY_HOTSPOT)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNSAFE_CLOUD_DEPLOY_KEY);
+    private void defineInjectionSecurityRules(NewBuiltInQualityProfile profile) {
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SQL_INJECTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SQL_INJECTION_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.XSS_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.XXE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.XXE_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.COMMAND_INJECTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.COMMAND_INJECTION_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CODE_INJECTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CODE_INJECTION_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.LDAP_INJECTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SSRF_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SSRF_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PATH_TRAVERSAL_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PATH_TRAVERSAL_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.OPEN_REDIRECT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.TOEXPRESSION_ON_INPUT_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.DYNAMIC_INJECTION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNSANITIZED_RUNPROCESS_KEY);
+    }
+
+    /**
+     * Cryptography and Authentication Security Rules (17 rules)
+     * Weak crypto, hardcoded credentials, weak auth, insecure random
+     */
+    private void defineCryptographySecurityRules(NewBuiltInQualityProfile profile) {
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_CRYPTOGRAPHY_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_CRYPTOGRAPHY_ENHANCED_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_CIPHER_MODE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_HASHING_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.HARDCODED_CREDENTIALS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.HARD_CODED_CREDENTIALS_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.HARDCODED_API_KEYS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.HARDCODED_CRYPTO_KEY_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PASSWORD_PLAIN_TEXT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.DEFAULT_CREDENTIALS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_AUTHENTICATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_SESSION_TOKEN_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INSECURE_RANDOM_EXPANDED_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INSECURE_RANDOM_HOTSPOT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INSECURE_RANDOMNESS_ENHANCED_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INSECURE_SESSION_KEY);
+    }
+
+    /**
+     * Data Security and Access Control Rules (15 rules)
+     * Access control, PII, sensitive data, deserialization, misc security
+     */
+    private void defineDataSecurityRules(NewBuiltInQualityProfile profile) {
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_ACCESS_CONTROL_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_AUTHORIZATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_CLOUD_AUTH_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PII_EXPOSURE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EXPOSING_SENSITIVE_DATA_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SENSITIVE_DATA_IN_LOGS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SENSITIVE_DATA_LOG_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_SANITIZATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MASS_ASSIGNMENT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.NEEDS_GET_UNTRUSTED_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INSECURE_DESERIALIZATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNSAFE_DESERIALIZATION_TAINT_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNSAFE_SYMBOL_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.PRIMITIVE_OBSESSION_KEY);
+    }
+
+    /**
+     * Network, Cloud, and File System Security Rules (16 rules)
+     * Network protocols, cloud security, file operations
+     */
+    private void defineNetworkSecurityRules(NewBuiltInQualityProfile profile) {
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CERTIFICATE_VALIDATION_DISABLED_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CLEAR_TEXT_PROTOCOL_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.HTTP_WITHOUT_TLS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WEAK_SSL_PROTOCOL_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CORS_PERMISSIVE_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.DNS_REBINDING_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MISSING_SECURITY_HEADERS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CLOUD_API_MISSING_AUTH_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CLOUD_DEPLOY_NO_VALIDATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CLOUD_PERMISSIONS_TOO_OPEN_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNSAFE_CLOUD_DEPLOY_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.FILE_UPLOAD_VALIDATION_KEY);
+        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY);
         profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY);
-
-        // Resource management rules (2 BUG)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNCLOSED_FILE_HANDLE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY);
-
-        // Symbol Table Analysis Rules (10 rules - 3 BUG, 6 CODE_SMELL, 1 CRITICAL BUG)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNUSED_VARIABLE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.ASSIGNED_BUT_NEVER_READ_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.DEAD_STORE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.USED_BEFORE_ASSIGNMENT_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_SHADOWING_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.UNUSED_PARAMETER_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.WRITE_ONLY_VARIABLE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.REDUNDANT_ASSIGNMENT_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_IN_WRONG_SCOPE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_ESCAPES_SCOPE_KEY);
-
-        // Advanced Symbol Table Analysis Rules (10 rules - 3 BUG, 6 CODE_SMELL, 1 CRITICAL BUG)
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.LIFETIME_EXTENDS_BEYOND_SCOPE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.MODIFIED_IN_UNEXPECTED_SCOPE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.GLOBAL_VARIABLE_POLLUTION_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CIRCULAR_VARIABLE_DEPENDENCIES_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.NAMING_CONVENTION_VIOLATIONS_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.CONSTANT_NOT_MARKED_AS_CONSTANT_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.TYPE_INCONSISTENCY_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VARIABLE_REUSE_WITH_DIFFERENT_SEMANTICS_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.INCORRECT_CLOSURE_CAPTURE_KEY);
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY);
-
-        // SCA - Software Composition Analysis
-        profile.activateRule(MathematicaRulesDefinition.REPOSITORY_KEY, MathematicaRulesDefinition.VULNERABLE_DEPENDENCY_KEY);
     }
 }

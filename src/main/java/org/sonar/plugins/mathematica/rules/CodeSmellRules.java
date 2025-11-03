@@ -20,7 +20,7 @@ public final class CodeSmellRules {
      */
     public static void define(NewRepository repository) {
         defineBasicCodeSmells(repository);
-        definePhase2CodeSmells(repository);
+        defineAdvancedCodeSmells(repository);
         definePerformanceRules(repository);
         defineBestPracticeRules(repository);
     }
@@ -102,8 +102,8 @@ public final class CodeSmellRules {
 
     }
 
-    private static void definePhase2CodeSmells(NewRepository repository) {
-        // Phase 2 Code Smells
+    private static void defineAdvancedCodeSmells(NewRepository repository) {
+        // Advanced Code Smells - structural and complexity issues
         repository.createRule(MathematicaRulesDefinition.UNUSED_VARIABLES_KEY)
             .setName("Unused variables should be removed")
             .setHtmlDescription("<p>Variables declared but never used clutter code.</p>")

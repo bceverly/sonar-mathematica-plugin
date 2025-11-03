@@ -272,15 +272,21 @@ public class MathematicaRulesSensor implements Sensor {
      * Stops the background saver thread and waits for queue to drain.
      */
     private void stopIssueSaverThread() {
-        LOG.debug("Stopping issue saver thread (queue size: {}, saved: {}/{})",
+        LOG.info("Stopping issue saver thread (queue size: {}, saved: {}/{})",
             issueQueue.size(), savedIssues.get(), queuedIssues.get());
         shutdownSaver = true;
 
         try {
             if (issueSaverThread != null) {
-                issueSaverThread.join(60000); // Wait up to 1 minute
+                // Wait up to 5 minutes for large codebases with many issues
+                // At 5000 issues/sec, this allows ~1.5M issues to be saved
+                issueSaverThread.join(300000); // Wait up to 5 minutes
                 if (issueSaverThread.isAlive()) {
-                    LOG.warn("Issue saver thread did not finish in time");
+                    LOG.warn("Issue saver thread did not finish in time (still {} issues in queue, saved {}/{})",
+                        issueQueue.size(), savedIssues.get(), queuedIssues.get());
+                } else {
+                    LOG.info("Issue saver thread completed successfully. Saved {}/{} issues",
+                        savedIssues.get(), queuedIssues.get());
                 }
             }
         } catch (InterruptedException e) {
@@ -478,7 +484,7 @@ public class MathematicaRulesSensor implements Sensor {
             runPatternBasedDetectors(context, inputFile, content, commentRanges);
 
             // ===== TIER 1 GAP CLOSURE - NEW DETECTION METHODS (70 rules) =====
-            runTier1GapClosureDetectors(context, inputFile, content);
+            runEnhancedQualityDetectors(context, inputFile, content);
 
             // ===== CODE SMELL 2 - ADDITIONAL 70 CODE SMELLS FOR TIER 1 PARITY =====
             runStyleAndConventionsDetectors(context, inputFile, content);
@@ -561,10 +567,11 @@ public class MathematicaRulesSensor implements Sensor {
     }
 
     /**
-     * Run all 70 Tier 1 gap closure detection methods.
+     * Run all 70 enhanced quality detection methods covering security, framework patterns,
+     * testing quality, resource management, and documentation quality.
      * Extracted from analyzeFile() to reduce method complexity.
      */
-    private void runTier1GapClosureDetectors(SensorContext context, InputFile inputFile, String content) {
+    private void runEnhancedQualityDetectors(SensorContext context, InputFile inputFile, String content) {
         // SecurityHotspotDetector (23 new rules)
         securityHotspotDetector.get().detectWeakHashing(context, inputFile, content);
         securityHotspotDetector.get().detectWeakAuthentication(context, inputFile, content);
