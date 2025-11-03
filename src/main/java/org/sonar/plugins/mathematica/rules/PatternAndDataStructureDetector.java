@@ -34,8 +34,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*\\[([^\\]]*)\\]");
     private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*\\[");
     private static final Pattern REPEATED_PATTERN_NAME = Pattern.compile("\\{\\s*(\\w+)_,\\s*\\1_\\s*\\}");
-    // FIXED: Match pattern alternatives without nested quantifiers, then count pipes in code
-    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\([^|)]*+(?:\\|[^|)]*+)*+\\)");
+    // FIXED: Simplified to avoid polynomial runtime - match entire pattern, count pipes in code
+    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\([^)]*\\)");
     private static final Pattern CASES_LARGE_LIST = Pattern.compile("Cases\\s*\\[\\s*Range\\s*\\[\\s*(\\d+)\\s*\\]");
 
     // Pre-compiled patterns for List/Array Rules
@@ -409,10 +409,23 @@ public class PatternAndDataStructureDetector extends BaseDetector {
         try {
             Matcher matcher = ALTERNATIVES_COUNT.matcher(content);
             while (matcher.find()) {
-                int line = calculateLineNumber(content, matcher.start());
-                reportIssue(context, inputFile, line,
-                    MathematicaRulesDefinition.ALTERNATIVES_TOO_COMPLEX_KEY,
-                    "Pattern alternatives with 10+ options cause backtracking explosion. Use MemberQ with condition instead.");
+                String pattern = matcher.group();
+                // Count the number of pipe characters (alternatives)
+                int pipeCount = 0;
+                for (char c : pattern.toCharArray()) {
+                    if (c == '|') {
+                        pipeCount++;
+                    }
+                }
+                // Report if 10 or more alternatives (9+ pipes means 10+ alternatives)
+                if (pipeCount >= 9) {
+                    int line = calculateLineNumber(content, matcher.start());
+                    String message = String.format(
+                        "Pattern alternatives with %d+ options cause backtracking explosion. "
+                        + "Use MemberQ with condition instead.", pipeCount + 1);
+                    reportIssue(context, inputFile, line,
+                        MathematicaRulesDefinition.ALTERNATIVES_TOO_COMPLEX_KEY, message);
+                }
             }
         } catch (Exception e) {
             LOG.debug("Error detecting complex alternatives in {}", inputFile.filename(), e);
