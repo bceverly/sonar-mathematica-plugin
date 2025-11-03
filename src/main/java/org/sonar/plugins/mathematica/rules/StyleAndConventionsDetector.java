@@ -52,8 +52,8 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
     // ===== MAINTAINABILITY PATTERNS (15 rules) =====
 
-    // Unrolled pattern to avoid nested quantifiers and stack overflow
-    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*\"");
+    // Possessive quantifiers prevent backtracking and stack overflow
+    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*+(?:\\\\.[^\"\\\\]*+)*+\"");
     private static final Pattern PATH_PATTERN = Pattern.compile("\"(?>/[^/\"]+)+/?\"");
     private static final Pattern URL_PATTERN = Pattern.compile("\"https?://[^\"]+\"");
     private static final Pattern IF_PATTERN = Pattern.compile("If\\s*\\[");
