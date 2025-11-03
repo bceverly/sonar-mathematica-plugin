@@ -79,8 +79,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
     // FIXED: Removed atomic groups and nested quantifiers to prevent stack overflow
     private static final Pattern CAMEL_CASE = Pattern.compile("^[a-z]+(?:[A-Z][a-z0-9]*)+$");
     private static final Pattern SNAKE_CASE = Pattern.compile("^[a-z]+(?:_[a-z0-9]+)+$");
-    // FIXED: Avoid nested quantifiers by using alternation instead of nested groups
-    private static final Pattern PASCAL_CASE = Pattern.compile("^[A-Z](?:[A-Z]|[a-z0-9])*$");
+    // FIXED: Simplified to avoid any nested quantifiers or alternation
+    private static final Pattern PASCAL_CASE = Pattern.compile("^[A-Z][a-zA-Z0-9]*$");
 
     // Pattern for Private` context
     private static final Pattern PRIVATE_CONTEXT = Pattern.compile("(\\w+)`Private`(\\w+)");
