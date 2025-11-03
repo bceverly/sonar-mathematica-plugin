@@ -63,6 +63,11 @@ class MathematicaRulesSensorTest {
         assertThat(detector).isNotNull();
 
         detector.initializeCaches("{1, 2, 3}");
+
+        // Test the alternatives counting logic with a pattern that has many alternatives
+        String codeWithManyAlternatives = "pattern: (a|b|c|d|e|f|g|h|i|j|k|l|m|n)";
+        detector.initializeCaches(codeWithManyAlternatives);
+
         detector.clearCaches();
     }
 
