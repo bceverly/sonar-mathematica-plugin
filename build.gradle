@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'maven-publish'
     id 'checkstyle'
+    id 'org.sonarqube' version '5.1.0.4882'
 }
 
 group = 'org.sonar.plugins'
@@ -129,4 +130,24 @@ checkstyleMain {
 
 checkstyleTest {
     source = 'src/test/java'
+}
+
+// SonarQube/SonarCloud configuration
+sonar {
+    properties {
+        property 'sonar.host.url', System.getenv('SONAR_HOST_URL') ?: 'https://sonarcloud.io'
+        property 'sonar.organization', 'bceverly'
+        property 'sonar.projectKey', 'bceverly_sonar-mathematica-plugin'
+        property 'sonar.projectName', 'SonarQube Mathematica Plugin'
+        property 'sonar.projectVersion', version
+        property 'sonar.sources', 'src/main/java'
+        property 'sonar.tests', 'src/test/java'
+        property 'sonar.java.binaries', 'build/classes/java/main'
+        property 'sonar.java.test.binaries', 'build/classes/java/test'
+        property 'sonar.sourceEncoding', 'UTF-8'
+        property 'sonar.links.homepage', 'https://github.com/bceverly/sonar-mathematica-plugin'
+        property 'sonar.links.ci', 'https://github.com/bceverly/sonar-mathematica-plugin/actions'
+        property 'sonar.links.scm', 'https://github.com/bceverly/sonar-mathematica-plugin'
+        property 'sonar.links.issue', 'https://github.com/bceverly/sonar-mathematica-plugin/issues'
+    }
 }
