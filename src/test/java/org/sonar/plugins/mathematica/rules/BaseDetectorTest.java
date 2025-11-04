@@ -63,7 +63,7 @@ class BaseDetectorTest {
         int[] offsets = detector.publicBuildLineOffsetArray(content);
 
         assertThat(offsets).hasSize(1);
-        assertThat(offsets[0]).isEqualTo(0);
+        assertThat(offsets[0]).isZero();
     }
 
     @Test
@@ -72,7 +72,7 @@ class BaseDetectorTest {
         int[] offsets = detector.publicBuildLineOffsetArray(content);
 
         assertThat(offsets).hasSize(3);
-        assertThat(offsets[0]).isEqualTo(0);
+        assertThat(offsets[0]).isZero();
         assertThat(offsets[1]).isEqualTo(6);  // After "line1\n"
         assertThat(offsets[2]).isEqualTo(12); // After "line1\nline2\n"
     }
@@ -83,7 +83,7 @@ class BaseDetectorTest {
         int[] offsets = detector.publicBuildLineOffsetArray(content);
 
         assertThat(offsets).hasSize(3);
-        assertThat(offsets[0]).isEqualTo(0);
+        assertThat(offsets[0]).isZero();
         assertThat(offsets[1]).isEqualTo(6);
         assertThat(offsets[2]).isEqualTo(7);
     }
@@ -198,7 +198,7 @@ class BaseDetectorTest {
 
         assertThat(detector.publicCountOccurrences(text, "hello")).isEqualTo(3);
         assertThat(detector.publicCountOccurrences(text, "world")).isEqualTo(1);
-        assertThat(detector.publicCountOccurrences(text, "notfound")).isEqualTo(0);
+        assertThat(detector.publicCountOccurrences(text, "notfound")).isZero();
     }
 
     @Test
@@ -213,7 +213,7 @@ class BaseDetectorTest {
         String text = "test content";
 
         // Should return 0 on error
-        assertThat(detector.publicCountOccurrences(text, "[invalid(")).isEqualTo(0);
+        assertThat(detector.publicCountOccurrences(text, "[invalid(")).isZero();
     }
 
     @Test
@@ -236,8 +236,10 @@ class BaseDetectorTest {
         // Test that AST parsing doesn't crash
         String content = "f[x_] := x + 1";
 
-        detector.initializeCaches(content);
-        detector.clearCaches();
+        assertThatCode(() -> {
+            detector.initializeCaches(content);
+            detector.clearCaches();
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -245,8 +247,10 @@ class BaseDetectorTest {
         // Test that invalid code doesn't crash
         String content = "]]]]invalid[[[[";
 
-        detector.initializeCaches(content);
-        detector.clearCaches();
+        assertThatCode(() -> {
+            detector.initializeCaches(content);
+            detector.clearCaches();
+        }).doesNotThrowAnyException();
     }
 
     @Test
@@ -297,7 +301,7 @@ class BaseDetectorTest {
 
         int[] offsets = detector.publicBuildLineOffsetArray(content.toString());
 
-        assertThat(offsets.length).isGreaterThanOrEqualTo(1000);
+        assertThat(offsets).hasSizeGreaterThanOrEqualTo(1000);
     }
 
     @Test
@@ -356,7 +360,6 @@ class BaseDetectorTest {
             org.mockito.Mockito.mock(org.sonar.api.batch.sensor.issue.NewIssue.class);
         org.sonar.api.batch.sensor.issue.NewIssueLocation mockLocation =
             org.mockito.Mockito.mock(org.sonar.api.batch.sensor.issue.NewIssueLocation.class);
-        org.sonar.api.rule.RuleKey mockRuleKey = org.sonar.api.rule.RuleKey.of("mathematica", "TEST_RULE");
 
         org.mockito.Mockito.when(mockContext.newIssue()).thenReturn(mockIssue);
         org.mockito.Mockito.when(mockIssue.newLocation()).thenReturn(mockLocation);

@@ -57,22 +57,24 @@ class ArchitectureAndDependencyDetectorTest {
     @Test
     void testInitializeCaches() {
         ArchitectureAndDependencyDetector.clearCaches();
-        assertThatCode(() -> ArchitectureAndDependencyDetector.initializeCaches())
+        assertThatCode(ArchitectureAndDependencyDetector::initializeCaches)
             .doesNotThrowAnyException();
     }
 
     @Test
     void testClearCaches() {
-        assertThatCode(() -> ArchitectureAndDependencyDetector.clearCaches())
+        assertThatCode(ArchitectureAndDependencyDetector::clearCaches)
             .doesNotThrowAnyException();
     }
 
     @Test
     void testInitializeAndClearSequence() {
-        ArchitectureAndDependencyDetector.clearCaches();
-        ArchitectureAndDependencyDetector.initializeCaches();
-        ArchitectureAndDependencyDetector.clearCaches();
-        ArchitectureAndDependencyDetector.initializeCaches();
+        assertThatCode(() -> {
+            ArchitectureAndDependencyDetector.clearCaches();
+            ArchitectureAndDependencyDetector.initializeCaches();
+            ArchitectureAndDependencyDetector.clearCaches();
+            ArchitectureAndDependencyDetector.initializeCaches();
+        }).doesNotThrowAnyException();
     }
 
     @Test

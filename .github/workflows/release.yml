@@ -45,10 +45,23 @@ jobs:
           echo "file=$JAR_FILE" >> $GITHUB_OUTPUT
           echo "name=$(basename $JAR_FILE)" >> $GITHUB_OUTPUT
 
+      - name: Find SBOM file
+        id: sbom
+        run: |
+          SBOM_FILE=$(ls build/reports/sonar-mathematica-plugin-*-sbom.json)
+          echo "file=$SBOM_FILE" >> $GITHUB_OUTPUT
+          echo "name=$(basename $SBOM_FILE)" >> $GITHUB_OUTPUT
+
       - name: Generate SHA256 hash
         id: hash
         run: |
           HASH=$(sha256sum ${{ steps.jar.outputs.file }} | cut -d' ' -f1)
+          echo "sha256=$HASH" >> $GITHUB_OUTPUT
+
+      - name: Generate SBOM SHA256 hash
+        id: sbomhash
+        run: |
+          HASH=$(sha256sum ${{ steps.sbom.outputs.file }} | cut -d' ' -f1)
           echo "sha256=$HASH" >> $GITHUB_OUTPUT
 
       - name: Create release notes
@@ -67,6 +80,12 @@ jobs:
              sha256sum ${{ steps.jar.outputs.name }}
              ```
              Expected hash: `${{ steps.hash.outputs.sha256 }}`
+
+             **SBOM Verification:**
+             ```bash
+             sha256sum ${{ steps.sbom.outputs.name }}
+             ```
+             Expected hash: `${{ steps.sbomhash.outputs.sha256 }}`
 
           3. **Install to SonarQube:**
              ```bash
@@ -101,7 +120,9 @@ jobs:
 
           - **Version:** ${{ steps.version.outputs.version }}
           - **JAR File:** `${{ steps.jar.outputs.name }}`
-          - **SHA256:** `${{ steps.hash.outputs.sha256 }}`
+          - **JAR SHA256:** `${{ steps.hash.outputs.sha256 }}`
+          - **SBOM File:** `${{ steps.sbom.outputs.name }}`
+          - **SBOM SHA256:** `${{ steps.sbomhash.outputs.sha256 }}`
           - **Build Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           - **Minimum SonarQube Version:** 9.9
 
@@ -140,7 +161,9 @@ jobs:
         with:
           name: Release ${{ steps.version.outputs.version }}
           body_path: release_notes.md
-          files: ${{ steps.jar.outputs.file }}
+          files: |
+            ${{ steps.jar.outputs.file }}
+            ${{ steps.sbom.outputs.file }}
           draft: false
           prerelease: false
         env:

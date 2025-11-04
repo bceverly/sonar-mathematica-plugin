@@ -34,8 +34,9 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*\\[([^\\]]*)\\]");
     private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*\\[");
     private static final Pattern REPEATED_PATTERN_NAME = Pattern.compile("\\{\\s*(\\w+)_,\\s*\\1_\\s*\\}");
-    // FIXED: Possessive quantifiers on all repeating groups prevent backtracking, avoiding DoS risk
-    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w++:\\s*+\\([^)]*+\\)");
+    // FIXED: Ultra-safe pattern - just match identifier:( and find matching paren in code
+    // This avoids all quantifiers on character classes that could cause backtracking
+    private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w+:\\s*\\(");
     private static final Pattern CASES_LARGE_LIST = Pattern.compile("Cases\\s*\\[\\s*Range\\s*\\[\\s*(\\d+)\\s*\\]");
 
     // Pre-compiled patterns for List/Array Rules
@@ -409,22 +410,43 @@ public class PatternAndDataStructureDetector extends BaseDetector {
         try {
             Matcher matcher = ALTERNATIVES_COUNT.matcher(content);
             while (matcher.find()) {
-                String pattern = matcher.group();
-                // Count the number of pipe characters (alternatives)
-                int pipeCount = 0;
-                for (char c : pattern.toCharArray()) {
-                    if (c == '|') {
-                        pipeCount++;
+                // Pattern now only matches "identifier:(" - find matching closing paren in Java
+                int startPos = matcher.end(); // Position after the opening (
+                int parenDepth = 1;
+                int endPos = startPos;
+
+                // Find matching closing parenthesis
+                while (endPos < content.length() && parenDepth > 0) {
+                    char c = content.charAt(endPos);
+                    if (c == '(') {
+                        parenDepth++;
+                    } else if (c == ')') {
+                        parenDepth--;
                     }
+                    endPos++;
                 }
-                // Report if 10 or more alternatives (9+ pipes means 10+ alternatives)
-                if (pipeCount >= 9) {
-                    int line = calculateLineNumber(content, matcher.start());
-                    String message = String.format(
-                        "Pattern alternatives with %d+ options cause backtracking explosion. "
-                        + "Use MemberQ with condition instead.", pipeCount + 1);
-                    reportIssue(context, inputFile, line,
-                        MathematicaRulesDefinition.ALTERNATIVES_TOO_COMPLEX_KEY, message);
+
+                // Extract the content between parentheses
+                if (parenDepth == 0 && endPos > startPos) {
+                    String patternContent = content.substring(startPos, endPos - 1);
+
+                    // Count the number of pipe characters (alternatives)
+                    int pipeCount = 0;
+                    for (char c : patternContent.toCharArray()) {
+                        if (c == '|') {
+                            pipeCount++;
+                        }
+                    }
+
+                    // Report if 10 or more alternatives (9+ pipes means 10+ alternatives)
+                    if (pipeCount >= 9) {
+                        int line = calculateLineNumber(content, matcher.start());
+                        String message = String.format(
+                            "Pattern alternatives with %d+ options cause backtracking explosion. "
+                            + "Use MemberQ with condition instead.", pipeCount + 1);
+                        reportIssue(context, inputFile, line,
+                            MathematicaRulesDefinition.ALTERNATIVES_TOO_COMPLEX_KEY, message);
+                    }
                 }
             }
         } catch (Exception e) {

@@ -4,6 +4,7 @@ plugins {
     id 'checkstyle'
     id 'jacoco'
     id 'org.sonarqube' version '5.1.0.4882'
+    id 'org.cyclonedx.bom' version '1.8.2'
 }
 
 group = 'org.sonar.plugins'
@@ -125,6 +126,19 @@ task installPlugin(type: Copy) {
         println "Plugin installed to: ${System.getProperty('user.home')}/.sonar/extensions/plugins"
         println "Restart SonarQube to activate the plugin"
     }
+}
+
+// CycloneDX SBOM configuration
+cyclonedxBom {
+    includeConfigs = ['runtimeClasspath']
+    outputName = "sonar-mathematica-plugin-${project.version}-sbom"
+    outputFormat = 'json'
+    includeBomSerialNumber = true
+}
+
+// Make build depend on SBOM generation
+build {
+    dependsOn cyclonedxBom
 }
 
 // Checkstyle configuration

@@ -307,6 +307,8 @@ public class ComprehensiveParser {
         while (i < content.length()) {
             if (i + 1 < content.length() && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
                 depth++;
+                // Replace comment start with spaces to preserve positions
+                result.append("  ");
                 i += 2;
                 continue;
             }
@@ -315,12 +317,22 @@ public class ComprehensiveParser {
                 if (depth > 0) {
                     depth--;
                 }
+                // Replace comment end with spaces to preserve positions
+                result.append("  ");
                 i += 2;
                 continue;
             }
 
             if (depth == 0) {
+                // Keep non-comment text as-is
                 result.append(content.charAt(i));
+            } else {
+                // Inside comment: preserve newlines for correct line numbering, replace other chars with spaces
+                if (content.charAt(i) == '\n') {
+                    result.append('\n');
+                } else {
+                    result.append(' ');
+                }
             }
             i++;
         }

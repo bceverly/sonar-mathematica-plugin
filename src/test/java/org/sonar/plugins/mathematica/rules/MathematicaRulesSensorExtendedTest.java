@@ -336,13 +336,13 @@ class MathematicaRulesSensorExtendedTest {
             InputFile mockInputFile = createMockInputFile(tempFile, 1);
 
             String content = "f[x_] := x + 1";
-            org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext mockContext =
+            org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext mockFixContext =
                 mock(org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext.class);
 
             // This exercises the queueIssueWithFix method
             assertThatCode(() ->
                 sensor.queueIssueWithFix(mockInputFile, 1, "TEST_RULE", "Test message",
-                    content, 0, 10, mockContext)
+                    content, 0, 10, mockFixContext)
             ).doesNotThrowAnyException();
 
         } finally {
