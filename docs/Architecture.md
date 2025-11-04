@@ -144,7 +144,7 @@ for (InputFile file : files) {
     String content = read(file);
 
     // Single-pass AST analysis
-    UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(context, inputFile, sensor, content);
+    UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(inputFile, sensor);
 
     List<AstNode> ast = parseToAST(content);  // Parse ONCE
 

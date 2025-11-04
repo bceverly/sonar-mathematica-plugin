@@ -488,7 +488,7 @@ public class MathematicaRulesSensor implements Sensor {
                 List<AstNode> ast = parser.parse(content);
 
                 // STEP 2: Single visitor traversal checks ALL rules
-                UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(context, inputFile, this, content);
+                UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(inputFile, this);
                 for (AstNode node : ast) {
                     node.accept(visitor);
                 }

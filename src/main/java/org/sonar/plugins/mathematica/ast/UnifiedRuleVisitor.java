@@ -1,7 +1,6 @@
 package org.sonar.plugins.mathematica.ast;
 
 import org.sonar.api.batch.fs.InputFile;
-import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesSensor;
 
@@ -34,7 +33,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     // Scope tracking
     private final Deque<Set<String>> scopeStack = new ArrayDeque<>();
 
-    public UnifiedRuleVisitor(SensorContext context, InputFile inputFile, MathematicaRulesSensor sensor, String content) {
+    public UnifiedRuleVisitor(InputFile inputFile, MathematicaRulesSensor sensor) {
         this.inputFile = inputFile;
         this.sensor = sensor;
 
