@@ -15,6 +15,7 @@ Welcome to the comprehensive documentation for the **SonarQube Plugin for Wolfra
 - **[[Installation]]** - Install the plugin in SonarQube (5 min)
 - **[[Configuration]]** - Configure your first Mathematica project (10 min)
 - **[[CI-CD Integration]]** - Integrate with Jenkins, GitLab, GitHub Actions
+- **[[SBOM]]** - Software Bill of Materials for security and compliance
 
 ### Understanding Rules
 - **[[Rule Catalog]]** - Overview of all 529+ rules organized by category

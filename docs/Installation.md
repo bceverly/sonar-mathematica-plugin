@@ -80,7 +80,33 @@ cd sonar-mathematica-plugin
 # (Replace <version> with the latest version number)
 curl -L -o sonar-mathematica-plugin.jar \
   https://github.com/bceverly/sonar-mathematica-plugin/releases/download/v<version>/sonar-mathematica-plugin-<version>.jar
+
+# Download the SBOM (Software Bill of Materials) - optional but recommended
+curl -L -o sonar-mathematica-plugin-sbom.json \
+  https://github.com/bceverly/sonar-mathematica-plugin/releases/download/v<version>/sonar-mathematica-plugin-<version>-sbom.json
 ```
+
+**Verify the Download (Recommended)**
+
+Each release includes SHA256 checksums for security verification:
+
+```bash
+# Verify the JAR file
+shasum -a 256 sonar-mathematica-plugin.jar
+# Compare with the hash shown in the release notes
+
+# Verify the SBOM file (if downloaded)
+shasum -a 256 sonar-mathematica-plugin-sbom.json
+# Compare with the SBOM hash in the release notes
+```
+
+The SBOM (Software Bill of Materials) provides:
+- Complete list of dependencies and their versions
+- License information for compliance
+- Security vulnerability tracking
+- Supply chain transparency
+
+See the [SBOM Documentation](https://github.com/bceverly/sonar-mathematica-plugin/wiki/SBOM) for more details.
 
 #### Step 2: Install the Plugin
 

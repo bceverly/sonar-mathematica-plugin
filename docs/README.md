@@ -9,8 +9,9 @@ All documentation is ready for GitHub Wiki publication at `/docs/`:
 | File | Size | Lines | Description |
 |------|------|-------|-------------|
 | **Home.md** | 5.6 KB | 215 | Main entry point, quick start, navigation |
-| **Installation.md** | 16 KB | 507 | Install guide (manual, marketplace, Docker) |
+| **Installation.md** | 17 KB | 525 | Install guide (manual, marketplace, Docker) |
 | **Configuration.md** | 27 KB | 873 | Project setup, quality profiles, properties |
+| **SBOM.md** | 16 KB | 427 | Software Bill of Materials guide |
 | **Rule-Catalog.md** | 53 KB | 1,620 | Complete index of all 529 rules |
 | **Security-Vulnerabilities.md** | 19 KB | 636 | 27 vulnerability rules with examples |
 | **Security-Hotspots.md** | 5.0 KB | 162 | 29 security review rules |
@@ -20,16 +21,17 @@ All documentation is ready for GitHub Wiki publication at `/docs/`:
 | **Troubleshooting.md** | 43 KB | 1,908 | 25 common issues with solutions |
 | **FAQ.md** | 39 KB | 1,515 | 50 frequently asked questions |
 | **CI-CD-Integration.md** | 33 KB | 1,221 | 5 CI/CD platforms (copy-paste ready) |
-| **TOTAL** | **293 KB** | **10,778 lines** | **100% complete** |
+| **TOTAL** | **309 KB** | **11,205 lines** | **100% complete** |
 
 ---
 
 ## 🎯 Documentation Coverage
 
-### User Guides (3 files)
+### User Guides (4 files)
 ✅ **Installation** - All installation methods with verification
 ✅ **Configuration** - Complete setup with 5 working examples
 ✅ **CI/CD Integration** - GitHub, GitLab, Jenkins, Azure, CircleCI
+✅ **SBOM** - Software Bill of Materials for security and compliance
 
 ### Rule Documentation (4 files)
 ✅ **Rule Catalog** - All 529 rules indexed and searchable
@@ -126,7 +128,7 @@ git push origin master
 ## 🎓 Documentation Statistics
 
 ### Content Metrics
-- **Total words**: ~150,000
+- **Total words**: ~158,000
 - **Code examples**: 100+
 - **Rules documented**: 529/529 (100%)
 - **Detailed examples**: 70+ rules
@@ -134,6 +136,7 @@ git push origin master
 - **Troubleshooting scenarios**: 25
 - **FAQ entries**: 50
 - **Best practices**: 36
+- **SBOM guide**: Complete with tools and examples
 
 ### Quality Metrics
 - **Completeness**: 100% - No TODOs or placeholders
