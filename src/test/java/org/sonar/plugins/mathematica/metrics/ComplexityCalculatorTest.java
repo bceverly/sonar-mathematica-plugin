@@ -103,7 +103,7 @@ class ComplexityCalculatorTest {
         String simpleCode = "x = 5;";
         int complexity = calculator.calculateCognitiveComplexity(simpleCode);
 
-        assertThat(complexity).isEqualTo(0);  // No control structures
+        assertThat(complexity).isZero();  // No control structures
     }
 
     @Test
@@ -129,7 +129,7 @@ class ComplexityCalculatorTest {
 
         assertThat(fc.getFunctionName()).isEqualTo("add");
         assertThat(fc.getCyclomaticComplexity()).isEqualTo(1);
-        assertThat(fc.getCognitiveComplexity()).isEqualTo(0);
+        assertThat(fc.getCognitiveComplexity()).isZero();
     }
 
     @Test
@@ -239,7 +239,7 @@ class ComplexityCalculatorTest {
         String code = "";
         int complexity = calculator.calculateCognitiveComplexity(code);
 
-        assertThat(complexity).isEqualTo(0);
+        assertThat(complexity).isZero();
     }
 
     @Test

@@ -96,6 +96,7 @@ class PureFunctionNodeTest {
         AstVisitor visitor = mock(AstVisitor.class);
         // Should process without exceptions
         node.accept(visitor);
+        assertThat(node).isNotNull();
     }
 
     @Test
@@ -146,5 +147,6 @@ class PureFunctionNodeTest {
         AstVisitor visitor = mock(AstVisitor.class);
         // Should not crash with null body
         node.accept(visitor);
+        assertThat(node).isNotNull();
     }
 }

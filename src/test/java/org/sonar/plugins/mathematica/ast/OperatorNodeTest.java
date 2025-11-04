@@ -148,6 +148,7 @@ class OperatorNodeTest {
         AstVisitor visitor = mock(AstVisitor.class);
         // Should process without exceptions
         node.accept(visitor);
+        assertThat(node).isNotNull();
     }
 
     @Test

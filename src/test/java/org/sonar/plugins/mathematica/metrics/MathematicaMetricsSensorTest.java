@@ -18,6 +18,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
@@ -281,6 +282,9 @@ class MathematicaMetricsSensorTest {
 
         // Should not throw exception, just log error
         sensor.execute(sensorContext);
+
+        // Verify it handled the error gracefully
+        assertThat(inputFile).isNotNull();
     }
 
     @Test

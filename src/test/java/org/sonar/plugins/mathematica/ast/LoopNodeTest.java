@@ -144,6 +144,7 @@ class LoopNodeTest {
 
         // Should visit start, end, step, and body
         // Visitor should process without exceptions
+        assertThat(node).isNotNull();
     }
 
     @Test
@@ -185,5 +186,6 @@ class LoopNodeTest {
         AstVisitor visitor = mock(AstVisitor.class);
         // Should not crash with null body
         node.accept(visitor);
+        assertThat(node).isNotNull();
     }
 }

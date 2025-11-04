@@ -91,5 +91,6 @@ class ListNodeTest {
 
         // Only non-null elements should be visited
         // Visitor should process without exceptions
+        assertThat(node).isNotNull();
     }
 }

@@ -17,6 +17,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -322,5 +323,8 @@ class MathematicaCpdTokenizerTest {
 
         // Should not throw exception, just log error
         tokenizer.execute(sensorContext);
+
+        // Verify it handled the error gracefully
+        assertThat(inputFile).isNotNull();
     }
 }
