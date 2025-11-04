@@ -44,11 +44,9 @@ public final class ArchitectureAndDependencyDetector {
     private static final Pattern BEGIN_PACKAGE = Pattern.compile("BeginPackage\\s*\\[\\s*\"([^\"]+)\"\\s*(?:,\\s*\\{([^}]*)\\})?\\s*\\]");
     private static final Pattern END_PACKAGE = Pattern.compile("EndPackage\\s*\\[\\s*\\]");
     private static final Pattern NEEDS = Pattern.compile("Needs\\s*\\[\\s*\"([^\"]+)\"\\s*\\]");
-    private static final Pattern GET = Pattern.compile("Get\\s*\\[\\s*\"([^\"]+)\"\\s*\\]|<<\\s*\"?([^\"\\s;]+)\"?");
 
     // Symbol definitions
     private static final Pattern FUNCTION_DEF = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)\\s*\\[([^\\]]*?)\\]\\s*:=");
-    private static final Pattern SET_DELAYED = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)\\s*:=");
     private static final Pattern USAGE_MSG = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)::usage\\s*=");
 
     // Context and scoping
@@ -75,7 +73,6 @@ public final class ArchitectureAndDependencyDetector {
 
     // Layer patterns (common architecture layers)
     private static final Pattern LAYER_UI = Pattern.compile("(?i)(?:UI|GUI|View|Frontend|Display)");
-    private static final Pattern LAYER_BUSINESS = Pattern.compile("(?i)(?:Business|Logic|Service|Domain|Core)");
     private static final Pattern LAYER_DATA = Pattern.compile("(?i)(?:Data|Persistence|Repository|DAO|Database)");
 
     // Conditional loading

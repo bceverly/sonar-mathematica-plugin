@@ -59,7 +59,6 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern ALL_SPEC = Pattern.compile("\\[\\[\\s*All\\s*\\]\\]");
 
     // Attribute patterns
-    private static final Pattern SET_ATTRIBUTES = Pattern.compile("SetAttributes\\s*\\[\\s*(\\w+)\\s*,\\s*(\\w+)\\s*\\]");
     private static final Pattern ORDERLESS = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*Orderless");
     private static final Pattern FLAT = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*Flat");
     private static final Pattern LISTABLE = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*Listable");
@@ -83,7 +82,6 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*\\[[^\\]]*(?:Sort|Select|Cases|DeleteCases)");
 
     // Test patterns
-    private static final Pattern TEST_FUNCTION = Pattern.compile("(?:VerificationTest|Test(?:ID|Match|Report)|Assert(?:True|False|Equal))\\s*\\[");
     private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*?\\.");
 
     // Performance patterns

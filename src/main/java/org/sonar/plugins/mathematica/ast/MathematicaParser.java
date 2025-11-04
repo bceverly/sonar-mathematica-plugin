@@ -30,7 +30,6 @@ public class MathematicaParser {
     private static final Logger LOG = LoggerFactory.getLogger(MathematicaParser.class);
 
     // Patterns for parsing
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
     // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
     private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(

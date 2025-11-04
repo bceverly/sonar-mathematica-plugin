@@ -40,9 +40,6 @@ public class BugDetector extends BaseDetector {
     private static final Pattern FUNCTION_END_SEMICOLON_PATTERN = Pattern.compile(
         "\\]\\s*:=\\s*\\([^)]*;\\s*\\)"
     );
-    private static final Pattern MODULE_BLOCK_WITH_PATTERN = Pattern.compile(
-        "(?:Module|Block|With)\\s*\\[\\s*\\{([^}]+)\\}"
-    );
     private static final Pattern WHILE_TRUE_PATTERN = Pattern.compile("While\\s*\\[\\s*True\\s*,");
     private static final Pattern MATRIX_OPERATION_PATTERN = Pattern.compile("(?:Transpose|Dot)\\s*\\[");
     private static final Pattern STRING_PLUS_NUMBER_PATTERN = Pattern.compile(

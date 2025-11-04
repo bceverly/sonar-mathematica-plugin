@@ -21,16 +21,13 @@ import java.util.Set;
  */
 public class UnifiedRuleVisitor implements AstVisitor {
 
-    private final SensorContext context;
     private final InputFile inputFile;
     private final MathematicaRulesSensor sensor;
-    private final String content;
 
     // State tracking for various analyses
     private final Set<String> definedFunctions = new HashSet<>();
     private final Set<String> calledFunctions = new HashSet<>();
     private final Map<String, Integer> functionCallCounts = new HashMap<>();
-    private final Set<String> userInputVariables = new HashSet<>();
     private final Map<String, Integer> variableAssignments = new HashMap<>();
     private final Map<String, Integer> operatorCounts = new HashMap<>();
 
@@ -38,10 +35,8 @@ public class UnifiedRuleVisitor implements AstVisitor {
     private final Deque<Set<String>> scopeStack = new ArrayDeque<>();
 
     public UnifiedRuleVisitor(SensorContext context, InputFile inputFile, MathematicaRulesSensor sensor, String content) {
-        this.context = context;
         this.inputFile = inputFile;
         this.sensor = sensor;
-        this.content = content;
 
         // Initialize global scope
         scopeStack.push(new HashSet<>());
@@ -161,6 +156,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
 
     // ========== Helper method to traverse children ==========
 
+    @Override
     public void visitChildren(AstNode node) {
         for (AstNode child : node.getChildren()) {
             child.accept(this);

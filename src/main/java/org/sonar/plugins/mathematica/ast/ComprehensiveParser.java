@@ -44,17 +44,10 @@ public class ComprehensiveParser {
     private static final Pattern STRING = Pattern.compile(
         "\"(?:[^\"\\\\]|\\\\.)*+\""
     );
-    // FIXED: Simplified to reduce complexity from 22 to 17 components
-    // Multi-char operators matched first, then single chars
-    private static final Pattern OPERATOR = Pattern.compile(
-        ":=|->|@@|@|//|/\\.|\\.{2,3}|==|!=|<=|>=|&&|\\|\\||\\+\\+|--|[+\\-*/^]=|[+\\-*/^&|<>=;,!]"
-    );
 
     private int[] lineOffsets;
-    private String content;
 
     public List<AstNode> parse(String content) {
-        this.content = content;
         this.lineOffsets = buildLineOffsets(content);
 
         List<AstNode> nodes = new ArrayList<>();
@@ -128,7 +121,7 @@ public class ComprehensiveParser {
                     continue;
                 }
 
-                String var = m.group(1);
+                String varName = m.group(1);
                 String op = m.group(2);
                 String value = m.group(3);
 
@@ -137,7 +130,7 @@ public class ComprehensiveParser {
                 int endLine = getLine(m.end());
                 int endCol = getColumn(m.end());
 
-                AstNode lhs = new IdentifierNode(var, startLine, startCol, startLine, startCol + var.length());
+                AstNode lhs = new IdentifierNode(varName, startLine, startCol, startLine, startCol + varName.length());
                 AstNode rhs = parseExpression(value.trim(), startLine, startCol);
 
                 assignments.add(new AssignmentNode(
