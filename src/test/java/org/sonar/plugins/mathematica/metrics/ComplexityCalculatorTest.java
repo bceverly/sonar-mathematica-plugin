@@ -205,9 +205,7 @@ class ComplexityCalculatorTest {
 
         String str = fc.toString();
 
-        assertThat(str).contains("testFunc");
-        assertThat(str).contains("5");
-        assertThat(str).contains("3");
+        assertThat(str).contains("testFunc").contains("5").contains("3");
     }
 
     @Test

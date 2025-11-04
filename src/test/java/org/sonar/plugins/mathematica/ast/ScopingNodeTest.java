@@ -126,8 +126,7 @@ class ScopingNodeTest {
         );
 
         String str = node.toString();
-        assertThat(str).contains("BLOCK");
-        assertThat(str).contains("vars=[local]");
+        assertThat(str).contains("BLOCK").contains("vars=[local]");
     }
 
     @Test

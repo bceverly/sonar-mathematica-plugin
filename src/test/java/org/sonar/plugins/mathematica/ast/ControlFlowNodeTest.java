@@ -129,8 +129,7 @@ class ControlFlowNodeTest {
         );
 
         String str = node.toString();
-        assertThat(str).contains("IF");
-        assertThat(str).contains("branches=1");
+        assertThat(str).contains("IF").contains("branches=1");
     }
 
     @Test
@@ -150,5 +149,6 @@ class ControlFlowNodeTest {
         AstVisitor visitor = mock(AstVisitor.class);
         // Should not crash with null condition
         node.accept(visitor);
+        assertThat(node).isNotNull();
     }
 }

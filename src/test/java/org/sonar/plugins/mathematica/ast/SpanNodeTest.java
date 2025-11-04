@@ -105,8 +105,7 @@ class SpanNodeTest {
         SpanNode node = new SpanNode(start, end, null, 1, 1, 1, 8);
 
         String str = node.toString();
-        assertThat(str).contains("Span");
-        assertThat(str).contains(";;");
+        assertThat(str).contains("Span").contains(";;");
     }
 
     @Test
@@ -126,7 +125,6 @@ class SpanNodeTest {
         SpanNode node = new SpanNode(null, null, null, 1, 1, 1, 3);
 
         String str = node.toString();
-        assertThat(str).contains("Span");
-        assertThat(str).contains(";;");
+        assertThat(str).contains("Span").contains(";;");
     }
 }

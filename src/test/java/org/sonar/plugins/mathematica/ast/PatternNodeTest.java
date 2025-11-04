@@ -181,9 +181,7 @@ class PatternNodeTest {
         );
 
         String str = node.toString();
-        assertThat(str).contains("TYPED_BLANK");
-        assertThat(str).contains("myVar");
-        assertThat(str).contains("Real");
+        assertThat(str).contains("TYPED_BLANK").contains("myVar").contains("Real");
     }
 
     @Test

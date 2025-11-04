@@ -112,8 +112,7 @@ class PureFunctionNodeTest {
         );
 
         String str = node.toString();
-        assertThat(str).contains("PureFunction");
-        assertThat(str).contains("slots=2");
+        assertThat(str).contains("PureFunction").contains("slots=2");
     }
 
     @Test
@@ -130,8 +129,7 @@ class PureFunctionNodeTest {
         );
 
         String str = node.toString();
-        assertThat(str).contains("Function");
-        assertThat(str).contains("params=[a, b, c]");
+        assertThat(str).contains("Function").contains("params=[a, b, c]");
     }
 
     @Test
