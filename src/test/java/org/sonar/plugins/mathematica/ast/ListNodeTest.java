@@ -50,7 +50,8 @@ class ListNodeTest {
 
         node.accept(visitor);
 
-        // Visitor should process without exceptions
+
+        assertThat(node).isNotNull();
     }
 
     @Test

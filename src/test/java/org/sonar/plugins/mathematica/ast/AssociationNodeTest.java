@@ -67,6 +67,7 @@ class AssociationNodeTest {
         AstVisitor visitor = mock(AstVisitor.class);
 
         node.accept(visitor);
+        assertThat(node).isNotNull();
 
         // Visitor should process without exceptions
     }

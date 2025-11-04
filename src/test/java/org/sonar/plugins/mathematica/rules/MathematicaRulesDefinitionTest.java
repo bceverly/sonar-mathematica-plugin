@@ -36,8 +36,7 @@ class MathematicaRulesDefinitionTest {
         assertThat(repository).isNotNull();
 
         // Verify rules are defined (should have 200+ rules across all categories)
-        assertThat(repository.rules()).isNotEmpty();
-        assertThat(repository.rules().size()).isGreaterThan(200);
+        assertThat(repository.rules()).isNotEmpty().hasSizeGreaterThan(200);
     }
 
     @Test

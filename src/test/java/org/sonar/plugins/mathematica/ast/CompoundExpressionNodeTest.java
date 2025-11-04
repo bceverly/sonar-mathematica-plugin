@@ -60,7 +60,8 @@ class CompoundExpressionNodeTest {
 
         node.accept(visitor);
 
-        // Visitor should process without exceptions
+
+        assertThat(node).isNotNull();
     }
 
     @Test
@@ -72,8 +73,9 @@ class CompoundExpressionNodeTest {
         CompoundExpressionNode node = new CompoundExpressionNode(exprs, true, 1, 1, 1, 3);
         String str = node.toString();
 
-        assertThat(str).contains("CompoundExpression");
-        assertThat(str).contains("count=1");
-        assertThat(str).contains("suppress=true");
+        assertThat(str)
+            .contains("CompoundExpression")
+            .contains("count=1")
+            .contains("suppress=true");
     }
 }

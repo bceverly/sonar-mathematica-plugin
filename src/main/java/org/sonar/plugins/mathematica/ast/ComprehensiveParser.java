@@ -305,7 +305,7 @@ public class ComprehensiveParser {
         int i = 0;
 
         while (i < content.length()) {
-            int commentStartOrEnd = processCommentMarker(content, i, depth, result);
+            int commentStartOrEnd = processCommentMarker(content, i, result);
             if (commentStartOrEnd >= 0) {
                 if (isCommentStart(content, i)) {
                     depth++;
@@ -333,7 +333,7 @@ public class ComprehensiveParser {
         return pos + 1 < content.length() && content.charAt(pos) == '*' && content.charAt(pos + 1) == ')';
     }
 
-    private int processCommentMarker(String content, int pos, int depth, StringBuilder result) {
+    private int processCommentMarker(String content, int pos, StringBuilder result) {
         if (isCommentStart(content, pos) || isCommentEnd(content, pos)) {
             result.append("  "); // Replace comment marker with spaces
             return pos + 2;

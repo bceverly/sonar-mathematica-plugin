@@ -84,8 +84,9 @@ class ComprehensiveParserTest {
         String code = "f[x_, y_] := Module[{z}, z = x + y; z * 2]";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -124,8 +125,9 @@ class ComprehensiveParserTest {
         String code = "result = Sin[x];";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -134,8 +136,9 @@ class ComprehensiveParserTest {
         String code = "result = Plus[a, b, c];";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -144,8 +147,9 @@ class ComprehensiveParserTest {
         String code = "result = f[g[x], h[y]];";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -154,8 +158,9 @@ class ComprehensiveParserTest {
         String code = "x = 42; y = 3.14; z = 1.5e-10;";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -163,8 +168,9 @@ class ComprehensiveParserTest {
         ComprehensiveParser parser = new ComprehensiveParser();
         List<AstNode> nodes = parser.parse("");
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isEmpty();
     }
 
     @Test
@@ -182,8 +188,9 @@ class ComprehensiveParserTest {
         String code = "x := RandomReal[]";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -192,8 +199,9 @@ class ComprehensiveParserTest {
         String code = "f[x_Integer, y_Real] := x + y";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 
     @Test
@@ -212,7 +220,8 @@ class ComprehensiveParserTest {
         String code = "(* comment *)\nf[x_] := x^2;\ny = f[5];\n(* another comment *)";
         List<AstNode> nodes = parser.parse(code);
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes)
+            .isNotNull()
+            .isNotEmpty();
     }
 }

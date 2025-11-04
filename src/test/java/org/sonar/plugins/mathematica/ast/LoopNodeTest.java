@@ -162,9 +162,10 @@ class LoopNodeTest {
         );
 
         String str = node.toString();
-        assertThat(str).contains("DO");
-        assertThat(str).contains("i");
-        assertThat(str).contains("body");
+        assertThat(str)
+            .contains("DO")
+            .contains("i")
+            .contains("body");
     }
 
     @Test
