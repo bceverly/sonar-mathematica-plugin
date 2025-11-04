@@ -190,9 +190,7 @@ class LiteralNodeTest {
         LiteralNode node = new LiteralNode(42, LiteralNode.LiteralType.INTEGER, 1, 1, 1, 3);
 
         String result = node.toString();
-        assertThat(result).contains("Literal");
-        assertThat(result).contains("42");
-        assertThat(result).contains("INTEGER");
+        assertThat(result).contains("Literal", "42", "INTEGER");
     }
 
     @Test
@@ -200,9 +198,7 @@ class LiteralNodeTest {
         LiteralNode node = new LiteralNode(3.14, LiteralNode.LiteralType.REAL, 1, 1, 1, 5);
 
         String result = node.toString();
-        assertThat(result).contains("Literal");
-        assertThat(result).contains("3.14");
-        assertThat(result).contains("REAL");
+        assertThat(result).contains("Literal", "3.14", "REAL");
     }
 
     @Test
@@ -210,9 +206,7 @@ class LiteralNodeTest {
         LiteralNode node = new LiteralNode("hello", LiteralNode.LiteralType.STRING, 1, 1, 1, 8);
 
         String result = node.toString();
-        assertThat(result).contains("Literal");
-        assertThat(result).contains("hello");
-        assertThat(result).contains("STRING");
+        assertThat(result).contains("Literal", "hello", "STRING");
     }
 
     @Test
@@ -220,9 +214,7 @@ class LiteralNodeTest {
         LiteralNode node = new LiteralNode(true, LiteralNode.LiteralType.BOOLEAN, 1, 1, 1, 5);
 
         String result = node.toString();
-        assertThat(result).contains("Literal");
-        assertThat(result).contains("true");
-        assertThat(result).contains("BOOLEAN");
+        assertThat(result).contains("Literal", "true", "BOOLEAN");
     }
 
     @Test

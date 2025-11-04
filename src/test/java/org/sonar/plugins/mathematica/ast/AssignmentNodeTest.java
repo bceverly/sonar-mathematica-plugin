@@ -103,8 +103,7 @@ class AssignmentNodeTest {
         AssignmentNode node = new AssignmentNode("=", lhs, rhs, 1, 1, 1, 7);
 
         String result = node.toString();
-        assertThat(result).contains("Assignment");
-        assertThat(result).contains("=");
+        assertThat(result).contains("Assignment", "=");
     }
 
     @Test
@@ -390,8 +389,9 @@ class AssignmentNodeTest {
         LiteralNode rhs = new LiteralNode(10, LiteralNode.LiteralType.INTEGER, 1, 5, 1, 7);
         AssignmentNode node = new AssignmentNode("/:=", lhs, rhs, 1, 1, 1, 7);
 
-        assertThat(node.getOperator()).isEqualTo("/:=");
-        assertThat(node.getOperator().length()).isEqualTo(3);
+        assertThat(node.getOperator())
+            .isEqualTo("/:=")
+            .hasSize(3);
     }
 
     @Test

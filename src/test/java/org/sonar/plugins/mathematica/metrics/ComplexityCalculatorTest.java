@@ -245,7 +245,7 @@ class ComplexityCalculatorTest {
         String code = "If[x > 0 && y < 10 || z == 5, Print[x]]";
         int complexity = calculator.calculateCyclomaticComplexity(code);
 
-        assertThat(complexity).isEqualTo(4);  // Base + If + && + ||
+        assertThat(complexity).isEqualTo(4);
     }
 
     @Test

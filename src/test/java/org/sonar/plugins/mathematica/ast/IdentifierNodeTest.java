@@ -70,8 +70,7 @@ class IdentifierNodeTest {
         IdentifierNode node = new IdentifierNode("testVar", 1, 1, 1, 8);
 
         String result = node.toString();
-        assertThat(result).contains("Identifier");
-        assertThat(result).contains("testVar");
+        assertThat(result).contains("Identifier", "testVar");
     }
 
     @Test

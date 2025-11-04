@@ -79,7 +79,7 @@ class CustomRuleDetectorTest {
         Collection<ActiveRule> rules = Collections.singletonList(activeRule);
         detector.executeCustomRules(context, inputFile, content, rules);
 
-        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("test-rule"), eq("Use Join instead"));
+        verify(sensor, times(1)).queueIssue(inputFile, 1, "test-rule", "Use Join instead");
     }
 
     @Test
@@ -143,8 +143,8 @@ class CustomRuleDetectorTest {
         Collection<ActiveRule> rules = Collections.singletonList(activeRule);
         detector.executeCustomRules(context, inputFile, content, rules);
 
-        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("test-rule"),
-                                           eq("Code matches forbidden pattern"));
+        verify(sensor, times(1)).queueIssue(inputFile, 1, "test-rule",
+                                           "Code matches forbidden pattern");
     }
 
     @Test

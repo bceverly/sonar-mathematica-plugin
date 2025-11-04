@@ -104,9 +104,7 @@ class FunctionDefNodeTest {
         FunctionDefNode node = new FunctionDefNode("f", Collections.emptyList(), body, true, 1, 1, 1, 10);
 
         String result = node.toString();
-        assertThat(result).contains("FunctionDef");
-        assertThat(result).contains("f");
-        assertThat(result).contains("delayed=true");
+        assertThat(result).contains("FunctionDef", "f", "delayed=true");
     }
 
     @Test
@@ -116,9 +114,7 @@ class FunctionDefNodeTest {
         FunctionDefNode node = new FunctionDefNode("add", params, body, true, 1, 1, 1, 18);
 
         String result = node.toString();
-        assertThat(result).contains("add");
-        assertThat(result).contains("x_");
-        assertThat(result).contains("y_");
+        assertThat(result).contains("add", "x_", "y_");
     }
 
     @Test
@@ -282,8 +278,9 @@ class FunctionDefNodeTest {
         LiteralNode body = new LiteralNode(1, LiteralNode.LiteralType.INTEGER, 1, 8, 1, 9);
         FunctionDefNode node = new FunctionDefNode("f", Collections.emptyList(), body, true, 1, 1, 1, 9);
 
-        assertThat(node.getFunctionName()).isEqualTo("f");
-        assertThat(node.getFunctionName().length()).isEqualTo(1);
+        assertThat(node.getFunctionName())
+            .isEqualTo("f")
+            .hasSize(1);
     }
 
     @Test
@@ -447,7 +444,7 @@ class FunctionDefNodeTest {
         FunctionDefNode node2 = new FunctionDefNode("f2", params2, body, true, 1, 1, 1, 11);
         FunctionDefNode node3 = new FunctionDefNode("f3", params3, body, true, 1, 1, 1, 11);
 
-        assertThat(node0.getParameters()).hasSize(0);
+        assertThat(node0.getParameters()).isEmpty();
         assertThat(node1.getParameters()).hasSize(1);
         assertThat(node2.getParameters()).hasSize(2);
         assertThat(node3.getParameters()).hasSize(3);

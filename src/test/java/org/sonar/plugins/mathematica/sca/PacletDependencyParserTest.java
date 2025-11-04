@@ -2,6 +2,8 @@ package org.sonar.plugins.mathematica.sca;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
 
@@ -104,28 +106,13 @@ class PacletDependencyParserTest {
         assertThat(dependencies.get(1).getVersion()).isEqualTo("unknown");
     }
 
-    @Test
-    void testParseEmptyContent() {
-        String content = "";
-
-        List<PacletDependency> dependencies = parser.parsePacletInfo(content);
-
-        assertThat(dependencies).isEmpty();
-    }
-
-    @Test
-    void testParseNoDependencies() {
-        String content = "Paclet[Name -> \"MyPaclet\", Version -> \"1.0\"]";
-
-        List<PacletDependency> dependencies = parser.parsePacletInfo(content);
-
-        assertThat(dependencies).isEmpty();
-    }
-
-    @Test
-    void testParseEmptyDependenciesSection() {
-        String content = "Dependencies -> {}";
-
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "",
+        "Paclet[Name -> \"MyPaclet\", Version -> \"1.0\"]",
+        "Dependencies -> {}"
+    })
+    void testParseReturnsNoDependencies(String content) {
         List<PacletDependency> dependencies = parser.parsePacletInfo(content);
 
         assertThat(dependencies).isEmpty();

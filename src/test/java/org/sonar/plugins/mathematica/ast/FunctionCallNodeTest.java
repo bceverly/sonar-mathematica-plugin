@@ -91,9 +91,7 @@ class FunctionCallNodeTest {
         FunctionCallNode node = new FunctionCallNode("Func", Collections.emptyList(), 1, 1, 1, 7);
 
         String result = node.toString();
-        assertThat(result).contains("FunctionCall");
-        assertThat(result).contains("Func");
-        assertThat(result).contains("args=0");
+        assertThat(result).contains("FunctionCall", "Func", "args=0");
     }
 
     @Test
@@ -135,13 +133,6 @@ class FunctionCallNodeTest {
         assertThat(node.getStartColumn()).isEqualTo(10);
         assertThat(node.getEndLine()).isEqualTo(5);
         assertThat(node.getEndColumn()).isEqualTo(15);
-    }
-
-    @Test
-    void testMapFunction() {
-        FunctionCallNode node = new FunctionCallNode("Map", Collections.emptyList(), 1, 1, 1, 6);
-
-        assertThat(node.getFunctionName()).isEqualTo("Map");
     }
 
     @Test
