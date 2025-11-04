@@ -2,6 +2,8 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
@@ -213,25 +215,22 @@ class PatternAndDataStructureDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectAlternativesTooComplexNoIssue() {
-        String content = "pattern: (a|b|c)";
+    @ParameterizedTest
+    @CsvSource({
+        "'pattern: (a|b|c)', false",
+        "'pattern: (a|b|c|d|e|f|g|h|i|j|k|l|m)', true",
+        "'pattern: (a|b|(c|d)|e|f|g|h|i|j|k|l|m)', true"
+    })
+    void testDetectAlternativesTooComplex(String content, boolean shouldDetect) {
         detector.initializeCaches(content);
         detector.detectAlternativesTooComplex(context, inputFile, content);
         detector.clearCaches();
 
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectAlternativesTooComplexNestedParens() {
-        // Test the parenthesis matching logic with nested parens
-        String content = "pattern: (a|b|(c|d)|e|f|g|h|i|j|k|l|m)";
-        detector.initializeCaches(content);
-        detector.detectAlternativesTooComplex(context, inputFile, content);
-        detector.clearCaches();
-
-        verify(context, atLeastOnce()).newIssue();
+        if (shouldDetect) {
+            verify(context, atLeastOnce()).newIssue();
+        } else {
+            verify(context, never()).newIssue();
+        }
     }
 
     @Test

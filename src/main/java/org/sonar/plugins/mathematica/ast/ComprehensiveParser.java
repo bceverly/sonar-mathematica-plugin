@@ -305,39 +305,48 @@ public class ComprehensiveParser {
         int i = 0;
 
         while (i < content.length()) {
-            if (i + 1 < content.length() && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
-                depth++;
-                // Replace comment start with spaces to preserve positions
-                result.append("  ");
-                i += 2;
-                continue;
-            }
-
-            if (i + 1 < content.length() && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
-                if (depth > 0) {
-                    depth--;
-                }
-                // Replace comment end with spaces to preserve positions
-                result.append("  ");
-                i += 2;
-                continue;
-            }
-
-            if (depth == 0) {
-                // Keep non-comment text as-is
-                result.append(content.charAt(i));
-            } else {
-                // Inside comment: preserve newlines for correct line numbering, replace other chars with spaces
-                if (content.charAt(i) == '\n') {
-                    result.append('\n');
+            int commentStartOrEnd = processCommentMarker(content, i, depth, result);
+            if (commentStartOrEnd >= 0) {
+                if (isCommentStart(content, i)) {
+                    depth++;
                 } else {
-                    result.append(' ');
+                    if (depth > 0) {
+                        depth--;
+                    }
                 }
+                i = commentStartOrEnd;
+                continue;
             }
+
+            appendCharacter(content.charAt(i), depth == 0, result);
             i++;
         }
 
         return result.toString();
+    }
+
+    private boolean isCommentStart(String content, int pos) {
+        return pos + 1 < content.length() && content.charAt(pos) == '(' && content.charAt(pos + 1) == '*';
+    }
+
+    private boolean isCommentEnd(String content, int pos) {
+        return pos + 1 < content.length() && content.charAt(pos) == '*' && content.charAt(pos + 1) == ')';
+    }
+
+    private int processCommentMarker(String content, int pos, int depth, StringBuilder result) {
+        if (isCommentStart(content, pos) || isCommentEnd(content, pos)) {
+            result.append("  "); // Replace comment marker with spaces
+            return pos + 2;
+        }
+        return -1;
+    }
+
+    private void appendCharacter(char c, boolean outsideComment, StringBuilder result) {
+        if (outsideComment) {
+            result.append(c);
+        } else {
+            result.append(c == '\n' ? '\n' : ' ');
+        }
     }
 
     private int[] buildLineOffsets(String content) {
