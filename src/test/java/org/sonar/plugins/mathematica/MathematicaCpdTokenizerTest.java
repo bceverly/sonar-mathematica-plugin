@@ -3,6 +3,8 @@ package org.sonar.plugins.mathematica;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.FilePredicate;
 import org.sonar.api.batch.fs.FilePredicates;
 import org.sonar.api.batch.fs.FileSystem;
@@ -16,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
@@ -44,6 +47,33 @@ class MathematicaCpdTokenizerTest {
         when(fileSystem.predicates()).thenReturn(predicates);
     }
 
+    static Stream<TestFileData> provideTestFileData() {
+        return Stream.of(
+            new TestFileData("simple", "x = 5;\nPrint[x]", 2),
+            new TestFileData("comments", "(* This is a comment *)\nx = 5;", 2),
+            new TestFileData("strings", "str = \"Hello World\";\nPrint[str]", 2),
+            new TestFileData("numbers", "x = 123; y = 45.67; z = 1.5e-10", 1),
+            new TestFileData("operators", "x -> y; a :> b; f /@ list; g @@ args", 1),
+            new TestFileData("empty", "", 0),
+            new TestFileData("complex",
+                "Module[{x = 1, y = 2}, x + y];\n"
+                + "If[x > 0, Print[\"positive\"], Print[\"negative\"]];\n"
+                + "Table[i^2, {i, 10}]", 3)
+        );
+    }
+
+    static class TestFileData {
+        final String name;
+        final String content;
+        final int lines;
+
+        TestFileData(String name, String content, int lines) {
+            this.name = name;
+            this.content = content;
+            this.lines = lines;
+        }
+    }
+
     @Test
     void testDescribe() {
         SensorDescriptor descriptor = mock(SensorDescriptor.class);
@@ -70,124 +100,17 @@ class MathematicaCpdTokenizerTest {
         verify(fileSystem).inputFiles(any());
     }
 
-    @Test
-    void testExecuteWithSimpleFile() throws IOException {
-        // Create a simple Mathematica file
-        Path testFile = tempDir.resolve("test.wl");
-        Files.write(testFile, "x = 5;\nPrint[x]".getBytes(StandardCharsets.UTF_8));
+    @ParameterizedTest
+    @MethodSource("provideTestFileData")
+    void testExecuteWithVariousFileContents(TestFileData testData) throws IOException {
+        // Create test file with specific content
+        Path testFile = tempDir.resolve(testData.name + ".wl");
+        Files.write(testFile, testData.content.getBytes(StandardCharsets.UTF_8));
 
         InputFile inputFile = mock(InputFile.class);
         when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("test.wl");
-        when(inputFile.lines()).thenReturn(2);
-
-        NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
-        when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
-        when(sensorContext.newCpdTokens()).thenReturn(cpdTokens);
-
-        FilePredicate predicate = mock(FilePredicate.class);
-        when(predicates.hasLanguage(any())).thenReturn(predicate);
-        when(predicates.hasType(any())).thenReturn(predicate);
-        when(predicates.and(any(), any())).thenReturn(predicate);
-        when(fileSystem.inputFiles(any())).thenReturn(Collections.singletonList(inputFile));
-
-        tokenizer.execute(sensorContext);
-
-        verify(cpdTokens).save();
-    }
-
-    @Test
-    void testExecuteWithFileContainingComments() throws IOException {
-        // Create file with comments
-        Path testFile = tempDir.resolve("test.wl");
-        String content = "(* This is a comment *)\nx = 5;";
-        Files.write(testFile, content.getBytes(StandardCharsets.UTF_8));
-
-        InputFile inputFile = mock(InputFile.class);
-        when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("test.wl");
-        when(inputFile.lines()).thenReturn(2);
-
-        NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
-        when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
-        when(sensorContext.newCpdTokens()).thenReturn(cpdTokens);
-
-        FilePredicate predicate = mock(FilePredicate.class);
-        when(predicates.hasLanguage(any())).thenReturn(predicate);
-        when(predicates.hasType(any())).thenReturn(predicate);
-        when(predicates.and(any(), any())).thenReturn(predicate);
-        when(fileSystem.inputFiles(any())).thenReturn(Collections.singletonList(inputFile));
-
-        tokenizer.execute(sensorContext);
-
-        verify(cpdTokens).save();
-    }
-
-    @Test
-    void testExecuteWithFileContainingStrings() throws IOException {
-        // Create file with strings
-        Path testFile = tempDir.resolve("test.wl");
-        String content = "str = \"Hello World\";\nPrint[str]";
-        Files.write(testFile, content.getBytes(StandardCharsets.UTF_8));
-
-        InputFile inputFile = mock(InputFile.class);
-        when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("test.wl");
-        when(inputFile.lines()).thenReturn(2);
-
-        NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
-        when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
-        when(sensorContext.newCpdTokens()).thenReturn(cpdTokens);
-
-        FilePredicate predicate = mock(FilePredicate.class);
-        when(predicates.hasLanguage(any())).thenReturn(predicate);
-        when(predicates.hasType(any())).thenReturn(predicate);
-        when(predicates.and(any(), any())).thenReturn(predicate);
-        when(fileSystem.inputFiles(any())).thenReturn(Collections.singletonList(inputFile));
-
-        tokenizer.execute(sensorContext);
-
-        verify(cpdTokens).save();
-    }
-
-    @Test
-    void testExecuteWithFileContainingNumbers() throws IOException {
-        // Create file with numbers
-        Path testFile = tempDir.resolve("test.wl");
-        String content = "x = 123; y = 45.67; z = 1.5e-10";
-        Files.write(testFile, content.getBytes(StandardCharsets.UTF_8));
-
-        InputFile inputFile = mock(InputFile.class);
-        when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("test.wl");
-        when(inputFile.lines()).thenReturn(1);
-
-        NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
-        when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
-        when(sensorContext.newCpdTokens()).thenReturn(cpdTokens);
-
-        FilePredicate predicate = mock(FilePredicate.class);
-        when(predicates.hasLanguage(any())).thenReturn(predicate);
-        when(predicates.hasType(any())).thenReturn(predicate);
-        when(predicates.and(any(), any())).thenReturn(predicate);
-        when(fileSystem.inputFiles(any())).thenReturn(Collections.singletonList(inputFile));
-
-        tokenizer.execute(sensorContext);
-
-        verify(cpdTokens).save();
-    }
-
-    @Test
-    void testExecuteWithFileContainingOperators() throws IOException {
-        // Create file with operators
-        Path testFile = tempDir.resolve("test.wl");
-        String content = "x -> y; a :> b; f /@ list; g @@ args";
-        Files.write(testFile, content.getBytes(StandardCharsets.UTF_8));
-
-        InputFile inputFile = mock(InputFile.class);
-        when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("test.wl");
-        when(inputFile.lines()).thenReturn(1);
+        when(inputFile.filename()).thenReturn(testData.name + ".wl");
+        when(inputFile.lines()).thenReturn(testData.lines);
 
         NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
         when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
@@ -240,61 +163,6 @@ class MathematicaCpdTokenizerTest {
 
         verify(cpdTokens1).save();
         verify(cpdTokens2).save();
-    }
-
-    @Test
-    void testExecuteWithEmptyFile() throws IOException {
-        // Create empty file
-        Path testFile = tempDir.resolve("empty.wl");
-        Files.write(testFile, "".getBytes(StandardCharsets.UTF_8));
-
-        InputFile inputFile = mock(InputFile.class);
-        when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("empty.wl");
-        when(inputFile.lines()).thenReturn(0);
-
-        NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
-        when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
-        when(sensorContext.newCpdTokens()).thenReturn(cpdTokens);
-
-        FilePredicate predicate = mock(FilePredicate.class);
-        when(predicates.hasLanguage(any())).thenReturn(predicate);
-        when(predicates.hasType(any())).thenReturn(predicate);
-        when(predicates.and(any(), any())).thenReturn(predicate);
-        when(fileSystem.inputFiles(any())).thenReturn(Collections.singletonList(inputFile));
-
-        tokenizer.execute(sensorContext);
-
-        verify(cpdTokens).save();
-    }
-
-    @Test
-    void testExecuteWithComplexMathematicaCode() throws IOException {
-        // Create file with complex Mathematica code
-        Path testFile = tempDir.resolve("complex.wl");
-        String content = "Module[{x = 1, y = 2}, x + y];\n"
-                        + "If[x > 0, Print[\"positive\"], Print[\"negative\"]];\n"
-                        + "Table[i^2, {i, 10}]";
-        Files.write(testFile, content.getBytes(StandardCharsets.UTF_8));
-
-        InputFile inputFile = mock(InputFile.class);
-        when(inputFile.uri()).thenReturn(testFile.toUri());
-        when(inputFile.filename()).thenReturn("complex.wl");
-        when(inputFile.lines()).thenReturn(3);
-
-        NewCpdTokens cpdTokens = mock(NewCpdTokens.class);
-        when(cpdTokens.onFile(any())).thenReturn(cpdTokens);
-        when(sensorContext.newCpdTokens()).thenReturn(cpdTokens);
-
-        FilePredicate predicate = mock(FilePredicate.class);
-        when(predicates.hasLanguage(any())).thenReturn(predicate);
-        when(predicates.hasType(any())).thenReturn(predicate);
-        when(predicates.and(any(), any())).thenReturn(predicate);
-        when(fileSystem.inputFiles(any())).thenReturn(Collections.singletonList(inputFile));
-
-        tokenizer.execute(sensorContext);
-
-        verify(cpdTokens).save();
     }
 
     @Test

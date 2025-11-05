@@ -2,9 +2,12 @@ package org.sonar.plugins.mathematica.metrics;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import org.sonar.plugins.mathematica.metrics.ComplexityCalculator.FunctionComplexity;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -16,6 +19,33 @@ class ComplexityCalculatorTest {
     @BeforeEach
     void setUp() {
         calculator = new ComplexityCalculator();
+    }
+
+    static Stream<CyclomaticComplexityTestData> provideCyclomaticComplexityData() {
+        return Stream.of(
+            new CyclomaticComplexityTestData("If[x > 0, y, z]; While[x > 0, x--]; For[i = 1, i < 10, i++, Print[i]]", 4),
+            new CyclomaticComplexityTestData("If[x > 0 && y < 10, Print[x]]", 3),
+            new CyclomaticComplexityTestData("(* This is a comment with If[x, y, z] *) x = 5;", 1),
+            new CyclomaticComplexityTestData("str = \"If[x > 0, y, z]\"; Print[str]", 1),
+            new CyclomaticComplexityTestData("(* outer (* inner If[x, y] *) outer *) x = 5;", 1),
+            new CyclomaticComplexityTestData("Which[x == 1, a, x == 2, b]; Switch[y, 1, a, 2, b]", 3),
+            new CyclomaticComplexityTestData("Table[i^2, {i, 10}]; Map[f, list]", 3),
+            new CyclomaticComplexityTestData("If[x > 0 || y < 10, Print[x]]", 3),
+            new CyclomaticComplexityTestData("Do[Print[i], {i, 10}]", 2),
+            new CyclomaticComplexityTestData("Scan[Print, list]", 2),
+            new CyclomaticComplexityTestData("", 1),
+            new CyclomaticComplexityTestData("If[x > 0 && y < 10 || z == 5, Print[x]]", 4)
+        );
+    }
+
+    static class CyclomaticComplexityTestData {
+        final String code;
+        final int expectedComplexity;
+
+        CyclomaticComplexityTestData(String code, int expectedComplexity) {
+            this.code = code;
+            this.expectedComplexity = expectedComplexity;
+        }
     }
 
     @Test
@@ -34,68 +64,11 @@ class ComplexityCalculatorTest {
         assertThat(complexity).isGreaterThan(1);  // Base + 1 for If
     }
 
-    @Test
-    void testCyclomaticComplexityWithMultipleDecisionPoints() {
-        String code = "If[x > 0, y, z]; While[x > 0, x--]; For[i = 1, i < 10, i++, Print[i]]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(4);  // Base + If + While + For
-    }
-
-    @Test
-    void testCyclomaticComplexityWithLogicalOperators() {
-        String code = "If[x > 0 && y < 10, Print[x]]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(3);  // Base + If + &&
-    }
-
-    @Test
-    void testCyclomaticComplexityIgnoresComments() {
-        String code = "(* This is a comment with If[x, y, z] *) x = 5;";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(1);  // Should ignore If inside comment
-    }
-
-    @Test
-    void testCyclomaticComplexityIgnoresStrings() {
-        String code = "str = \"If[x > 0, y, z]\"; Print[str]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(1);  // Should ignore If inside string
-    }
-
-    @Test
-    void testCyclomaticComplexityWithNestedComments() {
-        String code = "(* outer (* inner If[x, y] *) outer *) x = 5;";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(1);  // Should handle nested comments
-    }
-
-    @Test
-    void testCyclomaticComplexityWithWhichAndSwitch() {
-        String code = "Which[x == 1, a, x == 2, b]; Switch[y, 1, a, 2, b]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(3);  // Base + Which + Switch
-    }
-
-    @Test
-    void testCyclomaticComplexityWithTableAndMap() {
-        String code = "Table[i^2, {i, 10}]; Map[f, list]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(3);  // Base + Table + Map
-    }
-
-    @Test
-    void testCyclomaticComplexityWithOrOperator() {
-        String code = "If[x > 0 || y < 10, Print[x]]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(3);  // Base + If + ||
+    @ParameterizedTest
+    @MethodSource("provideCyclomaticComplexityData")
+    void testCyclomaticComplexityVariousCases(CyclomaticComplexityTestData testData) {
+        int complexity = calculator.calculateCyclomaticComplexity(testData.code);
+        assertThat(complexity).isEqualTo(testData.expectedComplexity);
     }
 
     @Test
@@ -209,43 +182,11 @@ class ComplexityCalculatorTest {
     }
 
     @Test
-    void testComplexityWithDoLoop() {
-        String code = "Do[Print[i], {i, 10}]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(2);  // Base + Do
-    }
-
-    @Test
-    void testComplexityWithScanFunction() {
-        String code = "Scan[Print, list]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(2);  // Base + Scan
-    }
-
-    @Test
-    void testComplexityWithEmptyString() {
-        String code = "";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(1);  // Base complexity
-    }
-
-    @Test
     void testCognitiveComplexityWithEmptyString() {
         String code = "";
         int complexity = calculator.calculateCognitiveComplexity(code);
 
         assertThat(complexity).isZero();
-    }
-
-    @Test
-    void testComplexityWithMixedOperators() {
-        String code = "If[x > 0 && y < 10 || z == 5, Print[x]]";
-        int complexity = calculator.calculateCyclomaticComplexity(code);
-
-        assertThat(complexity).isEqualTo(4);
     }
 
     @Test

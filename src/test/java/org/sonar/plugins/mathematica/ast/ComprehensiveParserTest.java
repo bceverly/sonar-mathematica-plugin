@@ -1,13 +1,28 @@
 package org.sonar.plugins.mathematica.ast;
 
 import org.junit.jupiter.api.Test;
-
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class ComprehensiveParserTest {
+
+    static Stream<String> provideComplexCodeSamples() {
+        return Stream.of(
+            "f[x_, y_] := Module[{z}, z = x + y; z * 2]",
+            "(* outer (* nested *) comment *) x = 1;",
+            "(* comment\nline2\nline3 *)\nx = 1;",
+            "(* unclosed comment\nx = 1;",
+            "result = Sin[x];",
+            "result = Plus[a, b, c];",
+            "result = f[g[x], h[y]];",
+            "x = 42; y = 3.14; z = 1.5e-10;"
+        );
+    }
 
     @Test
     void testParserCanBeInstantiated() {
@@ -78,89 +93,13 @@ class ComprehensiveParserTest {
         assertThat(nodes).isNotNull();
     }
 
-    @Test
-    void testParseComplexExpression() {
+    @ParameterizedTest
+    @MethodSource("provideComplexCodeSamples")
+    void testParseVariousComplexExpressions(String code) {
         ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "f[x_, y_] := Module[{z}, z = x + y; z * 2]";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
-    }
-
-    @Test
-    void testParseWithNestedComments() {
-        // Test nested comment handling
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "(* outer (* nested *) comment *) x = 1;";
         List<AstNode> nodes = parser.parse(code);
 
         assertThat(nodes).isNotNull();
-    }
-
-    @Test
-    void testParseWithMultilineComments() {
-        // Test that comments preserve line numbers
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "(* comment\nline2\nline3 *)\nx = 1;";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes).isNotNull();
-    }
-
-    @Test
-    void testParseWithUnclosedComment() {
-        // Test that unclosed comments are handled gracefully
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "(* unclosed comment\nx = 1;";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes).isNotNull();
-    }
-
-    @Test
-    void testParseFunctionCall() {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "result = Sin[x];";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
-    }
-
-    @Test
-    void testParseFunctionCallWithMultipleArgs() {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "result = Plus[a, b, c];";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
-    }
-
-    @Test
-    void testParseFunctionCallWithNestedBrackets() {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "result = f[g[x], h[y]];";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
-    }
-
-    @Test
-    void testParseNumbers() {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "x = 42; y = 3.14; z = 1.5e-10;";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
     }
 
     @Test
