@@ -15,35 +15,35 @@ public class TestingQualityDetector extends BaseDetector {
 
     // Test Organization patterns
     private static final Pattern TEST_FUNCTION_PATTERN = Pattern.compile(
-        "test([A-Z][a-zA-Z0-9]*)\\s*\\[|"
-        + "([A-Z][a-zA-Z0-9]*)Test\\s*\\["
+        "test([A-Z][a-zA-Z0-9]*)\\s*+\\[|"
+        + "([A-Z][a-zA-Z0-9]*)Test\\s*+\\["
     );
-    private static final Pattern VERIFICATION_TEST_PATTERN = Pattern.compile("VerificationTest\\s*\\[");
+    private static final Pattern VERIFICATION_TEST_PATTERN = Pattern.compile("VerificationTest\\s*+\\[");
     private static final Pattern SHARED_TEST_DATA_PATTERN = Pattern.compile(
-        "(?:Module|Block|With)\\s*\\[[^\\]]*testData|testInput|expected"
+        "(?:Module|Block|With)\\s*+\\[[^\\]]*testData|testInput|expected"
     );
     private static final Pattern DISABLED_TEST_PATTERN = Pattern.compile(
-        "\\(\\*\\s*VerificationTest|"  + "VerificationTest\\s*\\[[^\\]]*,\\s*\"(?:Ignore|Skip|Disabled)\""
+        "\\(\\*\\s*+VerificationTest|"  + "VerificationTest\\s*+\\[[^\\]]*,\\s*+\"(?:Ignore|Skip|Disabled)\""
     );
 
     // VerificationTest patterns
     private static final Pattern VT_WITHOUT_EXPECTED_PATTERN = Pattern.compile(
-        "VerificationTest\\s*\\[([^,]+)\\]"  // Only one argument
+        "VerificationTest\\s*+\\[([^,]+)\\]"  // Only one argument
     );
     private static final Pattern VT_TRUE_PATTERN = Pattern.compile(
-        "VerificationTest\\s*\\[[^,]+,\\s*True\\s*[,\\]]"
+        "VerificationTest\\s*+\\[[^,]+,\\s*+True\\s*+[,\\]]"
     );
     private static final Pattern VT_WITHOUT_DESC_PATTERN = Pattern.compile(
-        "VerificationTest\\s*\\[[^,]+,[^,]+(?:,[^,]+)?\\]"  // 2-3 args without TestID
+        "VerificationTest\\s*+\\[[^,]+,[^,]+(?:,[^,]+)?\\]"  // 2-3 args without TestID
     );
     private static final Pattern VT_EMPTY_PATTERN = Pattern.compile(
-        "VerificationTest\\s*\\[\\s*,|VerificationTest\\s*\\[\\s*\\]"
+        "VerificationTest\\s*+\\[\\s*+,|VerificationTest\\s*+\\[\\s*+\\]"
     );
 
     // Test Quality patterns
     private static final Pattern VT_ASSERT_PATTERN = Pattern.compile("==|===|SameQ|MatchQ");
     private static final Pattern TEST_MAGIC_NUMBER_PATTERN = Pattern.compile(
-        "VerificationTest\\s*\\[[^\\]]*\\b(\\d{3,}|\\d+\\.\\d{4,})\\b"
+        "VerificationTest\\s*+\\[[^\\]]*\\b(\\d{3,}|\\d+\\.\\d{4,})\\b"
     );
 
     /**
@@ -75,7 +75,7 @@ public class TestingQualityDetector extends BaseDetector {
         try {
             // Look for tests that use global variables without cleanup
             if (content.contains("VerificationTest")
-                && (content.contains("global") || content.matches(".*[A-Z][a-zA-Z0-9]*\\s*=(?!=).*"))) {
+                && (content.contains("global") || content.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=(?!=).*"))) {
 
                 Matcher vtMatcher = VERIFICATION_TEST_PATTERN.matcher(content);
                 while (vtMatcher.find()) {
@@ -85,7 +85,7 @@ public class TestingQualityDetector extends BaseDetector {
                         String testBody = content.substring(testStart, testEnd);
 
                         // Check for global assignments without Clear
-                        if (testBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*=.*") && !testBody.contains("Clear[")) {
+                        if (testBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=.*") && !testBody.contains("Clear[")) {
                             int lineNumber = calculateLineNumber(content, testStart);
                             reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TEST_NO_ISOLATION_KEY,
                                 "Test modifies global state without cleanup. Use Module/Block for isolation.");
@@ -338,7 +338,7 @@ public class TestingQualityDetector extends BaseDetector {
      * Helper to count unique function calls in test body.
      */
     private int countUniqueFunctionCalls(String testBody) {
-        Pattern funcPattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[");
+        Pattern funcPattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\[");
         Matcher matcher = funcPattern.matcher(testBody);
         java.util.Set<String> uniqueFunctions = new java.util.HashSet<>();
         while (matcher.find()) {

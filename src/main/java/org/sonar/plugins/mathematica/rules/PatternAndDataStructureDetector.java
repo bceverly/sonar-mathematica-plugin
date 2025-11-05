@@ -249,7 +249,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                 String surrounding = content.substring(Math.max(0, position - 200),
                     Math.min(content.length(), position + 50));
 
-                if (surrounding.matches(".*(Do|While|Table|Map)\\s*\\[.*")) {
+                if (surrounding.matches(".*(Do|While|Table|Map)\\s*+\\[.*")) {
                     int line = calculateLineNumber(content, position);
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.PATTERN_TEST_PURE_FUNCTION_KEY,
@@ -507,7 +507,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                 int position = matcher.start();
                 String before = content.substring(Math.max(0, position - 200), position);
 
-                if (!before.matches(".*Length\\s*\\[\\s*" + Pattern.quote(listVar) + "\\s*\\].*")) {
+                if (!before.matches(".*Length\\s*+\\[\\s*+" + Pattern.quote(listVar) + "\\s*+\\].*")) {
                     int line = calculateLineNumber(content, position);
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.EMPTY_LIST_INDEXING_KEY,

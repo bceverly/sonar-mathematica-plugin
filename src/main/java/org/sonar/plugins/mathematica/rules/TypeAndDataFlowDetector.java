@@ -23,68 +23,69 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     // ===== Pre-compiled patterns for Type Mismatch Detection =====
 
     // Pattern for numeric operations on strings
-    private static final Pattern STRING_ARITHMETIC = Pattern.compile("\"[^\"]*\"\\s*[\\+\\-\\*/\\^]");
+    private static final Pattern STRING_ARITHMETIC = Pattern.compile("\"[^\"]*\"\\s*+[\\+\\-\\*/\\^]");
 
     // Pattern for string operations on numbers
     private static final Pattern STRING_FUNCTION_ON_NUMBER = Pattern.compile(
-            "\\b(StringJoin|StringLength|StringTake|StringDrop|StringReplace)\\s*\\[\\s*\\d+");
+            "\\b(StringJoin|StringLength|StringTake|StringDrop|StringReplace)\\s*+\\[\\s*+\\d+");
 
     // Pattern for common type-specific functions
-    private static final Pattern MAP_FUNCTION = Pattern.compile("\\bMap\\s*\\[");
-    private static final Pattern LENGTH_FUNCTION = Pattern.compile("\\bLength\\s*\\[");
+    private static final Pattern MAP_FUNCTION = Pattern.compile("\\bMap\\s*+\\[");
+    private static final Pattern LENGTH_FUNCTION = Pattern.compile("\\bLength\\s*+\\[");
 
     // Pattern for function definitions with type constraints
-    private static final Pattern TYPED_FUNCTION_DEF = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*_(?:Integer|Real|String|List)[^\\]]*)\\]\\s*:?=");
+    private static final Pattern TYPED_FUNCTION_DEF = Pattern.compile(
+        "([a-zA-Z]\\w*)\\s*+\\[([^\\]]*_(?:Integer|Real|String|List)[^\\]]*)\\]\\s*+:?=");
 
     // Pattern for integer division
-    private static final Pattern INTEGER_DIVISION = Pattern.compile("\\b(\\d+)\\s*/\\s*(\\d+)\\b");
+    private static final Pattern INTEGER_DIVISION = Pattern.compile("\\b(\\d+)\\s*+/\\s*+(\\d+)\\b");
 
     // Pattern for ToExpression without validation
-    private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*\\[([^\\]]+)\\]");
+    private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*+\\[([^\\]]+)\\]");
 
     // Pattern for ToString
-    private static final Pattern TO_STRING = Pattern.compile("\\bToString\\s*\\[\"([^\"]+)\"\\]");
+    private static final Pattern TO_STRING = Pattern.compile("\\bToString\\s*+\\[\"([^\"]+)\"\\]");
 
     // Pattern for Plot/Graphics in arithmetic
-    private static final Pattern PLOT_ARITHMETIC = Pattern.compile("\\b(Plot|ListPlot|Graphics)\\s*\\[[^\\]]+\\]\\s*[\\+\\-\\*/]");
+    private static final Pattern PLOT_ARITHMETIC = Pattern.compile("\\b(Plot|ListPlot|Graphics)\\s*+\\[[^\\]]+\\]\\s*+[\\+\\-\\*/]");
 
     // Pattern for Image operations
-    private static final Pattern IMAGE_OPERATION = Pattern.compile("\\b(ImageData|ImageDimensions)\\s*\\[\\s*\\{");
+    private static final Pattern IMAGE_OPERATION = Pattern.compile("\\b(ImageData|ImageDimensions)\\s*+\\[\\s*+\\{");
 
     // Pattern for Audio operations
-    private static final Pattern AUDIO_OPERATION = Pattern.compile("\\b(AudioData|SampleRate)\\s*\\[\\s*\\{");
+    private static final Pattern AUDIO_OPERATION = Pattern.compile("\\b(AudioData|SampleRate)\\s*+\\[\\s*+\\{");
 
     // Pattern for Dataset operations on lists
-    private static final Pattern DATASET_OPERATION = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[All");
+    private static final Pattern DATASET_OPERATION = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[All");
 
     // Pattern for Graph operations
-    private static final Pattern GRAPH_OPERATION = Pattern.compile("\\b(VertexList|EdgeList)\\s*\\[\\s*\\{\\{");
+    private static final Pattern GRAPH_OPERATION = Pattern.compile("\\b(VertexList|EdgeList)\\s*+\\[\\s*+\\{\\{");
 
     // ===== Pre-compiled patterns for Data Flow Analysis =====
 
     // Pattern for variable assignment
-    private static final Pattern VARIABLE_ASSIGNMENT = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*([^;\\n]+)");
+    private static final Pattern VARIABLE_ASSIGNMENT = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([^;\\n]+)");
 
     // Pattern for If statement
-    private static final Pattern IF_STATEMENT = Pattern.compile("\\bIf\\s*\\[");
+    private static final Pattern IF_STATEMENT = Pattern.compile("\\bIf\\s*+\\[");
 
     // Pattern for Module/Block/With
-    private static final Pattern MODULE_BLOCK_WITH = Pattern.compile("\\b(Module|Block|With)\\s*\\[\\s*\\{([^}]+)\\}");
+    private static final Pattern MODULE_BLOCK_WITH = Pattern.compile("\\b(Module|Block|With)\\s*+\\[\\s*+\\{([^}]+)\\}");
 
     // Pattern for Do loop
-    private static final Pattern DO_LOOP = Pattern.compile("\\bDo\\s*\\[([^\\]]+),\\s*\\{\\s*(\\w+)\\s*,");
+    private static final Pattern DO_LOOP = Pattern.compile("\\bDo\\s*+\\[([^\\]]+),\\s*+\\{\\s*+(\\w+)\\s*+,");
 
     // Pattern for Unset/Clear
-    private static final Pattern UNSET_CLEAR = Pattern.compile("\\b(Unset|Clear)\\s*\\[\\s*(\\w+)");
+    private static final Pattern UNSET_CLEAR = Pattern.compile("\\b(Unset|Clear)\\s*+\\[\\s*+(\\w+)");
 
     // Pattern for pure functions with mutations
-    private static final Pattern PURE_FUNCTION_MUTATION = Pattern.compile("([a-zA-Z]\\w*)\\s*\\+\\+");
+    private static final Pattern PURE_FUNCTION_MUTATION = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\+\\+");
 
     // Pattern for assignment in condition
-    private static final Pattern ASSIGNMENT_IN_IF = Pattern.compile("\\bIf\\s*\\[\\s*([a-zA-Z]\\w*)\\s*=\\s*[^=]");
+    private static final Pattern ASSIGNMENT_IN_IF = Pattern.compile("\\bIf\\s*+\\[\\s*+([a-zA-Z]\\w*)\\s*+=\\s*+[^=]");
 
     // Pattern for function return
-    private static final Pattern FUNCTION_RETURN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*)\\]\\s*:?=\\s*\\(([^\\)]*)\\)");
+    private static final Pattern FUNCTION_RETURN = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]*)\\]\\s*+:?=\\s*+\\(([^\\)]*)\\)");
 
     // ===== TYPE MISMATCH DETECTION METHODS (Items 111-130) =====
 
@@ -125,7 +126,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 int argsStart = mapMatcher.end();
                 // Simple heuristic: check if second arg is a number
                 String argsSection = content.substring(argsStart, Math.min(argsStart + 50, content.length()));
-                if (argsSection.matches(".*,\\s*\\d+\\s*\\].*")) {
+                if (argsSection.matches(".*,\\s*+\\d+\\s*+\\].*")) {
                     int line = calculateLineNumber(content, mapMatcher.start());
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.WRONG_ARGUMENT_TYPE_KEY,
@@ -138,7 +139,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             while (lengthMatcher.find()) {
                 int argsStart = lengthMatcher.end();
                 String argsSection = content.substring(argsStart, Math.min(argsStart + 20, content.length()));
-                if (argsSection.matches("^\\s*\\d+\\s*\\].*")) {
+                if (argsSection.matches("^\\s*+\\d+\\s*+\\].*")) {
                     int line = calculateLineNumber(content, lengthMatcher.start());
                     reportIssue(context, inputFile, line,
                         MathematicaRulesDefinition.WRONG_ARGUMENT_TYPE_KEY,
@@ -177,7 +178,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectComparisonIncompatibleTypes(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect string compared to number
-            Pattern pattern = Pattern.compile("\"[^\"]+\"\\s*(<|>|<=|>=)\\s*\\d+");
+            Pattern pattern = Pattern.compile("\"[^\"]+\"\\s*+(<|>|<=|>=)\\s*+\\d+");
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -193,7 +194,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectMixedNumericTypes(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect exact (fraction) mixed with approximate (decimal)
-            Pattern pattern = Pattern.compile("\\d+\\s*/\\s*\\d+\\s*[\\+\\-]\\s*\\d+\\.\\d+");
+            Pattern pattern = Pattern.compile("\\d+\\s*+/\\s*+\\d+\\s*+[\\+\\-]\\s*+\\d+\\.\\d+");
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -232,7 +233,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectListFunctionOnAssociation(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect Append on association-like structure
-            Pattern pattern = Pattern.compile("\\bAppend\\s*\\[\\s*<\\|");
+            Pattern pattern = Pattern.compile("\\bAppend\\s*+\\[\\s*+<\\|");
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -264,7 +265,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                 if (typeConstraint != null) {
                     // Look for calls to this function with wrong type
-                    Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*\\[([^\\]]+)\\]");
+                    Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[([^\\]]+)\\]");
                     Matcher callMatcher = callPattern.matcher(content);
 
                     while (callMatcher.find()) {
@@ -295,7 +296,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectOptionalTypeInconsistent(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect _Integer : 1.5 (Real default for Integer pattern)
-            Pattern pattern = Pattern.compile("_Integer\\s*:\\s*\\d+\\.\\d+");
+            Pattern pattern = Pattern.compile("_Integer\\s*+:\\s*+\\d+\\.\\d+");
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -305,7 +306,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             }
 
             // Detect _Real : integer
-            Pattern pattern2 = Pattern.compile("_Real\\s*:\\s*\\d+(?!\\.\\d)");
+            Pattern pattern2 = Pattern.compile("_Real\\s*+:\\s*+\\d+(?!\\.\\d)");
             Matcher matcher2 = pattern2.matcher(content);
             while (matcher2.find()) {
                 int line = calculateLineNumber(content, matcher2.start());
@@ -325,7 +326,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
     public void detectNullAssignmentToTypedVariable(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*Null");
+            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+Null");
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -403,14 +404,14 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectSymbolInNumericContext(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect undefined variables in arithmetic (simplified heuristic)
-            Pattern pattern = Pattern.compile("\\b([a-z]\\w*)\\s*[\\+\\-\\*/]\\s*\\d+");
+            Pattern pattern = Pattern.compile("\\b([a-z]\\w*)\\s*+[\\+\\-\\*/]\\s*+\\d+");
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
                 String varName = matcher.group(1);
 
                 // Check if variable was assigned earlier
-                Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*=");
+                Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=");
                 if (!assignPattern.matcher(content.substring(0, matcher.start())).find()) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
@@ -460,7 +461,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 String varName = matcher.group(1);
 
                 // Check if variable is a list (simple heuristic)
-                Pattern listAssign = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*=\\s*\\{\\{");
+                Pattern listAssign = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=\\s*+\\{\\{");
                 if (listAssign.matcher(content.substring(0, matcher.start())).find()) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
@@ -604,7 +605,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectVariableAliasingIssue(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect list1 = list2 followed by list2[[i]] = x
-            Pattern aliasPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*([a-zA-Z]\\w*)\\s*;");
+            Pattern aliasPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([a-zA-Z]\\w*)\\s*+;");
             Matcher matcher = aliasPattern.matcher(content);
 
             while (matcher.find()) {
@@ -635,7 +636,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 String loopBody = matcher.group(1);
 
                 // Check if iterator is modified in body
-                Pattern modPattern = Pattern.compile("\\b" + Pattern.quote(iteratorName) + "\\s*[\\+\\-\\*/]?=");
+                Pattern modPattern = Pattern.compile("\\b" + Pattern.quote(iteratorName) + "\\s*+[\\+\\-\\*/]?=");
                 if (modPattern.matcher(loopBody).find()) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
@@ -720,7 +721,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectMutationInPureFunction(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect mutations (++) inside pure functions (&)
-            Pattern pattern = Pattern.compile("\\(([^\\(\\)]*\\+\\+[^\\(\\)]*)\\s*\\&");
+            Pattern pattern = Pattern.compile("\\(([^\\(\\)]*\\+\\+[^\\(\\)]*)\\s*+\\&");
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -741,7 +742,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectSharedMutableState(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect global variables modified by multiple functions
-            Pattern globalAssign = Pattern.compile("^\\s*([a-zA-Z]\\w*)\\s*=", Pattern.MULTILINE);
+            Pattern globalAssign = Pattern.compile("^\\s*+([a-zA-Z]\\w*)\\s*+=", Pattern.MULTILINE);
             Matcher matcher = globalAssign.matcher(content);
 
             Set<String> globalVars = new HashSet<>();
@@ -751,8 +752,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
             // Check if these globals are modified inside functions
             for (String varName : globalVars) {
-                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=[^;]*"
-                    + Pattern.quote(varName) + "\\s*[\\+\\-\\*/]?=");
+                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[[^\\]]*\\]\\s*+:=[^;]*"
+                    + Pattern.quote(varName) + "\\s*+[\\+\\-\\*/]?=");
                 Matcher funcMatcher = funcModPattern.matcher(content);
 
                 int modCount = 0;
@@ -788,7 +789,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                     // Check if body is just a variable name
                     String[] varList = vars.split(",");
                     for (String var : varList) {
-                        String varName = var.trim().split("\\s*=")[0].trim();
+                        String varName = var.trim().split("\\s*+=")[0].trim();
                         if (body.trim().equals(varName)) {
                             int line = calculateLineNumber(content, matcher.start());
                             reportIssue(context, inputFile, line,
@@ -806,7 +807,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectClosureOverMutableVariable(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect Table[Function[... i ...], {i, ...}] - closure captures final i
-            Pattern pattern = Pattern.compile("Table\\s*\\[\\s*Function\\s*\\[[^\\]]*\\b(\\w+)\\b[^\\]]*\\][^,]*,\\s*\\{\\s*\\1\\s*,");
+            Pattern pattern = Pattern.compile("Table\\s*+\\[\\s*+Function\\s*+\\[[^\\]]*\\b(\\w+)\\b[^\\]]*\\][^,]*,\\s*+\\{\\s*+\\1\\s*+,");
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -839,7 +840,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectAssignmentAsReturnValue(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect f[x_] := (y = x; y)
-            Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=\\s*\\(\\s*([a-zA-Z]\\w*)\\s*=\\s*([^;]+);\\s*\\2\\s*\\)");
+            Pattern pattern = Pattern.compile(
+                "([a-zA-Z]\\w*)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+\\(\\s*+([a-zA-Z]\\w*)\\s*+=\\s*+([^;]+);\\s*+\\2\\s*+\\)");
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -873,10 +875,10 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                     String[] varList = vars.split(",");
                     for (String var : varList) {
-                        String varName = var.trim().split("\\s*=")[0].trim();
+                        String varName = var.trim().split("\\s*+=")[0].trim();
 
                         // Check if variable never modified (no assignments in body)
-                        Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*=");
+                        Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=");
                         if (!assignPattern.matcher(body).find()) {
                             int line = calculateLineNumber(content, matcher.start());
                             reportIssue(context, inputFile, line,

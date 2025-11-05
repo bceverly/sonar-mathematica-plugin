@@ -32,20 +32,20 @@ public class ComplexityCalculator {
     private String cachedCleaned = null;
 
     // Decision point patterns (for cyclomatic complexity)
-    private static final Pattern IF_PATTERN = Pattern.compile("\\bIf\\s*\\[");
-    private static final Pattern WHICH_PATTERN = Pattern.compile("\\bWhich\\s*\\[");
-    private static final Pattern SWITCH_PATTERN = Pattern.compile("\\bSwitch\\s*\\[");
-    private static final Pattern WHILE_PATTERN = Pattern.compile("\\bWhile\\s*\\[");
-    private static final Pattern DO_PATTERN = Pattern.compile("\\bDo\\s*\\[");
-    private static final Pattern FOR_PATTERN = Pattern.compile("\\bFor\\s*\\[");
-    private static final Pattern TABLE_PATTERN = Pattern.compile("\\bTable\\s*\\[");
-    private static final Pattern MAP_PATTERN = Pattern.compile("\\b(?:Map|Scan)\\s*\\[");
+    private static final Pattern IF_PATTERN = Pattern.compile("\\bIf\\s*+\\[");
+    private static final Pattern WHICH_PATTERN = Pattern.compile("\\bWhich\\s*+\\[");
+    private static final Pattern SWITCH_PATTERN = Pattern.compile("\\bSwitch\\s*+\\[");
+    private static final Pattern WHILE_PATTERN = Pattern.compile("\\bWhile\\s*+\\[");
+    private static final Pattern DO_PATTERN = Pattern.compile("\\bDo\\s*+\\[");
+    private static final Pattern FOR_PATTERN = Pattern.compile("\\bFor\\s*+\\[");
+    private static final Pattern TABLE_PATTERN = Pattern.compile("\\bTable\\s*+\\[");
+    private static final Pattern MAP_PATTERN = Pattern.compile("\\b(?:Map|Scan)\\s*+\\[");
     private static final Pattern LOGICAL_AND_PATTERN = Pattern.compile("&&");
     private static final Pattern LOGICAL_OR_PATTERN = Pattern.compile("\\|\\|");
 
     // Function definition pattern
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*)\\s*\\[([^\\]]*)\\]\\s*:=",
+        "([a-zA-Z]\\w*)\\s*+\\[([^\\]]*)\\]\\s*+:=",
         Pattern.MULTILINE
     );
 

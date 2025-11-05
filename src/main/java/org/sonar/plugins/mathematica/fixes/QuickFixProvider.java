@@ -382,7 +382,7 @@ public class QuickFixProvider {
             .message("Remove redundant double transpose");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("Transpose\\s*\\[\\s*Transpose\\s*\\[([^\\]]+)\\]\\s*\\]");
+        Pattern pattern = Pattern.compile("Transpose\\s*+\\[\\s*+Transpose\\s*+\\[([^\\]]+)\\]\\s*+\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -413,7 +413,7 @@ public class QuickFixProvider {
         String originalText = content.substring(start, end);
         String fixedText = originalText
             .replaceFirst("!!([a-zA-Z]\\w*)", "$1")
-            .replaceFirst("Not\\s*\\[\\s*Not\\s*\\[([^\\]]+)\\]\\s*\\]", "$1");
+            .replaceFirst("Not\\s*+\\[\\s*+Not\\s*+\\[([^\\]]+)\\]\\s*+\\]", "$1");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -437,7 +437,7 @@ public class QuickFixProvider {
             .message("Simplify boolean expression");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("If\\s*\\[([^,]+),\\s*True\\s*,\\s*False\\s*\\]");
+        Pattern pattern = Pattern.compile("If\\s*+\\[([^,]+),\\s*+True\\s*+,\\s*+False\\s*+\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -467,11 +467,11 @@ public class QuickFixProvider {
 
         String originalText = content.substring(start, end);
         String fixedText = originalText
-            .replaceFirst("([a-zA-Z]\\w*)\\s*\\+\\s*0", "$1")
-            .replaceFirst("([a-zA-Z]\\w*)\\s*\\*\\s*1", "$1")
-            .replaceFirst("([a-zA-Z]\\w*)\\s*\\^\\s*1", "$1")
-            .replaceFirst("0\\s*\\+\\s*([a-zA-Z]\\w*)", "$1")
-            .replaceFirst("1\\s*\\*\\s*([a-zA-Z]\\w*)", "$1");
+            .replaceFirst("([a-zA-Z]\\w*)\\s*+\\+\\s*+0", "$1")
+            .replaceFirst("([a-zA-Z]\\w*)\\s*+\\*\\s*+1", "$1")
+            .replaceFirst("([a-zA-Z]\\w*)\\s*+\\^\\s*+1", "$1")
+            .replaceFirst("0\\s*+\\+\\s*+([a-zA-Z]\\w*)", "$1")
+            .replaceFirst("1\\s*+\\*\\s*+([a-zA-Z]\\w*)", "$1");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -495,7 +495,7 @@ public class QuickFixProvider {
             .message("Remove redundant double reverse");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("Reverse\\s*\\[\\s*Reverse\\s*\\[([^\\]]+)\\]\\s*\\]");
+        Pattern pattern = Pattern.compile("Reverse\\s*+\\[\\s*+Reverse\\s*+\\[([^\\]]+)\\]\\s*+\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -656,7 +656,7 @@ public class QuickFixProvider {
 
         String originalText = content.substring(start, end);
         // Extract parts between <>
-        String[] parts = originalText.split("\\s*<>\\s*");
+        String[] parts = originalText.split("\\s*+<>\\s*+");
         String fixedText = "StringJoin[" + String.join(", ", parts) + "]";
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
@@ -681,7 +681,7 @@ public class QuickFixProvider {
             .message("Use Cases instead of Extract/Position");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("Extract\\s*\\[([^,]+),\\s*Position\\s*\\[\\1,\\s*([^\\]]+)\\]\\s*\\]");
+        Pattern pattern = Pattern.compile("Extract\\s*+\\[([^,]+),\\s*+Position\\s*+\\[\\1,\\s*+([^\\]]+)\\]\\s*+\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -765,7 +765,7 @@ public class QuickFixProvider {
             .message("Use tolerance-based comparison");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*==\\s*(\\d+\\.\\d+)");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+==\\s*+(\\d+\\.\\d+)");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -796,7 +796,7 @@ public class QuickFixProvider {
             .message("Use SetDelayed (:=) for function definitions");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceFirst("([a-zA-Z]\\w*\\[[^\\]]+\\])\\s*=\\s*", "$1 := ");
+        String fixedText = originalText.replaceFirst("([a-zA-Z]\\w*\\[[^\\]]+\\])\\s*+=\\s*+", "$1 := ");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -820,7 +820,7 @@ public class QuickFixProvider {
             .message("Remove trailing semicolon");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceFirst(";\\s*\\)\\s*$", ")");
+        String fixedText = originalText.replaceFirst(";\\s*+\\)\\s*+$", ")");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -844,7 +844,7 @@ public class QuickFixProvider {
             .message("Remove conditional with identical branches");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("If\\s*\\[[^,]+,\\s*([^,]+),\\s*\\1\\s*\\]");
+        Pattern pattern = Pattern.compile("If\\s*+\\[[^,]+,\\s*+([^,]+),\\s*+\\1\\s*+\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -873,7 +873,7 @@ public class QuickFixProvider {
             .message("Standardize to RuleDelayed (:>)");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceAll("([a-zA-Z]\\w*)\\s*->\\s*", "$1 :> ");
+        String fixedText = originalText.replaceAll("([a-zA-Z]\\w*)\\s*+->\\s*+", "$1 :> ");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -897,7 +897,7 @@ public class QuickFixProvider {
             .message("Fix loop bounds (start from 1)");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceFirst("\\{([a-zA-Z]\\w*),\\s*0,", "{$1, 1,");
+        String fixedText = originalText.replaceFirst("\\{([a-zA-Z]\\w*),\\s*+0,", "{$1, 1,");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -921,7 +921,7 @@ public class QuickFixProvider {
             .message("Move assignment into Module body");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("Module\\s*\\[\\s*\\{([a-zA-Z]\\w*)\\s*=\\s*([^}]+)\\}\\s*,\\s*(.+)\\]");
+        Pattern pattern = Pattern.compile("Module\\s*+\\[\\s*+\\{([a-zA-Z]\\w*)\\s*+=\\s*+([^}]+)\\}\\s*+,\\s*+(.+)\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -957,7 +957,7 @@ public class QuickFixProvider {
             .message("Add $Failed check");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*(Import|Get)\\s*\\[");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+(Import|Get)\\s*+\\[");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -987,7 +987,7 @@ public class QuickFixProvider {
             .message("Add empty list check");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("(First|Last)\\s*\\[([a-zA-Z]\\w*)\\]");
+        Pattern pattern = Pattern.compile("(First|Last)\\s*+\\[([a-zA-Z]\\w*)\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1018,7 +1018,7 @@ public class QuickFixProvider {
             .message("Add ?NumericQ pattern test");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceFirst("([a-zA-Z]\\w*)_\\s*\\]", "$1_?NumericQ]");
+        String fixedText = originalText.replaceFirst("([a-zA-Z]\\w*)_\\s*+\\]", "$1_?NumericQ]");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -1042,7 +1042,7 @@ public class QuickFixProvider {
             .message("Add CompilationTarget -> \"C\"");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceFirst("\\]\\s*$", ", CompilationTarget -> \"C\"]");
+        String fixedText = originalText.replaceFirst("\\]\\s*+$", ", CompilationTarget -> \"C\"]");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -1095,7 +1095,7 @@ public class QuickFixProvider {
             .message("Extract complex boolean to variable");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("If\\s*\\[([^,]+),");
+        Pattern pattern = Pattern.compile("If\\s*+\\[([^,]+),");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1155,7 +1155,7 @@ public class QuickFixProvider {
             .message("Use GroupBy for better performance");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("DeleteDuplicates\\s*\\[([^\\]]+)\\]");
+        Pattern pattern = Pattern.compile("DeleteDuplicates\\s*+\\[([^\\]]+)\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1286,7 +1286,7 @@ public class QuickFixProvider {
             .message("Fix type mismatch with ToString");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("\"([^\"]+)\"\\s*\\+\\s*(\\d+)");
+        Pattern pattern = Pattern.compile("\"([^\"]+)\"\\s*+\\+\\s*+(\\d+)");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1317,7 +1317,7 @@ public class QuickFixProvider {
             .message("Use Module for lexical scoping");
 
         String originalText = content.substring(start, end);
-        String fixedText = originalText.replaceFirst("Block\\s*\\[", "Module[");
+        String fixedText = originalText.replaceFirst("Block\\s*+\\[", "Module[");
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -1342,7 +1342,7 @@ public class QuickFixProvider {
             .message("Wrap sequence pattern in list");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("(\\w+)\\s*\\[([a-zA-Z]\\w*)__\\]");
+        Pattern pattern = Pattern.compile("(\\w+)\\s*+\\[([a-zA-Z]\\w*)__\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1446,7 +1446,7 @@ public class QuickFixProvider {
             .message("Add zero check before division");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*/\\s*([a-zA-Z]\\w*)");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+/\\s*+([a-zA-Z]\\w*)");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1477,7 +1477,7 @@ public class QuickFixProvider {
             .message("Add HoldAll attribute");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1506,7 +1506,7 @@ public class QuickFixProvider {
             .message("Add Protect after definition");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1564,7 +1564,7 @@ public class QuickFixProvider {
             .message("Replace with Check for proper error handling");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("Quiet\\s*\\[([^\\]]+)\\]");
+        Pattern pattern = Pattern.compile("Quiet\\s*+\\[([^\\]]+)\\]");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {
@@ -1643,7 +1643,7 @@ public class QuickFixProvider {
             .message("Add memoization pattern");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*\\[[^\\]]+\\])\\s*:=\\s*(.+)");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*\\[[^\\]]+\\])\\s*+:=\\s*+(.++)");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {

@@ -14,29 +14,29 @@ public class SecurityHotspotDetector extends BaseDetector {
     // ===== PATTERNS FOR SECURITY HOTSPOT DETECTION =====
 
     private static final Pattern FILE_IMPORT_PATTERN = Pattern.compile(
-        "(?:Import|Get|OpenRead|OpenWrite|Put)\\s*\\["
+        "(?:Import|Get|OpenRead|OpenWrite|Put)\\s*+\\["
     );
     private static final Pattern API_CALL_PATTERN = Pattern.compile(
-        "(?:URLRead|URLFetch|URLExecute|URLSubmit|ServiceExecute|ServiceConnect)\\s*\\["
+        "(?:URLRead|URLFetch|URLExecute|URLSubmit|ServiceExecute|ServiceConnect)\\s*+\\["
     );
     private static final Pattern KEY_GENERATION_PATTERN = Pattern.compile(
-        "(?:RandomInteger|Random)\\s*\\[|"
-        + "(?:GenerateSymmetricKey|GenerateAsymmetricKeyPair)\\s*\\[|"
-        + "Table\\s*\\[[^\\]]*Random"
+        "(?:RandomInteger|Random)\\s*+\\[|"
+        + "(?:GenerateSymmetricKey|GenerateAsymmetricKeyPair)\\s*+\\[|"
+        + "Table\\s*+\\[[^\\]]*Random"
     );
 
     // Phase 2 Security Hotspot patterns
     private static final Pattern NETWORK_PATTERN = Pattern.compile(
-        "(?:SocketConnect|SocketOpen|SocketListen|WebExecute)\\s*\\["
+        "(?:SocketConnect|SocketOpen|SocketListen|WebExecute)\\s*+\\["
     );
     private static final Pattern FILE_DELETE_PATTERN = Pattern.compile(
-        "(?:DeleteFile|DeleteDirectory|RenameFile|CopyFile|SetFileDate)\\s*\\["
+        "(?:DeleteFile|DeleteDirectory|RenameFile|CopyFile|SetFileDate)\\s*+\\["
     );
-    private static final Pattern ENVIRONMENT_PATTERN = Pattern.compile("Environment\\s*\\[");
+    private static final Pattern ENVIRONMENT_PATTERN = Pattern.compile("Environment\\s*+\\[");
 
     // Phase 3 Security Hotspot patterns
     private static final Pattern IMPORT_NO_FORMAT_PATTERN = Pattern.compile(
-        "Import\\s*\\[\\s*[^,\\]]+\\s*\\]"
+        "Import\\s*+\\[\\s*+[^,\\]]+\\s*+\\]"
     );
 
     /**
@@ -180,13 +180,13 @@ public class SecurityHotspotDetector extends BaseDetector {
 
     // Tier 1 Security Hotspot patterns - Authentication & Authorization
     private static final Pattern AUTH_FUNCTIONS_PATTERN = Pattern.compile(
-        "(?:AuthenticationDialog|CreateDialog|FormFunction|FormPage|CloudDeploy|APIFunction)\\s*\\["
+        "(?:AuthenticationDialog|CreateDialog|FormFunction|FormPage|CloudDeploy|APIFunction)\\s*+\\["
     );
     private static final Pattern PASSWORD_VAR_PATTERN = Pattern.compile(
-        "(?:password|passwd|pwd|credential|secret|apiKey|token)\\s*=\\s*\"[^\"]+\""
+        "(?:password|passwd|pwd|credential|secret|apiKey|token)\\s*+=\\s*+\"[^\"]+\""
     );
     private static final Pattern SESSION_PATTERN = Pattern.compile(
-        "(?:SessionID|SessionToken|CreateUUID|Hash\\[.*RandomInteger)\\s*\\["
+        "(?:SessionID|SessionToken|CreateUUID|Hash\\[.*RandomInteger)\\s*+\\["
     );
     private static final Pattern DEFAULT_CRED_PATTERN = Pattern.compile(
         "\"(?:admin|root|password|123456|default|guest)\""
@@ -194,45 +194,45 @@ public class SecurityHotspotDetector extends BaseDetector {
 
     // Tier 1 Security Hotspot patterns - Cryptography
     private static final Pattern WEAK_HASH_PATTERN = Pattern.compile(
-        "Hash\\s*\\[[^,]+,\\s*\"(?:MD5|SHA1|MD2|MD4|SHA-1)\"\\s*\\]"
+        "Hash\\s*+\\[[^,]+,\\s*+\"(?:MD5|SHA1|MD2|MD4|SHA-1)\"\\s*+\\]"
     );
     private static final Pattern RANDOM_SECURITY_PATTERN = Pattern.compile(
-        "(?:RandomInteger|RandomReal|Random|SeedRandom)\\s*\\[[^\\]]*(?:key|password|token|salt|nonce|iv)"
+        "(?:RandomInteger|RandomReal|Random|SeedRandom)\\s*+\\[[^\\]]*(?:key|password|token|salt|nonce|iv)"
     );
     private static final Pattern CRYPTO_KEY_HARDCODED_PATTERN = Pattern.compile(
-        "(?:Encrypt|Decrypt|GenerateSymmetricKey)\\s*\\[[^\\]]*\"[0-9a-fA-F]{16,}\""
+        "(?:Encrypt|Decrypt|GenerateSymmetricKey)\\s*+\\[[^\\]]*\"[0-9a-fA-F]{16,}\""
     );
     private static final Pattern ECB_MODE_PATTERN = Pattern.compile(
-        "Encrypt\\s*\\[[^\\]]*,\\s*(?:None|\"ECB\")"
+        "Encrypt\\s*+\\[[^\\]]*,\\s*+(?:None|\"ECB\")"
     );
     private static final Pattern SMALL_KEY_SIZE_PATTERN = Pattern.compile(
-        "GenerateAsymmetricKeyPair\\s*\\[[^\\]]*,\\s*(?:512|768|1024)\\s*\\]"
+        "GenerateAsymmetricKeyPair\\s*+\\[[^\\]]*,\\s*+(?:512|768|1024)\\s*+\\]"
     );
     private static final Pattern SSL_PROTOCOL_PATTERN = Pattern.compile(
-        "URLRead\\s*\\[[^\\]]*\"Method\"\\s*->\\s*\"(?:SSLv2|SSLv3|TLSv1\\.0|TLSv1)\""
+        "URLRead\\s*+\\[[^\\]]*\"Method\"\\s*+->\\s*+\"(?:SSLv2|SSLv3|TLSv1\\.0|TLSv1)\""
     );
     private static final Pattern CERT_VALIDATION_PATTERN = Pattern.compile(
-        "URLRead\\s*\\[[^\\]]*\"VerifyPeer\"\\s*->\\s*False"
+        "URLRead\\s*+\\[[^\\]]*\"VerifyPeer\"\\s*+->\\s*+False"
     );
 
     // Tier 1 Security Hotspot patterns - Network & Data
     private static final Pattern HTTP_URL_PATTERN = Pattern.compile(
-        "(?:URLRead|URLFetch|URLExecute|URLSubmit)\\s*\\[\\s*\"http://[^\"]+\""
+        "(?:URLRead|URLFetch|URLExecute|URLSubmit)\\s*+\\[\\s*+\"http://[^\"]+\""
     );
     private static final Pattern CORS_PATTERN = Pattern.compile(
-        "APIFunction\\s*\\[[^\\]]*\"AllowedOrigins\"\\s*->\\s*\\{\"\\*\"\\}"
+        "APIFunction\\s*+\\[[^\\]]*\"AllowedOrigins\"\\s*+->\\s*+\\{\"\\*\"\\}"
     );
     private static final Pattern REDIRECT_PATTERN = Pattern.compile(
-        "HTTPRedirect\\s*\\[[^\\[]*\\+\\+|<>"
+        "HTTPRedirect\\s*+\\[[^\\[]*\\+\\+|<>"
     );
     private static final Pattern WEBSOCKET_PATTERN = Pattern.compile(
-        "SocketConnect\\s*\\[\\s*\"ws://[^\"]+\""
+        "SocketConnect\\s*+\\[\\s*+\"ws://[^\"]+\""
     );
     private static final Pattern LOG_SENSITIVE_PATTERN = Pattern.compile(
-        "(?:Print|Echo|WriteString)\\s*\\[[^\\]]*(?:password|token|apiKey|secret|credential)"
+        "(?:Print|Echo|WriteString)\\s*+\\[[^\\]]*(?:password|token|apiKey|secret|credential)"
     );
     private static final Pattern PII_PATTERN = Pattern.compile(
-        "(?:ssn|creditCard|passport|driverLicense|taxId|nationalId)\\s*[=:]"
+        "(?:ssn|creditCard|passport|driverLicense|taxId|nationalId)\\s*+[=:]"
     );
     private static final Pattern CLEARTEXT_PROTOCOL_PATTERN = Pattern.compile(
         "(?:ftp://|telnet://|ldap://[^s])"
@@ -300,7 +300,7 @@ public class SecurityHotspotDetector extends BaseDetector {
             while (matcher.find()) {
                 String match = matcher.group();
                 if (content.substring(Math.max(0, matcher.start() - 20), matcher.start())
-                    .matches(".*(?:password|pwd|passwd|credential)\\s*=\\s*$")) {
+                    .matches(".*(?:password|pwd|passwd|credential)\\s*+=\\s*+$")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.DEFAULT_CREDENTIALS_KEY,
                         "Review: Default credential detected. Never use default passwords.");

@@ -16,40 +16,40 @@ public class FrameworkDetector extends BaseDetector {
     // Notebook patterns
     private static final Pattern CELL_PATTERN = Pattern.compile("Cell\\[");
     private static final Pattern SECTION_PATTERN = Pattern.compile("(?:Section|Subsection|Title|Subtitle)\\[");
-    private static final Pattern INIT_CELL_PATTERN = Pattern.compile("InitializationCell\\s*->\\s*True");
+    private static final Pattern INIT_CELL_PATTERN = Pattern.compile("InitializationCell\\s*+->\\s*+True");
 
     // Manipulate/Dynamic patterns
-    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*\\[");
-    private static final Pattern DYNAMIC_PATTERN = Pattern.compile("Dynamic\\s*\\[");
-    private static final Pattern MANIPULATE_CONTROLS_PATTERN = Pattern.compile("\\{\\s*\\w+\\s*,");
+    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*+\\[");
+    private static final Pattern DYNAMIC_PATTERN = Pattern.compile("Dynamic\\s*+\\[");
+    private static final Pattern MANIPULATE_CONTROLS_PATTERN = Pattern.compile("\\{\\s*+\\w+\\s*+,");
     private static final Pattern HEAVY_COMPUTE_PATTERN = Pattern.compile(
-        "(?:Integrate|DSolve|NDSolve|NIntegrate|FindRoot|Solve)\\s*\\["
+        "(?:Integrate|DSolve|NDSolve|NIntegrate|FindRoot|Solve)\\s*+\\["
     );
     private static final Pattern TRACKING_PATTERN = Pattern.compile(
-        "(?:TrackedSymbols|Refresh|UpdateInterval)\\s*->"
+        "(?:TrackedSymbols|Refresh|UpdateInterval)\\s*+->"
     );
 
     // Package patterns
-    private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("BeginPackage\\s*\\[");
-    private static final Pattern BEGIN_PATTERN = Pattern.compile("Begin\\s*\\[\\s*\"`Private`\"\\s*\\]");
-    private static final Pattern END_PACKAGE_PATTERN = Pattern.compile("EndPackage\\s*\\[");
-    private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*=");
-    private static final Pattern PUBLIC_FUNCTION_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
-    private static final Pattern NEEDS_PATTERN = Pattern.compile("(?:Needs|Get)\\s*\\[\\s*\"([^\"]+)\"");
+    private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("BeginPackage\\s*+\\[");
+    private static final Pattern BEGIN_PATTERN = Pattern.compile("Begin\\s*+\\[\\s*+\"`Private`\"\\s*+\\]");
+    private static final Pattern END_PACKAGE_PATTERN = Pattern.compile("EndPackage\\s*+\\[");
+    private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*+=");
+    private static final Pattern PUBLIC_FUNCTION_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\[[^\\]]*\\]\\s*+:=");
+    private static final Pattern NEEDS_PATTERN = Pattern.compile("(?:Needs|Get)\\s*+\\[\\s*+\"([^\"]+)\"");
 
     // Parallel patterns
     private static final Pattern PARALLEL_PATTERN = Pattern.compile(
-        "(?:ParallelTable|ParallelMap|ParallelDo)\\s*\\["
+        "(?:ParallelTable|ParallelMap|ParallelDo)\\s*+\\["
     );
     private static final Pattern PARALLEL_SHARED_PATTERN = Pattern.compile(
-        "(?:SetSharedVariable|SetSharedFunction)\\s*\\["
+        "(?:SetSharedVariable|SetSharedFunction)\\s*+\\["
     );
-    private static final Pattern CRITICAL_SECTION_PATTERN = Pattern.compile("CriticalSection\\s*\\[");
+    private static final Pattern CRITICAL_SECTION_PATTERN = Pattern.compile("CriticalSection\\s*+\\[");
 
     // Cloud patterns
-    private static final Pattern CLOUD_DEPLOY_PATTERN = Pattern.compile("CloudDeploy\\s*\\[");
-    private static final Pattern API_FUNCTION_PATTERN = Pattern.compile("APIFunction\\s*\\[");
-    private static final Pattern PERMISSIONS_PATTERN = Pattern.compile("Permissions\\s*->\\s*\"Public\"");
+    private static final Pattern CLOUD_DEPLOY_PATTERN = Pattern.compile("CloudDeploy\\s*+\\[");
+    private static final Pattern API_FUNCTION_PATTERN = Pattern.compile("APIFunction\\s*+\\[");
+    private static final Pattern PERMISSIONS_PATTERN = Pattern.compile("Permissions\\s*+->\\s*+\"Public\"");
 
     /**
      * Detect notebook cells that are too large.
@@ -414,7 +414,7 @@ public class FrameworkDetector extends BaseDetector {
 
                 // Check for shared variable mutations without CriticalSection
                 if (parallelBody.contains("AppendTo[") || parallelBody.contains("PrependTo[")
-                    || parallelBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*=(?!=).*")) {
+                    || parallelBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=(?!=).*")) {
                     if (!parallelBody.contains("CriticalSection")) {
                         int lineNumber = calculateLineNumber(content, parallelStart);
                         reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PARALLEL_RACE_CONDITION_KEY,

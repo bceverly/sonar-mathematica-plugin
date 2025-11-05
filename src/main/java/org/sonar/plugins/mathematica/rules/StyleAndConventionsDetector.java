@@ -214,7 +214,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                     String nextLine = lines[lineNumber].trim();
                     if (!nextLine.isEmpty() && !nextLine.startsWith("(*")) {
                         // Check if it's another function definition
-                        if (nextLine.matches("^[A-Z][a-zA-Z0-9]*\\s*\\[.*")) {
+                        if (nextLine.matches("^[A-Z][a-zA-Z0-9]*\\s*+\\[.*")) {
                             reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.MISSING_BLANK_LINE_AFTER_FUNCTION_KEY,
                                 "Missing blank line after function definition. Add blank line for readability.");
                         }
@@ -1375,7 +1375,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 int optionEnd = Math.min(optionStart + 100, content.length());
                 String optionContext = content.substring(optionStart, optionEnd);
 
-                if (!optionContext.contains(",") || !optionContext.matches(".*,\\s*[^\\]]+\\].*")) {
+                if (!optionContext.contains(",") || !optionContext.matches(".*,\\s*+[^\\]]+\\].*")) {
                     int lineNumber = calculateLineNumber(content, optionStart);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.MISSING_OPTION_DEFAULT_KEY,
                         "OptionValue without default. Provide default value as second argument.");
@@ -1665,7 +1665,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 String assocBody = content.substring(assocStart, assocEnd);
 
                 // Look for numeric or symbol keys
-                if (assocBody.matches(".*\\d+\\s*->.*") || assocBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*->.*")) {
+                if (assocBody.matches(".*\\d+\\s*+->.*") || assocBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+->.*")) {
                     int lineNumber = calculateLineNumber(content, assocStart);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.ASSOCIATION_KEY_NOT_STRING_KEY,
                         "Association with non-string key. Use string keys for consistency.");
@@ -1687,7 +1687,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 String contextWindow = content.substring(Math.max(0, pos - 20), Math.min(content.length(), pos + 50));
 
                 // Check if simple type test would be better
-                if (contextWindow.matches(".*\\w+_/;\\s*(?:IntegerQ|NumericQ|StringQ).*")) {
+                if (contextWindow.matches(".*\\w+_/;\\s*+(?:IntegerQ|NumericQ|StringQ).*")) {
                     int lineNumber = calculateLineNumber(content, pos);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PATTERN_TEST_VS_CONDITION_KEY,
                         "Use PatternTest (?) instead of Condition (/;) for simple type checks.");

@@ -28,48 +28,48 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     // ===== PRE-COMPILED PATTERNS FOR PERFORMANCE =====
 
     // Dead Code & Reachability patterns
-    private static final Pattern RETURN_STATEMENT = Pattern.compile("\\bReturn\\s*\\[");
-    private static final Pattern CODE_AFTER_RETURN = Pattern.compile("Return\\s*\\[[^\\]]*\\]\\s*;([^;\\n]+)");
-    private static final Pattern IF_TRUE_LITERAL = Pattern.compile("\\bIf\\s*\\[\\s*(True|1\\s*==\\s*1)\\s*,");
-    private static final Pattern IF_FALSE_LITERAL = Pattern.compile("\\bIf\\s*\\[\\s*(False|1\\s*==\\s*2)\\s*,");
+    private static final Pattern RETURN_STATEMENT = Pattern.compile("\\bReturn\\s*+\\[");
+    private static final Pattern CODE_AFTER_RETURN = Pattern.compile("Return\\s*+\\[[^\\]]*\\]\\s*+;([^;\\n]+)");
+    private static final Pattern IF_TRUE_LITERAL = Pattern.compile("\\bIf\\s*+\\[\\s*+(True|1\\s*+==\\s*+1)\\s*+,");
+    private static final Pattern IF_FALSE_LITERAL = Pattern.compile("\\bIf\\s*+\\[\\s*+(False|1\\s*+==\\s*+2)\\s*+,");
     private static final Pattern IMPOSSIBLE_PATTERN_INTEGER_STRING = Pattern.compile("([a-z]\\w*)_Integer\\?StringQ");
-    private static final Pattern IMPOSSIBLE_CONDITION = Pattern.compile("([a-z]\\w*)\\s*>\\s*(\\d+)\\s*&&\\s*\\1\\s*<\\s*(\\d+)");
-    private static final Pattern CATCH_WITHOUT_THROW = Pattern.compile("\\bCatch\\s*\\[([^\\]]+)\\]");
-    private static final Pattern THROW_PATTERN = Pattern.compile("\\bThrow\\s*\\[");
+    private static final Pattern IMPOSSIBLE_CONDITION = Pattern.compile("([a-z]\\w*)\\s*+>\\s*+(\\d+)\\s*+&&\\s*+\\1\\s*+<\\s*+(\\d+)");
+    private static final Pattern CATCH_WITHOUT_THROW = Pattern.compile("\\bCatch\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern THROW_PATTERN = Pattern.compile("\\bThrow\\s*+\\[");
     private static final Pattern CONDITION_WITH_CONSTANT = Pattern.compile(
-            "([a-z]\\w*)\\s*=\\s*([^;\\n]+);[^\\n]*\\bIf\\s*\\[\\s*\\1\\s*(==|!=)\\s*\\2");
-    private static final Pattern WHILE_TRUE = Pattern.compile("\\bWhile\\s*\\[\\s*True\\s*,");
-    private static final Pattern WHILE_FALSE = Pattern.compile("\\bWhile\\s*\\[\\s*False\\s*,");
-    private static final Pattern DO_INVERTED_RANGE = Pattern.compile("\\bDo\\s*\\[[^\\]]+,\\s*\\{[^,]+,\\s*(\\d+)\\s*,\\s*(\\d+)\\s*\\}");
-    private static final Pattern ABORT_STATEMENT = Pattern.compile("\\bAbort\\s*\\[\\s*\\]\\s*;([^;\\n]+)");
-    private static final Pattern SWITCH_CASE_ORDER = Pattern.compile("Switch\\s*\\[[^,]+,([^\\]]+)\\]");
-    private static final Pattern PATTERN_DEF_ORDER = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=");
-    private static final Pattern BREAK_STATEMENT = Pattern.compile("\\bBreak\\s*\\[\\s*\\]");
-    private static final Pattern LOOP_KEYWORDS = Pattern.compile("\\b(Do|While|For|Table)\\s*\\[");
+            "([a-z]\\w*)\\s*+=\\s*+([^;\\n]+);[^\\n]*\\bIf\\s*+\\[\\s*+\\1\\s*+(==|!=)\\s*+\\2");
+    private static final Pattern WHILE_TRUE = Pattern.compile("\\bWhile\\s*+\\[\\s*+True\\s*+,");
+    private static final Pattern WHILE_FALSE = Pattern.compile("\\bWhile\\s*+\\[\\s*+False\\s*+,");
+    private static final Pattern DO_INVERTED_RANGE = Pattern.compile("\\bDo\\s*+\\[[^\\]]+,\\s*+\\{[^,]+,\\s*+(\\d+)\\s*+,\\s*+(\\d+)\\s*+\\}");
+    private static final Pattern ABORT_STATEMENT = Pattern.compile("\\bAbort\\s*+\\[\\s*+\\]\\s*+;([^;\\n]+)");
+    private static final Pattern SWITCH_CASE_ORDER = Pattern.compile("Switch\\s*+\\[[^,]+,([^\\]]+)\\]");
+    private static final Pattern PATTERN_DEF_ORDER = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]+)\\]\\s*+:=");
+    private static final Pattern BREAK_STATEMENT = Pattern.compile("\\bBreak\\s*+\\[\\s*+\\]");
+    private static final Pattern LOOP_KEYWORDS = Pattern.compile("\\b(Do|While|For|Table)\\s*+\\[");
 
     // Taint Analysis patterns - Sources and Sinks
-    private static final Pattern TAINT_SOURCE_IMPORT = Pattern.compile("\\b(Import|URLFetch|URLExecute|FormFunction)\\s*\\[");
-    private static final Pattern TAINT_SOURCE_INPUT = Pattern.compile("\\b(Input|InputString|SystemDialogInput)\\s*\\[");
-    private static final Pattern SQL_EXECUTE = Pattern.compile("\\bSQLExecute\\s*\\[([^,]+),\\s*\"([^\"]+)\"\\s*&lt;&gt;");
-    private static final Pattern RUN_PROCESS = Pattern.compile("\\bRunProcess\\s*\\[");
-    private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*\\[");
-    private static final Pattern IMPORT_FILE = Pattern.compile("\\bImport\\s*\\[([^\\]]+)\\]");
-    private static final Pattern EXPORT_HTML_XML = Pattern.compile("\\b(ExportString|Export)\\s*\\[([^,]+),\\s*\"(HTML|XML)\"");
-    private static final Pattern XML_IMPORT = Pattern.compile("\\bImport\\s*\\[[^,]+,\\s*\"XML\"");
-    private static final Pattern IMPORT_MX = Pattern.compile("\\bImport\\s*\\[[^,]+,\\s*\"MX\"");
-    private static final Pattern URL_FETCH = Pattern.compile("\\bURLFetch\\s*\\[");
-    private static final Pattern RANDOM_INTEGER_SECURITY = Pattern.compile("(token|session|key|secret|password|nonce)\\w*\\s*=\\s*RandomInteger");
-    private static final Pattern WEAK_HASH = Pattern.compile("\\bHash\\s*\\[[^,]+,\\s*\"(MD5|SHA1|SHA-1)\"");
-    private static final Pattern HARDCODED_PASSWORD = Pattern.compile("(password|passwd|pwd|secret|apikey|api_key)\\s*=\\s*\"[^\"]+\"");
-    private static final Pattern PRINT_PASSWORD = Pattern.compile("\\bPrint\\s*\\[([^\\]]*)(password|token|secret|key|credential)");
-    private static final Pattern REGEX_FROM_INPUT = Pattern.compile("RegularExpression\\s*\\[([^\\]]+)\\]");
+    private static final Pattern TAINT_SOURCE_IMPORT = Pattern.compile("\\b(Import|URLFetch|URLExecute|FormFunction)\\s*+\\[");
+    private static final Pattern TAINT_SOURCE_INPUT = Pattern.compile("\\b(Input|InputString|SystemDialogInput)\\s*+\\[");
+    private static final Pattern SQL_EXECUTE = Pattern.compile("\\bSQLExecute\\s*+\\[([^,]+),\\s*+\"([^\"]+)\"\\s*+&lt;&gt;");
+    private static final Pattern RUN_PROCESS = Pattern.compile("\\bRunProcess\\s*+\\[");
+    private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*+\\[");
+    private static final Pattern IMPORT_FILE = Pattern.compile("\\bImport\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern EXPORT_HTML_XML = Pattern.compile("\\b(ExportString|Export)\\s*+\\[([^,]+),\\s*+\"(HTML|XML)\"");
+    private static final Pattern XML_IMPORT = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"XML\"");
+    private static final Pattern IMPORT_MX = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"MX\"");
+    private static final Pattern URL_FETCH = Pattern.compile("\\bURLFetch\\s*+\\[");
+    private static final Pattern RANDOM_INTEGER_SECURITY = Pattern.compile("(token|session|key|secret|password|nonce)\\w*\\s*+=\\s*+RandomInteger");
+    private static final Pattern WEAK_HASH = Pattern.compile("\\bHash\\s*+\\[[^,]+,\\s*+\"(MD5|SHA1|SHA-1)\"");
+    private static final Pattern HARDCODED_PASSWORD = Pattern.compile("(password|passwd|pwd|secret|apikey|api_key)\\s*+=\\s*+\"[^\"]+\"");
+    private static final Pattern PRINT_PASSWORD = Pattern.compile("\\bPrint\\s*+\\[([^\\]]*)(password|token|secret|key|credential)");
+    private static final Pattern REGEX_FROM_INPUT = Pattern.compile("RegularExpression\\s*+\\[([^\\]]+)\\]");
 
     // Additional Control Flow patterns
-    private static final Pattern SWITCH_NO_DEFAULT = Pattern.compile("Switch\\s*\\[([^\\]]+)\\]");
-    private static final Pattern DEFAULT_UNDERSCORE = Pattern.compile(",\\s*_\\s*,");
-    private static final Pattern EMPTY_IF_BRANCH = Pattern.compile("\\bIf\\s*\\[[^,]+,\\s*,");
-    private static final Pattern NESTED_IF = Pattern.compile("\\bIf\\s*\\[");
-    private static final Pattern IF_WITHOUT_ELSE = Pattern.compile("\\bIf\\s*\\[([^,]+),([^,\\]]+)\\]");
+    private static final Pattern SWITCH_NO_DEFAULT = Pattern.compile("Switch\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern DEFAULT_UNDERSCORE = Pattern.compile(",\\s*+_\\s*+,");
+    private static final Pattern EMPTY_IF_BRANCH = Pattern.compile("\\bIf\\s*+\\[[^,]+,\\s*+,");
+    private static final Pattern NESTED_IF = Pattern.compile("\\bIf\\s*+\\[");
+    private static final Pattern IF_WITHOUT_ELSE = Pattern.compile("\\bIf\\s*+\\[([^,]+),([^,\\]]+)\\]");
 
     // Variable assignment tracking for taint analysis
     private Map<String, Boolean> taintedVariables = new HashMap<>();
@@ -86,7 +86,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
             // Find variable assignment: var = Import[...]
             int lineStart = content.lastIndexOf('\n', start) + 1;
             String line = content.substring(lineStart, Math.min(start + 100, content.length()));
-            Pattern assignPattern = Pattern.compile("([a-z]\\w*)\\s*=");
+            Pattern assignPattern = Pattern.compile("([a-z]\\w*)\\s*+=");
             Matcher assignMatcher = assignPattern.matcher(line);
             if (assignMatcher.find()) {
                 taintedVariables.put(assignMatcher.group(1), true);
@@ -696,7 +696,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     public void detectMassAssignment(SensorContext context, InputFile inputFile, String content) {
         try {
             // Look for pattern: untrusted data -> SQLExecute/database update
-            Matcher sqlMatcher = Pattern.compile("SQLExecute\\s*\\[[^,]+,\\s*\"UPDATE").matcher(content);
+            Matcher sqlMatcher = Pattern.compile("SQLExecute\\s*+\\[[^,]+,\\s*+\"UPDATE").matcher(content);
             while (sqlMatcher.find()) {
                 int pos = sqlMatcher.start();
                 String before = content.substring(Math.max(0, pos - 150), pos);
@@ -824,7 +824,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     public void detectTooManyReturnPoints(SensorContext context, InputFile inputFile, String content) {
         try {
             // Count Return statements per function
-            Pattern funcPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]+)\\]\\s*:=");
+            Pattern funcPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]+)\\]\\s*+:=");
             Matcher funcMatcher = funcPattern.matcher(content);
 
             while (funcMatcher.find()) {

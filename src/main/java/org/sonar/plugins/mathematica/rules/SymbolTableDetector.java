@@ -459,11 +459,11 @@ public final class SymbolTableDetector {
                 String contextStr = ref.getContext();
 
                 // Heuristics for type detection
-                if (contextStr.matches(".*\\+\\s*\".*") || contextStr.matches(".*\".*\\+.*")) {
+                if (contextStr.matches(".*\\+\\s*+\".*") || contextStr.matches(".*\".*\\+.*")) {
                     suspectedTypes.add("string");
                 } else if (contextStr.matches(".*\\[\\[.*\\]\\].*") || contextStr.matches(".*Part\\[.*")) {
                     suspectedTypes.add("list");
-                } else if (contextStr.matches(".*[\\+\\-\\*/]\\s*\\d+.*")) {
+                } else if (contextStr.matches(".*[\\+\\-\\*/]\\s*+\\d+.*")) {
                     suspectedTypes.add("number");
                 }
             }
@@ -549,7 +549,7 @@ public final class SymbolTableDetector {
                 String contextStr = ref.getContext();
 
                 // Check for dynamic evaluation functions
-                if (contextStr.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*\\[.*"
+                if (contextStr.matches(".*(ToExpression|Symbol|Evaluate|ReleaseHold)\\s*+\\[.*"
                         + java.util.regex.Pattern.quote(symbol.getName()) + ".*")) {
                     createIssue(context, file, "ScopeLeakThroughDynamicEvaluation", ref.getLine(),
                         String.format("Module variable '%s' used in dynamic evaluation, may leak scope",

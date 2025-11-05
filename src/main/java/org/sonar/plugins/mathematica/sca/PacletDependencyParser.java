@@ -21,14 +21,14 @@ public class PacletDependencyParser {
     // Pattern to match Dependencies section in PacletInfo.wl
     // Dependencies -> {"PacletName" -> "1.0+", "OtherPaclet" -> "2.0+"}
     private static final Pattern DEPENDENCIES_SECTION = Pattern.compile(
-        "Dependencies\\s*->\\s*\\{([^}]+)\\}",
+        "Dependencies\\s*+->\\s*+\\{([^}]+)\\}",
         Pattern.DOTALL
     );
 
     // Pattern to match individual dependency entries
     // "PacletName" -> "1.0+" or "PacletName" -> "1.0"
     private static final Pattern DEPENDENCY_ENTRY = Pattern.compile(
-        "\"([^\"]+)\"\\s*->\\s*\"([^\"]+)\"");
+        "\"([^\"]+)\"\\s*+->\\s*+\"([^\"]+)\"");
 
     // Pattern for PacletManager` dependencies (legacy format)
     private static final Pattern NEEDS_PATTERN = Pattern.compile(

@@ -261,7 +261,7 @@ public class BugDetector extends BaseDetector {
                 // Check if general pattern comes before specific patterns
                 for (int i = 0; i < patterns.size() - 1; i++) {
                     String currentPattern = patterns.get(i).pattern;
-                    if (currentPattern.matches("\\w+_\\s*")) {
+                    if (currentPattern.matches("\\w+_\\s*+")) {
                         for (int j = i + 1; j < patterns.size(); j++) {
                             String laterPattern = patterns.get(j).pattern;
                             if (laterPattern.contains("_Integer") || laterPattern.contains("_String")

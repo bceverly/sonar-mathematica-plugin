@@ -22,27 +22,27 @@ public final class SymbolTableBuilder {
 
     // Patterns for parsing Mathematica code
     private static final Pattern MODULE_PATTERN = Pattern.compile(
-        "Module\\s*\\[\\s*\\{([^}]+)\\}",
+        "Module\\s*+\\[\\s*+\\{([^}]+)\\}",
         Pattern.CASE_INSENSITIVE
     );
 
     private static final Pattern BLOCK_PATTERN = Pattern.compile(
-        "Block\\s*\\[\\s*\\{([^}]+)\\}",
+        "Block\\s*+\\[\\s*+\\{([^}]+)\\}",
         Pattern.CASE_INSENSITIVE
     );
 
     private static final Pattern WITH_PATTERN = Pattern.compile(
-        "With\\s*\\[\\s*\\{([^}]+)\\}",
+        "With\\s*+\\[\\s*+\\{([^}]+)\\}",
         Pattern.CASE_INSENSITIVE
     );
 
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
-        "(\\w+)\\s*\\[([^\\]]+)\\]\\s*:=",
+        "(\\w+)\\s*+\\[([^\\]]+)\\]\\s*+:=",
         Pattern.CASE_INSENSITIVE
     );
 
     private static final Pattern ASSIGNMENT_PATTERN = Pattern.compile(
-        "(\\w+)\\s*=\\s*",
+        "(\\w+)\\s*+=\\s*+",
         Pattern.CASE_INSENSITIVE
     );
 
@@ -196,7 +196,7 @@ public final class SymbolTableBuilder {
      */
     private static void trackReferences(SymbolTable table, String line, int lineNumber, Scope scope) {
         // Remove assignments to avoid double-counting
-        String lineNoAssignments = line.replaceAll("\\w+\\s*=", "");
+        String lineNoAssignments = line.replaceAll("\\w+\\s*+=", "");
 
         Matcher refMatcher = VARIABLE_REFERENCE.matcher(lineNoAssignments);
         while (refMatcher.find()) {

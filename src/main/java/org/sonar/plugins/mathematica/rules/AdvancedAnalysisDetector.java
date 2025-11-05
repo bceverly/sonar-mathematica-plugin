@@ -117,7 +117,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     public static void detectMissingNullCheck(SensorContext ctx, InputFile file, String content) {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*:=.*\\[\\[") && !NULL_CHECK.matcher(lines[i]).find()) {
+            if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*+:=.*\\[\\[") && !NULL_CHECK.matcher(lines[i]).find()) {
                 createIssue(ctx, file, MathematicaRulesDefinition.MISSING_NULL_CHECK_KEY, i + 1,
                     "Missing null check before indexing").save();
             }
@@ -149,7 +149,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     public static void detectNullReturnNotDocumented(SensorContext ctx, InputFile file, String content) {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].matches(".*\\w+\\[.*\\]\\s*:=.*Null")
+            if (lines[i].matches(".*\\w+\\[.*\\]\\s*+:=.*Null")
                 && (i == 0 || !lines[i - 1].contains("::usage"))) {
                 createIssue(ctx, file, MathematicaRulesDefinition.NULL_RETURN_NOT_DOCUMENTED_KEY, i + 1,
                     "Function returns Null without documentation").save();
@@ -422,7 +422,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     public static void detectHoldAttributeMissing(SensorContext ctx, InputFile file, String content) {
         String[] lines = content.split("\n");
         for (int i = 0; i < lines.length; i++) {
-            if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*:=\\s*Hold\\[.*")
+            if (lines[i].matches(".*\\w+\\[\\w+_\\]\\s*+:=\\s*+Hold\\[.*")
                 && (i == 0 || !HOLD_ATTR.matcher(lines[i - 1]).find())) {
                 createIssue(ctx, file, MathematicaRulesDefinition.HOLD_ATTRIBUTE_MISSING_KEY, i + 1,
                     "Function needs Hold attribute").save();

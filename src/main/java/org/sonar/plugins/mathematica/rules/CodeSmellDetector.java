@@ -1471,7 +1471,7 @@ public class CodeSmellDetector extends BaseDetector {
             while (matcher.find()) {
                 String comment = matcher.group();
                 // Heuristic: contains code-like syntax
-                if (comment.matches(".*[a-zA-Z]\\w*\\s*:?=.*") || comment.matches(".*\\w+\\s*\\[.*\\].*")) {
+                if (comment.matches(".*[a-zA-Z]\\w*\\s*+:?=.*") || comment.matches(".*\\w+\\s*+\\[.*\\].*")) {
                     // Skip if it looks like natural language
                     if (!looksLikeNaturalLanguage(comment)) {
                         int lineNumber = calculateLineNumber(content, matcher.start());
@@ -1657,6 +1657,6 @@ public class CodeSmellDetector extends BaseDetector {
 
         // Check if there's a -> followed by whitespace before this number
         // This catches patterns like "Key -> 1" or "PropertyName -> 42"
-        return lookback.matches(".*->\\s*$");
+        return lookback.matches(".*->\\s*+$");
     }
 }

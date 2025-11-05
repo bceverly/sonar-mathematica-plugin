@@ -104,7 +104,7 @@ public class MathematicaCpdTokenizer implements Sensor {
         private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
         // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
         private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
-        private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*(?:[eE][+-]?\\d+)?");
+        private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*+(?:[eE][+-]?\\d+)?");
         private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");
         private static final Pattern OPERATOR_PATTERN = Pattern.compile(
             "->|:>|:=|@@|/@|//@|/\\.|//|/;|@@@|===|=!=|>=|<=|\\+\\+|--|&&|\\|\\||!=|==|"             + "[+\\-*/^=<>!&|~@#%;,\\[\\]{}().]"

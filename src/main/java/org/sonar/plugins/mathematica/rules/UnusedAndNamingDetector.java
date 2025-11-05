@@ -275,7 +275,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                     for (String var : varList) {
                         var = var.trim();
                         // Extract variable name (before = or alone)
-                        String varName = var.split("\\s*=")[0].trim();
+                        String varName = var.split("\\s*+=")[0].trim();
 
                         if (!varName.isEmpty() && !body.contains(varName)) {
                             int line = calculateLineNumber(content, matcher.start());
@@ -308,7 +308,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                     for (String var : varList) {
                         var = var.trim();
                         // Extract variable name (before =)
-                        String varName = var.split("\\s*=")[0].trim();
+                        String varName = var.split("\\s*+=")[0].trim();
 
                         if (!varName.isEmpty() && !body.contains(varName)) {
                             int line = calculateLineNumber(content, matcher.start());
@@ -547,7 +547,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
     public void detectRedefinedWithoutUse(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern assignment = Pattern.compile("\\b(\\w+)\\s*=");
+            Pattern assignment = Pattern.compile("\\b(\\w+)\\s*+=");
             Matcher matcher = assignment.matcher(content);
 
             Map<String, Integer> firstAssignment = new HashMap<>();
@@ -663,7 +663,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             // Find global variable assignments (outside Module/Block/With)
             Set<String> globalVars = new HashSet<>();
-            Pattern globalAssignment = Pattern.compile("^\\s*([a-zA-Z]\\w*)\\s*=", Pattern.MULTILINE);
+            Pattern globalAssignment = Pattern.compile("^\\s*+([a-zA-Z]\\w*)\\s*+=", Pattern.MULTILINE);
             Matcher globalMatcher = globalAssignment.matcher(content);
 
             while (globalMatcher.find()) {
@@ -677,7 +677,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 String vars = moduleMatcher.group(1);
                 String[] varList = vars.split(",");
                 for (String var : varList) {
-                    String varName = var.trim().split("\\s*=")[0].trim();
+                    String varName = var.trim().split("\\s*+=")[0].trim();
                     if (globalVars.contains(varName)) {
                         int line = calculateLineNumber(content, moduleMatcher.start());
                         reportIssue(context, inputFile, line,
@@ -740,7 +740,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                     String vars = moduleMatcher.group(1);
                     String[] varList = vars.split(",");
                     for (String var : varList) {
-                        String varName = var.trim().split("\\s*=")[0].trim();
+                        String varName = var.trim().split("\\s*+=")[0].trim();
                         if (paramNames.contains(varName)) {
                             int line = calculateLineNumber(content, bodyStart + moduleMatcher.start());
                             reportIssue(context, inputFile, line,
@@ -791,7 +791,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
                 if (lineCount > 50) {
                     // Look for single-letter variable names
-                    Pattern singleLetterVar = Pattern.compile("\\b([a-z])\\s*=");
+                    Pattern singleLetterVar = Pattern.compile("\\b([a-z])\\s*+=");
                     Matcher varMatcher = singleLetterVar.matcher(funcBody);
 
                     if (varMatcher.find()) {
@@ -861,7 +861,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 String[] varList = vars.split(",");
 
                 for (String var : varList) {
-                    String varName = var.trim().split("\\s*=")[0].trim();
+                    String varName = var.trim().split("\\s*+=")[0].trim();
                     if (BUILTIN_FUNCTIONS.contains(varName)) {
                         int line = calculateLineNumber(content, matcher.start());
                         reportIssue(context, inputFile, line,
@@ -905,7 +905,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     public void detectReservedNameUsage(SensorContext context, InputFile inputFile, String content) {
         try {
             for (String reserved : RESERVED_NAMES) {
-                Pattern pattern = Pattern.compile("\\b" + Pattern.quote(reserved) + "\\s*=");
+                Pattern pattern = Pattern.compile("\\b" + Pattern.quote(reserved) + "\\s*+=");
                 Matcher matcher = pattern.matcher(content);
                 if (matcher.find()) {
                     int line = calculateLineNumber(content, matcher.start());
@@ -1076,7 +1076,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Set<String> definedVars = new HashSet<>();
 
             // Collect all variable assignments
-            Pattern assignment = Pattern.compile("\\b([a-zA-Z]\\w*)\\s*=");
+            Pattern assignment = Pattern.compile("\\b([a-zA-Z]\\w*)\\s*+=");
             Matcher assignMatcher = assignment.matcher(content);
             while (assignMatcher.find()) {
                 definedVars.add(assignMatcher.group(1));
@@ -1095,7 +1095,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 String typo = entry.getKey();
                 String correct = entry.getValue();
 
-                Pattern typoPattern = Pattern.compile("\\b" + Pattern.quote(typo) + "\\s*\\[");
+                Pattern typoPattern = Pattern.compile("\\b" + Pattern.quote(typo) + "\\s*+\\[");
                 Matcher matcher = typoPattern.matcher(content);
 
                 if (matcher.find()) {
@@ -1116,7 +1116,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
             for (String builtin : BUILTIN_FUNCTIONS) {
                 String lowercase = builtin.toLowerCase();
                 if (!lowercase.equals(builtin)) {
-                    Pattern pattern = Pattern.compile("\\b" + Pattern.quote(lowercase) + "\\s*\\[");
+                    Pattern pattern = Pattern.compile("\\b" + Pattern.quote(lowercase) + "\\s*+\\[");
                     Matcher matcher = pattern.matcher(content);
 
                     if (matcher.find()) {
