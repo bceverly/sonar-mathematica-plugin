@@ -46,7 +46,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern OPTIONAL_PARAM = Pattern.compile("(\\w+)___(?:\\s*+:?+=|\\s*+\\])");
 
     // Pattern for Do loop with iterator
-    private static final Pattern DO_LOOP_ITERATOR = Pattern.compile("\\bDo\\s*+\\[([^\\]]++),\\s*+\\{\\s*+(\\w++)\\s*+,");
+    private static final Pattern DO_LOOP_ITERATOR = Pattern.compile("\\bDo\\s*+\\[([^\\]]+),\\s*+\\{\\s*+(\\w++)\\s*+,");
 
     // Pattern for Catch
     private static final Pattern CATCH_PATTERN = Pattern.compile("\\bCatch\\s*+\\[");

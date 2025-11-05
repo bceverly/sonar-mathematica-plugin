@@ -67,9 +67,9 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern SEQUENCE = Pattern.compile("Sequence\\s*+\\[");
 
     // Error handling patterns
-    private static final Pattern QUIET = Pattern.compile("Quiet\\s*+\\[([^\\]]++)\\](?!\\s*+,)");
+    private static final Pattern QUIET = Pattern.compile("Quiet\\s*+\\[([^\\]]+)\\](?!\\s*+,)");
     private static final Pattern OFF = Pattern.compile("Off\\s*+\\[\\s*+General::");
-    private static final Pattern CATCH_ALL = Pattern.compile("Catch\\s*+\\[([^\\]]++)\\](?!\\s*+,)");
+    private static final Pattern CATCH_ALL = Pattern.compile("Catch\\s*+\\[([^\\]]+)\\](?!\\s*+,)");
     private static final Pattern EMPTY_CATCH = Pattern.compile("Catch\\s*+\\[[^,]+,\\s*+_\\s*+,\\s*+Null\\s*+&");
     private static final Pattern THROW = Pattern.compile("Throw\\s*+\\[");
     private static final Pattern ABORT = Pattern.compile("Abort\\s*+\\[\\s*+\\]");
@@ -310,7 +310,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectRedundantComputation(SensorContext ctx, InputFile file, String content) {
-        Pattern dup = Pattern.compile("(\\w++\\[[^\\]]++\\])\\s*+[+*]\\s*+\\1");
+        Pattern dup = Pattern.compile("(\\w++\\[[^\\]]+\\])\\s*+[+*]\\s*+\\1");
         Matcher m = dup.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;

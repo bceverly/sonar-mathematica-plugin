@@ -24,7 +24,7 @@ public class BugDetector extends BaseDetector {
     private static final Pattern ASSIGNMENT_IN_IF_PATTERN = Pattern.compile(
         "(?:If|While|Which)\\s*+\\[[^\\]]*+\\b(\\w++)\\s*+=\\s*+(?!=)[^=]"
     );
-    private static final Pattern LIST_ACCESS_PATTERN = Pattern.compile("\\[\\[([^\\]]++)\\]\\]");
+    private static final Pattern LIST_ACCESS_PATTERN = Pattern.compile("\\[\\[([^\\]]+)\\]\\]");
     private static final Pattern RECURSIVE_FUNCTION_PATTERN = Pattern.compile(
         "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*+\\]\\s*+:="
     );
@@ -65,12 +65,12 @@ public class BugDetector extends BaseDetector {
     // Phase 3 Resource management patterns
     private static final Pattern OPEN_FILE_PATTERN = Pattern.compile("(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\[");
     private static final Pattern DEFINITION_IN_LOOP_PATTERN = Pattern.compile(
-        "(?:Do|While|For)\\s*+\\[[^\\]]*+\\w++\\[[^\\]]++\\]\\s*+="
+        "(?:Do|While|For)\\s*+\\[[^\\]]*\\w++\\[[^\\]]+\\]\\s*+="
     );
 
     // Phase 4 Bug patterns (optimized - pre-compiled for performance)
     private static final Pattern OFF_BY_ONE_PATTERN = Pattern.compile(
-        "Do\\s*+\\[[^,]+,\\s*+\\{\\s*+\\w++,\\s*+(0|Length\\[[^\\]]++\\]\\s*+\\+\\s*+1)"
+        "Do\\s*+\\[[^,]+,\\s*+\\{\\s*+\\w++,\\s*+(0|Length\\[[^\\]]+\\]\\s*+\\+\\s*+1)"
     );
     private static final Pattern BLOCK_WITH_ASSIGNMENT_PATTERN = Pattern.compile("Block\\s*+\\[\\s*+\\{[^}]*=");
     private static final Pattern FIRST_LAST_PATTERN = Pattern.compile("(?:First|Last)\\s*+\\[([a-zA-Z]\\w*+)\\]");
