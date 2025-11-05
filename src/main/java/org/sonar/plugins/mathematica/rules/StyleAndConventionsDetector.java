@@ -24,7 +24,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
     private static final Pattern COMMA_NO_SPACE_PATTERN = Pattern.compile(",(?!\\s)");
     private static final Pattern BRACKET_SPACE_PATTERN = Pattern.compile("\\w\\s+\\[");
     private static final Pattern MULTIPLE_SEMICOLON_PATTERN = Pattern.compile(";;+");
-    private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*+\\)\\)\\)");
+    private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*\\)\\)\\)");
     private static final Pattern BRACE_PATTERN = Pattern.compile("\\{[^}]*\\}");
 
     // ===== NAMING PATTERNS (15 rules) =====
@@ -53,7 +53,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
     // ===== MAINTAINABILITY PATTERNS (15 rules) =====
 
     // Possessive quantifiers prevent backtracking and stack overflow
-    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*+(?:\\\\.[^\"\\\\]*+)*+\"");
+    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*+\"");
     private static final Pattern PATH_PATTERN = Pattern.compile("\"(?>/[^/\"]+)+/?\"");
     private static final Pattern URL_PATTERN = Pattern.compile("\"https?+://[^\"]+\"");
     private static final Pattern IF_PATTERN = Pattern.compile("If\\s*+\\[");
@@ -68,13 +68,13 @@ public class StyleAndConventionsDetector extends BaseDetector {
     private static final Pattern STRING_CONCAT_PATTERN = Pattern.compile("<>");
     private static final Pattern LOOP_PATTERN = Pattern.compile("(?:Do|While|For)\\s*+\\[");
     private static final Pattern BOOL_COMPARE_PATTERN = Pattern.compile("==\\s*+(?:True|False)|(?:True|False)\\s*+==");
-    private static final Pattern NEGATED_COMPARE_PATTERN = Pattern.compile("!\\s*+\\([^)]*+==");
-    private static final Pattern REDUNDANT_IF_PATTERN = Pattern.compile("If\\s*+\\[[^,]*+,\\s*+True\\s*+,\\s*+False\\s*+\\]");
+    private static final Pattern NEGATED_COMPARE_PATTERN = Pattern.compile("!\\s*+\\([^)]*==");
+    private static final Pattern REDUNDANT_IF_PATTERN = Pattern.compile("If\\s*+\\[[^,]*,\\s*+True\\s*+,\\s*+False\\s*+\\]");
     private static final Pattern CATCH_PATTERN = Pattern.compile("Catch\\s*+\\[");
     private static final Pattern THROW_PATTERN = Pattern.compile("Throw\\s*+\\[");
     private static final Pattern MEMBER_Q_PATTERN = Pattern.compile("MemberQ\\s*+\\[");
     private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*+\\[[^\\]]*+,[^\\]]*+,[^\\]]*+\\]");
-    private static final Pattern REAL_EQUALITY_PATTERN = Pattern.compile("==[^=]*+\\.\\d++|\\d++\\.[^=]*+==");
+    private static final Pattern REAL_EQUALITY_PATTERN = Pattern.compile("==[^=]*\\.\\d++|\\d++\\.[^=]*==");
     private static final Pattern GRAPHICS_PATTERN = Pattern.compile("Graphics\\s*+\\[");
     private static final Pattern PLOT_PATTERN = Pattern.compile("(?:Plot|ListPlot|Plot3D)\\s*+\\[");
     private static final Pattern DATASET_PATTERN = Pattern.compile("Dataset\\s*+\\[");

@@ -43,15 +43,15 @@ public class AdvancedAnalysisDetector extends BaseDetector {
 
     // Hold/evaluation patterns
     private static final Pattern HOLD_ATTR = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+(?:HoldAll|HoldFirst|HoldRest)");
-    private static final Pattern HOLD_LITERAL = Pattern.compile("Hold\\s*+\\[\\s*+(?:\\d++|\"[^\"]*+\")\\s*+\\]");
+    private static final Pattern HOLD_LITERAL = Pattern.compile("Hold\\s*+\\[\\s*+(?:\\d++|\"[^\"]*\")\\s*+\\]");
     private static final Pattern RELEASE_HOLD = Pattern.compile("ReleaseHold\\s*+\\[\\s*+Hold\\s*+\\[");
     private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*+\\[[^\\]]*+Evaluate\\s*+\\[");
     private static final Pattern UNEVALUATED = Pattern.compile("Unevaluated\\s*+\\[");
 
     // Pattern/replacement patterns
-    private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*+\\([^)]*+(?:Print|Message|Set)");
+    private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*+\\([^)]*(?:Print|Message|Set)");
     private static final Pattern REPLACE_ALL = Pattern.compile("/\\.");
-    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*+->[^,]*+,\\s*+\\w++\\s*+->");
+    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*+->[^,]*,\\s*+\\w++\\s*+->");
 
     // Part/list patterns
     private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+\\]\\]");
@@ -300,7 +300,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectLoopBoundConstant(SensorContext ctx, InputFile file, String content) {
-        Pattern constBound = Pattern.compile("(\\w++)\\s*+=\\s*+(\\d++);[^D]*+Do\\s*+\\[[^\\{]*+\\{\\w++,[^,]*+,\\s*+\\1\\s*+\\}");
+        Pattern constBound = Pattern.compile("(\\w++)\\s*+=\\s*+(\\d++);[^D]*Do\\s*+\\[[^\\{]*\\{\\w++,[^,]*,\\s*+\\1\\s*+\\}");
         Matcher m = constBound.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -406,7 +406,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectDeMorgansLawOpportunity(SensorContext ctx, InputFile file, String content) {
-        Pattern demorgan = Pattern.compile("!\\s*+\\([^)]*+&&");
+        Pattern demorgan = Pattern.compile("!\\s*+\\([^)]*&&");
         Matcher m = demorgan.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -619,7 +619,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingSequenceWrapper(SensorContext ctx, InputFile file, String content) {
-        Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*+\\{[^}]++\\}\\s*+,\\s*+\\{\\s*+\\}");
+        Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*+\\{[^}]+\\}\\s*+,\\s*+\\{\\s*+\\}");
         Matcher m = emptyList.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -731,7 +731,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingMemoizationOpportunityEnhanced(SensorContext ctx, InputFile file, String content) {
-        Pattern recursion = Pattern.compile("(\\w++)\\[(\\w+)_\\]\\s*+:=\\s*+[^=]*+\\1\\[");
+        Pattern recursion = Pattern.compile("(\\w++)\\[(\\w+)_\\]\\s*+:=\\s*+[^=]*\\1\\[");
         Matcher m = recursion.matcher(content);
         while (m.find() && !content.contains(m.group(1) + "[" + m.group(2) + "] = ")) {
             int line = content.substring(0, m.start()).split("\n").length;

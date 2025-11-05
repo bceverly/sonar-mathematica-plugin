@@ -366,7 +366,8 @@ install: check-sonarqube-home build
 		sleep 1; \
 	done
 	@# Tail both logs and check for success or failure
-	@STARTUP_RESULT=0; \
+	@set +m; \
+	STARTUP_RESULT=0; \
 	(tail -f $(SONARQUBE_HOME)/logs/sonar.log & echo $$! > /tmp/sonar_tail_sonar.pid) | while read line; do \
 		echo "$$line"; \
 		if echo "$$line" | grep -q "SonarQube is operational"; then \

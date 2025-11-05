@@ -721,7 +721,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectMutationInPureFunction(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect mutations (++) inside pure functions (&)
-            Pattern pattern = Pattern.compile("\\(([^\\(\\)]*\\+\\+[^\\(\\)]*)\\s*+\\&");
+            Pattern pattern = Pattern.compile("\\(([^\\(\\)]*+\\+\\+[^\\(\\)]*+)\\s*+\\&");
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {

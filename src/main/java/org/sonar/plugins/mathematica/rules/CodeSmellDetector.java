@@ -54,7 +54,7 @@ public class CodeSmellDetector extends BaseDetector {
         "Do\\s*+\\[[^\\]]*(?:sum|total|count|result)\\s*+[+\\-*/]?+="
     );
     private static final Pattern NESTED_MAP_TABLE_PATTERN = Pattern.compile(
-        "(?:Map|Table)\\s*+\\[[^\\[]*+(?:Map|Table)\\s*+\\["
+        "(?:Map|Table)\\s*+\\[[^\\[]*(?:Map|Table)\\s*+\\["
     );
     private static final Pattern PLOT_IN_LOOP_PATTERN = Pattern.compile(
         "(?:Do|While|For|Table)\\s*+\\[[^\\]]*(?:Plot|ListPlot|ListLinePlot|ContourPlot|Plot3D)\\s*+\\["
@@ -87,39 +87,39 @@ public class CodeSmellDetector extends BaseDetector {
 
     // Phase 4 patterns (performance optimization - pre-compiled)
     private static final Pattern OVERCOMPLEX_PATTERN_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*(_\\w*+\\s*+\\|[^\\]]*+\\|[^\\]]*+\\|[^\\]]*+\\|[^\\]]*+\\|[^\\]]*+)\\]");
-    private static final Pattern MIXED_RULE_TYPES_PATTERN = Pattern.compile("\\{[^}]*->\\s*+[^}]*:>[^}]*\\}|\\{[^}]*:>\\s*+[^}]*->[^}]*\\}");
-    private static final Pattern DOWNVALUES_FUNC_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*_[^\\]]*+\\]\\s*+:=");
-    private static final Pattern PATTERN_TEST_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*_[a-zA-Z]\\w*+[^\\]]*+)\\]\\s*+:=");
-    private static final Pattern PURE_FUNC_COMPLEX_PATTERN = Pattern.compile("#\\d++[^&]*#\\d++[^&]*#\\d++[^&]*&");
+        "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*+(_\\w*+\\s*+\\|[^\\]]*+\\|[^\\]]*+\\|[^\\]]*+\\|[^\\]]*+\\|[^\\]]*+)\\]");
+    private static final Pattern MIXED_RULE_TYPES_PATTERN = Pattern.compile("\\{[^}]*+->\\s*+[^}]*+:>[^}]*\\}|\\{[^}]*+:>\\s*+[^}]*+->[^}]*\\}");
+    private static final Pattern DOWNVALUES_FUNC_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*+_[^\\]]*+\\]\\s*+:=");
+    private static final Pattern PATTERN_TEST_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+_[a-zA-Z]\\w*+[^\\]]*+)\\]\\s*+:=");
+    private static final Pattern PURE_FUNC_COMPLEX_PATTERN = Pattern.compile("#\\d++[^&]*+#\\d++[^&]*+#\\d++[^&]*&");
     private static final Pattern OPERATOR_PRECEDENCE_PATTERN = Pattern.compile("[a-zA-Z]\\w*+\\s*+/[@/@]\\s*+[a-zA-Z]\\w*+\\s*+[@/][@/]");
     private static final Pattern WINDOWS_PATH_PATTERN = Pattern.compile("\"[C-Z]:\\\\\\\\[^\"]+\"");
     private static final Pattern UNIX_PATH_PATTERN = Pattern.compile("\"/(?:Users|home)/[^\"]+\"");
     private static final Pattern RETURN_TYPE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+(\\{|<\\|)");
-    private static final Pattern GLOBAL_MODIFY_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*\\]\\s*+:=[^;]*:?+=");
+    private static final Pattern GLOBAL_MODIFY_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*\\]\\s*+:=[^;]*+:?+=");
     private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*+\\[");
     private static final Pattern GLOBAL_CONTEXT_PATTERN = Pattern.compile("Global`[a-zA-Z]\\w*+");
     private static final Pattern PART_ACCESS_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\[\\[(\\d++)\\]\\]");
     private static final Pattern REPEATED_PART_PATTERN = Pattern.compile(
             "([a-zA-Z]\\w*+)\\[\\[\\d++\\]\\];[^;]*([a-zA-Z]\\w*+)\\[\\[\\d++\\]\\];[^;]*([a-zA-Z]\\w*+)\\[\\[\\d++\\]\\]");
-    private static final Pattern RECURSIVE_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]+)\\]\\s*+:=[^;]*\\1\\s*+\\[");
+    private static final Pattern RECURSIVE_FUNC_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]+)\\]\\s*+:=[^;]*+\\1\\s*+\\[");
     // Fixed: Use possessive quantifiers to prevent catastrophic backtracking
     // Matches 3+ consecutive <> operators (StringJoin): "a" <> "b" <> "c" <> "d"
     private static final Pattern STRINGJOIN_PATTERN = Pattern.compile("[^<>]*<>[^<>]*<>[^<>]*<>");
     private static final Pattern SELECT_LINEAR_PATTERN = Pattern.compile("Select\\s*+\\[[^,]+,\\s*+#\\[\\[[^\\]]+\\]\\]\\s*+==");
     private static final Pattern REPEATED_CALC_PATTERN = Pattern.compile(
-        "Do\\s*+\\[[^,]*+([A-Z][a-zA-Z0-9]++)\\s*+\\[[^\\]]*\\][^,]*+,\\s*+\\{([a-z]\\w*+),");
+        "Do\\s*+\\[[^,]*([A-Z][a-zA-Z0-9]++)\\s*+\\[[^\\]]*\\][^,]*,\\s*+\\{([a-z]\\w*+),");
     private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*+\\[[^\\]]+\\]");
     private static final Pattern FLATTEN_TABLE_PATTERN = Pattern.compile("Flatten\\s*+\\[\\s*+Table\\s*+\\[");
     private static final Pattern LARGE_TABLE_PATTERN = Pattern.compile("Table\\s*+\\[[^,]+,\\s*+\\{[^,]+,\\s*+\\d{4,}+");
     private static final Pattern ZERO_TABLE_PATTERN = Pattern.compile("Table\\s*+\\[\\s*+0\\s*+,\\s*+\\{[^,]+,\\s*+(\\d++)");
-    private static final Pattern DOUBLE_TRANSPOSE_PATTERN = Pattern.compile("Transpose\\s*+\\[[^\\[]*+Transpose\\s*+\\[");
-    private static final Pattern TOEXPRESSION_LOOP_PATTERN = Pattern.compile("(?:Do|Table|While)\\s*+\\[[^\\[]*+ToExpression\\s*+\\[");
+    private static final Pattern DOUBLE_TRANSPOSE_PATTERN = Pattern.compile("Transpose\\s*+\\[[^\\[]*Transpose\\s*+\\[");
+    private static final Pattern TOEXPRESSION_LOOP_PATTERN = Pattern.compile("(?:Do|Table|While)\\s*+\\[[^\\[]*ToExpression\\s*+\\[");
     private static final Pattern COMPILE_PATTERN = Pattern.compile("Compile\\s*+\\[");
     // Additional patterns for original rules (optimized - pre-compiled for performance)
     private static final Pattern SIMPLE_CHECK_PATTERN = Pattern.compile("Check\\s*+\\[[^,]+,\\s*+(?:\\$Failed|Null|None)\\s*+\\]");
     private static final Pattern QUIET_PATTERN = Pattern.compile("Quiet\\s*+\\[");
-    private static final Pattern IF_PATTERN = Pattern.compile("If\\s*+\\[([^\\[]++),\\s*+([^,]+),\\s*+([^\\]]+)\\]");
+    private static final Pattern IF_PATTERN = Pattern.compile("If\\s*+\\[([^\\[]+),\\s*+([^,]+),\\s*+([^\\]]+)\\]");
     private static final Pattern FUNCTION_WITH_IF_PATTERN = Pattern.compile(
         "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+(?:Module|Block)?+\\s*+\\[[^\\]]*+If\\[");
 
@@ -1405,10 +1405,10 @@ public class CodeSmellDetector extends BaseDetector {
     // TIER 1 GAP CLOSURE - COMMENT QUALITY (10 rules)
     // ==========================================================================
 
-    private static final Pattern TODO_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*TODO[^\\*]*\\*\\)");
-    private static final Pattern FIXME_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*FIXME[^\\*]*\\*\\)");
-    private static final Pattern HACK_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*(?:HACK|XXX|FIXME)[^\\*]*\\*\\)");
-    private static final Pattern COMMENTED_CODE_PATTERN = Pattern.compile("\\(\\*[^\\*]*(?::=|=|\\[|;)[^\\*]*\\*\\)");
+    private static final Pattern TODO_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*+TODO[^\\*]*+\\*\\)");
+    private static final Pattern FIXME_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*+FIXME[^\\*]*+\\*\\)");
+    private static final Pattern HACK_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*+(?:HACK|XXX|FIXME)[^\\*]*+\\*\\)");
+    private static final Pattern COMMENTED_CODE_PATTERN = Pattern.compile("\\(\\*[^\\*]*+(?::=|=|\\[|;)[^\\*]*+\\*\\)");
     private static final Pattern PUBLIC_API_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*\\]\\s*+:=");
     private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage");
     private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]*)\\]\\s*+:=");
@@ -1492,7 +1492,7 @@ public class CodeSmellDetector extends BaseDetector {
     public void detectLargeCommentedBlock(SensorContext context, InputFile inputFile, String content) {
         try {
             // Match any comment, then check its length (safer than quantifier on complex group)
-            Pattern largeCommentPattern = Pattern.compile("\\(\\*(?>[^\\*]++|\\*(?!\\)))*+\\*\\)");
+            Pattern largeCommentPattern = Pattern.compile("\\(\\*(?>[^\\*]+|\\*(?!\\)))*+\\*\\)");
             Matcher matcher = largeCommentPattern.matcher(content);
             while (matcher.find()) {
                 String comment = matcher.group();
@@ -1547,7 +1547,7 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectDocumentationTooShort(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*+)\"");
+            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*)\"");
             Matcher matcher = usagePattern.matcher(content);
             while (matcher.find()) {
                 String funcName = matcher.group(1);
@@ -1568,7 +1568,7 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectDocumentationOutdated(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*+)\"");
+            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*)\"");
             Matcher matcher = usagePattern.matcher(content);
             while (matcher.find()) {
                 String funcName = matcher.group(1);
@@ -1604,7 +1604,7 @@ public class CodeSmellDetector extends BaseDetector {
 
                 if (!paramNames.isEmpty()) {
                     // Check if ::usage exists and mentions parameters
-                    Pattern usagePattern = Pattern.compile(Pattern.quote(funcName) + "::usage\\s*+=\\s*+\"([^\"]*+)\"");
+                    Pattern usagePattern = Pattern.compile(Pattern.quote(funcName) + "::usage\\s*+=\\s*+\"([^\"]*)\"");
                     Matcher usageMatcher = usagePattern.matcher(content);
                     if (usageMatcher.find()) {
                         String usageDoc = usageMatcher.group(1);
@@ -1628,7 +1628,7 @@ public class CodeSmellDetector extends BaseDetector {
      */
     public void detectReturnNotDocumented(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*+)\"");
+            Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*)\"");
             Matcher matcher = usagePattern.matcher(content);
             while (matcher.find()) {
                 String funcName = matcher.group(1);

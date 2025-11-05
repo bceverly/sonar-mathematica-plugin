@@ -1034,7 +1034,7 @@ public final class ArchitectureAndDependencyDetector {
      * Rule 240: Commented-out package load
      */
     public static void detectCommentedOutPackageLoad(SensorContext context, InputFile inputFile, String content) {
-        Pattern commentedNeeds = Pattern.compile("\\(\\*[^*]*+(?:Needs|Get|<<)[^*]*+\\*\\)");
+        Pattern commentedNeeds = Pattern.compile("\\(\\*[^*]*(?:Needs|Get|<<)[^*]*\\*\\)");
         Matcher matcher = commentedNeeds.matcher(content);
 
         while (matcher.find()) {

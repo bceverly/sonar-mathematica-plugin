@@ -33,13 +33,13 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern ABORT_THROW = Pattern.compile("\\b(Abort|Throw)\\s*+\\[");
 
     // Pattern for Module variables
-    private static final Pattern MODULE_VARS = Pattern.compile("\\bModule\\s*+\\[\\s*+\\{([^}]++)\\}");
+    private static final Pattern MODULE_VARS = Pattern.compile("\\bModule\\s*+\\[\\s*+\\{([^}]+)\\}");
 
     // Pattern for With variables
-    private static final Pattern WITH_VARS = Pattern.compile("\\bWith\\s*+\\[\\s*+\\{([^}]++)\\}");
+    private static final Pattern WITH_VARS = Pattern.compile("\\bWith\\s*+\\[\\s*+\\{([^}]+)\\}");
 
     // Pattern for Needs/imports
-    private static final Pattern NEEDS_IMPORT = Pattern.compile("\\bNeeds\\s*+\\[\\s*+\"([^\"]++)\"");
+    private static final Pattern NEEDS_IMPORT = Pattern.compile("\\bNeeds\\s*+\\[\\s*+\"([^\"]+)\"");
 
     // Pattern for optional parameters
     // Note: Cannot use possessive on \w+ before ___ since \w includes _
@@ -107,7 +107,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern CONTEXT_REF = Pattern.compile("(\\w++)`(\\w++)");
 
     // Pattern for Get[]
-    private static final Pattern GET_PATTERN = Pattern.compile("\\bGet\\s*+\\[\\s*+\"([^\"]++)\"");
+    private static final Pattern GET_PATTERN = Pattern.compile("\\bGet\\s*+\\[\\s*+\"([^\"]+)\"");
 
     private static Set<String> createBuiltinSet() {
         Set<String> builtins = new HashSet<>();
@@ -484,7 +484,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     public void detectAssignmentNeverRead(SensorContext context, InputFile inputFile, String content) {
         try {
             // Simplified detection: look for patterns like x = val1; x = val2 where val1 is never used
-            Pattern assignment = Pattern.compile("\\b(\\w++)\\s*+=\\s*+([^;]++);");
+            Pattern assignment = Pattern.compile("\\b(\\w++)\\s*+=\\s*+([^;]+);");
             Matcher matcher = assignment.matcher(content);
 
             Map<String, Integer> lastAssignment = new HashMap<>();

@@ -38,12 +38,12 @@ public class BugDetector extends BaseDetector {
         "\\d++\\.\\d++\\s*+===?+\\s*+\\d++\\.\\d++|===?+\\s*+\\d++\\.\\d++"
     );
     private static final Pattern FUNCTION_END_SEMICOLON_PATTERN = Pattern.compile(
-        "\\]\\s*+:=\\s*+\\([^)]*+;\\s*+\\)"
+        "\\]\\s*+:=\\s*+\\([^)]*;\\s*+\\)"
     );
     private static final Pattern WHILE_TRUE_PATTERN = Pattern.compile("While\\s*+\\[\\s*+True\\s*+,");
     private static final Pattern MATRIX_OPERATION_PATTERN = Pattern.compile("(?:Transpose|Dot)\\s*+\\[");
     private static final Pattern STRING_PLUS_NUMBER_PATTERN = Pattern.compile(
-        "\"[^\"]*+\"\\s*+\\+\\s*+\\d++|\\d++\\s*+\\+\\s*+\"[^\"]*+\""
+        "\"[^\"]*\"\\s*+\\+\\s*+\\d++|\\d++\\s*+\\+\\s*+\"[^\"]*\""
     );
     private static final Pattern TRIPLE_UNDERSCORE_PATTERN = Pattern.compile("\\w++\\[___\\]");
 
@@ -81,13 +81,13 @@ public class BugDetector extends BaseDetector {
     private static final Pattern SCOPING_WITH_ASSIGNMENT_PATTERN = Pattern.compile("(?:Module|Block)\\s*+\\[\\s*+\\{[^}]*=");
     private static final Pattern HOLD_ATTR_PATTERN = Pattern.compile("\\{[^}]*\\+\\+[^}]*\\+\\+[^}]*\\}");
     private static final Pattern LEVEL_SPEC_PATTERN = Pattern.compile("(?:Map|Apply|Cases)\\s*+\\[[^,]+,\\s*+[^,]+,\\s*+\\{-?+\\d++\\}");
-    private static final Pattern LOOP_WITH_MUTATION_PATTERN = Pattern.compile("(?:Do|While|For)\\s*+\\[[^\\[]*+(?:Append|Prepend|Delete)\\s*+\\[");
+    private static final Pattern LOOP_WITH_MUTATION_PATTERN = Pattern.compile("(?:Do|While|For)\\s*+\\[[^\\[]*(?:Append|Prepend|Delete)\\s*+\\[");
     private static final Pattern FUNCTION_DEF_GENERAL_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*+\\]\\s*+:=");
     private static final Pattern ASSOCIATION_JOIN_PATTERN = Pattern.compile("Join\\s*+\\[\\s*+<\\|");
     private static final Pattern DATE_OBJECT_PATTERN = Pattern.compile("DateObject\\s*+\\[\\s*+\\{(\\d++)\\s*+,\\s*+(\\d++)\\s*+,\\s*+(\\d++)");
     private static final Pattern STATS_ON_VAR_PATTERN = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*+\\[([a-zA-Z]\\w*+)\\]");
     private static final Pattern QUANTITY_MISMATCH_PATTERN = Pattern.compile(
-        "Quantity\\[\\d++,\\s*+\"([^\"]++)\"\\]\\s*+[+\\-]\\s*+Quantity\\[\\d++,\\s*+\"([^\"]++)\"\\]");
+        "Quantity\\[\\d++,\\s*+\"([^\"]+)\"\\]\\s*+[+\\-]\\s*+Quantity\\[\\d++,\\s*+\"([^\"]+)\"\\]");
 
     /**
      * Detect potential division by zero.
