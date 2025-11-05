@@ -20,7 +20,10 @@ class ComprehensiveParserTest {
             "result = Sin[x];",
             "result = Plus[a, b, c];",
             "result = f[g[x], h[y]];",
-            "x = 42; y = 3.14; z = 1.5e-10;"
+            "x = 42; y = 3.14; z = 1.5e-10;",
+            "x := RandomReal[]",
+            "f[x_Integer, y_Real] := x + y",
+            "]][[[invalid syntax"
         );
     }
 
@@ -121,37 +124,6 @@ class ComprehensiveParserTest {
         assertThat(nodes).isNotNull();
     }
 
-    @Test
-    void testParseWithDelayedAssignment() {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "x := RandomReal[]";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
-    }
-
-    @Test
-    void testParseWithPatterns() {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "f[x_Integer, y_Real] := x + y";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes)
-            .isNotNull()
-            .isNotEmpty();
-    }
-
-    @Test
-    void testParseWithInvalidSyntax() {
-        // Parser should handle invalid syntax gracefully
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "]][[[invalid syntax";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes).isNotNull();
-    }
 
     @Test
     void testParseWithMixedContent() {
