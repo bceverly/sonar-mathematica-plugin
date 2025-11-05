@@ -41,7 +41,7 @@ public final class ArchitectureAndDependencyDetector {
     // ========================================
 
     // Package declarations and imports
-    private static final Pattern BEGIN_PACKAGE = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\"\\s*+(?:,\\s*+\\{([^}]*+)\\})?+\\s*+\\]");
+    private static final Pattern BEGIN_PACKAGE = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\"\\s*+(?:,\\s*+\\{([^}]*)\\})?+\\s*+\\]");
     private static final Pattern END_PACKAGE = Pattern.compile("EndPackage\\s*+\\[\\s*+\\]");
     private static final Pattern NEEDS = Pattern.compile("Needs\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]");
 

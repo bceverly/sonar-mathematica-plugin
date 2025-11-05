@@ -25,7 +25,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
     private static final Pattern BRACKET_SPACE_PATTERN = Pattern.compile("\\w\\s+\\[");
     private static final Pattern MULTIPLE_SEMICOLON_PATTERN = Pattern.compile(";;+");
     private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*+\\)\\)\\)");
-    private static final Pattern BRACE_PATTERN = Pattern.compile("\\{[^}]*+\\}");
+    private static final Pattern BRACE_PATTERN = Pattern.compile("\\{[^}]*\\}");
 
     // ===== NAMING PATTERNS (15 rules) =====
 

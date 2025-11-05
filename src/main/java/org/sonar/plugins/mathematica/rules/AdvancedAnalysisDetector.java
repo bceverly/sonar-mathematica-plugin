@@ -29,66 +29,66 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // ========================================
 
     // Null safety patterns
-    private static final Pattern NULL_DEREF = Pattern.compile("(\\w+)\\s*\\[\\[");
-    private static final Pattern NULL_CHECK = Pattern.compile("(?:===|=!=)\\s*Null");
-    private static final Pattern NULL_COMPARISON_WRONG = Pattern.compile("==\\s*Null");
-    private static final Pattern LENGTH_NULL = Pattern.compile("Length\\s*\\[\\s*Null\\s*\\]");
+    private static final Pattern NULL_DEREF = Pattern.compile("(\\w++)\\s*+\\[\\[");
+    private static final Pattern NULL_CHECK = Pattern.compile("(?:===|=!=)\\s*+Null");
+    private static final Pattern NULL_COMPARISON_WRONG = Pattern.compile("==\\s*+Null");
+    private static final Pattern LENGTH_NULL = Pattern.compile("Length\\s*+\\[\\s*+Null\\s*+\\]");
 
     // Expression patterns
-    private static final Pattern IDENTITY_OP = Pattern.compile("(?:Reverse|Transpose)\\s*\\[\\s*(?:Reverse|Transpose)\\s*\\[");
-    private static final Pattern CONSTANT_EXPR = Pattern.compile("(\\w+)\\s*(?:\\*\\s*1|\\+\\s*0|\\^\\s*1)");
-    private static final Pattern DOUBLE_NEG = Pattern.compile("(?:Not\\s*\\[\\s*Not\\s*\\[|!!)");
-    private static final Pattern BOOL_CONVERSION = Pattern.compile("If\\s*\\[([^,]+),\\s*True\\s*,\\s*False\\s*\\]");
-    private static final Pattern IDENTICAL_COMP = Pattern.compile("(\\w+)\\s*==\\s*\\1(?!\\w)");
+    private static final Pattern IDENTITY_OP = Pattern.compile("(?:Reverse|Transpose)\\s*+\\[\\s*+(?:Reverse|Transpose)\\s*+\\[");
+    private static final Pattern CONSTANT_EXPR = Pattern.compile("(\\w++)\\s*+(?:\\*\\s*+1|\\+\\s*+0|\\^\\s*+1)");
+    private static final Pattern DOUBLE_NEG = Pattern.compile("(?:Not\\s*+\\[\\s*+Not\\s*+\\[|!!)");
+    private static final Pattern BOOL_CONVERSION = Pattern.compile("If\\s*+\\[([^,]+),\\s*+True\\s*+,\\s*+False\\s*+\\]");
+    private static final Pattern IDENTICAL_COMP = Pattern.compile("(\\w++)\\s*+==\\s*+\\1(?!\\w)");
 
     // Hold/evaluation patterns
-    private static final Pattern HOLD_ATTR = Pattern.compile("SetAttributes\\s*\\[\\s*(\\w+)\\s*,\\s*(?:HoldAll|HoldFirst|HoldRest)");
-    private static final Pattern HOLD_LITERAL = Pattern.compile("Hold\\s*\\[\\s*(?:\\d+|\"[^\"]*\")\\s*\\]");
-    private static final Pattern RELEASE_HOLD = Pattern.compile("ReleaseHold\\s*\\[\\s*Hold\\s*\\[");
-    private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*\\[[^\\]]*Evaluate\\s*\\[");
-    private static final Pattern UNEVALUATED = Pattern.compile("Unevaluated\\s*\\[");
+    private static final Pattern HOLD_ATTR = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+(?:HoldAll|HoldFirst|HoldRest)");
+    private static final Pattern HOLD_LITERAL = Pattern.compile("Hold\\s*+\\[\\s*+(?:\\d++|\"[^\"]*+\")\\s*+\\]");
+    private static final Pattern RELEASE_HOLD = Pattern.compile("ReleaseHold\\s*+\\[\\s*+Hold\\s*+\\[");
+    private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*+\\[[^\\]]*+Evaluate\\s*+\\[");
+    private static final Pattern UNEVALUATED = Pattern.compile("Unevaluated\\s*+\\[");
 
     // Pattern/replacement patterns
-    private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*\\([^)]*(?:Print|Message|Set)");
+    private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*+\\([^)]*+(?:Print|Message|Set)");
     private static final Pattern REPLACE_ALL = Pattern.compile("/\\.");
-    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*->[^,]*,\\s*\\w+\\s*->");
+    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*+->[^,]*+,\\s*+\\w++\\s*+->");
 
     // Part/list patterns
-    private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*(\\d+)\\s*\\]\\]");
-    private static final Pattern SPAN_SPEC = Pattern.compile("\\[\\[\\s*(\\d+)\\s*;;\\s*(\\d+)\\s*\\]\\]");
-    private static final Pattern ALL_SPEC = Pattern.compile("\\[\\[\\s*All\\s*\\]\\]");
+    private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+\\]\\]");
+    private static final Pattern SPAN_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+;;\\s*+(\\d++)\\s*+\\]\\]");
+    private static final Pattern ALL_SPEC = Pattern.compile("\\[\\[\\s*+All\\s*+\\]\\]");
 
     // Attribute patterns
-    private static final Pattern ORDERLESS = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*Orderless");
-    private static final Pattern FLAT = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*Flat");
-    private static final Pattern LISTABLE = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*Listable");
+    private static final Pattern ORDERLESS = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Orderless");
+    private static final Pattern FLAT = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Flat");
+    private static final Pattern LISTABLE = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Listable");
 
     // Sequence patterns
-    private static final Pattern SEQUENCE = Pattern.compile("Sequence\\s*\\[");
+    private static final Pattern SEQUENCE = Pattern.compile("Sequence\\s*+\\[");
 
     // Error handling patterns
-    private static final Pattern QUIET = Pattern.compile("Quiet\\s*\\[([^\\]]+)\\](?!\\s*,)");
-    private static final Pattern OFF = Pattern.compile("Off\\s*\\[\\s*General::");
-    private static final Pattern CATCH_ALL = Pattern.compile("Catch\\s*\\[([^\\]]+)\\](?!\\s*,)");
-    private static final Pattern EMPTY_CATCH = Pattern.compile("Catch\\s*\\[[^,]+,\\s*_\\s*,\\s*Null\\s*&");
-    private static final Pattern THROW = Pattern.compile("Throw\\s*\\[");
-    private static final Pattern ABORT = Pattern.compile("Abort\\s*\\[\\s*\\]");
-    private static final Pattern MESSAGE_CALL = Pattern.compile("Message\\s*\\[\\s*(\\w+)::(\\w+)");
-    private static final Pattern MESSAGE_DEF = Pattern.compile("(\\w+)::(\\w+)\\s*=");
+    private static final Pattern QUIET = Pattern.compile("Quiet\\s*+\\[([^\\]]++)\\](?!\\s*+,)");
+    private static final Pattern OFF = Pattern.compile("Off\\s*+\\[\\s*+General::");
+    private static final Pattern CATCH_ALL = Pattern.compile("Catch\\s*+\\[([^\\]]++)\\](?!\\s*+,)");
+    private static final Pattern EMPTY_CATCH = Pattern.compile("Catch\\s*+\\[[^,]+,\\s*+_\\s*+,\\s*+Null\\s*+&");
+    private static final Pattern THROW = Pattern.compile("Throw\\s*+\\[");
+    private static final Pattern ABORT = Pattern.compile("Abort\\s*+\\[\\s*+\\]");
+    private static final Pattern MESSAGE_CALL = Pattern.compile("Message\\s*+\\[\\s*+(\\w++)::(\\w++)");
+    private static final Pattern MESSAGE_DEF = Pattern.compile("(\\w++)::(\\w++)\\s*+=");
 
     // Compilation patterns
-    private static final Pattern COMPILE = Pattern.compile("Compile\\s*\\[");
-    private static final Pattern COMPILATION_TARGET = Pattern.compile("CompilationTarget\\s*->\\s*\"(\\w+)\"");
-    private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*\\[[^\\]]*(?:Sort|Select|Cases|DeleteCases)");
+    private static final Pattern COMPILE = Pattern.compile("Compile\\s*+\\[");
+    private static final Pattern COMPILATION_TARGET = Pattern.compile("CompilationTarget\\s*+->\\s*+\"(\\w++)\"");
+    private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*+\\[[^\\]]*+(?:Sort|Select|Cases|DeleteCases)");
 
     // Test patterns
-    private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*?\\.");
+    private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*+\\.");
 
     // Performance patterns
-    private static final Pattern PACKED_ARRAY_UNPACK = Pattern.compile("\\[\\[\\s*\\d+\\s*\\]\\]\\s*=");
-    private static final Pattern N_LATE = Pattern.compile("N\\s*\\[\\s*(?:Integrate|Sum|Product|Solve)");
-    private static final Pattern STRING_CONCAT_LOOP = Pattern.compile("Do\\s*\\[[^\\]]*<>");
-    private static final Pattern LIST_CONCAT_LOOP = Pattern.compile("Do\\s*\\[[^\\]]*Join\\s*\\[");
+    private static final Pattern PACKED_ARRAY_UNPACK = Pattern.compile("\\[\\[\\s*+\\d++\\s*+\\]\\]\\s*+=");
+    private static final Pattern N_LATE = Pattern.compile("N\\s*+\\[\\s*+(?:Integrate|Sum|Product|Solve)");
+    private static final Pattern STRING_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*+<>");
+    private static final Pattern LIST_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*+Join\\s*+\\[");
 
     private static NewIssue createIssue(SensorContext context, InputFile file, String ruleKey, int line, String msg) {
         NewIssue issue = context.newIssue().forRule(org.sonar.api.rule.RuleKey.of(
@@ -167,7 +167,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingCheckLeadsToNullPropagation(SensorContext ctx, InputFile file, String content) {
-        Pattern chain = Pattern.compile("\\w+\\[\\w+\\[\\w+\\[");
+        Pattern chain = Pattern.compile("\\w++\\[\\w++\\[\\w++\\[");
         if (chain.matcher(content).find()) {
             Matcher m = chain.matcher(content);
             while (m.find()) {
@@ -179,7 +179,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectCheckPatternDoesntHandleAllCases(SensorContext ctx, InputFile file, String content) {
-        Pattern check = Pattern.compile("Check\\s*\\[[^,]+,[^,]+\\](?!\\s*,)");
+        Pattern check = Pattern.compile("Check\\s*+\\[[^,]+,[^,]+\\](?!\\s*+,)");
         if (check.matcher(content).find()) {
             Matcher m = check.matcher(content);
             while (m.find()) {
@@ -280,7 +280,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // ========================================
 
     public static void detectConditionAlwaysTrueConstantPropagation(SensorContext ctx, InputFile file, String content) {
-        Pattern alwaysTrue = Pattern.compile("If\\s*\\[\\s*True\\s*,");
+        Pattern alwaysTrue = Pattern.compile("If\\s*+\\[\\s*+True\\s*+,");
         Matcher m = alwaysTrue.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -290,7 +290,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectConditionAlwaysFalseConstantPropagation(SensorContext ctx, InputFile file, String content) {
-        Pattern alwaysFalse = Pattern.compile("If\\s*\\[\\s*False\\s*,");
+        Pattern alwaysFalse = Pattern.compile("If\\s*+\\[\\s*+False\\s*+,");
         Matcher m = alwaysFalse.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -300,7 +300,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectLoopBoundConstant(SensorContext ctx, InputFile file, String content) {
-        Pattern constBound = Pattern.compile("(\\w+)\\s*=\\s*(\\d+);[^D]*+Do\\s*\\[[^\\{]*+\\{\\w+,[^,]*+,\\s*\\1\\s*\\}");
+        Pattern constBound = Pattern.compile("(\\w++)\\s*+=\\s*+(\\d++);[^D]*+Do\\s*+\\[[^\\{]*+\\{\\w++,[^,]*+,\\s*+\\1\\s*+\\}");
         Matcher m = constBound.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -310,7 +310,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectRedundantComputation(SensorContext ctx, InputFile file, String content) {
-        Pattern dup = Pattern.compile("(\\w+\\[[^\\]]+\\])\\s*[+*]\\s*\\1");
+        Pattern dup = Pattern.compile("(\\w++\\[[^\\]]++\\])\\s*+[+*]\\s*+\\1");
         Matcher m = dup.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -320,7 +320,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectPureExpressionInLoop(SensorContext ctx, InputFile file, String content) {
-        Pattern pure = Pattern.compile("Do\\s*\\[[^\\]]*(?:Sqrt|Pi|E)\\[");
+        Pattern pure = Pattern.compile("Do\\s*+\\[[^\\]]*+(?:Sqrt|Pi|E)\\[");
         Matcher m = pure.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -357,7 +357,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectBooleanExpressionAlwaysTrue(SensorContext ctx, InputFile file, String content) {
-        Pattern tautology = Pattern.compile("(\\w+)\\s*\\|\\|\\s*!\\1");
+        Pattern tautology = Pattern.compile("(\\w++)\\s*+\\|\\|\\s*+!\\1");
         Matcher m = tautology.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -367,7 +367,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectBooleanExpressionAlwaysFalse(SensorContext ctx, InputFile file, String content) {
-        Pattern contradiction = Pattern.compile("(\\w+)\\s*&&\\s*!\\1");
+        Pattern contradiction = Pattern.compile("(\\w++)\\s*+&&\\s*+!\\1");
         Matcher m = contradiction.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -406,7 +406,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectDeMorgansLawOpportunity(SensorContext ctx, InputFile file, String content) {
-        Pattern demorgan = Pattern.compile("!\\s*\\([^)]*&&");
+        Pattern demorgan = Pattern.compile("!\\s*+\\([^)]*+&&");
         Matcher m = demorgan.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -431,7 +431,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectHoldFirstButUsesSecondArgumentFirst(SensorContext ctx, InputFile file, String content) {
-        Pattern holdFirst = Pattern.compile("SetAttributes\\s*\\[\\s*(\\w+)\\s*,\\s*HoldFirst");
+        Pattern holdFirst = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+HoldFirst");
         Matcher m = holdFirst.matcher(content);
         while (m.find()) {
             String func = m.group(1);
@@ -510,7 +510,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectRuleDoesntMatchDueToEvaluation(SensorContext ctx, InputFile file, String content) {
-        Pattern evalRule = Pattern.compile("/\\.\\s*\\{[^}]*\\d+\\s*\\+\\s*\\d+\\s*->");
+        Pattern evalRule = Pattern.compile("/\\.\\s*+\\{[^}]*\\d++\\s*+\\+\\s*+\\d++\\s*+->");
         Matcher m = evalRule.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -578,7 +578,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectOneIdentityAttributeMisuse(SensorContext ctx, InputFile file, String content) {
-        Pattern oneId = Pattern.compile("SetAttributes\\s*\\[[^,]+,\\s*OneIdentity");
+        Pattern oneId = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+OneIdentity");
         Matcher m = oneId.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -619,7 +619,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingSequenceWrapper(SensorContext ctx, InputFile file, String content) {
-        Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*\\{[^}]+\\}\\s*,\\s*\\{\\s*\\}");
+        Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*+\\{[^}]++\\}\\s*+,\\s*+\\{\\s*+\\}");
         Matcher m = emptyList.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -673,7 +673,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // ========================================
 
     public static void detectCompilableFunctionNotCompiled(SensorContext ctx, InputFile file, String content) {
-        Pattern numerical = Pattern.compile("(\\w+)\\[\\w+_\\]\\s*:=\\s*[^;]*(?:Sin|Cos|Exp|Log|Sqrt)");
+        Pattern numerical = Pattern.compile("(\\w++)\\[\\w+_\\]\\s*+:=\\s*+[^;]*(?:Sin|Cos|Exp|Log|Sqrt)");
         Matcher m = numerical.matcher(content);
         while (m.find() && !content.contains("Compile[")) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -712,7 +712,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectInefficientPatternInPerformanceCriticalCode(SensorContext ctx, InputFile file, String content) {
-        Pattern hotLoop = Pattern.compile("Do\\s*\\[[^\\]]*Match\\s*\\[");
+        Pattern hotLoop = Pattern.compile("Do\\s*+\\[[^\\]]*+Match\\s*+\\[");
         Matcher m = hotLoop.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -731,7 +731,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingMemoizationOpportunityEnhanced(SensorContext ctx, InputFile file, String content) {
-        Pattern recursion = Pattern.compile("(\\w+)\\[(\\w+)_\\]\\s*:=\\s*[^=]*\\1\\[");
+        Pattern recursion = Pattern.compile("(\\w++)\\[(\\w+)_\\]\\s*+:=\\s*+[^=]*+\\1\\[");
         Matcher m = recursion.matcher(content);
         while (m.find() && !content.contains(m.group(1) + "[" + m.group(2) + "] = ")) {
             int line = content.substring(0, m.start()).split("\n").length;

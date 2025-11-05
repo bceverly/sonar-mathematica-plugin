@@ -751,7 +751,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
             // Check if these globals are modified inside functions
             for (String varName : globalVars) {
-                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=[^;]*+"
+                Pattern funcModPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:=[^;]*"
                     + Pattern.quote(varName) + "\\s*[\\+\\-\\*/]?=");
                 Matcher funcMatcher = funcModPattern.matcher(content);
 

@@ -63,8 +63,8 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern MERGE_USAGE = Pattern.compile("Merge\\s*+\\[\\s*+\\{[^}]++\\}\\s*+\\](?!\\s*+,)");
     private static final Pattern ASSOCIATETO_USAGE = Pattern.compile("AssociateTo\\s*+\\[\\s*+(<\\|[^|]++\\|>)");
     private static final Pattern KEYDROP_CHAIN = Pattern.compile("KeyDrop\\s*+\\[\\s*+KeyDrop\\s*+\\[");
-    private static final Pattern LOOKUP_MISSING = Pattern.compile("Lookup\\s*+\\[\\s*+\\w++\\s*+,\\s*+[^,]++,\\s*+Missing\\s*+\\[\\s*+\\]\\s*+\\]");
-    private static final Pattern GROUPBY_USAGE = Pattern.compile("GroupBy\\s*+\\[\\s*+\\w++\\s*+,\\s*+[^,]++\\s*+\\](?!\\s*+,)");
+    private static final Pattern LOOKUP_MISSING = Pattern.compile("Lookup\\s*+\\[\\s*+\\w++\\s*+,\\s*+[^,]+,\\s*+Missing\\s*+\\[\\s*+\\]\\s*+\\]");
+    private static final Pattern GROUPBY_USAGE = Pattern.compile("GroupBy\\s*+\\[\\s*+\\w++\\s*+,\\s*+[^,]+\\s*+\\](?!\\s*+,)");
 
     // ===== PATTERN SYSTEM RULES (Items 16-30) =====
 

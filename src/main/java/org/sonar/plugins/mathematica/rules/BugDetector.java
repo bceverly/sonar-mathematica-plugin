@@ -22,71 +22,72 @@ public class BugDetector extends BaseDetector {
 
     private static final Pattern DIVISION_PATTERN = Pattern.compile("/(?!=)");  // Not //= or /=
     private static final Pattern ASSIGNMENT_IN_IF_PATTERN = Pattern.compile(
-        "(?:If|While|Which)\\s*\\[[^\\]]*\\b(\\w+)\\s*=\\s*(?!=)[^=]"
+        "(?:If|While|Which)\\s*+\\[[^\\]]*+\\b(\\w++)\\s*+=\\s*+(?!=)[^=]"
     );
-    private static final Pattern LIST_ACCESS_PATTERN = Pattern.compile("\\[\\[([^\\]]+)\\]\\]");
+    private static final Pattern LIST_ACCESS_PATTERN = Pattern.compile("\\[\\[([^\\]]++)\\]\\]");
     private static final Pattern RECURSIVE_FUNCTION_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*)\\s*\\[[^\\]]*\\]\\s*:="
+        "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*+\\]\\s*+:="
     );
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*)\\s*\\[([^\\]]*)\\]\\s*:=",
+        "([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+)\\]\\s*+:=",
         Pattern.MULTILINE
     );
 
     // Phase 2 Bug patterns
     private static final Pattern FLOAT_EQUALITY_PATTERN = Pattern.compile(
-        "\\d+\\.\\d+\\s*===?\\s*\\d+\\.\\d+|===?\\s*\\d+\\.\\d+"
+        "\\d++\\.\\d++\\s*+===?+\\s*+\\d++\\.\\d++|===?+\\s*+\\d++\\.\\d++"
     );
     private static final Pattern FUNCTION_END_SEMICOLON_PATTERN = Pattern.compile(
-        "\\]\\s*:=\\s*\\([^)]*;\\s*\\)"
+        "\\]\\s*+:=\\s*+\\([^)]*+;\\s*+\\)"
     );
-    private static final Pattern WHILE_TRUE_PATTERN = Pattern.compile("While\\s*\\[\\s*True\\s*,");
-    private static final Pattern MATRIX_OPERATION_PATTERN = Pattern.compile("(?:Transpose|Dot)\\s*\\[");
+    private static final Pattern WHILE_TRUE_PATTERN = Pattern.compile("While\\s*+\\[\\s*+True\\s*+,");
+    private static final Pattern MATRIX_OPERATION_PATTERN = Pattern.compile("(?:Transpose|Dot)\\s*+\\[");
     private static final Pattern STRING_PLUS_NUMBER_PATTERN = Pattern.compile(
-        "\"[^\"]*\"\\s*\\+\\s*\\d+|\\d+\\s*\\+\\s*\"[^\"]*\""
+        "\"[^\"]*+\"\\s*+\\+\\s*+\\d++|\\d++\\s*+\\+\\s*+\"[^\"]*+\""
     );
-    private static final Pattern TRIPLE_UNDERSCORE_PATTERN = Pattern.compile("\\w+\\[___\\]");
+    private static final Pattern TRIPLE_UNDERSCORE_PATTERN = Pattern.compile("\\w++\\[___\\]");
 
     // Phase 3 Pattern matching patterns
+    // Note: Cannot use possessive on \w* before _ since \w includes _
     private static final Pattern FUNCTION_WITHOUT_TEST_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*)\\s*\\[\\s*([a-z]\\w*)_\\s*\\]\\s*:=\\s*[^;]*(?:Sqrt|Log|Sin|Cos|Exp|Power|N)\\["
+        "([a-zA-Z]\\w*+)\\s*+\\[\\s*+([a-z]\\w*)_\\s*+\\]\\s*+:=\\s*+[^;]*(?:Sqrt|Log|Sin|Cos|Exp|Power|N)\\["
     );
     private static final Pattern DOUBLE_UNDERSCORE_PATTERN = Pattern.compile(
-        "([a-z]\\w*)__\\s*\\]\\s*:=\\s*[^;]*Length\\s*\\[\\s*\\1\\s*\\]"
+        "([a-z]\\w*)__\\s*+\\]\\s*+:=\\s*+[^;]*Length\\s*+\\[\\s*+\\1\\s*+\\]"
     );
     private static final Pattern SET_FUNCTION_DEFINITION_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*)\\s*\\[\\s*\\w+_[^\\]]*\\]\\s*=(?!=)"
+        "([a-zA-Z]\\w*+)\\s*+\\[\\s*+\\w+_[^\\]]*+\\]\\s*+=(?!=)"
     );
     private static final Pattern BUILTIN_SHADOW_PATTERN = Pattern.compile(
-        "\\b([NDICEKOPABSLMX]|Pi|Re|Im|Abs|Min|Max|Log|Sin|Cos|Tan|Exp)\\s*(?:\\[\\w+_[^\\]]*\\]\\s*:?=|=(?!=))"
+        "\\b([NDICEKOPABSLMX]|Pi|Re|Im|Abs|Min|Max|Log|Sin|Cos|Tan|Exp)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
     );
 
     // Phase 3 Resource management patterns
-    private static final Pattern OPEN_FILE_PATTERN = Pattern.compile("(?:OpenRead|OpenWrite|OpenAppend)\\s*\\[");
+    private static final Pattern OPEN_FILE_PATTERN = Pattern.compile("(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\[");
     private static final Pattern DEFINITION_IN_LOOP_PATTERN = Pattern.compile(
-        "(?:Do|While|For)\\s*\\[[^\\]]*?\\w+\\[[^\\]]+\\]\\s*="
+        "(?:Do|While|For)\\s*+\\[[^\\]]*+\\w++\\[[^\\]]++\\]\\s*+="
     );
 
     // Phase 4 Bug patterns (optimized - pre-compiled for performance)
     private static final Pattern OFF_BY_ONE_PATTERN = Pattern.compile(
-        "Do\\s*\\[[^,]+,\\s*\\{\\s*\\w+,\\s*(0|Length\\[[^\\]]+\\]\\s*\\+\\s*1)"
+        "Do\\s*+\\[[^,]+,\\s*+\\{\\s*+\\w++,\\s*+(0|Length\\[[^\\]]++\\]\\s*+\\+\\s*+1)"
     );
-    private static final Pattern BLOCK_WITH_ASSIGNMENT_PATTERN = Pattern.compile("Block\\s*\\[\\s*\\{[^}]*=");
-    private static final Pattern FIRST_LAST_PATTERN = Pattern.compile("(?:First|Last)\\s*\\[([a-zA-Z]\\w*)\\]");
-    private static final Pattern SYMBOLIC_WITH_FLOAT_PATTERN = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*\\[[^\\]]*\\d+\\.\\d+");
-    private static final Pattern ASSIGNMENT_FROM_IMPORT_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*=\\s*(?:Import|Get|URLFetch)\\s*\\[");
-    private static final Pattern DIVISION_VARIABLES_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*/\\s*([a-zA-Z]\\w*)");
-    private static final Pattern DOT_OPERATION_PATTERN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\.\\s*([a-zA-Z]\\w*)");
-    private static final Pattern SCOPING_WITH_ASSIGNMENT_PATTERN = Pattern.compile("(?:Module|Block)\\s*\\[\\s*\\{[^}]*=");
+    private static final Pattern BLOCK_WITH_ASSIGNMENT_PATTERN = Pattern.compile("Block\\s*+\\[\\s*+\\{[^}]*=");
+    private static final Pattern FIRST_LAST_PATTERN = Pattern.compile("(?:First|Last)\\s*+\\[([a-zA-Z]\\w*+)\\]");
+    private static final Pattern SYMBOLIC_WITH_FLOAT_PATTERN = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*+\\[[^\\]]*+\\d++\\.\\d++");
+    private static final Pattern ASSIGNMENT_FROM_IMPORT_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+=\\s*+(?:Import|Get|URLFetch)\\s*+\\[");
+    private static final Pattern DIVISION_VARIABLES_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+/\\s*+([a-zA-Z]\\w*+)");
+    private static final Pattern DOT_OPERATION_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\.\\s*+([a-zA-Z]\\w*+)");
+    private static final Pattern SCOPING_WITH_ASSIGNMENT_PATTERN = Pattern.compile("(?:Module|Block)\\s*+\\[\\s*+\\{[^}]*=");
     private static final Pattern HOLD_ATTR_PATTERN = Pattern.compile("\\{[^}]*\\+\\+[^}]*\\+\\+[^}]*\\}");
-    private static final Pattern LEVEL_SPEC_PATTERN = Pattern.compile("(?:Map|Apply|Cases)\\s*\\[[^,]+,\\s*[^,]+,\\s*\\{-?\\d+\\}");
-    private static final Pattern LOOP_WITH_MUTATION_PATTERN = Pattern.compile("(?:Do|While|For)\\s*\\[[^\\[]*(?:Append|Prepend|Delete)\\s*\\[");
-    private static final Pattern FUNCTION_DEF_GENERAL_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
-    private static final Pattern ASSOCIATION_JOIN_PATTERN = Pattern.compile("Join\\s*\\[\\s*<\\|");
-    private static final Pattern DATE_OBJECT_PATTERN = Pattern.compile("DateObject\\s*\\[\\s*\\{(\\d+),\\s*(\\d+),\\s*(\\d+)");
-    private static final Pattern STATS_ON_VAR_PATTERN = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*\\[([a-zA-Z]\\w*)\\]");
+    private static final Pattern LEVEL_SPEC_PATTERN = Pattern.compile("(?:Map|Apply|Cases)\\s*+\\[[^,]+,\\s*+[^,]+,\\s*+\\{-?+\\d++\\}");
+    private static final Pattern LOOP_WITH_MUTATION_PATTERN = Pattern.compile("(?:Do|While|For)\\s*+\\[[^\\[]*+(?:Append|Prepend|Delete)\\s*+\\[");
+    private static final Pattern FUNCTION_DEF_GENERAL_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*+\\]\\s*+:=");
+    private static final Pattern ASSOCIATION_JOIN_PATTERN = Pattern.compile("Join\\s*+\\[\\s*+<\\|");
+    private static final Pattern DATE_OBJECT_PATTERN = Pattern.compile("DateObject\\s*+\\[\\s*+\\{(\\d++)\\s*+,\\s*+(\\d++)\\s*+,\\s*+(\\d++)");
+    private static final Pattern STATS_ON_VAR_PATTERN = Pattern.compile("(?:Mean|Total|StandardDeviation)\\s*+\\[([a-zA-Z]\\w*+)\\]");
     private static final Pattern QUANTITY_MISMATCH_PATTERN = Pattern.compile(
-        "Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]\\s*[+\\-]\\s*Quantity\\[\\d+,\\s*\"([^\"]+)\"\\]");
+        "Quantity\\[\\d++,\\s*+\"([^\"]++)\"\\]\\s*+[+\\-]\\s*+Quantity\\[\\d++,\\s*+\"([^\"]++)\"\\]");
 
     /**
      * Detect potential division by zero.
@@ -206,7 +207,7 @@ public class BugDetector extends BaseDetector {
                     boolean hasBaseCase = baseCaseCache.computeIfAbsent(functionName, funcName -> {
                         // OPTIMIZATION: Pattern compiled once per unique function name, not per occurrence
                         Pattern baseCase = Pattern.compile(
-                            Pattern.quote(funcName) + "\\s*\\[\\s*\\d+\\s*\\]\\s*="
+                            Pattern.quote(funcName) + "\\s*+\\[\\s*+\\d++\\s*+\\]\\s*+="
                         );
                         Matcher baseMatcher = baseCase.matcher(content);
 
@@ -370,7 +371,7 @@ public class BugDetector extends BaseDetector {
      */
     private int findFunctionLine(String content, String functionName) {
         try {
-            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(functionName) + "\\s*\\[");
+            Pattern pattern = Pattern.compile("\\b" + Pattern.quote(functionName) + "\\s*+\\[");
             Matcher matcher = pattern.matcher(content);
             if (matcher.find()) {
                 return calculateLineNumber(content, matcher.start());
@@ -936,20 +937,20 @@ public class BugDetector extends BaseDetector {
     // ==========================================================================
 
     private static final Pattern STREAM_PATTERN = Pattern.compile(
-        "(?:OpenRead|OpenWrite|OpenAppend|OutputStream|InputStream)\\s*\\["
+        "(?:OpenRead|OpenWrite|OpenAppend|OutputStream|InputStream)\\s*+\\["
     );
     private static final Pattern FILE_HANDLE_PATTERN = Pattern.compile(
-        "(?:OpenRead|OpenWrite|OpenAppend|File)\\s*\\["
+        "(?:OpenRead|OpenWrite|OpenAppend|File)\\s*+\\["
     );
-    private static final Pattern CLOSE_PATTERN = Pattern.compile("Close\\s*\\[");
-    private static final Pattern CHECK_PATTERN = Pattern.compile("Check\\s*\\[");
+    private static final Pattern CLOSE_PATTERN = Pattern.compile("Close\\s*+\\[");
+    private static final Pattern CHECK_PATTERN = Pattern.compile("Check\\s*+\\[");
     private static final Pattern STREAM_VAR_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*)\\s*=\\s*(?:OpenRead|OpenWrite|OpenAppend)\\s*\\["
+        "([a-zA-Z]\\w*+)\\s*+=\\s*+(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\["
     );
     private static final Pattern NOTEBOOK_PUT_PATTERN = Pattern.compile(
-        "(?:Table|Range|Array)\\s*\\[[^\\]]*(?:Table|Range|Array).*NotebookWrite"
+        "(?:Table|Range|Array)\\s*+\\[[^\\]]*+(?:Table|Range|Array).*+NotebookWrite"
     );
-    private static final Pattern CLEAR_PATTERN = Pattern.compile("Clear\\s*\\[|ClearAll\\s*\\[|Remove\\s*\\[");
+    private static final Pattern CLEAR_PATTERN = Pattern.compile("Clear\\s*+\\[|ClearAll\\s*+\\[|Remove\\s*+\\[");
 
     /**
      * Detect streams that are not closed.
@@ -1111,7 +1112,7 @@ public class BugDetector extends BaseDetector {
         try {
             // Look for large assignments without Clear
             if (!content.contains("Clear") && !content.contains("ClearAll")) {
-                Matcher matcher = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*=\\s*(?:Table|Range|Array)\\s*\\[[^\\]]{100,}").matcher(content);
+                Matcher matcher = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+=\\s*+(?:Table|Range|Array)\\s*+\\[[^\\]]{100,}+").matcher(content);
                 if (matcher.find()) {
                     reportIssue(context, inputFile, 1, MathematicaRulesDefinition.NO_CLEAR_AFTER_USE_KEY,
                         "Large data structures created but never cleared. Use Clear[] to free memory.");
