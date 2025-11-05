@@ -33,13 +33,13 @@ public class MathematicaParser {
     // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
     private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
-        "([a-zA-Z$][a-zA-Z0-9$]*)\\s*\\[([^\\]]*)\\]\\s*(:?=)"
+        "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\[([^\\]]*+)\\]\\s*+(:?=)"
     );
     private static final Pattern FUNCTION_CALL_PATTERN = Pattern.compile(
-        "([a-zA-Z$][a-zA-Z0-9$]*)\\s*\\[([^\\]]*)\\]"
+        "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\[([^\\]]*+)\\]"
     );
-    private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*(?:[eE][+-]?\\d+)?");
-    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");
+    private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d++\\.?\\d*+(?:[eE][+-]?\\d++)?+");
+    private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*+");
 
     // PERFORMANCE: Cache line offsets for O(log n) lookups instead of O(n) scans
     private int[] lineOffsets;

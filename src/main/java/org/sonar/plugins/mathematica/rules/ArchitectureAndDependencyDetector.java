@@ -41,32 +41,32 @@ public final class ArchitectureAndDependencyDetector {
     // ========================================
 
     // Package declarations and imports
-    private static final Pattern BEGIN_PACKAGE = Pattern.compile("BeginPackage\\s*\\[\\s*\"([^\"]+)\"\\s*(?:,\\s*\\{([^}]*)\\})?\\s*\\]");
-    private static final Pattern END_PACKAGE = Pattern.compile("EndPackage\\s*\\[\\s*\\]");
-    private static final Pattern NEEDS = Pattern.compile("Needs\\s*\\[\\s*\"([^\"]+)\"\\s*\\]");
+    private static final Pattern BEGIN_PACKAGE = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\"\\s*+(?:,\\s*+\\{([^}]*+)\\})?+\\s*+\\]");
+    private static final Pattern END_PACKAGE = Pattern.compile("EndPackage\\s*+\\[\\s*+\\]");
+    private static final Pattern NEEDS = Pattern.compile("Needs\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]");
 
     // Symbol definitions
-    private static final Pattern FUNCTION_DEF = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)\\s*\\[([^\\]]*?)\\]\\s*:=");
-    private static final Pattern USAGE_MSG = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)::usage\\s*=");
+    private static final Pattern FUNCTION_DEF = Pattern.compile("([A-Z][a-zA-Z0 - 9]*+)\\s*+\\[([^\\]]*+)\\]\\s*+:=");
+    private static final Pattern USAGE_MSG = Pattern.compile("([A-Z][a-zA-Z0 - 9]*+)::usage\\s*+=");
 
     // Context and scoping
-    private static final Pattern BEGIN = Pattern.compile("Begin\\s*\\[\\s*\"([^\"]+)\"\\s*\\]");
-    private static final Pattern END = Pattern.compile("End\\s*\\[\\s*\\]");
-    private static final Pattern CONTEXT_SYMBOL = Pattern.compile("`([A-Z][a-zA-Z0 - 9]*?)(?:`|\\s|\\[)");
+    private static final Pattern BEGIN = Pattern.compile("Begin\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]");
+    private static final Pattern END = Pattern.compile("End\\s*+\\[\\s*+\\]");
+    private static final Pattern CONTEXT_SYMBOL = Pattern.compile("`([A-Z][a-zA-Z0 - 9]*+)(?:`|\\s|\\[)");
 
     // Function calls
-    private static final Pattern FUNCTION_CALL = Pattern.compile("([A-Z][a-zA-Z0 - 9]*?)\\s*\\[");
+    private static final Pattern FUNCTION_CALL = Pattern.compile("([A-Z][a-zA-Z0 - 9]*+)\\s*+\\[");
 
     // Test patterns
     private static final Pattern TEST_PATTERN = Pattern.compile(
             "(?:Test(?:ID|Match|Report|Create|Suite)|Verify(?:Test|Assert)|Assert(?:True|False|Equal))");
-    private static final Pattern TEST_FILE = Pattern.compile("(?i)test.*?\\.(?:m|wl|wlt)$");
+    private static final Pattern TEST_FILE = Pattern.compile("(?i)test.*+\\.(?:m|wl|wlt)$");
 
     // Documentation
-    private static final Pattern PARAMETER_NAME = Pattern.compile("([a-z][a-zA-Z0 - 9_]*)_");
+    private static final Pattern PARAMETER_NAME = Pattern.compile("([a-z][a-zA-Z0 - 9_]*+)_");
 
     // Version patterns
-    private static final Pattern VERSION_PATTERN = Pattern.compile("Version\\s*->\\s*\"([0 - 9.]+)\"");
+    private static final Pattern VERSION_PATTERN = Pattern.compile("Version\\s*+->\\s*+\"([0 - 9.]+)\"");
 
     // Deprecated markers
     private static final Pattern DEPRECATED = Pattern.compile("(?:Deprecated|DEPRECATED|@deprecated)");
@@ -76,7 +76,7 @@ public final class ArchitectureAndDependencyDetector {
     private static final Pattern LAYER_DATA = Pattern.compile("(?i)(?:Data|Persistence|Repository|DAO|Database)");
 
     // Conditional loading
-    private static final Pattern CONDITIONAL_LOAD = Pattern.compile("(?:If|Which|Switch)\\s*\\[[^\\]]*(?:Needs|Get|<<)");
+    private static final Pattern CONDITIONAL_LOAD = Pattern.compile("(?:If|Which|Switch)\\s*+\\[[^\\]]*+(?:Needs|Get|<<)");
 
     // ========================================
     // CROSS-FILE ANALYSIS STATE
@@ -778,7 +778,7 @@ public final class ArchitectureAndDependencyDetector {
         Set<String> exports = PACKAGE_EXPORTS.getOrDefault(currentPackage, new HashSet<>());
 
         // Check if package has usage documentation
-        Pattern pkgUsage = Pattern.compile(currentPackage.replace("`", "") + "::usage\\s*=");
+        Pattern pkgUsage = Pattern.compile(currentPackage.replace("`", "") + "::usage\\s*+=");
         if (!pkgUsage.matcher(content).find()) {
             createIssue(context, inputFile, MathematicaRulesDefinition.MISSING_PACKAGE_DOCUMENTATION_KEY,
                 pkgMatcher.start(), pkgMatcher.end(),
@@ -1034,7 +1034,7 @@ public final class ArchitectureAndDependencyDetector {
      * Rule 240: Commented-out package load
      */
     public static void detectCommentedOutPackageLoad(SensorContext context, InputFile inputFile, String content) {
-        Pattern commentedNeeds = Pattern.compile("\\(\\*[^*]*(?:Needs|Get|<<)[^*]*\\*\\)");
+        Pattern commentedNeeds = Pattern.compile("\\(\\*[^*]*+(?:Needs|Get|<<)[^*]*+\\*\\)");
         Matcher matcher = commentedNeeds.matcher(content);
 
         while (matcher.find()) {
@@ -1151,7 +1151,7 @@ public final class ArchitectureAndDependencyDetector {
         Set<String> deps = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>());
 
         // Check if dependencies have version requirements
-        Pattern versionReq = Pattern.compile("Needs\\s*\\[\\s*\"([^\"]+)\"\\s*,\\s*\"([0 - 9.]+)\"\\s*\\]");
+        Pattern versionReq = Pattern.compile("Needs\\s*+\\[\\s*+\"([^\"]+)\"\\s*+,\\s*+\"([0 - 9.]+)\"\\s*+\\]");
         Matcher versionMatcher = versionReq.matcher(content);
 
         while (versionMatcher.find()) {

@@ -24,29 +24,29 @@ public class StyleAndConventionsDetector extends BaseDetector {
     private static final Pattern COMMA_NO_SPACE_PATTERN = Pattern.compile(",(?!\\s)");
     private static final Pattern BRACKET_SPACE_PATTERN = Pattern.compile("\\w\\s+\\[");
     private static final Pattern MULTIPLE_SEMICOLON_PATTERN = Pattern.compile(";;+");
-    private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*\\)\\)\\)");
-    private static final Pattern BRACE_PATTERN = Pattern.compile("\\{[^}]*\\}");
+    private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*+\\)\\)\\)");
+    private static final Pattern BRACE_PATTERN = Pattern.compile("\\{[^}]*+\\}");
 
     // ===== NAMING PATTERNS (15 rules) =====
 
-    private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[[^\\]]*\\]\\s*:=");
-    private static final Pattern VARIABLE_ASSIGN_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*)\\s*=(?!=)");
-    private static final Pattern BOOLEAN_VAR_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*)\\s*=\\s*(?:True|False)");
-    private static final Pattern CONSTANT_PATTERN = Pattern.compile("([A-Z][A-Z0-9_]*)\\s*=");
-    private static final Pattern PACKAGE_NAME_PATTERN = Pattern.compile("BeginPackage\\s*\\[\\s*\"([^\"]+)\"");
-    private static final Pattern BUILTIN_NAMES = Pattern.compile("\\b([CDEINOPS])\\b\\s*=");
-    private static final Pattern HUNGARIAN_PATTERN = Pattern.compile("\\b(?:str|int|num|lst|arr|tbl|obj|fn|func)[A-Z][a-zA-Z0-9]*");
-    private static final Pattern NUMBER_IN_NAME_PATTERN = Pattern.compile("\\b[a-zA-Z]+\\d+[a-zA-Z]*\\b");
-    private static final Pattern GENERIC_NAMES = Pattern.compile("\\b(?:data|temp|result|value|item|element|obj|var|info|stuff)\\b\\s*=");
-    private static final Pattern NEGATED_BOOL_PATTERN = Pattern.compile("\\b(?:not|isNot|notIs|isntNot)[A-Z][a-zA-Z]*");
+    private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*+\\]\\s*+:=");
+    private static final Pattern VARIABLE_ASSIGN_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*+)\\s*+=(?!=)");
+    private static final Pattern BOOLEAN_VAR_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*+)\\s*+=\\s*+(?:True|False)");
+    private static final Pattern CONSTANT_PATTERN = Pattern.compile("([A-Z][A-Z0-9_]*+)\\s*+=");
+    private static final Pattern PACKAGE_NAME_PATTERN = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\"");
+    private static final Pattern BUILTIN_NAMES = Pattern.compile("\\b([CDEINOPS])\\b\\s*+=");
+    private static final Pattern HUNGARIAN_PATTERN = Pattern.compile("\\b(?:str|int|num|lst|arr|tbl|obj|fn|func)[A-Z][a-zA-Z0-9]*+");
+    private static final Pattern NUMBER_IN_NAME_PATTERN = Pattern.compile("\\b[a-zA-Z]++\\d++[a-zA-Z]*+\\b");
+    private static final Pattern GENERIC_NAMES = Pattern.compile("\\b(?:data|temp|result|value|item|element|obj|var|info|stuff)\\b\\s*+=");
+    private static final Pattern NEGATED_BOOL_PATTERN = Pattern.compile("\\b(?:not|isNot|notIs|isntNot)[A-Z][a-zA-Z]*+");
 
     // ===== COMPLEXITY PATTERNS (10 rules) =====
 
-    private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*\\[([^\\]]+)\\]\\s*:=");
-    private static final Pattern MODULE_PATTERN = Pattern.compile("Module\\s*\\[\\s*\\{([^}]+)\\}");
-    private static final Pattern BLOCK_PATTERN = Pattern.compile("Block\\s*\\[\\s*\\{([^}]+)\\}");
-    private static final Pattern RETURN_PATTERN = Pattern.compile("\\bReturn\\s*\\[");
-    private static final Pattern SWITCH_PATTERN = Pattern.compile("Switch\\s*\\[");
+    private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]+)\\]\\s*+:=");
+    private static final Pattern MODULE_PATTERN = Pattern.compile("Module\\s*+\\[\\s*+\\{([^}]+)\\}");
+    private static final Pattern BLOCK_PATTERN = Pattern.compile("Block\\s*+\\[\\s*+\\{([^}]+)\\}");
+    private static final Pattern RETURN_PATTERN = Pattern.compile("\\bReturn\\s*+\\[");
+    private static final Pattern SWITCH_PATTERN = Pattern.compile("Switch\\s*+\\[");
     private static final Pattern BOOLEAN_OP_PATTERN = Pattern.compile("&&|\\|\\|");
     private static final Pattern CHAIN_OP_PATTERN = Pattern.compile("//");
 
@@ -55,30 +55,30 @@ public class StyleAndConventionsDetector extends BaseDetector {
     // Possessive quantifiers prevent backtracking and stack overflow
     private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*+(?:\\\\.[^\"\\\\]*+)*+\"");
     private static final Pattern PATH_PATTERN = Pattern.compile("\"(?>/[^/\"]+)+/?\"");
-    private static final Pattern URL_PATTERN = Pattern.compile("\"https?://[^\"]+\"");
-    private static final Pattern IF_PATTERN = Pattern.compile("If\\s*\\[");
-    private static final Pattern GLOBAL_ASSIGN_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*=(?!=)");
+    private static final Pattern URL_PATTERN = Pattern.compile("\"https?+://[^\"]+\"");
+    private static final Pattern IF_PATTERN = Pattern.compile("If\\s*+\\[");
+    private static final Pattern GLOBAL_ASSIGN_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+=(?!=)");
     private static final Pattern ASSIGNMENT_IN_EXPR_PATTERN = Pattern.compile("[^:]=(?!=)");
-    private static final Pattern PATTERN_MATCH_PATTERN = Pattern.compile("Match\\s*\\[|Cases\\s*\\[|Switch\\s*\\[");
-    private static final Pattern OPTION_PATTERN = Pattern.compile("OptionValue\\s*\\[|Options\\s*\\[");
-    private static final Pattern UNCLEAR_OPTION_PATTERN = Pattern.compile("\\b(?:flag|mode|setting|config|param)\\b\\s*->");
+    private static final Pattern PATTERN_MATCH_PATTERN = Pattern.compile("Match\\s*+\\[|Cases\\s*+\\[|Switch\\s*+\\[");
+    private static final Pattern OPTION_PATTERN = Pattern.compile("OptionValue\\s*+\\[|Options\\s*+\\[");
+    private static final Pattern UNCLEAR_OPTION_PATTERN = Pattern.compile("\\b(?:flag|mode|setting|config|param)\\b\\s*+->");
 
     // ===== BEST PRACTICES PATTERNS (15 rules) =====
 
     private static final Pattern STRING_CONCAT_PATTERN = Pattern.compile("<>");
-    private static final Pattern LOOP_PATTERN = Pattern.compile("(?:Do|While|For)\\s*\\[");
-    private static final Pattern BOOL_COMPARE_PATTERN = Pattern.compile("==\\s*(?:True|False)|(?:True|False)\\s*==");
-    private static final Pattern NEGATED_COMPARE_PATTERN = Pattern.compile("!\\s*\\([^)]*==");
-    private static final Pattern REDUNDANT_IF_PATTERN = Pattern.compile("If\\s*\\[[^,]*,\\s*True\\s*,\\s*False\\s*\\]");
-    private static final Pattern CATCH_PATTERN = Pattern.compile("Catch\\s*\\[");
-    private static final Pattern THROW_PATTERN = Pattern.compile("Throw\\s*\\[");
-    private static final Pattern MEMBER_Q_PATTERN = Pattern.compile("MemberQ\\s*\\[");
-    private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*\\[[^\\]]*,[^\\]]*,[^\\]]*\\]");
-    private static final Pattern REAL_EQUALITY_PATTERN = Pattern.compile("==[^=]*\\.\\d+|\\d+\\.[^=]*==");
-    private static final Pattern GRAPHICS_PATTERN = Pattern.compile("Graphics\\s*\\[");
-    private static final Pattern PLOT_PATTERN = Pattern.compile("(?:Plot|ListPlot|Plot3D)\\s*\\[");
-    private static final Pattern DATASET_PATTERN = Pattern.compile("Dataset\\s*\\[");
-    private static final Pattern ASSOCIATION_PATTERN = Pattern.compile("Association\\s*\\[|<\\|");
+    private static final Pattern LOOP_PATTERN = Pattern.compile("(?:Do|While|For)\\s*+\\[");
+    private static final Pattern BOOL_COMPARE_PATTERN = Pattern.compile("==\\s*+(?:True|False)|(?:True|False)\\s*+==");
+    private static final Pattern NEGATED_COMPARE_PATTERN = Pattern.compile("!\\s*+\\([^)]*+==");
+    private static final Pattern REDUNDANT_IF_PATTERN = Pattern.compile("If\\s*+\\[[^,]*+,\\s*+True\\s*+,\\s*+False\\s*+\\]");
+    private static final Pattern CATCH_PATTERN = Pattern.compile("Catch\\s*+\\[");
+    private static final Pattern THROW_PATTERN = Pattern.compile("Throw\\s*+\\[");
+    private static final Pattern MEMBER_Q_PATTERN = Pattern.compile("MemberQ\\s*+\\[");
+    private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*+\\[[^\\]]*+,[^\\]]*+,[^\\]]*+\\]");
+    private static final Pattern REAL_EQUALITY_PATTERN = Pattern.compile("==[^=]*+\\.\\d++|\\d++\\.[^=]*+==");
+    private static final Pattern GRAPHICS_PATTERN = Pattern.compile("Graphics\\s*+\\[");
+    private static final Pattern PLOT_PATTERN = Pattern.compile("(?:Plot|ListPlot|Plot3D)\\s*+\\[");
+    private static final Pattern DATASET_PATTERN = Pattern.compile("Dataset\\s*+\\[");
+    private static final Pattern ASSOCIATION_PATTERN = Pattern.compile("Association\\s*+\\[|<\\|");
     private static final Pattern PATTERN_TEST_PATTERN = Pattern.compile("/;");
     private static final Pattern CONDITION_PATTERN = Pattern.compile("\\?");
 
@@ -332,7 +332,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
      */
     public void detectAlignmentInconsistent(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern listPattern = Pattern.compile("\\{[^}]{50,}\\}");
+            Pattern listPattern = Pattern.compile("\\{[^}]{50,}+\\}");
             Matcher matcher = listPattern.matcher(content);
 
             while (matcher.find()) {
@@ -593,7 +593,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
      */
     public void detectAcronymStyle(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern acronymPattern = Pattern.compile("\\b([A-Z]{2,}[a-z]+|[a-z]+[A-Z]{2,})\\b");
+            Pattern acronymPattern = Pattern.compile("\\b([A-Z]{2,}+[a-z]++|[a-z]++[A-Z]{2,}+)\\b");
             Matcher matcher = acronymPattern.matcher(content);
 
             while (matcher.find()) {
@@ -704,7 +704,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
      */
     public void detectAbbreviationUnclear(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern abbrevPattern = Pattern.compile("\\b([a-z]{1,2}[A-Z][a-z]*|[a-z]*[bcdfghjklmnpqrstvwxz]{4,})\\b");
+            Pattern abbrevPattern = Pattern.compile("\\b([a-z]{1,2}[A-Z][a-z]*+|[a-z]*+[bcdfghjklmnpqrstvwxz]{4,}+)\\b");
             Matcher matcher = abbrevPattern.matcher(content);
 
             Set<String> reported = new HashSet<>();
@@ -1143,7 +1143,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
      */
     public void detectIdenticalIfBranches(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern ifElsePattern = Pattern.compile("If\\s*\\[([^,]+),([^,]+),([^\\]]+)\\]");
+            Pattern ifElsePattern = Pattern.compile("If\\s*+\\[([^,]+),([^,]+),([^\\]]+)\\]");
             Matcher matcher = ifElsePattern.matcher(content);
 
             while (matcher.find()) {
@@ -1326,7 +1326,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
     public void detectSideEffectInExpression(SensorContext context, InputFile inputFile, String content) {
         try {
             // Look for assignments inside function calls
-            Pattern sideEffectPattern = Pattern.compile("\\[[^\\[\\]]*=[^=][^\\[\\]]*\\]");
+            Pattern sideEffectPattern = Pattern.compile("\\[[^\\[\\]]*+=[^=][^\\[\\]]*+\\]");
             Matcher matcher = sideEffectPattern.matcher(content);
 
             while (matcher.find()) {
@@ -1480,7 +1480,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
      */
     public void detectEmptyCatchBlock(SensorContext context, InputFile inputFile, String content) {
         try {
-            Pattern emptyCatchPattern = Pattern.compile("Catch\\s*\\[\\s*[^,]+\\s*\\]");
+            Pattern emptyCatchPattern = Pattern.compile("Catch\\s*+\\[\\s*+[^,]+\\s*+\\]");
             Matcher matcher = emptyCatchPattern.matcher(content);
 
             while (matcher.find()) {

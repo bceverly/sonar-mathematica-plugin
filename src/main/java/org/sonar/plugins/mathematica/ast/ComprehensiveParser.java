@@ -28,16 +28,16 @@ public class ComprehensiveParser {
 
     // Token patterns
     private static final Pattern FUNCTION_DEF = Pattern.compile(
-        "([a-zA-Z$][a-zA-Z0-9$]*)\\s*\\[([^\\]]*)\\]\\s*(:=|=)"
+        "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\[([^\\]]*+)\\]\\s*+(:=|=)"
     );
     private static final Pattern FUNCTION_CALL = Pattern.compile(
-        "([a-zA-Z$][a-zA-Z0-9$]*)\\s*\\["
+        "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\["
     );
     private static final Pattern IDENTIFIER = Pattern.compile(
-        "[a-zA-Z$][a-zA-Z0-9$]*"
+        "[a-zA-Z$][a-zA-Z0-9$]*+"
     );
     private static final Pattern NUMBER = Pattern.compile(
-        "\\d+\\.?\\d*(?:[eE][+-]?\\d+)?"
+        "\\d++\\.?\\d*+(?:[eE][+-]?\\d++)?+"
     );
     // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
     // Without *+, a 650KB string with escaped quotes causes StackOverflowError via exponential backtracking
@@ -110,7 +110,7 @@ public class ComprehensiveParser {
 
         // Match assignments that aren't function definitions
         Pattern assignPattern = Pattern.compile(
-            "([a-zA-Z$][a-zA-Z0-9$]*)\\s*(=|:=|\\^=|/\\.=)\\s*([^;\\n]+)"
+            "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+(=|:=|\\^=|/\\.=)\\s*+([^;\\n]++)"
         );
 
         Matcher m = assignPattern.matcher(content);

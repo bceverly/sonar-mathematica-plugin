@@ -126,7 +126,7 @@ public class CustomRuleDetector extends BaseDetector {
         try {
             // Match function definitions: functionName[params] := body OR functionName[params] = body
             Pattern functionDefPattern = Pattern.compile(
-                "(" + functionPatternString + ")\\s*\\[[^\\]]*\\]\\s*:?="
+                "(" + functionPatternString + ")\\s*+\\[[^\\]]*+\\]\\s*+:?="
             );
 
             Matcher matcher = functionDefPattern.matcher(content);
@@ -162,7 +162,7 @@ public class CustomRuleDetector extends BaseDetector {
         try {
             // Match API usage: ApiName[...] or ApiName (without brackets)
             // Use word boundaries to match whole words only
-            Pattern apiPattern = Pattern.compile("\\b" + Pattern.quote(apiName) + "\\b(?:\\s*\\[)?");
+            Pattern apiPattern = Pattern.compile("\\b" + Pattern.quote(apiName) + "\\b(?:\\s*+\\[)?+");
             Matcher matcher = apiPattern.matcher(content);
 
             while (matcher.find()) {

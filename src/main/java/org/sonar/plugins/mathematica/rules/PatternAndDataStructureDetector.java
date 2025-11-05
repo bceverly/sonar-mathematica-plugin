@@ -21,47 +21,50 @@ import org.sonar.api.batch.sensor.SensorContext;
 public class PatternAndDataStructureDetector extends BaseDetector {
 
     // Pre-compiled patterns for Pattern System Rules
-    private static final Pattern UNRESTRICTED_BLANK = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*\\b\\w+_\\b[^\\]]*)\\]\\s*:?=");
-    private static final Pattern PATTERN_TEST_CONDITION = Pattern.compile("\\b(\\w+)_\\s*/;\\s*(\\w+Q)\\[\\1\\]");
+    // Note: Cannot use possessive on \w+ before _ since \w includes _, and [^]]* needs backtracking in bracket contexts
+    private static final Pattern UNRESTRICTED_BLANK = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*\\b\\w+_\\b[^\\]]*)\\]\\s*+:?+=");
+    // Note: \w+ before _ must be non-possessive since \w includes _
+    private static final Pattern PATTERN_TEST_CONDITION = Pattern.compile("\\b(\\w+)_\\s*+/;\\s*+(\\w++Q)\\[\\1\\]");
     private static final Pattern BLANKSEQUENCE = Pattern.compile("\\b\\w+__(?![a-zA-Z_])");
-    private static final Pattern OPTIONAL_PATTERN = Pattern.compile("\\b(\\w+)_:(\\w+)");
-    private static final Pattern PATTERN_NAME_USAGE = Pattern.compile("\\b(\\w+)_([a-zA-Z]\\w*)?");
-    private static final Pattern PATTERN_ALTERNATIVES = Pattern.compile("(\\w+)_([a-zA-Z]\\w*)\\s*\\|\\s*\\1_");
-    private static final Pattern PATTERN_TEST_PURE = Pattern.compile("\\w+_\\?\\(\\s*#");
-    private static final Pattern OPTIONS_PATTERN_USAGE = Pattern.compile("\\b\\w+___(?!\\s*:?\\s*OptionsPattern)");
-    private static final Pattern FUNCTION_DEFINITION = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[([^\\]]*)\\]\\s*:?=");
-    private static final Pattern VERBATIM_USAGE = Pattern.compile("\\bVerbatim\\s*\\[");
-    private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*\\[([^\\]]*)\\]");
-    private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*\\[");
-    private static final Pattern REPEATED_PATTERN_NAME = Pattern.compile("\\{\\s*(\\w+)_,\\s*\\1_\\s*\\}");
+    private static final Pattern OPTIONAL_PATTERN = Pattern.compile("\\b(\\w+)_:(\\w++)");
+    private static final Pattern PATTERN_NAME_USAGE = Pattern.compile("\\b(\\w+)_([a-zA-Z]\\w*+)?+");
+    private static final Pattern PATTERN_ALTERNATIVES = Pattern.compile("(\\w+)_([a-zA-Z]\\w*+)\\s*+\\|\\s*+\\1_");
+    private static final Pattern PATTERN_TEST_PURE = Pattern.compile("\\w+_\\?\\(\\s*+#");
+    private static final Pattern OPTIONS_PATTERN_USAGE = Pattern.compile("\\b\\w+___(?!\\s*+:?+\\s*+OptionsPattern)");
+    private static final Pattern FUNCTION_DEFINITION = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+)\\]\\s*+:?+=");
+    private static final Pattern VERBATIM_USAGE = Pattern.compile("\\bVerbatim\\s*+\\[");
+    private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*+\\[([^\\]]*+)\\]");
+    private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*+\\[");
+    private static final Pattern REPEATED_PATTERN_NAME = Pattern.compile("\\{\\s*+(\\w+)_,\\s*+\\1_\\s*+\\}");
     // FIXED: Ultra-safe pattern with possessive quantifiers to prevent backtracking
     // Using \w++ and \s*+ ensures no backtracking on these quantifiers
     private static final Pattern ALTERNATIVES_COUNT = Pattern.compile("\\w++:\\s*+\\(");
-    private static final Pattern CASES_LARGE_LIST = Pattern.compile("Cases\\s*\\[\\s*Range\\s*\\[\\s*(\\d+)\\s*\\]");
+    private static final Pattern CASES_LARGE_LIST = Pattern.compile("Cases\\s*+\\[\\s*+Range\\s*+\\[\\s*+(\\d++)\\s*+\\]");
 
     // Pre-compiled patterns for List/Array Rules
-    private static final Pattern LIST_INDEXING = Pattern.compile("(\\w+)\\s*\\[\\[\\s*(-?\\d+|\\w+)\\s*\\]\\]");
-    private static final Pattern NEGATIVE_INDEX = Pattern.compile("\\[\\[\\s*-\\s*(\\d+|\\w+)\\s*\\]\\]");
-    private static final Pattern PART_ASSIGNMENT = Pattern.compile("([^\\w]\\{[^}]+\\}|[A-Z]\\w*\\s*\\[[^\\]]+\\])\\s*\\[\\[");
-    private static final Pattern JOIN_IN_LOOP = Pattern.compile("(Do|While|Table)\\s*\\[[^\\]]*Join\\s*\\[");
-    private static final Pattern FLATTEN_USAGE = Pattern.compile("Flatten\\s*\\[\\s*\\{\\s*([^,}]++)(?:,\\s*([^,}]++))*+\\s*\\}\\s*\\]");
-    private static final Pattern LENGTH_IN_DO = Pattern.compile("Do\\s*\\[[^,]*,\\s*\\{[^,]*,\\s*[^,]*,\\s*Length\\s*\\[");
-    private static final Pattern REVERSE_TWICE = Pattern.compile("Reverse\\s*\\[\\s*Reverse\\s*\\[");
-    private static final Pattern SORT_GREATER = Pattern.compile("Sort\\s*\\[\\s*\\w+\\s*,\\s*Greater\\s*\\]");
-    private static final Pattern EXTRACT_POSITION = Pattern.compile("Extract\\s*\\[\\s*\\w+\\s*,\\s*Position\\s*\\[");
-    private static final Pattern NESTED_PART = Pattern.compile("(\\w+)\\s*\\[\\[\\s*\\w+\\s*\\]\\]\\s*\\[\\[");
+    private static final Pattern LIST_INDEXING = Pattern.compile("(\\w++)\\s*+\\[\\[\\s*+(-?+\\d++|\\w++)\\s*+\\]\\]");
+    private static final Pattern NEGATIVE_INDEX = Pattern.compile("\\[\\[\\s*+-\\s*+(\\d++|\\w++)\\s*+\\]\\]");
+    private static final Pattern PART_ASSIGNMENT = Pattern.compile("([^\\w]\\{[^}]++\\}|[A-Z]\\w*+\\s*+\\[[^\\]]++\\])\\s*+\\[\\[");
+    // Note: [^]]* before Join must be non-possessive to allow backtracking to find Join
+    private static final Pattern JOIN_IN_LOOP = Pattern.compile("(Do|While|Table)\\s*+\\[[^\\]]*Join\\s*+\\[");
+    private static final Pattern FLATTEN_USAGE = Pattern.compile("Flatten\\s*+\\[\\s*+\\{\\s*+([^,}]++)(?:,\\s*+([^,}]++))*+\\s*+\\}\\s*+\\]");
+    private static final Pattern LENGTH_IN_DO = Pattern.compile("Do\\s*+\\[[^,]*+,\\s*+\\{[^,]*+,\\s*+[^,]*+,\\s*+Length\\s*+\\[");
+    private static final Pattern REVERSE_TWICE = Pattern.compile("Reverse\\s*+\\[\\s*+Reverse\\s*+\\[");
+    private static final Pattern SORT_GREATER = Pattern.compile("Sort\\s*+\\[\\s*+\\w++\\s*+,\\s*+Greater\\s*+\\]");
+    private static final Pattern EXTRACT_POSITION = Pattern.compile("Extract\\s*+\\[\\s*+\\w++\\s*+,\\s*+Position\\s*+\\[");
+    private static final Pattern NESTED_PART = Pattern.compile("(\\w++)\\s*+\\[\\[\\s*+\\w++\\s*+\\]\\]\\s*+\\[\\[");
 
     // Pre-compiled patterns for Association Rules
-    private static final Pattern ASSOC_ACCESS = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[\\s*\"[^\"]+\"\\s*\\]");
-    private static final Pattern ASSOC_POSITIONAL = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[\\[\\s*\\d+\\s*\\]\\]");
-    private static final Pattern SELECT_KEYS = Pattern.compile("Select\\s*\\[\\s*Keys\\s*\\[\\s*(\\w+)\\s*\\]");
-    private static final Pattern QUERY_USAGE = Pattern.compile("Query\\s*\\[");
-    private static final Pattern ASSOC_DIRECT_ASSIGN = Pattern.compile("([a-zA-Z]\\w*)\\s*\\[\\s*\"[^\"]+\"\\s*\\]\\s*=");
-    private static final Pattern MERGE_USAGE = Pattern.compile("Merge\\s*\\[\\s*\\{[^}]+\\}\\s*\\](?!\\s*,)");
-    private static final Pattern ASSOCIATETO_USAGE = Pattern.compile("AssociateTo\\s*\\[\\s*(<\\|[^|]+\\|>)");
-    private static final Pattern KEYDROP_CHAIN = Pattern.compile("KeyDrop\\s*\\[\\s*KeyDrop\\s*\\[");
-    private static final Pattern LOOKUP_MISSING = Pattern.compile("Lookup\\s*\\[\\s*\\w+\\s*,\\s*[^,]+,\\s*Missing\\s*\\[\\s*\\]\\s*\\]");
-    private static final Pattern GROUPBY_USAGE = Pattern.compile("GroupBy\\s*\\[\\s*\\w+\\s*,\\s*[^,]+\\s*\\](?!\\s*,)");
+    private static final Pattern ASSOC_ACCESS = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[\\s*+\"[^\"]++\"\\s*+\\]");
+    private static final Pattern ASSOC_POSITIONAL = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[\\[\\s*+\\d++\\s*+\\]\\]");
+    private static final Pattern SELECT_KEYS = Pattern.compile("Select\\s*+\\[\\s*+Keys\\s*+\\[\\s*+(\\w++)\\s*+\\]");
+    private static final Pattern QUERY_USAGE = Pattern.compile("Query\\s*+\\[");
+    private static final Pattern ASSOC_DIRECT_ASSIGN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[\\s*+\"[^\"]++\"\\s*+\\]\\s*+=");
+    private static final Pattern MERGE_USAGE = Pattern.compile("Merge\\s*+\\[\\s*+\\{[^}]++\\}\\s*+\\](?!\\s*+,)");
+    private static final Pattern ASSOCIATETO_USAGE = Pattern.compile("AssociateTo\\s*+\\[\\s*+(<\\|[^|]++\\|>)");
+    private static final Pattern KEYDROP_CHAIN = Pattern.compile("KeyDrop\\s*+\\[\\s*+KeyDrop\\s*+\\[");
+    private static final Pattern LOOKUP_MISSING = Pattern.compile("Lookup\\s*+\\[\\s*+\\w++\\s*+,\\s*+[^,]++,\\s*+Missing\\s*+\\[\\s*+\\]\\s*+\\]");
+    private static final Pattern GROUPBY_USAGE = Pattern.compile("GroupBy\\s*+\\[\\s*+\\w++\\s*+,\\s*+[^,]++\\s*+\\](?!\\s*+,)");
 
     // ===== PATTERN SYSTEM RULES (Items 16-30) =====
 

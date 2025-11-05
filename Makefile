@@ -234,9 +234,69 @@ install: check-sonarqube-home build
 		echo "ERROR: Cannot find SonarQube start script"; \
 		exit 1; \
 	fi
-	@# Wait for shutdown
+	@# Wait for shutdown and verify port 9000 is released
 	@echo "Waiting for shutdown..."
 	@sleep 3
+	@echo ""
+	@echo "Verifying port 9000 is released..."
+	@# Try 3 times with normal wait
+	@RETRY=0; \
+	while [ $$RETRY -lt 3 ]; do \
+		PORT_CHECK=$$(lsof -i :9000 2>/dev/null || true); \
+		if [ -z "$$PORT_CHECK" ]; then \
+			echo "✓ Port 9000 is clear"; \
+			break; \
+		fi; \
+		RETRY=$$((RETRY + 1)); \
+		echo ""; \
+		echo "⚠️  WARNING: Port 9000 is still occupied (attempt $$RETRY/3)"; \
+		echo "   SonarQube is not shutting down cleanly."; \
+		echo "   Processes using port 9000:"; \
+		lsof -i :9000 2>/dev/null | sed 's/^/   /'; \
+		echo "   Waiting 5 seconds and retrying..."; \
+		sleep 5; \
+	done; \
+	if [ $$RETRY -eq 3 ]; then \
+		PORT_CHECK=$$(lsof -i :9000 2>/dev/null || true); \
+		if [ -n "$$PORT_CHECK" ]; then \
+			echo ""; \
+			echo "⚠️  Port 9000 still occupied after 3 attempts. Using kill -9..."; \
+			PIDS=$$(lsof -ti :9000 2>/dev/null || true); \
+			if [ -n "$$PIDS" ]; then \
+				echo "   Killing processes: $$PIDS"; \
+				echo "$$PIDS" | xargs kill -9 2>/dev/null || true; \
+				echo "   Waiting 3 seconds..."; \
+				sleep 3; \
+				RETRY2=0; \
+				while [ $$RETRY2 -lt 3 ]; do \
+					PORT_CHECK=$$(lsof -i :9000 2>/dev/null || true); \
+					if [ -z "$$PORT_CHECK" ]; then \
+						echo "   ✓ Port 9000 is now clear after kill -9"; \
+						break; \
+					fi; \
+					RETRY2=$$((RETRY2 + 1)); \
+					echo "   Port still occupied (attempt $$RETRY2/3 after kill -9)"; \
+					sleep 3; \
+				done; \
+				if [ $$RETRY2 -eq 3 ]; then \
+					echo ""; \
+					echo "==========================================";\
+					echo "ERROR: Cannot release port 9000!";\
+					echo "==========================================";\
+					echo ""; \
+					echo "Port 9000 is still occupied after shutdown and kill -9."; \
+					echo ""; \
+					echo "Processes still using port 9000:"; \
+					lsof -i :9000 2>/dev/null | sed 's/^/  /'; \
+					echo ""; \
+					echo "Please manually stop these processes and try again:"; \
+					echo "  sudo lsof -ti :9000 | xargs kill -9"; \
+					echo ""; \
+					exit 1; \
+				fi; \
+			fi; \
+		fi; \
+	fi
 	@echo ""
 	@# Step 2: Remove old versions
 	@echo "=========================================="
@@ -298,15 +358,16 @@ install: check-sonarqube-home build
 	@echo "Monitoring $(SONARQUBE_HOME)/logs/sonar.log"
 	@echo "(This may take 30-60 seconds...)"
 	@echo ""
-	@# Wait for log file to exist
+	@# Wait for log files to exist
 	@for i in 1 2 3 4 5; do \
-		if [ -f "$(SONARQUBE_HOME)/logs/sonar.log" ]; then \
+		if [ -f "$(SONARQUBE_HOME)/logs/sonar.log" ] && [ -f "$(SONARQUBE_HOME)/logs/web.log" ]; then \
 			break; \
 		fi; \
 		sleep 1; \
 	done
-	@# Tail log until we see "SonarQube is operational"
-	@tail -f $(SONARQUBE_HOME)/logs/sonar.log | while read line; do \
+	@# Tail both logs and check for success or failure
+	@STARTUP_RESULT=0; \
+	(tail -f $(SONARQUBE_HOME)/logs/sonar.log & echo $$! > /tmp/sonar_tail_sonar.pid) | while read line; do \
 		echo "$$line"; \
 		if echo "$$line" | grep -q "SonarQube is operational"; then \
 			echo ""; \
@@ -314,16 +375,70 @@ install: check-sonarqube-home build
 			echo "  ✓ SonarQube is ready!"; \
 			echo "=========================================="; \
 			echo ""; \
-			echo "Plugin installed successfully:"; \
-			ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9 " (" $$5 ")"}'; \
+			kill $$(cat /tmp/sonar_tail_sonar.pid 2>/dev/null) 2>/dev/null || true; \
+			rm -f /tmp/sonar_tail_sonar.pid; \
+			exit 0; \
+		fi; \
+	done & \
+	SONAR_PID=$$!; \
+	(tail -f $(SONARQUBE_HOME)/logs/web.log & echo $$! > /tmp/sonar_tail_web.pid) | while read line; do \
+		if echo "$$line" | grep -q "BindException: Address already in use"; then \
 			echo ""; \
-			echo "Web interface: http://localhost:9000"; \
+			echo "=========================================="; \
+			echo "ERROR: Failed to start web server!"; \
+			echo "=========================================="; \
 			echo ""; \
-			pkill -P $$$$ tail; \
+			echo "Tomcat failed to bind to port 9000."; \
+			echo ""; \
+			echo "Error details from web.log:"; \
+			grep -A 5 "BindException" $(SONARQUBE_HOME)/logs/web.log | tail -10 | sed 's/^/  /'; \
+			echo ""; \
+			echo "This usually means:"; \
+			echo "  1. Port 9000 was not properly released after shutdown"; \
+			echo "  2. Another process is using port 9000"; \
+			echo ""; \
+			echo "Check what's using port 9000:"; \
+			echo "  lsof -i :9000"; \
+			echo ""; \
+			kill $$(cat /tmp/sonar_tail_web.pid 2>/dev/null) 2>/dev/null || true; \
+			kill $$(cat /tmp/sonar_tail_sonar.pid 2>/dev/null) 2>/dev/null || true; \
+			rm -f /tmp/sonar_tail_web.pid /tmp/sonar_tail_sonar.pid; \
+			kill $$SONAR_PID 2>/dev/null || true; \
+			exit 1; \
+		fi; \
+	done & \
+	WEB_PID=$$!; \
+	wait $$SONAR_PID; \
+	RESULT=$$?; \
+	kill $$WEB_PID 2>/dev/null || true; \
+	kill $$(cat /tmp/sonar_tail_web.pid 2>/dev/null) 2>/dev/null || true; \
+	rm -f /tmp/sonar_tail_web.pid /tmp/sonar_tail_sonar.pid; \
+	if [ $$RESULT -ne 0 ]; then \
+		exit $$RESULT; \
+	fi
+	@# Verify port 9000 is actually listening
+	@echo "Verifying web server is accessible..."
+	@sleep 2
+	@for i in 1 2 3 4 5; do \
+		if lsof -i :9000 >/dev/null 2>&1; then \
+			echo "✓ Port 9000 is listening"; \
 			break; \
 		fi; \
+		if [ $$i -eq 5 ]; then \
+			echo ""; \
+			echo "⚠️  WARNING: SonarQube reported operational but port 9000 is not listening!"; \
+			echo "   This may indicate a startup problem."; \
+			echo "   Check $(SONARQUBE_HOME)/logs/web.log for details."; \
+			echo ""; \
+		fi; \
+		sleep 1; \
 	done
 	@echo ""
+	@echo "Plugin installed successfully:"; \
+	ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9 " (" $$5 ")"}'; \
+	echo ""; \
+	echo "Web interface: http://localhost:9000"; \
+	echo ""
 
 # Self-scan: Analyze this plugin's Java code with SonarQube
 self-scan: build
