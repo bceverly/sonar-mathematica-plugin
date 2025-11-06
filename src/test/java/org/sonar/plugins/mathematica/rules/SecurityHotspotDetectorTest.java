@@ -2,10 +2,15 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -46,23 +51,17 @@ class SecurityHotspotDetectorTest {
 
     // ========== File Upload Validation Tests ==========
 
-    @Test
-    void testDetectFileUploadValidationImport() {
-        String content = "Import[\"file.dat\"]";
-        detector.detectFileUploadValidation(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
+    private static Stream<Arguments> fileUploadValidationTestData() {
+        return Stream.of(
+            Arguments.of("Import[\"file.dat\"]"),
+            Arguments.of("Get[\"script.m\"]"),
+            Arguments.of("stream = OpenRead[filename]")
+        );
     }
 
-    @Test
-    void testDetectFileUploadValidationGet() {
-        String content = "Get[\"script.m\"]";
-        detector.detectFileUploadValidation(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectFileUploadValidationOpenRead() {
-        String content = "stream = OpenRead[filename]";
+    @ParameterizedTest
+    @MethodSource("fileUploadValidationTestData")
+    void testDetectFileUploadValidation(String content) {
         detector.detectFileUploadValidation(context, inputFile, content);
         verify(context, atLeastOnce()).newIssue();
     }
@@ -97,23 +96,17 @@ class SecurityHotspotDetectorTest {
 
     // ========== Crypto Key Generation Tests ==========
 
-    @Test
-    void testDetectCryptoKeyGenerationRandom() {
-        String content = "key = Random[]";
-        detector.detectCryptoKeyGeneration(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
+    private static Stream<Arguments> cryptoKeyGenerationTestData() {
+        return Stream.of(
+            Arguments.of("key = Random[]"),
+            Arguments.of("key = RandomInteger[{0, 2^256}]"),
+            Arguments.of("GenerateSymmetricKey[]")
+        );
     }
 
-    @Test
-    void testDetectCryptoKeyGenerationRandomInteger() {
-        String content = "key = RandomInteger[{0, 2^256}]";
-        detector.detectCryptoKeyGeneration(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectCryptoKeyGenerationGenerateSymmetricKey() {
-        String content = "GenerateSymmetricKey[]";
+    @ParameterizedTest
+    @MethodSource("cryptoKeyGenerationTestData")
+    void testDetectCryptoKeyGeneration(String content) {
         detector.detectCryptoKeyGeneration(context, inputFile, content);
         verify(context, atLeastOnce()).newIssue();
     }
@@ -679,23 +672,17 @@ class SecurityHotspotDetectorTest {
 
     // ========== Clear Text Protocol Tests ==========
 
-    @Test
-    void testDetectClearTextProtocolFTP() {
-        String content = "Import[\"ftp://server.com/file.txt\"]";
-        detector.detectClearTextProtocol(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
+    private static Stream<Arguments> clearTextProtocolTestData() {
+        return Stream.of(
+            Arguments.of("Import[\"ftp://server.com/file.txt\"]"),
+            Arguments.of("url = \"telnet://server.com\""),
+            Arguments.of("ldap://directory.example.com\"")
+        );
     }
 
-    @Test
-    void testDetectClearTextProtocolTelnet() {
-        String content = "url = \"telnet://server.com\"";
-        detector.detectClearTextProtocol(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectClearTextProtocolLDAP() {
-        String content = "ldap://directory.example.com\"";
+    @ParameterizedTest
+    @MethodSource("clearTextProtocolTestData")
+    void testDetectClearTextProtocol(String content) {
         detector.detectClearTextProtocol(context, inputFile, content);
         verify(context, atLeastOnce()).newIssue();
     }

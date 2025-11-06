@@ -203,8 +203,9 @@ class AstVisitorTest {
 
         visitor.visitChildren(node);
 
-        assertThat(visitedNodes).hasSize(2);
-        assertThat(visitedNodes).contains("IdentifierNode:x", "LiteralNode:10");
+        assertThat(visitedNodes)
+            .hasSize(2)
+            .contains("IdentifierNode:x", "LiteralNode:10");
     }
 
     @Test
@@ -247,12 +248,13 @@ class AstVisitorTest {
         visitor.visit(node2);
         visitor.visit(node3);
 
-        assertThat(visitedNodes).hasSize(3);
-        assertThat(visitedNodes).containsExactly(
-            "IdentifierNode:var1",
-            "IdentifierNode:var2",
-            "IdentifierNode:var3"
-        );
+        assertThat(visitedNodes)
+            .hasSize(3)
+            .containsExactly(
+                "IdentifierNode:var1",
+                "IdentifierNode:var2",
+                "IdentifierNode:var3"
+            );
     }
 
     @Test

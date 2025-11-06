@@ -60,8 +60,12 @@ public class BugDetector extends BaseDetector {
     private static final Pattern SET_FUNCTION_DEFINITION_PATTERN = Pattern.compile(//NOSONAR
         "([a-zA-Z]\\w*+)\\s*+\\[\\s*+\\w+_[^\\]]*+\\]\\s*+=(?!=)"
     );
-    private static final Pattern BUILTIN_SHADOW_PATTERN = Pattern.compile(//NOSONAR
-        "\\b([NDICEKOPABSLMX]|Pi|Re|Im|Abs|Min|Max|Log|Sin|Cos|Tan|Exp)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
+    // Split into two patterns to reduce regex complexity
+    private static final Pattern BUILTIN_SHADOW_SINGLE_PATTERN = Pattern.compile(//NOSONAR
+        "\\b([NDICEKOPABSLMX])\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
+    );
+    private static final Pattern BUILTIN_SHADOW_MULTI_PATTERN = Pattern.compile(//NOSONAR
+        "\\b(Pi|Re|Im|Abs|Min|Max|Log|Sin|Cos|Tan|Exp)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
     );
 
     // Phase 3 Resource management patterns
@@ -538,16 +542,25 @@ public class BugDetector extends BaseDetector {
      */
     public void detectSymbolNameCollision(SensorContext context, InputFile inputFile, String content) {
         try {
-            Matcher matcher = BUILTIN_SHADOW_PATTERN.matcher(content);
-            while (matcher.find()) {
-                String symbolName = matcher.group(1);
-                int lineNumber = calculateLineNumber(content, matcher.start());
-                reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY,
-                    String.format(
-                        "Symbol '%s' shadows Mathematica built-in function. Use different name.", symbolName), matcher.start(), matcher.end());
-            }
+            // Check both patterns to keep regex complexity under limit
+            checkBuiltinShadow(context, inputFile, content, BUILTIN_SHADOW_SINGLE_PATTERN);
+            checkBuiltinShadow(context, inputFile, content, BUILTIN_SHADOW_MULTI_PATTERN);
         } catch (Exception e) {
             LOG.warn("Skipping symbol name collision detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Helper method to check for builtin shadowing with given pattern.
+     */
+    private void checkBuiltinShadow(SensorContext context, InputFile inputFile, String content, Pattern pattern) {
+        Matcher matcher = pattern.matcher(content);
+        while (matcher.find()) {
+            String symbolName = matcher.group(1);
+            int lineNumber = calculateLineNumber(content, matcher.start());
+            reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY,
+                String.format(
+                    "Symbol '%s' shadows Mathematica built-in function. Use different name.", symbolName), matcher.start(), matcher.end());
         }
     }
 

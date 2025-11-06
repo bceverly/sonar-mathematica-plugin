@@ -2,8 +2,13 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
@@ -103,49 +108,33 @@ class FrameworkDetectorTest {
 
     // ===== MANIPULATE/DYNAMIC FRAMEWORK TESTS =====
 
-    @Test
-    void testDetectManipulatePerformance() {
-        String content = "Manipulate[Plot[Integrate[f[x, a], x], {x, 0, 10}], {a, 0, 10}]";
+    private static Stream<Arguments> manipulatePerformanceTestData() {
+        return Stream.of(
+            Arguments.of("Manipulate[Plot[Integrate[f[x, a], x], {x, 0, 10}], {a, 0, 10}]"),
+            Arguments.of("Manipulate[Solve[x^2 + a*x + b == 0, x], {a, -5, 5}, {b, -5, 5}]"),
+            Arguments.of("Manipulate[Graphics[Circle[{a, b}]], {a, 0, 10}, {b, 0, 10}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("manipulatePerformanceTestData")
+    void testDetectManipulatePerformance(String content) {
         assertDoesNotThrow(() ->
             detector.detectManipulatePerformance(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectManipulateWithSolve() {
-        String content = "Manipulate[Solve[x^2 + a*x + b == 0, x], {a, -5, 5}, {b, -5, 5}]";
-        assertDoesNotThrow(() ->
-            detector.detectManipulatePerformance(context, inputFile, content)
+    private static Stream<Arguments> dynamicHeavyComputationTestData() {
+        return Stream.of(
+            Arguments.of("Dynamic[NDSolve[{y'[x] == y[x], y[0] == 1}, y, {x, 0, 10}]]"),
+            Arguments.of("Dynamic[Integrate[Sin[x], x]]"),
+            Arguments.of("Dynamic[a + b]")
         );
     }
 
-    @Test
-    void testDetectManipulateLightweight() {
-        String content = "Manipulate[Graphics[Circle[{a, b}]], {a, 0, 10}, {b, 0, 10}]";
-        assertDoesNotThrow(() ->
-            detector.detectManipulatePerformance(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDynamicHeavyComputation() {
-        String content = "Dynamic[NDSolve[{y'[x] == y[x], y[0] == 1}, y, {x, 0, 10}]]";
-        assertDoesNotThrow(() ->
-            detector.detectDynamicHeavyComputation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDynamicWithIntegrate() {
-        String content = "Dynamic[Integrate[Sin[x], x]]";
-        assertDoesNotThrow(() ->
-            detector.detectDynamicHeavyComputation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDynamicLightweight() {
-        String content = "Dynamic[a + b]";
+    @ParameterizedTest
+    @MethodSource("dynamicHeavyComputationTestData")
+    void testDetectDynamicHeavyComputation(String content) {
         assertDoesNotThrow(() ->
             detector.detectDynamicHeavyComputation(context, inputFile, content)
         );
@@ -194,25 +183,17 @@ class FrameworkDetectorTest {
 
     // ===== PACKAGE FRAMEWORK TESTS =====
 
-    @Test
-    void testDetectPackageNoBegin() {
-        String content = "BeginPackage[\"MyPackage`\"];\nMyFunc[x_] := x + 1;\nEndPackage[];";
-        assertDoesNotThrow(() ->
-            detector.detectPackageNoBegin(context, inputFile, content)
+    private static Stream<Arguments> packageNoBeginTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\"MyPackage`\"];\nMyFunc[x_] := x + 1;\nEndPackage[];"),
+            Arguments.of("BeginPackage[\"MyPackage`\"];\nBegin[`Private`];\nhelper[x_] := x * 2;"),
+            Arguments.of("BeginPackage[\"MyPackage`\"];\nBegin[`Private`];\nhelper[x_] := x * 2;\nEnd[];\nEndPackage[];")
         );
     }
 
-    @Test
-    void testDetectPackageNoEndPackage() {
-        String content = "BeginPackage[\"MyPackage`\"];\nBegin[`Private`];\nhelper[x_] := x * 2;";
-        assertDoesNotThrow(() ->
-            detector.detectPackageNoBegin(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageProperStructure() {
-        String content = "BeginPackage[\"MyPackage`\"];\nBegin[`Private`];\nhelper[x_] := x * 2;\nEnd[];\nEndPackage[];";
+    @ParameterizedTest
+    @MethodSource("packageNoBeginTestData")
+    void testDetectPackageNoBegin(String content) {
         assertDoesNotThrow(() ->
             detector.detectPackageNoBegin(context, inputFile, content)
         );
@@ -322,25 +303,17 @@ class FrameworkDetectorTest {
 
     // ===== CLOUD FRAMEWORK TESTS =====
 
-    @Test
-    void testDetectCloudApiMissingAuth() {
-        String content = "CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, #x^2 &]]";
-        assertDoesNotThrow(() ->
-            detector.detectCloudApiMissingAuth(context, inputFile, content)
+    private static Stream<Arguments> cloudApiMissingAuthTestData() {
+        return Stream.of(
+            Arguments.of("CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, #x^2 &]]"),
+            Arguments.of("CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, #x^2 &, Authentication -> \"User\"]]"),
+            Arguments.of("CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, #x^2 &, Permissions -> \"Private\"]]")
         );
     }
 
-    @Test
-    void testDetectCloudApiWithAuth() {
-        String content = "CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, #x^2 &, Authentication -> \"User\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectCloudApiMissingAuth(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCloudApiWithPermissions() {
-        String content = "CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, #x^2 &, Permissions -> \"Private\"]]";
+    @ParameterizedTest
+    @MethodSource("cloudApiMissingAuthTestData")
+    void testDetectCloudApiMissingAuth(String content) {
         assertDoesNotThrow(() ->
             detector.detectCloudApiMissingAuth(context, inputFile, content)
         );

@@ -2,9 +2,14 @@ package org.sonar.plugins.mathematica.fixes;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.sensor.issue.NewIssue;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -58,43 +63,40 @@ class QuickFixProviderTest {
         );
     }
 
-    @Test
-    void testAddQuickFixDoubleSemicolon() {
-        String content = "x = 5;;";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "DoubleSemicolon", content, 0, content.length(), context)
+    /**
+     * Provides test data for parameterized quick fix tests.
+     * Each argument contains: rule key and content to test.
+     */
+    private static Stream<Arguments> quickFixTestData() {
+        return Stream.of(
+            Arguments.of("DoubleSemicolon", "x = 5;;"),
+            Arguments.of("DoubleTranspose", "Transpose[Transpose[matrix]]"),
+            Arguments.of("DoubleNegation", "Not[Not[x]]"),
+            Arguments.of("UnnecessaryBooleanConversion", "If[x, True, False]"),
+            Arguments.of("UnknownRuleKey", "x = 1"),
+            Arguments.of("AssignmentInConditional", "If[x = 5, true, false]"),
+            Arguments.of("FloatingPointEquality", "x == 1.5"),
+            Arguments.of("DeprecatedFunction", "$RecursionLimit"),
+            Arguments.of("ComparisonWithNull", "x == Null"),
+            Arguments.of("StringConcatInLoop", "Do[str = str <> x, {x, n}]"),
+            Arguments.of("AppendInLoop", "Do[list = Append[list, x], {x, n}]"),
+            Arguments.of("SetDelayedConfusion", "f[x_] = x^2"),
+            Arguments.of("OffByOne", "Do[expr, {i, 0, n}]"),
+            Arguments.of("IdenticalBranches", "If[cond, result, result]"),
+            Arguments.of("IncorrectSetInScoping", "Module[{x = 5}, body]"),
+            Arguments.of("FunctionWithoutReturn", "f[x_] := (y = x + 1;)"),
+            Arguments.of("MissingMemoization", "f[x_] := f[x-1] + f[x-2]"),
+            Arguments.of("ZeroDenominator", "x / y")
         );
     }
 
-    @Test
-    void testAddQuickFixDoubleTranspose() {
-        String content = "Transpose[Transpose[matrix]]";
+    @ParameterizedTest
+    @MethodSource("quickFixTestData")
+    void testAddQuickFix(String ruleKey, String content) {
         QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
 
         assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "DoubleTranspose", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixDoubleNegation() {
-        String content = "Not[Not[x]]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "DoubleNegation", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixUnnecessaryBooleanConversion() {
-        String content = "If[x, True, False]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "UnnecessaryBooleanConversion", content, 0, content.length(), context)
+            provider.addQuickFix(issue, inputFile, ruleKey, content, 0, content.length(), context)
         );
     }
 
@@ -106,57 +108,6 @@ class QuickFixProviderTest {
         // Should handle exception gracefully and not throw
         assertDoesNotThrow(() ->
             provider.addQuickFix(issue, inputFile, "EmptyBlock", "test", -1, 1000, context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixUnknownRule() {
-        String content = "x = 1";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        // Unknown rule should complete without error (falls through to default case)
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "UnknownRuleKey", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixAssignmentInConditional() {
-        String content = "If[x = 5, true, false]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "AssignmentInConditional", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixFloatingPointEquality() {
-        String content = "x == 1.5";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "FloatingPointEquality", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixDeprecatedFunction() {
-        String content = "$RecursionLimit";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "DeprecatedFunction", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixComparisonWithNull() {
-        String content = "x == Null";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "ComparisonWithNull", content, 0, content.length(), context)
         );
     }
 
@@ -216,96 +167,6 @@ class QuickFixProviderTest {
 
         assertDoesNotThrow(() ->
             provider.addQuickFix(issue, inputFile, "EmptyBlock", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixStringConcatInLoop() {
-        String content = "Do[str = str <> x, {x, n}]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "StringConcatInLoop", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixAppendInLoop() {
-        String content = "Do[list = Append[list, x], {x, n}]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "AppendInLoop", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixSetDelayedConfusion() {
-        String content = "f[x_] = x^2";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "SetDelayedConfusion", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixOffByOne() {
-        String content = "Do[expr, {i, 0, n}]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "OffByOne", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixIdenticalBranches() {
-        String content = "If[cond, result, result]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "IdenticalBranches", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixIncorrectSetInScoping() {
-        String content = "Module[{x = 5}, body]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "IncorrectSetInScoping", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixFunctionWithoutReturn() {
-        String content = "f[x_] := (y = x + 1;)";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "FunctionWithoutReturn", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixMissingMemoization() {
-        String content = "f[x_] := f[x-1] + f[x-2]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MissingMemoization", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testAddQuickFixZeroDenominator() {
-        String content = "x / y";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "ZeroDenominator", content, 0, content.length(), context)
         );
     }
 

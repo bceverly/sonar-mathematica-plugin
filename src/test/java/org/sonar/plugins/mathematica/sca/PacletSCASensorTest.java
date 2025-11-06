@@ -100,7 +100,7 @@ class PacletSCASensorTest {
             + "  }\n"
             + "]";
 
-        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 7, 5);
+        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 7);
         setupFileMocks(Collections.singletonList(pacletFile));
 
         // Mock the issue reporting chain
@@ -231,7 +231,7 @@ class PacletSCASensorTest {
             + "  Dependencies -> {\"VulnerablePkg\" -> \"1.0.0\"}\n"
             + "]";
 
-        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4, 3);
+        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4);
         setupFileMocks(Collections.singletonList(pacletFile));
 
         NewIssue newIssue = mock(NewIssue.class);
@@ -274,7 +274,7 @@ class PacletSCASensorTest {
             + "  }\n"
             + "]";
 
-        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 7, 4);
+        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 7);
         setupFileMocks(Collections.singletonList(pacletFile));
 
         // Mock the issue reporting chain
@@ -335,7 +335,7 @@ class PacletSCASensorTest {
             + "  Dependencies -> {\"DatabaseLink\" -> \"8.0\"}\n"
             + "]";
 
-        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4, 3);
+        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4);
         setupFileMocks(Collections.singletonList(pacletFile));
 
         // Mock newIssue to throw exception during issue creation
@@ -356,7 +356,7 @@ class PacletSCASensorTest {
             + "  Dependencies -> {\"NeuralNetworks\" -> \"11.0+\"}\n"
             + "]";
 
-        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4, 3);
+        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4);
         setupFileMocks(Collections.singletonList(pacletFile));
 
         // Mock the issue reporting chain
@@ -385,7 +385,7 @@ class PacletSCASensorTest {
             + "  Dependencies -> {\"FileUtilities\" -> \"1.2\"}\n"
             + "]";
 
-        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4, 3);
+        InputFile pacletFile = createMockPacletFileWithIssue("PacletInfo.wl", pacletContent, 4);
         setupFileMocks(Collections.singletonList(pacletFile));
 
         // Mock the issue reporting chain
@@ -416,7 +416,7 @@ class PacletSCASensorTest {
         return file;
     }
 
-    private InputFile createMockPacletFileWithIssue(String filename, String content, int lines, int issueLine) throws IOException {
+    private InputFile createMockPacletFileWithIssue(String filename, String content, int lines) throws IOException {
         InputFile file = createMockPacletFile(filename, content, lines);
         TextRange textRange = mock(TextRange.class);
         when(file.selectLine(any(Integer.class))).thenReturn(textRange);
