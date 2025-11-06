@@ -20,6 +20,8 @@ import java.util.Set;
  */
 public final class SymbolTableDetector {
 
+    private static final String NAMINGCONVENTIONVIOLATIONS = "NamingConventionViolations";
+
     private SymbolTableDetector() {
         // Utility class - prevent instantiation
     }
@@ -408,17 +410,17 @@ public final class SymbolTableDetector {
 
             // Check for various naming issues
             if (name.length() == 1 && !symbol.isParameter()) {
-                createIssue(context, file, "NamingConventionViolations", symbol.getDeclarationLine(),
+                createIssue(context, file, NAMINGCONVENTIONVIOLATIONS, symbol.getDeclarationLine(),
                     String.format("Variable '%s' has single-character name, use descriptive name", name)
                 ).save();
             } else if (name.matches(".*\\d+$") && !name.matches("^[a-z].*")) { //NOSONAR
                 // Variable ending in number but not lowercase (temp1, temp2 is ok, Temp1 is not)
-                createIssue(context, file, "NamingConventionViolations", symbol.getDeclarationLine(),
+                createIssue(context, file, NAMINGCONVENTIONVIOLATIONS, symbol.getDeclarationLine(),
                     String.format("Variable '%s' uses numbered suffix, consider more descriptive name", name)
                 ).save();
             } else if (name.matches("^[A-Z][A-Z]+$")) {
                 // All caps (CONSTANT style) but not marked as constant
-                createIssue(context, file, "NamingConventionViolations", symbol.getDeclarationLine(),
+                createIssue(context, file, NAMINGCONVENTIONVIOLATIONS, symbol.getDeclarationLine(),
                     String.format("Variable '%s' uses all-caps naming, typically reserved for constants", name)
                 ).save();
             }

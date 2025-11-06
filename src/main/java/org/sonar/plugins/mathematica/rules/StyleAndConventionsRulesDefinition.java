@@ -21,6 +21,8 @@ public final class StyleAndConventionsRulesDefinition {
     private static final String TAG_FORMATTING = "formatting";
     private static final String TAG_READABILITY = "readability";
 
+    private static final String CONFUSING = "confusing";
+
     private StyleAndConventionsRulesDefinition() {
         // Utility class
     }
@@ -210,14 +212,14 @@ public final class StyleAndConventionsRulesDefinition {
             .setName("Variables should not shadow built-in symbols")
             .setHtmlDescription("<p>Using names like 'C', 'D', 'E', 'I', 'N', 'O' shadows built-ins.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags(TAG_CONVENTION, "confusing")
+            .setTags(TAG_CONVENTION, CONFUSING)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(MathematicaRulesDefinition.PARAMETER_NAME_SAME_AS_FUNCTION_KEY)
             .setName("Parameters should not have the same name as their function")
             .setHtmlDescription("<p>Parameter names matching the function name are confusing.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_CONVENTION, "confusing")
+            .setTags(TAG_CONVENTION, CONFUSING)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(MathematicaRulesDefinition.INCONSISTENT_NAMING_STYLE_KEY)
@@ -263,7 +265,7 @@ public final class StyleAndConventionsRulesDefinition {
             .setHtmlDescription("<p>Names like 'notValid' or 'isNotEnabled' are confusing.</p>"
                 + "<p>Use positive names: 'isValid', 'isDisabled'.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_CONVENTION, "confusing")
+            .setTags(TAG_CONVENTION, CONFUSING)
             .setStatus(RuleStatus.READY);
     }
 
@@ -402,7 +404,7 @@ public final class StyleAndConventionsRulesDefinition {
             .setName("Side effects should not be hidden in expressions")
             .setHtmlDescription("<p>Side effects like assignments inside complex expressions are confusing.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags(TAG_MAINTAINABILITY, "confusing")
+            .setTags(TAG_MAINTAINABILITY, CONFUSING)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(MathematicaRulesDefinition.INCOMPLETE_PATTERN_MATCH_KEY)

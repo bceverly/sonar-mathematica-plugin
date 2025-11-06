@@ -70,6 +70,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.ZER
  */
 final class AdvancedPatternAndFunctionRulesDefinition {
 
+    private static final String VALIDATION = "validation";
+    private static final String CORRECTNESS = "correctness";
+    private static final String OWASP_A03 = "owasp-a03";
+
     private AdvancedPatternAndFunctionRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -158,7 +162,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\nf[x_?NumericQ] := x^2  (* Only numeric input *)\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "validation");
+            .setTags(TAG_RELIABILITY, VALIDATION);
 
             rule79.setDebtRemediationFunction(rule79.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -379,7 +383,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\nSolve[x^2 == 2, x]  (* Exact *)\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("precision", "correctness");
+            .setTags("precision", CORRECTNESS);
 
             rule94.setDebtRemediationFunction(rule94.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -493,7 +497,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\nMap[f, {{1, 2}, {3, 4}}]  (* Level 1 by default *)\nMap[f, {{1, 2}, {3, 4}}, {2}]  (* Level 2 *)\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("correctness");
+            .setTags(CORRECTNESS);
 
             rule101.setDebtRemediationFunction(rule101.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -531,7 +535,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\nJoin[<|a->1|>, <|a->2|>]  (* Result: <|a->2|>, not <|a->1, a->2|> *)\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("correctness", "associations");
+            .setTags(CORRECTNESS, "associations");
 
             rule104.setDebtRemediationFunction(rule104.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -543,7 +547,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\ndate = DateObject[{2024, 2, 30}]  (* Invalid date *)\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("validation");
+            .setTags(VALIDATION);
 
             rule105.setDebtRemediationFunction(rule105.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -567,7 +571,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\nMean[{1, 2, \"x\"}]  (* Produces symbolic result *)\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("correctness", "statistics");
+            .setTags(CORRECTNESS, "statistics");
 
             rule106.setDebtRemediationFunction(rule106.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -579,7 +583,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<pre>\nUnitConvert[Quantity[5, \"Meters\"] + Quantity[3, \"Centimeters\"], \"Meters\"]\n</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("units", "correctness");
+            .setTags("units", CORRECTNESS);
 
             rule107.setDebtRemediationFunction(rule107.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -739,7 +743,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "injection", "owasp-a03");
+            .setTags("cwe", "injection", OWASP_A03);
 
             rule118.setDebtRemediationFunction(rule118.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -755,7 +759,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/78.html'>CWE-78</a> - OS Command Injection</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "injection", "owasp-a03");
+            .setTags("cwe", "injection", OWASP_A03);
 
             rule119.setDebtRemediationFunction(rule119.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -829,7 +833,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/20.html'>CWE-20</a> - Improper Input Validation</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags("cwe", "validation", "owasp-a03");
+            .setTags("cwe", VALIDATION, OWASP_A03);
 
             rule124.setDebtRemediationFunction(rule124.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
     }

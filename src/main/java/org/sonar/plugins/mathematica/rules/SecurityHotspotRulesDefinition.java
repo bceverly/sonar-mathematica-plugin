@@ -22,6 +22,10 @@ public final class SecurityHotspotRulesDefinition {
 
     private static final String TAG_SECURITY = "security";
 
+    private static final String OWASP = "owasp";
+    private static final String CRYPTOGRAPHY = "cryptography";
+    private static final String NETWORK = "network";
+
     // Authentication & Authorization Rule Keys (7 rules)
     private static final String WEAK_AUTHENTICATION_KEY = "WeakAuthentication";
     private static final String MISSING_AUTHORIZATION_KEY = "MissingAuthorization";
@@ -87,7 +91,7 @@ public final class SecurityHotspotRulesDefinition {
                 + "<li>Implement multi-factor authentication for sensitive operations</li>"
                 + "<li>Use secure session management</li></ul>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "authentication", "owasp")
+            .setTags(TAG_SECURITY, "authentication", OWASP)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(MISSING_AUTHORIZATION_KEY)
@@ -96,7 +100,7 @@ public final class SecurityHotspotRulesDefinition {
             .setHtmlDescription("<p>Review whether proper authorization checks are implemented. "
                 + "Missing authorization can lead to privilege escalation.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "authorization", "owasp")
+            .setTags(TAG_SECURITY, "authorization", OWASP)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(INSECURE_SESSION_KEY)
@@ -104,7 +108,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Session management should be secure")
             .setHtmlDescription("<p>Review session management implementation. Insecure sessions can be hijacked or fixated.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "session", "owasp")
+            .setTags(TAG_SECURITY, "session", OWASP)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(DEFAULT_CREDENTIALS_KEY)
@@ -136,7 +140,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Access control checks should be implemented")
             .setHtmlDescription("<p>Review access control implementation. Missing checks can allow unauthorized data access.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "access-control", "owasp")
+            .setTags(TAG_SECURITY, "access-control", OWASP)
             .setStatus(RuleStatus.READY);
     }
 
@@ -153,7 +157,7 @@ public final class SecurityHotspotRulesDefinition {
                 + "<h2>Noncompliant Code Example</h2><pre>Hash[data, \"MD5\"]  (* Weak *)\nHash[data, \"SHA1\"] (* Weak *)</pre>"
                 + "<h2>Compliant Solution</h2><pre>Hash[data, \"SHA256\"]\nHash[data, \"SHA3-256\"]</pre>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cryptography", "cwe")
+            .setTags(TAG_SECURITY, CRYPTOGRAPHY, "cwe")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(INSECURE_RANDOM_HOTSPOT_KEY)
@@ -162,7 +166,7 @@ public final class SecurityHotspotRulesDefinition {
             .setHtmlDescription("<p>Review random number generation for security-sensitive operations. "
                 + "RandomReal/RandomInteger are not cryptographically secure.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "random", "cryptography")
+            .setTags(TAG_SECURITY, "random", CRYPTOGRAPHY)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(HARDCODED_CRYPTO_KEY_KEY)
@@ -170,7 +174,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Cryptographic keys should not be hardcoded")
             .setHtmlDescription("<p>Review for hardcoded cryptographic keys. Keys should be stored securely, not in code.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags(TAG_SECURITY, "cryptography", "keys")
+            .setTags(TAG_SECURITY, CRYPTOGRAPHY, "keys")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(WEAK_CIPHER_MODE_KEY)
@@ -178,7 +182,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Weak cipher modes should not be used")
             .setHtmlDescription("<p>Review cipher mode usage. ECB mode is insecure and should not be used.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cryptography", "cipher")
+            .setTags(TAG_SECURITY, CRYPTOGRAPHY, "cipher")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(INSUFFICIENT_KEY_SIZE_KEY)
@@ -186,7 +190,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Cryptographic key size should be sufficient")
             .setHtmlDescription("<p>Review cryptographic key sizes. Keys smaller than 2048 bits (RSA) or 256 bits (AES) are considered weak.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cryptography", "keys")
+            .setTags(TAG_SECURITY, CRYPTOGRAPHY, "keys")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(WEAK_SSL_PROTOCOL_KEY)
@@ -233,7 +237,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Open redirects should be reviewed")
             .setHtmlDescription("<p>Review redirects based on user input. Open redirects can be used in phishing attacks.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "redirect", "owasp")
+            .setTags(TAG_SECURITY, "redirect", OWASP)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(DNS_REBINDING_KEY)
@@ -241,7 +245,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("DNS rebinding attacks should be prevented")
             .setHtmlDescription("<p>Review DNS resolution in security contexts. DNS rebinding can bypass same-origin policies.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "dns", "network")
+            .setTags(TAG_SECURITY, "dns", NETWORK)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(INSECURE_WEBSOCKET_KEY)
@@ -249,7 +253,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("WebSocket connections should be secure")
             .setHtmlDescription("<p>Review WebSocket connections. Use wss:// instead of ws:// for encrypted connections.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "websocket", "network")
+            .setTags(TAG_SECURITY, "websocket", NETWORK)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(MISSING_SECURITY_HEADERS_KEY)
@@ -288,7 +292,7 @@ public final class SecurityHotspotRulesDefinition {
             .setName("Clear-text protocols should not be used")
             .setHtmlDescription("<p>Review use of clear-text protocols. FTP, Telnet, and similar protocols transmit data unencrypted.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "protocol", "network")
+            .setTags(TAG_SECURITY, "protocol", NETWORK)
             .setStatus(RuleStatus.READY);
     }
 }

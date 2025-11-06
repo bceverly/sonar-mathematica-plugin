@@ -58,6 +58,13 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNU
  */
 final class DependencyAndArchitectureRulesDefinition {
 
+    private static final String ARCHITECTURE = "architecture";
+    private static final String DEPENDENCY = "dependency";
+    private static final String NAMING = "naming";
+    private static final String ENCAPSULATION = "encapsulation";
+    private static final String ABSTRACTION = "abstraction";
+    private static final String TESTING = "testing";
+
     private DependencyAndArchitectureRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -96,7 +103,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "Needs[\"C`\"];</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("architecture", "circular-dependency");
+            .setTags(ARCHITECTURE, "circular-dependency");
 
             rule271.setDebtRemediationFunction(rule271.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -110,7 +117,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Remove unused import *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_UNUSED, "dependency");
+            .setTags(TAG_UNUSED, DEPENDENCY);
 
             rule272.setDebtRemediationFunction(rule272.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -142,7 +149,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "B`MyFunction[];</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("dependency", "fragile");
+            .setTags(DEPENDENCY, "fragile");
 
             rule274.setDebtRemediationFunction(rule274.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -156,7 +163,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Coordinate dependency versions or refactor to avoid diamond *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("architecture", "dependency");
+            .setTags(ARCHITECTURE, DEPENDENCY);
 
             rule275.setDebtRemediationFunction(rule275.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -172,7 +179,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Split package or reduce dependencies *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("architecture", "coupling");
+            .setTags(ARCHITECTURE, "coupling");
 
             rule276.setDebtRemediationFunction(rule276.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -190,7 +197,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Application depends on library, not vice versa *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("architecture", "dependency-direction");
+            .setTags(ARCHITECTURE, "dependency-direction");
 
             rule277.setDebtRemediationFunction(rule277.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -204,7 +211,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Extract shared logic to a third package *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("architecture", "coupling");
+            .setTags(ARCHITECTURE, "coupling");
 
             rule278.setDebtRemediationFunction(rule278.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -218,7 +225,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* UILayer depends on DataLayer *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("architecture", "layering");
+            .setTags(ARCHITECTURE, "layering");
 
             rule279.setDebtRemediationFunction(rule279.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -232,7 +239,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Invert dependency or stabilize the unstable package *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("architecture", "stability");
+            .setTags(ARCHITECTURE, "stability");
 
             rule280.setDebtRemediationFunction(rule280.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -276,7 +283,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "BeginPackage[\"AnotherPackage`\"];</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", "consistency");
+            .setTags(NAMING, "consistency");
 
             rule283.setDebtRemediationFunction(rule283.debtRemediationFunctions().constantPerIssue("2min"));
     }
@@ -324,7 +331,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>PublicFunc[] := Module[{result}, result = Private`HelperFunc[]; result];</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("encapsulation", "api");
+            .setTags(ENCAPSULATION, "api");
 
             rule286.setDebtRemediationFunction(rule286.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -338,7 +345,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>result = MyPackage`PublicFunc[];  (* Use public API *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("encapsulation", "private-access");
+            .setTags(ENCAPSULATION, "private-access");
 
             rule287.setDebtRemediationFunction(rule287.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -444,7 +451,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>Main[] := ... (* inline Helper logic *) ...;</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("abstraction", "yagni");
+            .setTags(ABSTRACTION, "yagni");
 
             rule294.setDebtRemediationFunction(rule294.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -459,7 +466,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Use concrete implementation directly until 2nd impl needed *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("abstraction", "yagni");
+            .setTags(ABSTRACTION, "yagni");
 
             rule295.setDebtRemediationFunction(rule295.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -473,7 +480,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Remove orphaned test or restore implementation *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("testing", "orphaned");
+            .setTags(TESTING, "orphaned");
 
             rule296.setDebtRemediationFunction(rule296.debtRemediationFunctions().constantPerIssue("5min"));
     }
@@ -493,7 +500,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Create MyFunctionTest.m with tests *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("testing", "coverage");
+            .setTags(TESTING, "coverage");
 
             rule297.setDebtRemediationFunction(rule297.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -522,7 +529,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Make it public: PackageA`SharedFunc *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("api", "encapsulation");
+            .setTags("api", ENCAPSULATION);
 
             rule299.setDebtRemediationFunction(rule299.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -536,7 +543,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Remove if dead, uncomment if needed *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("commented-code", "dependency");
+            .setTags("commented-code", DEPENDENCY);
 
             rule300.setDebtRemediationFunction(rule300.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -550,7 +557,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>Needs[\"MyPackage`\"];  (* Unconditional *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("dependency", "fragile");
+            .setTags(DEPENDENCY, "fragile");
 
             rule301.setDebtRemediationFunction(rule301.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -564,7 +571,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Add \"MyPackage\" to PacletInfo.m Extensions list *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("metadata", "dependency");
+            .setTags("metadata", DEPENDENCY);
 
             rule302.setDebtRemediationFunction(rule302.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -578,7 +585,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Rename to PackageA`MyFunc and PackageB`MyFunc *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("conflict", "naming");
+            .setTags("conflict", NAMING);
 
             rule303.setDebtRemediationFunction(rule303.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -649,7 +656,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "f[x_, y_] := x + y;  (* Consistent *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", "consistency");
+            .setTags(NAMING, "consistency");
 
             rule307.setDebtRemediationFunction(rule307.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -663,7 +670,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>PublicUtilityFunc[] := ...;  (* Better abstraction *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", "abstraction");
+            .setTags(NAMING, ABSTRACTION);
 
             rule308.setDebtRemediationFunction(rule308.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -697,7 +704,7 @@ final class DependencyAndArchitectureRulesDefinition {
                 + "<pre>(* Move to MyPackageTest.m *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("testing", "organization");
+            .setTags(TESTING, "organization");
 
             rule310.setDebtRemediationFunction(rule310.debtRemediationFunctions().constantPerIssue("5min"));
     }

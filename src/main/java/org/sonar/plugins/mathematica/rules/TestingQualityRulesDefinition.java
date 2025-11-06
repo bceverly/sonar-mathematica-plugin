@@ -21,6 +21,9 @@ public final class TestingQualityRulesDefinition {
 
     private static final String TAG_RELIABILITY = "reliability";
 
+    private static final String TESTS = "tests";
+    private static final String VERIFICATION_TEST = "verification-test";
+
     // Test Organization Rule Keys (4 rules)
     private static final String TEST_NAMING_CONVENTION_KEY = "TestNamingConvention";
     private static final String TEST_NO_ISOLATION_KEY = "TestNoIsolation";
@@ -59,28 +62,28 @@ public final class TestingQualityRulesDefinition {
             .setHtmlDescription("<p>Test function names should clearly indicate what is being tested. "
                 + "Use descriptive names like 'testFunctionNameWithCondition'.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("tests", "naming")
+            .setTags(TESTS, "naming")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(TEST_NO_ISOLATION_KEY)
             .setName("Tests should be isolated from each other")
             .setHtmlDescription("<p>Tests should not depend on execution order or shared state. Each test should set up its own data.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("tests", "isolation")
+            .setTags(TESTS, "isolation")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(TEST_DATA_HARDCODED_KEY)
             .setName("Test data should be clearly defined")
             .setHtmlDescription("<p>Magic numbers and hardcoded strings in tests make them fragile. Use named constants or test data functions.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("tests", "test-data")
+            .setTags(TESTS, "test-data")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(TEST_IGNORED_KEY)
             .setName("Ignored or skipped tests should be investigated")
             .setHtmlDescription("<p>Commented-out or conditionally skipped tests indicate incomplete work. Fix or remove them.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("tests", "technical-debt")
+            .setTags(TESTS, "technical-debt")
             .setStatus(RuleStatus.READY);
     }
 
@@ -91,28 +94,28 @@ public final class TestingQualityRulesDefinition {
                 + "<h2>Noncompliant Code</h2><pre>VerificationTest[myFunction[x]]</pre>"
                 + "<h2>Compliant Solution</h2><pre>VerificationTest[myFunction[5], 25]</pre>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("tests", "verification-test")
+            .setTags(TESTS, VERIFICATION_TEST)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(VERIFICATION_TEST_TOO_BROAD_KEY)
             .setName("VerificationTest tolerance should not be too broad")
             .setHtmlDescription("<p>Overly generous SameTest tolerances may pass incorrect results.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("tests", "verification-test", "precision")
+            .setTags(TESTS, VERIFICATION_TEST, "precision")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(VERIFICATION_TEST_NO_DESCRIPTION_KEY)
             .setName("VerificationTest should have descriptive TestID")
             .setHtmlDescription("<p>TestID helps identify failing tests. Use descriptive names.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("tests", "verification-test", "documentation")
+            .setTags(TESTS, VERIFICATION_TEST, "documentation")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(VERIFICATION_TEST_EMPTY_KEY)
             .setName("Empty VerificationTest provides no value")
             .setHtmlDescription("<p>VerificationTest with no assertions or expected output should be removed or completed.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("tests", "verification-test", "dead-code")
+            .setTags(TESTS, VERIFICATION_TEST, "dead-code")
             .setStatus(RuleStatus.READY);
     }
 
@@ -121,28 +124,28 @@ public final class TestingQualityRulesDefinition {
             .setName("Tests should have sufficient assertions")
             .setHtmlDescription("<p>Tests with zero or one assertion may not adequately validate behavior. Add more specific checks.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("tests", "assertions")
+            .setTags(TESTS, "assertions")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(TEST_TOO_LONG_KEY)
             .setName("Test functions should not be too long")
             .setHtmlDescription("<p>Tests longer than 50 lines are hard to understand. Break into smaller, focused tests.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("tests", "complexity")
+            .setTags(TESTS, "complexity")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(TEST_MULTIPLE_CONCERNS_KEY)
             .setName("Each test should verify one concern")
             .setHtmlDescription("<p>Tests that verify multiple unrelated behaviors should be split into separate tests.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("tests", "single-responsibility")
+            .setTags(TESTS, "single-responsibility")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(TEST_MAGIC_NUMBER_KEY)
             .setName("Tests should not use unexplained magic numbers")
             .setHtmlDescription("<p>Magic numbers in tests make them hard to understand. Use named constants or comments explaining the values.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("tests", "magic-numbers")
+            .setTags(TESTS, "magic-numbers")
             .setStatus(RuleStatus.READY);
     }
 }

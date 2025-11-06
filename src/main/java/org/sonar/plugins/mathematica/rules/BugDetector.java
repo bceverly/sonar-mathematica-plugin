@@ -18,6 +18,9 @@ import org.sonar.plugins.mathematica.ast.InitializationTrackingVisitor;
  */
 public class BugDetector extends BaseDetector {
 
+    private static final String CHECK = "Check[";
+    private static final String CLOSE = "Close[";
+
     // ===== PATTERNS FOR BUG DETECTION =====
 
     //NOSONAR - Possessive quantifiers prevent backtracking  // Not //= or /=
@@ -128,7 +131,7 @@ public class BugDetector extends BaseDetector {
                 }
                 String line = content.substring(lineStart, lineEnd);
 
-                if (line.contains("Check[") || line.contains("!= 0") || line.contains("> 0")) {
+                if (line.contains(CHECK) || line.contains("!= 0") || line.contains("> 0")) {
                     continue;
                 }
 
@@ -176,7 +179,7 @@ public class BugDetector extends BaseDetector {
                 }
                 String line = content.substring(lineStart, lineEnd);
 
-                if (line.contains("Length[") || line.contains("Check[")
+                if (line.contains("Length[") || line.contains(CHECK)
                     || line.contains("<= Length") || line.contains("If[Length")) {
                     continue;
                 }
@@ -601,7 +604,7 @@ public class BugDetector extends BaseDetector {
                 int end = Math.min(content.length(), matcher.end() + 500);
                 String contextWindow = content.substring(start, end);
 
-                if (!contextWindow.contains("Close[")) {
+                if (!contextWindow.contains(CLOSE)) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.UNCLOSED_FILE_HANDLE_KEY,
                         "File opened but Close[] not found. Ensure file handle is closed to prevent resource leak.", matcher.start(), matcher.end());
@@ -986,7 +989,7 @@ public class BugDetector extends BaseDetector {
                 String contextWindow = content.substring(streamPos,
                     Math.min(content.length(), streamPos + 1000));
 
-                if (!contextWindow.contains("Close[")) {
+                if (!contextWindow.contains(CLOSE)) {
                     int lineNumber = calculateLineNumber(content, streamPos);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.STREAM_NOT_CLOSED_KEY,
                         "Stream opened but not closed. Use Close[] to prevent resource leak.");
@@ -1037,12 +1040,12 @@ public class BugDetector extends BaseDetector {
 
                 // Look back for Check[
                 String lookback = content.substring(Math.max(0, streamPos - 100), streamPos);
-                if (!lookback.contains("Check[")) {
+                if (!lookback.contains(CHECK)) {
                     // Look forward for Close without Check protection
                     String lookahead = content.substring(streamPos,
                         Math.min(content.length(), streamPos + 500));
 
-                    if (!lookahead.contains("Check[") && lookahead.contains("Close[" + varName)) {
+                    if (!lookahead.contains(CHECK) && lookahead.contains(CLOSE + varName)) {
                         int lineNumber = calculateLineNumber(content, streamPos);
                         reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CLOSE_IN_FINALLY_MISSING_KEY,
                             String.format("Stream '%s' should use Check[] or Catch[] to ensure Close on error.", varName));
@@ -1078,7 +1081,7 @@ public class BugDetector extends BaseDetector {
                         int secondAssign = entry.getValue().get(i + 1);
                         String between = content.substring(firstAssign, secondAssign);
 
-                        if (!between.contains("Close[" + varName)) {
+                        if (!between.contains(CLOSE + varName)) {
                             int lineNumber = calculateLineNumber(content, secondAssign);
                             reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.STREAM_REOPEN_ATTEMPT_KEY,
                                 String.format("Stream '%s' reassigned without closing previous stream.", varName));

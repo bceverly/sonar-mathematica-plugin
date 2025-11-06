@@ -53,6 +53,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE
  */
 final class ControlFlowAndTaintRulesDefinition {
 
+    private static final String LOGIC_ERROR = "logic-error";
+    private static final String CONDITIONAL = "conditional";
+    private static final String OWASP_A03 = "owasp-a03";
+
     private ControlFlowAndTaintRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -112,7 +116,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "\"yes\"  (* Simplify to constant *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_DEAD_CODE, "logic-error");
+            .setTags(TAG_DEAD_CODE, LOGIC_ERROR);
 
             rule237.setDebtRemediationFunction(rule237.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -128,7 +132,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "\"no\"  (* Simplify to constant *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_DEAD_CODE, "logic-error");
+            .setTags(TAG_DEAD_CODE, LOGIC_ERROR);
 
             rule238.setDebtRemediationFunction(rule238.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -176,7 +180,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "(* Remove never-executing loop *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("logic-error", "control-flow");
+            .setTags(LOGIC_ERROR, "control-flow");
 
             rule241.setDebtRemediationFunction(rule241.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -267,7 +271,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "actionA[]  (* Remove unreachable branch *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_DEAD_CODE, "conditional");
+            .setTags(TAG_DEAD_CODE, CONDITIONAL);
 
             rule246.setDebtRemediationFunction(rule246.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
     }
@@ -355,7 +359,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "SQLExecute[conn, \"SELECT * FROM users WHERE name=?\", {userInput}]  (* Parameterized *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("sql-injection", "cwe-89", "owasp-a03");
+            .setTags("sql-injection", "cwe-89", OWASP_A03);
 
             rule251.setDebtRemediationFunction(rule251.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -376,7 +380,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("command-injection", "cwe-78", "owasp-a03");
+            .setTags("command-injection", "cwe-78", OWASP_A03);
 
             rule252.setDebtRemediationFunction(rule252.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -392,7 +396,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "(* Or use sandboxing: ToExpression[userCode, StandardForm, HoldForm] *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("code-injection", "cwe-94", "owasp-a03");
+            .setTags("code-injection", "cwe-94", OWASP_A03);
 
             rule253.setDebtRemediationFunction(rule253.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -426,7 +430,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "ExportString[XMLElement[\"p\", {}, {safe}], \"HTML\"]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("xss", "cwe-79", "owasp-a03");
+            .setTags("xss", "cwe-79", OWASP_A03);
 
             rule255.setDebtRemediationFunction(rule255.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -442,7 +446,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "safe = StringReplace[userName, {\"*\" -&gt; \"\\\\*\", \"(\" -&gt; \"\\\\(\"}]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("ldap-injection", "cwe-90", "owasp-a03");
+            .setTags("ldap-injection", "cwe-90", OWASP_A03);
 
             rule256.setDebtRemediationFunction(rule256.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -624,7 +628,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "<pre>If[!condition, elseAction[]]  (* Inverted, clearer *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_READABILITY, "conditional");
+            .setTags(TAG_READABILITY, CONDITIONAL);
 
             rule267.setDebtRemediationFunction(rule267.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -684,7 +688,7 @@ final class ControlFlowAndTaintRulesDefinition {
                 + "If[condition, action[]; result, result]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("clarity", "conditional");
+            .setTags("clarity", CONDITIONAL);
 
             rule270.setDebtRemediationFunction(rule270.debtRemediationFunctions().constantPerIssue("2min"));
     }

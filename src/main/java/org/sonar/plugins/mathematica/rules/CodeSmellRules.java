@@ -10,6 +10,12 @@ import org.sonar.api.issue.impact.Severity;
  */
 public final class CodeSmellRules {
 
+    private static final String UNUSED = "unused";
+    private static final String READABILITY = "readability";
+    private static final String COMPLEXITY = "complexity";
+    private static final String NAMING = "naming";
+    private static final String PERFORMANCE = "performance";
+
     // Private constructor to prevent instantiation
     private CodeSmellRules() {
         throw new UnsupportedOperationException("Utility class");
@@ -34,7 +40,7 @@ public final class CodeSmellRules {
                 + "<p>Unused code should be deleted and can be retrieved from source control history if required.</p>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("unused", "clutter");
+            .setTags(UNUSED, "clutter");
 
         // Magic Numbers
         repository.createRule(MathematicaRulesDefinition.MAGIC_NUMBER_KEY)
@@ -44,7 +50,7 @@ public final class CodeSmellRules {
                 + "<p>Replace magic numbers with named constants to improve readability.</p>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("readability");
+            .setTags(READABILITY);
 
         // TODO/FIXME
         repository.createRule(MathematicaRulesDefinition.TODO_FIXME_KEY)
@@ -62,7 +68,7 @@ public final class CodeSmellRules {
                 "<p>Empty code blocks serve no purpose and should be removed.</p>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("unused");
+            .setTags(UNUSED);
 
         // Function Length
         repository.createRule(MathematicaRulesDefinition.FUNCTION_LENGTH_KEY)
@@ -71,7 +77,7 @@ public final class CodeSmellRules {
                 "<p>Functions longer than 100 lines are hard to understand and maintain.</p>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("complexity");
+            .setTags(COMPLEXITY);
 
         // File Length
         repository.createRule(MathematicaRulesDefinition.FILE_LENGTH_KEY)
@@ -80,7 +86,7 @@ public final class CodeSmellRules {
                 "<p>Files longer than 1000 lines are hard to navigate and maintain.</p>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("complexity");
+            .setTags(COMPLEXITY);
 
         // Empty Catch
         repository.createRule(MathematicaRulesDefinition.EMPTY_CATCH_KEY)
@@ -108,7 +114,7 @@ public final class CodeSmellRules {
             .setName("Unused variables should be removed")
             .setHtmlDescription("<p>Variables declared but never used clutter code.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("unused");
+            .setTags(UNUSED);
 
         repository.createRule(MathematicaRulesDefinition.DUPLICATE_FUNCTION_KEY)
             .setName("Duplicate function definitions should be avoided")
@@ -120,13 +126,13 @@ public final class CodeSmellRules {
             .setName("Functions should not have too many parameters")
             .setHtmlDescription("<p>Functions with more than 7 parameters are hard to use.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("complexity");
+            .setTags(COMPLEXITY);
 
         repository.createRule(MathematicaRulesDefinition.DEEPLY_NESTED_KEY)
             .setName("Control structures should not be deeply nested")
             .setHtmlDescription("<p>Nesting deeper than 3 levels makes code hard to understand.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("complexity");
+            .setTags(COMPLEXITY);
 
         repository.createRule(MathematicaRulesDefinition.MISSING_DOCUMENTATION_KEY)
             .setName("Complex functions should have documentation")
@@ -138,7 +144,7 @@ public final class CodeSmellRules {
             .setName("Naming should be consistent")
             .setHtmlDescription("<p>Use consistent naming conventions throughout code.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming");
+            .setTags(NAMING);
 
         repository.createRule(MathematicaRulesDefinition.IDENTICAL_BRANCHES_KEY)
             .setName("Identical branches should be merged")
@@ -150,7 +156,7 @@ public final class CodeSmellRules {
             .setName("Expressions should not be too complex")
             .setHtmlDescription("<p>Expressions with more than 10 operators are hard to understand.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("complexity");
+            .setTags(COMPLEXITY);
 
         repository.createRule(MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY)
             .setName("Deprecated functions should not be used")
@@ -162,7 +168,7 @@ public final class CodeSmellRules {
             .setName("Empty statements should be removed")
             .setHtmlDescription("<p>Double semicolons create empty statements.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("unused");
+            .setTags(UNUSED);
     }
 
     private static void definePerformanceRules(NewRepository repository) {
@@ -173,37 +179,37 @@ public final class CodeSmellRules {
             .setName("AppendTo should not be used in loops")
             .setHtmlDescription("<p>AppendTo in loops creates O(n²) performance. Use Table or Sow/Reap.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
 
         repository.createRule(MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY)
             .setName("Expensive function calls should not be repeated")
             .setHtmlDescription("<p>Cache repeated expensive computations.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
 
         repository.createRule(MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY)
             .setName("String concatenation should not be used in loops")
             .setHtmlDescription("<p>String concat in loops is O(n²). Use StringJoin.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
 
         repository.createRule(MathematicaRulesDefinition.UNCOMPILED_NUMERICAL_KEY)
             .setName("Numerical loops should use Compile")
             .setHtmlDescription("<p>Numerical code can be 10-100x faster with Compile.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
 
         repository.createRule(MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY)
             .setName("Operations should preserve packed arrays")
             .setHtmlDescription("<p>Packed arrays are 10x+ faster. Avoid unpacking operations.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
 
         repository.createRule(MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY)
             .setName("Nested Map/Table should be refactored")
             .setHtmlDescription("<p>Nested Map/Table can often be single operation or Outer.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
 
         repository.createRule(MathematicaRulesDefinition.LARGE_TEMP_EXPRESSIONS_KEY)
             .setName("Large temporary expressions should be assigned to variables")
@@ -215,7 +221,7 @@ public final class CodeSmellRules {
             .setName("Plotting functions should not be called in loops")
             .setHtmlDescription("<p>Plots in loops are very slow. Collect data first, plot once.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("performance");
+            .setTags(PERFORMANCE);
     }
 
     private static void defineBestPracticeRules(NewRepository repository) {
@@ -223,7 +229,7 @@ public final class CodeSmellRules {
             .setName("Variables should have meaningful names")
             .setHtmlDescription("<p>Avoid generic names like 'temp', 'data', 'result'.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming");
+            .setTags(NAMING);
 
         repository.createRule(MathematicaRulesDefinition.MISSING_USAGE_MESSAGE_KEY)
             .setName("Public functions should have usage messages")
@@ -241,13 +247,13 @@ public final class CodeSmellRules {
             .setName("Functions with side effects should have descriptive names")
             .setHtmlDescription("<p>Functions modifying global state should use Set*/Update* or end with !.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming");
+            .setTags(NAMING);
 
         repository.createRule(MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY)
             .setName("Complex boolean expressions should be simplified")
             .setHtmlDescription("<p>Boolean with 5+ operators should be broken into named conditions.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("readability");
+            .setTags(READABILITY);
 
         repository.createRule(MathematicaRulesDefinition.UNPROTECTED_SYMBOLS_KEY)
             .setName("Public API symbols should be protected")
@@ -259,6 +265,6 @@ public final class CodeSmellRules {
             .setName("Complex functions should have explicit Return statements")
             .setHtmlDescription("<p>Functions with conditionals should use explicit Return[] for clarity.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("readability");
+            .setTags(READABILITY);
     }
 }

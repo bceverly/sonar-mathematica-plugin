@@ -55,6 +55,13 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRI
  */
 final class SymbolTableAndTestingRulesDefinition {
 
+    private static final String COVERAGE = "coverage";
+    private static final String TESTING = "testing";
+    private static final String COMPILATION = "compilation";
+    private static final String LOGIC_ERROR = "logic-error";
+    private static final String SCOPE = "scope";
+    private static final String MAINTAINABILITY = "maintainability";
+
     private SymbolTableAndTestingRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -87,7 +94,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Add tests to improve coverage</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("testing", "coverage");
+            .setTags(TESTING, COVERAGE);
 
             rule361.setDebtRemediationFunction(rule361.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -101,7 +108,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Add VerificationTest for the function</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("testing", "coverage");
+            .setTags(TESTING, COVERAGE);
 
             rule362.setDebtRemediationFunction(rule362.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -115,7 +122,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Add test for uncovered branch</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("testing", "coverage");
+            .setTags(TESTING, COVERAGE);
 
             rule363.setDebtRemediationFunction(rule363.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -129,7 +136,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Remove test-only code or make it test utility</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("testing", TAG_DEAD_CODE);
+            .setTags(TESTING, TAG_DEAD_CODE);
 
             rule364.setDebtRemediationFunction(rule364.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -145,7 +152,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>fastFunc = Compile[{{x, _Real}}, x^2 + Sin[x]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_PERFORMANCE, "compilation");
+            .setTags(TAG_PERFORMANCE, COMPILATION);
 
             rule365.setDebtRemediationFunction(rule365.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -159,7 +166,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Compile[{x}, expr, CompilationTarget -> \"C\"]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_PERFORMANCE, "compilation");
+            .setTags(TAG_PERFORMANCE, COMPILATION);
 
             rule366.setDebtRemediationFunction(rule366.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -173,7 +180,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Use only compilable functions</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_PERFORMANCE, "compilation");
+            .setTags(TAG_PERFORMANCE, COMPILATION);
 
             rule367.setDebtRemediationFunction(rule367.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -317,7 +324,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>x = 5; Print[x]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("uninitialized", "logic-error");
+            .setTags("uninitialized", LOGIC_ERROR);
 
             rule376.setDebtRemediationFunction(rule376.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -395,7 +402,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Module[{}, Block[{x}, x = 5; Print[x]]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("scope", "best-practice");
+            .setTags(SCOPE, "best-practice");
 
             rule381.setDebtRemediationFunction(rule381.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -409,7 +416,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>With[{x = 5}, f[] := x]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("scope", "closure", "logic-error");
+            .setTags(SCOPE, "closure", LOGIC_ERROR);
 
             rule382.setDebtRemediationFunction(rule382.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
     }
@@ -431,7 +438,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Module[{}, (* 100 lines *); Block[{x}, x = 5; Print[x]]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("scope", "memory", "maintainability");
+            .setTags(SCOPE, "memory", MAINTAINABILITY);
 
             rule383.setDebtRemediationFunction(rule383.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -445,7 +452,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Module[{x}, x = 5; Block[{y}, y = 10; x = y]; Print[x]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("scope", "data-flow", "maintainability");
+            .setTags(SCOPE, "data-flow", MAINTAINABILITY);
 
             rule384.setDebtRemediationFunction(rule384.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
@@ -473,7 +480,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>x = 0; y = x + 1; z = y + 1</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("circular-dependency", "logic-error");
+            .setTags("circular-dependency", LOGIC_ERROR);
 
             rule386.setDebtRemediationFunction(rule386.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -519,7 +526,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>num = 5; num = num + 1; str = \"result: \" <> ToString[num]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type", "logic-error");
+            .setTags("type", LOGIC_ERROR);
 
             rule389.setDebtRemediationFunction(rule389.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -533,7 +540,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>count = 0; Do[count++, {10}]; sum = Total[data]; Print[sum]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("clarity", "maintainability");
+            .setTags("clarity", MAINTAINABILITY);
 
             rule390.setDebtRemediationFunction(rule390.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -547,7 +554,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Do[With[{j = i}, funcs[[i]] = Function[j]], {i, 5}]  (* Each captures own j *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("closure", "loop", "logic-error");
+            .setTags("closure", "loop", LOGIC_ERROR);
 
             rule391.setDebtRemediationFunction(rule391.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -561,7 +568,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "<pre>Module[{x}, x = 5; With[{val = x}, ToExpression[\"val + 1\"]]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("scope", "dynamic", TAG_SECURITY);
+            .setTags(SCOPE, "dynamic", TAG_SECURITY);
 
             rule392.setDebtRemediationFunction(rule392.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
     }
@@ -589,7 +596,7 @@ final class SymbolTableAndTestingRulesDefinition {
                 + "The file is simply too large for automated analysis.</p>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_PERFORMANCE, "file-size", "maintainability");
+            .setTags(TAG_PERFORMANCE, "file-size", MAINTAINABILITY);
 
             rule393.setDebtRemediationFunction(rule393.debtRemediationFunctions().constantPerIssue("2min"));
 

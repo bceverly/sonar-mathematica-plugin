@@ -11,6 +11,9 @@ import org.sonar.api.batch.sensor.SensorContext;
  */
 public class SecurityHotspotDetector extends BaseDetector {
 
+    private static final String PERMISSIONS = "Permissions";
+    private static final String APIFUNCTION = "APIFunction";
+
     // ===== PATTERNS FOR SECURITY HOTSPOT DETECTION =====
 
 
@@ -251,7 +254,7 @@ public class SecurityHotspotDetector extends BaseDetector {
                 String contextWindow = content.substring(Math.max(0, matcher.start() - 50),
                     Math.min(content.length(), matcher.end() + 200));
 
-                if (!contextWindow.contains("Authentication") && !contextWindow.contains("Permissions")) {
+                if (!contextWindow.contains("Authentication") && !contextWindow.contains(PERMISSIONS)) {
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.WEAK_AUTHENTICATION_KEY,
                         "Review: Authentication implementation for weakness. Use strong authentication mechanisms.");
                 }
@@ -266,8 +269,8 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectMissingAuthorization(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains("APIFunction") || content.contains("FormFunction")) {
-                if (!content.contains("Permissions") && !content.contains("$RequesterAddress")) {
+            if (content.contains(APIFUNCTION) || content.contains("FormFunction")) {
+                if (!content.contains(PERMISSIONS) && !content.contains("$RequesterAddress")) {
                     reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_AUTHORIZATION_KEY,
                         "Review: Missing authorization checks in API/Form functions.");
                 }
@@ -350,8 +353,8 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectMissingAccessControl(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains("CloudDeploy") || content.contains("APIFunction")) {
-                if (!content.contains("Permissions") && !content.contains("$Permissions")) {
+            if (content.contains("CloudDeploy") || content.contains(APIFUNCTION)) {
+                if (!content.contains(PERMISSIONS) && !content.contains("$Permissions")) {
                     reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_ACCESS_CONTROL_KEY,
                         "Review: Missing access control checks for cloud/API functions.");
                 }
@@ -558,7 +561,7 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectMissingSecurityHeaders(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains("APIFunction") || content.contains("FormPage")) {
+            if (content.contains(APIFUNCTION) || content.contains("FormPage")) {
                 if (!content.contains("HTTPResponse") && !content.contains("Headers")) {
                     reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_SECURITY_HEADERS_KEY,
                         "Review: Missing HTTP security headers (X-Frame-Options, CSP, etc.).");

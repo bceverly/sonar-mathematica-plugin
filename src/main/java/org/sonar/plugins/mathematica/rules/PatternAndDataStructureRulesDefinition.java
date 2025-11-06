@@ -52,6 +52,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VER
  */
 final class PatternAndDataStructureRulesDefinition {
 
+    private static final String CLARITY = "clarity";
+    private static final String LISTS = "lists";
+    private static final String ASSOCIATIONS = "associations";
+
     private PatternAndDataStructureRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -158,7 +162,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>f[x:(_Integer | _Real)] := x  (* Correct syntax *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_PATTERNS, "clarity");
+            .setTags(TAG_PATTERNS, CLARITY);
 
             rule130.setDebtRemediationFunction(rule130.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -301,7 +305,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>If[Length[list] > 0, result = list[[1]], result = Missing[]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("lists", "bounds-check");
+            .setTags(LISTS, "bounds-check");
 
             rule140.setDebtRemediationFunction(rule140.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -318,7 +322,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>If[n <= Length[list], last = list[[-n]], ...]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("lists", "bounds-check");
+            .setTags(LISTS, "bounds-check");
 
             rule141.setDebtRemediationFunction(rule141.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -332,7 +336,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>list = {1,2,3}; list[[1]] = 5  (* Modifies list *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("lists", "mutation");
+            .setTags(LISTS, "mutation");
 
             rule142.setDebtRemediationFunction(rule142.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -346,7 +350,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>result = Table[i, {i, 1000}]  (* Linear *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("lists", TAG_PERFORMANCE);
+            .setTags(LISTS, TAG_PERFORMANCE);
 
             rule143.setDebtRemediationFunction(rule143.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
@@ -360,7 +364,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>{a, b, c}  (* No Flatten needed *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("lists", TAG_PERFORMANCE);
+            .setTags(LISTS, TAG_PERFORMANCE);
 
             rule144.setDebtRemediationFunction(rule144.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -374,7 +378,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>n = Length[list]; Do[..., {i, 1, n}]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("lists", TAG_PERFORMANCE);
+            .setTags(LISTS, TAG_PERFORMANCE);
 
             rule145.setDebtRemediationFunction(rule145.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -388,7 +392,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>list  (* Remove double Reverse *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("lists", "redundant");
+            .setTags(LISTS, "redundant");
 
             rule146.setDebtRemediationFunction(rule146.debtRemediationFunctions().constantPerIssue("5min"));
     }
@@ -408,7 +412,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>Reverse[Sort[list]]  (* Faster *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("lists", TAG_PERFORMANCE);
+            .setTags(LISTS, TAG_PERFORMANCE);
 
             rule147.setDebtRemediationFunction(rule147.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -422,7 +426,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>Select[list, EvenQ]  (* Clearer and faster *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("lists", "clarity");
+            .setTags(LISTS, CLARITY);
 
             rule148.setDebtRemediationFunction(rule148.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -436,7 +440,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>list[[i, j]]  (* Cleaner *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("lists", "clarity");
+            .setTags(LISTS, CLARITY);
 
             rule149.setDebtRemediationFunction(rule149.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -451,7 +455,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>If[KeyExistsQ[assoc, \"key\"], value = assoc[\"key\"], ...]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("associations", "validation");
+            .setTags(ASSOCIATIONS, "validation");
 
             rule150.setDebtRemediationFunction(rule150.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -465,7 +469,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>First[Values[assoc]]  (* Correct *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("associations");
+            .setTags(ASSOCIATIONS);
 
             rule151.setDebtRemediationFunction(rule151.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -479,7 +483,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>KeySelect[assoc, StringQ]  (* Faster *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("associations", TAG_PERFORMANCE);
+            .setTags(ASSOCIATIONS, TAG_PERFORMANCE);
 
             rule152.setDebtRemediationFunction(rule152.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -496,7 +500,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>Query[All, \"name\"][Dataset[list]]  (* Correct *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("associations", "datasets");
+            .setTags(ASSOCIATIONS, "datasets");
 
             rule153.setDebtRemediationFunction(rule153.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -510,7 +514,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>AssociateTo[assoc, \"key\" -> value]  (* Clear intent *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("associations", "clarity");
+            .setTags(ASSOCIATIONS, CLARITY);
 
             rule154.setDebtRemediationFunction(rule154.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -524,7 +528,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>Merge[{a1, a2}, Total]  (* Explicit strategy *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("associations", "clarity");
+            .setTags(ASSOCIATIONS, CLARITY);
 
             rule155.setDebtRemediationFunction(rule155.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -538,7 +542,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>assoc = <|\"a\"->1|>; AssociateTo[assoc, \"b\"->2]  (* Modifies assoc *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("associations", "mutation");
+            .setTags(ASSOCIATIONS, "mutation");
 
             rule156.setDebtRemediationFunction(rule156.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -552,7 +556,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>KeyDrop[assoc, {\"a\", \"b\"}]  (* Single pass *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("associations", TAG_PERFORMANCE);
+            .setTags(ASSOCIATIONS, TAG_PERFORMANCE);
 
             rule157.setDebtRemediationFunction(rule157.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -566,7 +570,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>Lookup[assoc, key]  (* Same behavior *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("associations", "redundant");
+            .setTags(ASSOCIATIONS, "redundant");
 
             rule158.setDebtRemediationFunction(rule158.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -580,7 +584,7 @@ final class PatternAndDataStructureRulesDefinition {
                 + "<pre>GatherBy[data, First]  (* Clearer intent *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("associations", "clarity");
+            .setTags(ASSOCIATIONS, CLARITY);
 
             rule159.setDebtRemediationFunction(rule159.debtRemediationFunctions().constantPerIssue("5min"));
     }

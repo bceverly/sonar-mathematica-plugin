@@ -25,6 +25,11 @@ public final class FrameworkIntegrationRulesDefinition {
     private static final String TAG_PERFORMANCE = "performance";
     private static final String TAG_RELIABILITY = "reliability";
 
+    private static final String NOTEBOOK = "notebook";
+    private static final String PACKAGE = "package";
+    private static final String PARALLEL = "parallel";
+    private static final String CLOUD = "cloud";
+
     // Notebook Pattern Rule Keys (4 rules)
     private static final String NOTEBOOK_CELL_SIZE_KEY = "NotebookCellSize";
     private static final String NOTEBOOK_UNORGANIZED_KEY = "NotebookUnorganized";
@@ -75,28 +80,28 @@ public final class FrameworkIntegrationRulesDefinition {
             .setHtmlDescription("<p>Large notebook cells are hard to understand and maintain. Break them into smaller, focused cells.</p>"
                 + "<p><strong>Threshold:</strong> 50 lines per cell</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("notebook", "readability")
+            .setTags(NOTEBOOK, "readability")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(NOTEBOOK_UNORGANIZED_KEY)
             .setName("Notebooks should have clear organization")
             .setHtmlDescription("<p>Notebooks mixing code, tests, and scratch work are hard to maintain. Organize content logically.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("notebook", "organization")
+            .setTags(NOTEBOOK, "organization")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(NOTEBOOK_NO_SECTIONS_KEY)
             .setName("Notebooks should use section headers")
             .setHtmlDescription("<p>Section and subsection cells improve notebook readability and navigation.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("notebook", "documentation")
+            .setTags(NOTEBOOK, "documentation")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(NOTEBOOK_INIT_CELL_MISUSE_KEY)
             .setName("Initialization cells should be used carefully")
             .setHtmlDescription("<p>InitializationCell should only contain setup code. Avoid side effects or heavy computations.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("notebook", "initialization")
+            .setTags(NOTEBOOK, "initialization")
             .setStatus(RuleStatus.READY);
     }
 
@@ -137,28 +142,28 @@ public final class FrameworkIntegrationRulesDefinition {
             .setName("Packages should use Begin/End for context management")
             .setHtmlDescription("<p>Proper context management prevents symbol pollution. Use BeginPackage, Begin, End, EndPackage.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("package", "context")
+            .setTags(PACKAGE, "context")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(PACKAGE_PUBLIC_PRIVATE_MIX_KEY)
             .setName("Packages should separate public and private symbols")
             .setHtmlDescription("<p>Public API should be in package context, private implementation in Private` subcontext.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("package", "api")
+            .setTags(PACKAGE, "api")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(PACKAGE_NO_USAGE_KEY)
             .setName("Public package functions should have usage messages")
             .setHtmlDescription("<p>Usage messages document the public API. They appear in ? queries and auto-completion.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("package", "documentation")
+            .setTags(PACKAGE, "documentation")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(PACKAGE_CIRCULAR_DEPENDENCY_KEY)
             .setName("Packages should not have circular dependencies")
             .setHtmlDescription("<p>Circular Needs/Get creates loading issues. Refactor to remove circular dependencies.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
-            .setTags("package", "dependencies")
+            .setTags(PACKAGE, "dependencies")
             .setStatus(RuleStatus.READY);
     }
 
@@ -168,14 +173,14 @@ public final class FrameworkIntegrationRulesDefinition {
             .setHtmlDescription("<p>Parallel overhead exceeds benefit for small workloads. "
                 + "Use parallel operations only when computation > overhead.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags(TAG_PERFORMANCE, "parallel")
+            .setTags(TAG_PERFORMANCE, PARALLEL)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(PARALLEL_RACE_CONDITION_KEY)
             .setName("Parallel code should avoid race conditions")
             .setHtmlDescription("<p>Review shared state in parallel code. Use CriticalSection or thread-safe data structures.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("parallel", "concurrency", "bug")
+            .setTags(PARALLEL, "concurrency", "bug")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(PARALLEL_SHARED_STATE_KEY)
@@ -183,7 +188,7 @@ public final class FrameworkIntegrationRulesDefinition {
             .setHtmlDescription("<p>Shared mutable state in parallel code causes race conditions and deadlocks. "
                 + "Use immutable data or proper synchronization.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("parallel", "concurrency")
+            .setTags(PARALLEL, "concurrency")
             .setStatus(RuleStatus.READY);
     }
 
@@ -192,21 +197,21 @@ public final class FrameworkIntegrationRulesDefinition {
             .setName("Cloud API endpoints should require authentication")
             .setHtmlDescription("<p>Review CloudDeploy/APIFunction authentication. Public endpoints should validate requests.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cloud", "api")
+            .setTags(TAG_SECURITY, CLOUD, "api")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(CLOUD_PERMISSIONS_TOO_OPEN_KEY)
             .setName("Cloud object permissions should follow least privilege")
             .setHtmlDescription("<p>Review Permissions settings in CloudDeploy. Avoid \"Public\" when not necessary.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cloud", "permissions")
+            .setTags(TAG_SECURITY, CLOUD, "permissions")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(CLOUD_DEPLOY_NO_VALIDATION_KEY)
             .setName("Cloud deployments should validate inputs")
             .setHtmlDescription("<p>CloudDeploy and APIFunction should validate all inputs to prevent injection attacks.</p>")
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cloud", "validation")
+            .setTags(TAG_SECURITY, CLOUD, "validation")
             .setStatus(RuleStatus.READY);
     }
 }

@@ -53,6 +53,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRO
  */
 final class TypeCheckingAndDataFlowRulesDefinition {
 
+    private static final String TYPE_MISMATCH = "type-mismatch";
+    private static final String REDUNDANT = "redundant";
+    private static final String DATA_FLOW = "data-flow";
+
     private TypeCheckingAndDataFlowRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -88,7 +92,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>ToExpression[\"5\"] + 1  (* Convert string to number first *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "runtime-error");
+            .setTags(TYPE_MISMATCH, "runtime-error");
 
             rule200.setDebtRemediationFunction(rule200.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -103,7 +107,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>StringJoin[ToString[123], \"abc\"]  (* Convert to string first *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "runtime-error");
+            .setTags(TYPE_MISMATCH, "runtime-error");
 
             rule201.setDebtRemediationFunction(rule201.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -118,7 +122,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>Map[f, {1,2,3}]  (* Use correct type *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "argument-type");
+            .setTags(TYPE_MISMATCH, "argument-type");
 
             rule202.setDebtRemediationFunction(rule202.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -133,7 +137,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>calculate[x_?Positive] := x  (* Type-safe *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "return-type");
+            .setTags(TYPE_MISMATCH, "return-type");
 
             rule203.setDebtRemediationFunction(rule203.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -148,7 +152,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>StringLength[\"hello\"] < 5  (* Compare compatible types *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("type-mismatch", "comparison");
+            .setTags(TYPE_MISMATCH, "comparison");
 
             rule204.setDebtRemediationFunction(rule204.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -162,7 +166,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>1/3 + 1/2  (* Keep exact *)\nN[1/3] + 0.5  (* Or be explicit *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("numeric-precision", "type-mismatch");
+            .setTags("numeric-precision", TYPE_MISMATCH);
 
             rule205.setDebtRemediationFunction(rule205.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -193,7 +197,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>AssociateTo[<|a->1|>, b->2]  (* Correct for associations *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "associations");
+            .setTags(TYPE_MISMATCH, "associations");
 
             rule207.setDebtRemediationFunction(rule207.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -208,7 +212,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>f[5]  (* Matches pattern *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_PATTERNS, "type-mismatch");
+            .setTags(TAG_PATTERNS, TYPE_MISMATCH);
 
             rule208.setDebtRemediationFunction(rule208.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -250,7 +254,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>x = 0; result = x + 1  (* Or use Missing[\"NotAvailable\"] *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("null-safety", "type-mismatch");
+            .setTags("null-safety", TYPE_MISMATCH);
 
             rule211.setDebtRemediationFunction(rule211.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
     }
@@ -284,7 +288,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>\"hello\"  (* No conversion needed *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("redundant", "type-conversion");
+            .setTags(REDUNDANT, "type-conversion");
 
             rule213.setDebtRemediationFunction(rule213.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -298,7 +302,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>(* Extract data first or fix logic error *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "graphics");
+            .setTags(TYPE_MISMATCH, "graphics");
 
             rule214.setDebtRemediationFunction(rule214.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -326,7 +330,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>ImageData[Image[{{0,0},{1,1}}]]  (* Wrap in Image first *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "image-processing");
+            .setTags(TYPE_MISMATCH, "image-processing");
 
             rule216.setDebtRemediationFunction(rule216.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -340,7 +344,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>AudioData[Audio[{1,2,3}]]  (* Wrap in Audio first *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "audio-processing");
+            .setTags(TYPE_MISMATCH, "audio-processing");
 
             rule217.setDebtRemediationFunction(rule217.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -357,7 +361,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>Dataset[data][All, \"col1\"]  (* Wrap in Dataset *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "dataset");
+            .setTags(TYPE_MISMATCH, "dataset");
 
             rule218.setDebtRemediationFunction(rule218.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -371,7 +375,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>VertexList[Graph[{{1,2},{2,3}}]]  (* Create Graph first *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("type-mismatch", "graph-theory");
+            .setTags(TYPE_MISMATCH, "graph-theory");
 
             rule219.setDebtRemediationFunction(rule219.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -387,7 +391,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>x = 0; result = x + 1  (* Initialize first *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("uninitialized", "data-flow");
+            .setTags("uninitialized", DATA_FLOW);
 
             rule220.setDebtRemediationFunction(rule220.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -401,7 +405,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>x = If[condition, 1, 0];\nresult = x  (* Always initialized *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("uninitialized", "data-flow");
+            .setTags("uninitialized", DATA_FLOW);
 
             rule221.setDebtRemediationFunction(rule221.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -429,7 +433,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>x = 2; Print[x]  (* Remove redundant assignment *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("redundant", "data-flow");
+            .setTags(REDUNDANT, DATA_FLOW);
 
             rule223.setDebtRemediationFunction(rule223.debtRemediationFunctions().constantPerIssue("5min"));
     }
@@ -491,7 +495,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>x = 5; Print[x]; Unset[x]  (* Read before unsetting *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("unset", "data-flow");
+            .setTags("unset", DATA_FLOW);
 
             rule227.setDebtRemediationFunction(rule227.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -505,7 +509,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>x = 5;  (* Remove redundant assignment *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("redundant", "code-smell");
+            .setTags(REDUNDANT, "code-smell");
 
             rule228.setDebtRemediationFunction(rule228.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -592,7 +596,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
                 + "<pre>f[x_] := x  (* Return directly *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("redundant", "return-value");
+            .setTags(REDUNDANT, "return-value");
 
             rule234.setDebtRemediationFunction(rule234.debtRemediationFunctions().constantPerIssue("2min"));
 

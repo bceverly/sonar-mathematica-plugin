@@ -45,6 +45,8 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE
  */
 final class ExtendedCoreRulesDefinition {
 
+    private static final String BRAIN_OVERLOAD = "brain-overload";
+
     private ExtendedCoreRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -137,7 +139,7 @@ final class ExtendedCoreRulesDefinition {
                 + "</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("brain-overload");
+            .setTags(BRAIN_OVERLOAD);
 
             rule27.setDebtRemediationFunction(rule27.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
@@ -171,7 +173,7 @@ final class ExtendedCoreRulesDefinition {
                 + "</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("brain-overload", "complexity");
+            .setTags(BRAIN_OVERLOAD, "complexity");
 
             rule28.setDebtRemediationFunction(rule28.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
@@ -271,7 +273,7 @@ final class ExtendedCoreRulesDefinition {
                 + "</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("brain-overload");
+            .setTags(BRAIN_OVERLOAD);
 
             rule32.setDebtRemediationFunction(rule32.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 

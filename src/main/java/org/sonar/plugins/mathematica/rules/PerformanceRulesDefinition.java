@@ -45,6 +45,8 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNS
  */
 final class PerformanceRulesDefinition {
 
+    private static final String NAMING = "naming";
+
     private PerformanceRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -306,7 +308,7 @@ final class PerformanceRulesDefinition {
                 + "<p>N, D, I, C, O, E, K, Pi, Re, Im, Abs, Min, Max, Log, Sin, Cos</p>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags(TAG_RELIABILITY, "naming");
+            .setTags(TAG_RELIABILITY, NAMING);
 
             rule61.setDebtRemediationFunction(rule61.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
     }
@@ -372,7 +374,7 @@ final class PerformanceRulesDefinition {
                 + "</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_READABILITY, "naming");
+            .setTags(TAG_READABILITY, NAMING);
 
             rule63.setDebtRemediationFunction(rule63.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -434,7 +436,7 @@ final class PerformanceRulesDefinition {
                 + "</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", "side-effects");
+            .setTags(NAMING, "side-effects");
 
             rule66.setDebtRemediationFunction(rule66.debtRemediationFunctions().constantPerIssue("5min"));
 

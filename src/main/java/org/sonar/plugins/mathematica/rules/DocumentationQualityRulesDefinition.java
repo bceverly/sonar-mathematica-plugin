@@ -19,6 +19,10 @@ import org.sonar.api.issue.impact.Severity;
  */
 public final class DocumentationQualityRulesDefinition {
 
+    private static final String TECHNICAL_DEBT = "technical-debt";
+    private static final String COMMENTS = "comments";
+    private static final String DOCUMENTATION = "documentation";
+
     // Comment Tracking Rule Keys (3 rules)
     private static final String TODO_TRACKING_KEY = "TodoTracking";
     private static final String FIXME_TRACKING_KEY = "FixmeTracking";
@@ -54,21 +58,21 @@ public final class DocumentationQualityRulesDefinition {
             .setName("TODO comments should be tracked")
             .setHtmlDescription("<p>TODO comments indicate incomplete work. Track them in issue management system or complete them.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("comments", "technical-debt")
+            .setTags(COMMENTS, TECHNICAL_DEBT)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(FIXME_TRACKING_KEY)
             .setName("FIXME comments should be tracked")
             .setHtmlDescription("<p>FIXME comments indicate known issues. Track them and resolve promptly.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("comments", "technical-debt")
+            .setTags(COMMENTS, TECHNICAL_DEBT)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(HACK_COMMENT_KEY)
             .setName("HACK comments indicate technical debt")
             .setHtmlDescription("<p>HACK comments suggest workarounds that should be refactored properly.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("comments", "technical-debt")
+            .setTags(COMMENTS, TECHNICAL_DEBT)
             .setStatus(RuleStatus.READY);
     }
 
@@ -77,14 +81,14 @@ public final class DocumentationQualityRulesDefinition {
             .setName("Commented-out code should be removed")
             .setHtmlDescription("<p>Commented-out code clutters the codebase. Use version control instead.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("comments", "dead-code")
+            .setTags(COMMENTS, "dead-code")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(LARGE_COMMENTED_BLOCK_KEY)
             .setName("Large blocks of commented code should be removed")
             .setHtmlDescription("<p>More than 10 lines of commented code suggests dead code. Remove it or use version control.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("comments", "dead-code")
+            .setTags(COMMENTS, "dead-code")
             .setStatus(RuleStatus.READY);
     }
 
@@ -94,7 +98,7 @@ public final class DocumentationQualityRulesDefinition {
             .setHtmlDescription("<p>Functions starting with capital letters (public API) should have usage messages "
                 + "or comments explaining their purpose.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("documentation", "api")
+            .setTags(DOCUMENTATION, "api")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(DOCUMENTATION_TOO_SHORT_KEY)
@@ -102,28 +106,28 @@ public final class DocumentationQualityRulesDefinition {
             .setHtmlDescription("<p>One-line documentation for complex functions is insufficient. "
                 + "Explain parameters, return values, and examples.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("documentation")
+            .setTags(DOCUMENTATION)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(DOCUMENTATION_OUTDATED_KEY)
             .setName("Documentation should be kept up to date")
             .setHtmlDescription("<p>Documentation referencing old behavior or parameters should be updated when code changes.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("documentation")
+            .setTags(DOCUMENTATION)
             .setStatus(RuleStatus.READY);
 
         repository.createRule(PARAMETER_NOT_DOCUMENTED_KEY)
             .setName("Function parameters should be documented")
             .setHtmlDescription("<p>Complex functions should document what each parameter does and what values are expected.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("documentation", "parameters")
+            .setTags(DOCUMENTATION, "parameters")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(RETURN_NOT_DOCUMENTED_KEY)
             .setName("Return values should be documented")
             .setHtmlDescription("<p>Functions with non-obvious return values should document what they return and in what format.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("documentation", "return-value")
+            .setTags(DOCUMENTATION, "return-value")
             .setStatus(RuleStatus.READY);
     }
 }

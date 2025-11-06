@@ -11,6 +11,8 @@ import org.sonar.api.issue.impact.Severity;
  */
 public final class CustomRuleTemplatesDefinition {
 
+    private static final String CUSTOM = "custom";
+
     private CustomRuleTemplatesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -67,7 +69,7 @@ public final class CustomRuleTemplatesDefinition {
             )
             .setTemplate(true)  // Mark as template
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .addTags("custom", "pattern-match");
+            .addTags(CUSTOM, "pattern-match");
 
         // Define parameters
         rule.createParam(PATTERN_PARAM)
@@ -105,7 +107,7 @@ public final class CustomRuleTemplatesDefinition {
             )
             .setTemplate(true)
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .addTags("custom", "naming", "function");
+            .addTags(CUSTOM, "naming", "function");
 
         rule.createParam(FUNCTION_NAME_PATTERN_PARAM)
             .setDefaultValue("")
@@ -143,7 +145,7 @@ public final class CustomRuleTemplatesDefinition {
             )
             .setTemplate(true)
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .addTags("custom", "api", "forbidden");
+            .addTags(CUSTOM, "api", "forbidden");
 
         rule.createParam(API_NAME_PARAM)
             .setDefaultValue("")

@@ -69,6 +69,16 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNN
  */
 final class NullSafetyAndResourceRulesDefinition {
 
+    private static final String NULL_SAFETY = "null-safety";
+    private static final String SEMANTICS = "semantics";
+    private static final String ERROR_HANDLING = "error-handling";
+    private static final String BAD_PRACTICE = "bad-practice";
+    private static final String SIMPLIFICATION = "simplification";
+    private static final String LOGIC_ERROR = "logic-error";
+    private static final String EVALUATION = "evaluation";
+    private static final String REPLACEMENT_RULES = "replacement-rules";
+    private static final String ATTRIBUTES = "attributes";
+
     private NullSafetyAndResourceRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -105,7 +115,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>If[result =!= Null, result[[1]], defaultValue]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("null-safety", "runtime-error");
+            .setTags(NULL_SAFETY, "runtime-error");
 
             rule311.setDebtRemediationFunction(rule311.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -119,7 +129,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>ProcessData[data_] := If[data === Null, Null, data[[1]]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("null-safety");
+            .setTags(NULL_SAFETY);
 
             rule312.setDebtRemediationFunction(rule312.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -133,7 +143,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>If[data =!= Null, Length[data], 0]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("null-safety");
+            .setTags(NULL_SAFETY);
 
             rule313.setDebtRemediationFunction(rule313.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -147,7 +157,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>If[cond && x =!= Null, process[x], defaultValue]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("null-safety", "consistency");
+            .setTags(NULL_SAFETY, "consistency");
 
             rule314.setDebtRemediationFunction(rule314.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -161,7 +171,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>FindUser::usage = \"Returns user data or Null if not found.\";</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("documentation", "null-safety");
+            .setTags("documentation", NULL_SAFETY);
 
             rule315.setDebtRemediationFunction(rule315.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -175,7 +185,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>If[x === Null, ...]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("null-safety", "semantics");
+            .setTags(NULL_SAFETY, SEMANTICS);
 
             rule316.setDebtRemediationFunction(rule316.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -192,7 +202,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Check each step for Null</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("null-safety", "error-handling");
+            .setTags(NULL_SAFETY, ERROR_HANDLING);
 
             rule317.setDebtRemediationFunction(rule317.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -206,7 +216,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Check[expr, fallback, {f::error1, f::error2}]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("error-handling");
+            .setTags(ERROR_HANDLING);
 
             rule318.setDebtRemediationFunction(rule318.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -220,7 +230,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Quiet[operation[], {f::msg1}]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("error-handling", "bad-practice");
+            .setTags(ERROR_HANDLING, BAD_PRACTICE);
 
             rule319.setDebtRemediationFunction(rule319.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -234,7 +244,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Fix the underlying issue instead</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("error-handling", "bad-practice");
+            .setTags(ERROR_HANDLING, BAD_PRACTICE);
 
             rule320.setDebtRemediationFunction(rule320.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -248,7 +258,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Catch[expr, \"myTag\"]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("error-handling");
+            .setTags(ERROR_HANDLING);
 
             rule321.setDebtRemediationFunction(rule321.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -262,7 +272,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Log or handle the error appropriately</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("error-handling", "bad-practice");
+            .setTags(ERROR_HANDLING, BAD_PRACTICE);
 
             rule322.setDebtRemediationFunction(rule322.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
     }
@@ -282,7 +292,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Catch[code, tag]; Throw[\"error\", tag]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("error-handling");
+            .setTags(ERROR_HANDLING);
 
             rule323.setDebtRemediationFunction(rule323.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -296,7 +306,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Return $Failed or Throw with tag</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("error-handling", "library-design");
+            .setTags(ERROR_HANDLING, "library-design");
 
             rule324.setDebtRemediationFunction(rule324.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -311,7 +321,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "Message[f::undefined]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("error-handling", "messaging");
+            .setTags(ERROR_HANDLING, "messaging");
 
             rule325.setDebtRemediationFunction(rule325.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -414,7 +424,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>result</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule332.setDebtRemediationFunction(rule332.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -428,7 +438,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>list</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule333.setDebtRemediationFunction(rule333.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -442,7 +452,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Check for typo or logic error</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("logic-error");
+            .setTags(LOGIC_ERROR);
 
             rule334.setDebtRemediationFunction(rule334.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
     }
@@ -462,7 +472,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Fix logic error</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("logic-error");
+            .setTags(LOGIC_ERROR);
 
             rule335.setDebtRemediationFunction(rule335.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -476,7 +486,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Fix logic error</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("logic-error");
+            .setTags(LOGIC_ERROR);
 
             rule336.setDebtRemediationFunction(rule336.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -490,7 +500,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>x > 0</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule337.setDebtRemediationFunction(rule337.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -504,7 +514,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>condition</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule338.setDebtRemediationFunction(rule338.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -551,7 +561,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>SetAttributes[MyHold, HoldAll]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("evaluation", "hold");
+            .setTags(EVALUATION, "hold");
 
             rule341.setDebtRemediationFunction(rule341.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -566,7 +576,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Use HoldAll or fix evaluation order</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("evaluation", "hold");
+            .setTags(EVALUATION, "hold");
 
             rule342.setDebtRemediationFunction(rule342.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -580,7 +590,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>heldFunc[Unevaluated[x + 1]]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("evaluation");
+            .setTags(EVALUATION);
 
             rule343.setDebtRemediationFunction(rule343.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -594,7 +604,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>42</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule344.setDebtRemediationFunction(rule344.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -608,7 +618,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>expr</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule345.setDebtRemediationFunction(rule345.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -622,7 +632,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Ensure this is intentional</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("evaluation", "hold");
+            .setTags(EVALUATION, "hold");
 
             rule346.setDebtRemediationFunction(rule346.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
     }
@@ -656,7 +666,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>{2 -> 5, _ -> 0}</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_PATTERNS, "replacement-rules");
+            .setTags(TAG_PATTERNS, REPLACEMENT_RULES);
 
             rule348.setDebtRemediationFunction(rule348.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -670,7 +680,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Replace[list, rules, {1}]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("replacement-rules");
+            .setTags(REPLACEMENT_RULES);
 
             rule349.setDebtRemediationFunction(rule349.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -684,7 +694,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>x /. {2 -> 5}</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("replacement-rules", "evaluation");
+            .setTags(REPLACEMENT_RULES, EVALUATION);
 
             rule350.setDebtRemediationFunction(rule350.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -726,7 +736,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>list</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("simplification");
+            .setTags(SIMPLIFICATION);
 
             rule353.setDebtRemediationFunction(rule353.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -743,7 +753,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Ensure input type matches expectation</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.LOW)
-            .setTags("listable", "attributes");
+            .setTags("listable", ATTRIBUTES);
 
             rule354.setDebtRemediationFunction(rule354.debtRemediationFunctions().constantPerIssue(TIME_10MIN));
 
@@ -757,7 +767,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>SetAttributes[f, Listable]; f[x_] := operation[x]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_PERFORMANCE, "attributes");
+            .setTags(TAG_PERFORMANCE, ATTRIBUTES);
 
             rule355.setDebtRemediationFunction(rule355.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -771,7 +781,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Only use when truly needed</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("attributes", "semantics");
+            .setTags(ATTRIBUTES, SEMANTICS);
 
             rule356.setDebtRemediationFunction(rule356.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -785,7 +795,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Remove Orderless attribute</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("attributes", "semantics");
+            .setTags(ATTRIBUTES, SEMANTICS);
 
             rule357.setDebtRemediationFunction(rule357.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -799,7 +809,7 @@ final class NullSafetyAndResourceRulesDefinition {
                 + "<pre>Remove Flat attribute</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("attributes", "semantics");
+            .setTags(ATTRIBUTES, SEMANTICS);
 
             rule358.setDebtRemediationFunction(rule358.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 

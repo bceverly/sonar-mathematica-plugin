@@ -58,6 +58,15 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRO
  */
 final class UnusedCodeAndNamingRulesDefinition {
 
+    private static final String SCOPING = "scoping";
+    private static final String IMPORTS = "imports";
+    private static final String SHADOWING = "shadowing";
+    private static final String NAMING = "naming";
+    private static final String BUILT_INS = "built-ins";
+    private static final String CONTEXTS = "contexts";
+    private static final String PACKAGES = "packages";
+    private static final String RUNTIME_ERROR = "runtime-error";
+
     private UnusedCodeAndNamingRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -120,7 +129,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>Module[{x}, x = 5; x^2]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_UNUSED, "scoping");
+            .setTags(TAG_UNUSED, SCOPING);
 
             rule162.setDebtRemediationFunction(rule162.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -134,7 +143,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>With[{a = 1}, a^2]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_UNUSED, "scoping");
+            .setTags(TAG_UNUSED, SCOPING);
 
             rule163.setDebtRemediationFunction(rule163.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -148,7 +157,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Remove unused Needs *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_UNUSED, "imports");
+            .setTags(TAG_UNUSED, IMPORTS);
 
             rule164.setDebtRemediationFunction(rule164.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -313,7 +322,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>Module[{localData}, localData = {4,5,6}]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("shadowing", "naming");
+            .setTags(SHADOWING, NAMING);
 
             rule175.setDebtRemediationFunction(rule175.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -327,7 +336,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>f[list_] := Length[list]  (* Use lowercase *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("shadowing", "built-ins");
+            .setTags(SHADOWING, BUILT_INS);
 
             rule176.setDebtRemediationFunction(rule176.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -341,7 +350,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>f[x_] := Module[{y}, y = 5; y^2]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("shadowing", "scoping");
+            .setTags(SHADOWING, SCOPING);
 
             rule177.setDebtRemediationFunction(rule177.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -372,7 +381,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>largeFunction[input_] := Module[{result, temp, index}, ...]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", TAG_READABILITY);
+            .setTags(NAMING, TAG_READABILITY);
 
             rule179.setDebtRemediationFunction(rule179.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -386,7 +395,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>computationResult = 5  (* Concise but descriptive *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", TAG_READABILITY);
+            .setTags(NAMING, TAG_READABILITY);
 
             rule180.setDebtRemediationFunction(rule180.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -400,7 +409,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>myVariable = 1;\nmyOtherVariable = 2;\nmyThirdVariable = 3  (* Consistent camelCase *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", "consistency");
+            .setTags(NAMING, "consistency");
 
             rule181.setDebtRemediationFunction(rule181.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -414,7 +423,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>Module[{mapper, applier}, ...]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("shadowing", "built-ins");
+            .setTags(SHADOWING, BUILT_INS);
 
             rule182.setDebtRemediationFunction(rule182.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -428,7 +437,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Use unique names or proper context management *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("contexts", "ambiguity");
+            .setTags(CONTEXTS, "ambiguity");
 
             rule183.setDebtRemediationFunction(rule183.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -456,7 +465,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Export function or use public API *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("encapsulation", "packages");
+            .setTags("encapsulation", PACKAGES);
 
             rule185.setDebtRemediationFunction(rule185.debtRemediationFunctions().constantPerIssue("5min"));
     }
@@ -476,7 +485,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>BeginPackage[\"MyPackage`\"]\n...\nEndPackage[]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("packages", "contexts");
+            .setTags(PACKAGES, CONTEXTS);
 
             rule186.setDebtRemediationFunction(rule186.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -490,7 +499,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>BeginPackage[\"MyPackage`\"]\nf[x_] := x\nEndPackage[]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("packages", "contexts");
+            .setTags(PACKAGES, CONTEXTS);
 
             rule187.setDebtRemediationFunction(rule187.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -504,7 +513,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>temp = 5  (* Uses package context *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("packages", "contexts");
+            .setTags(PACKAGES, CONTEXTS);
 
             rule188.setDebtRemediationFunction(rule188.debtRemediationFunctions().constantPerIssue("5min"));
 
@@ -518,7 +527,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>intermediateResult1 = compute1[];\nresult1 = process[intermediateResult1]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("naming", TAG_READABILITY);
+            .setTags(NAMING, TAG_READABILITY);
 
             rule189.setDebtRemediationFunction(rule189.debtRemediationFunctions().constantPerIssue("2min"));
 
@@ -534,7 +543,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Define function or import package *)\nundefinedFunction[x_] := x^2</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("undefined", "runtime-error");
+            .setTags("undefined", RUNTIME_ERROR);
 
             rule190.setDebtRemediationFunction(rule190.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -548,7 +557,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>x = 5;\nresult = x + 1</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("undefined", "runtime-error");
+            .setTags("undefined", RUNTIME_ERROR);
 
             rule191.setDebtRemediationFunction(rule191.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -562,7 +571,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>size = Length[list]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("typo", "built-ins");
+            .setTags("typo", BUILT_INS);
 
             rule192.setDebtRemediationFunction(rule192.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -579,7 +588,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>size = Length[list]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("capitalization", "built-ins");
+            .setTags("capitalization", BUILT_INS);
 
             rule193.setDebtRemediationFunction(rule193.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -593,7 +602,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>Needs[\"ExternalPackage`\"]\nresult = ExternalPackage`Function[x]</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("imports", "packages");
+            .setTags(IMPORTS, PACKAGES);
 
             rule194.setDebtRemediationFunction(rule194.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -607,7 +616,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Use correct package name or create package *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("imports", "runtime-error");
+            .setTags(IMPORTS, RUNTIME_ERROR);
 
             rule195.setDebtRemediationFunction(rule195.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -621,7 +630,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Rename local symbol or manage contexts carefully *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("shadowing", "imports");
+            .setTags(SHADOWING, IMPORTS);
 
             rule196.setDebtRemediationFunction(rule196.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -635,7 +644,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>Get[FileNameJoin[{Directory[], \"myfile.m\"}]]  (* Use absolute path *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags("imports", "file-system");
+            .setTags(IMPORTS, "file-system");
 
             rule197.setDebtRemediationFunction(rule197.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -649,7 +658,7 @@ final class UnusedCodeAndNamingRulesDefinition {
                 + "<pre>(* Refactor to break circular dependency *)</pre>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags("circular-dependency", "packages");
+            .setTags("circular-dependency", PACKAGES);
 
             rule198.setDebtRemediationFunction(rule198.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 

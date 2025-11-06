@@ -11,6 +11,10 @@ import org.sonar.api.batch.sensor.SensorContext;
  */
 public class FrameworkDetector extends BaseDetector {
 
+    private static final String NOTEBOOK = "Notebook[";
+    private static final String CELL = "Cell[";
+    private static final String BEGINPACKAGE = "BeginPackage[";
+
     // ===== TIER 1 GAP CLOSURE - FRAMEWORK DETECTION (18 rules) =====
 
     // Notebook patterns
@@ -57,7 +61,7 @@ public class FrameworkDetector extends BaseDetector {
     public void detectNotebookCellSize(SensorContext context, InputFile inputFile, String content) {
         try {
             // Simple heuristic: check file structure suggests notebook
-            if (!content.contains("Cell[") && !content.contains("Notebook[")) {
+            if (!content.contains(CELL) && !content.contains(NOTEBOOK)) {
                 return;
             }
 
@@ -96,12 +100,12 @@ public class FrameworkDetector extends BaseDetector {
      */
     public void detectNotebookUnorganized(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (!content.contains("Cell[") && !content.contains("Notebook[")) {
+            if (!content.contains(CELL) && !content.contains(NOTEBOOK)) {
                 return;
             }
 
             // Check if notebook has both code and test cells mixed
-            boolean hasCode = content.contains("Cell[") && content.contains(":=");
+            boolean hasCode = content.contains(CELL) && content.contains(":=");
             boolean hasTests = content.contains("VerificationTest");
             boolean hasScratch = content.contains("(*") && content.contains("test") || content.contains("scratch");
 
@@ -119,7 +123,7 @@ public class FrameworkDetector extends BaseDetector {
      */
     public void detectNotebookNoSections(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (!content.contains("Cell[") && !content.contains("Notebook[")) {
+            if (!content.contains(CELL) && !content.contains(NOTEBOOK)) {
                 return;
             }
 
@@ -272,7 +276,7 @@ public class FrameworkDetector extends BaseDetector {
      */
     public void detectPackageNoBegin(SensorContext context, InputFile inputFile, String content) {
         try {
-            boolean hasBeginPackage = content.contains("BeginPackage[");
+            boolean hasBeginPackage = content.contains(BEGINPACKAGE);
             boolean hasBegin = content.contains("Begin[`Private`]");
             boolean hasEndPackage = content.contains("EndPackage[");
 
@@ -295,7 +299,7 @@ public class FrameworkDetector extends BaseDetector {
      */
     public void detectPackagePublicPrivateMix(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (!content.contains("BeginPackage[")) {
+            if (!content.contains(BEGINPACKAGE)) {
                 return;
             }
 
@@ -322,7 +326,7 @@ public class FrameworkDetector extends BaseDetector {
      */
     public void detectPackageNoUsage(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (!content.contains("BeginPackage[")) {
+            if (!content.contains(BEGINPACKAGE)) {
                 return;
             }
 

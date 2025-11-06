@@ -21,6 +21,9 @@ public final class ResourceManagementRulesDefinition {
     private static final String TAG_RELIABILITY = "reliability";
     private static final String TAG_PERFORMANCE = "performance";
 
+    private static final String RESOURCES = "resources";
+    private static final String MEMORY = "memory";
+
     // Stream/File Management Rule Keys (4 rules)
     private static final String STREAM_NOT_CLOSED_KEY = "StreamNotClosed";
     private static final String FILE_HANDLE_LEAK_KEY = "FileHandleLeak";
@@ -52,28 +55,28 @@ public final class ResourceManagementRulesDefinition {
                 + "<h2>Noncompliant Code</h2><pre>stream = OpenRead[\"file.txt\"];\ndata = ReadList[stream];\n(* stream never closed *)</pre>"
                 + "<h2>Compliant Solution</h2><pre>stream = OpenRead[\"file.txt\"];\ndata = ReadList[stream];\nClose[stream];</pre>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "resources", "file-io")
+            .setTags(TAG_RELIABILITY, RESOURCES, "file-io")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(FILE_HANDLE_LEAK_KEY)
             .setName("File handles should be properly released")
             .setHtmlDescription("<p>File handles must be released even if errors occur. Consider using Block with Close in cleanup.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "resources", "file-io")
+            .setTags(TAG_RELIABILITY, RESOURCES, "file-io")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(CLOSE_IN_FINALLY_MISSING_KEY)
             .setName("Resource cleanup should handle errors")
             .setHtmlDescription("<p>Close operations should be in error handling blocks to ensure cleanup even when operations fail.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "resources", "error-handling")
+            .setTags(TAG_RELIABILITY, RESOURCES, "error-handling")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(STREAM_REOPEN_ATTEMPT_KEY)
             .setName("Closed streams should not be reused")
             .setHtmlDescription("<p>Attempting to read from or write to closed streams causes errors. Open a new stream instead.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
-            .setTags(TAG_RELIABILITY, "resources", "bug")
+            .setTags(TAG_RELIABILITY, RESOURCES, "bug")
             .setStatus(RuleStatus.READY);
     }
 
@@ -83,14 +86,14 @@ public final class ResourceManagementRulesDefinition {
             .setHtmlDescription("<p>Dynamic that continuously grows data structures causes memory leaks. "
                 + "Clear old values or use bounded buffers.</p>")
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "memory", "dynamic")
+            .setTags(TAG_RELIABILITY, MEMORY, "dynamic")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(LARGE_DATA_IN_NOTEBOOK_KEY)
             .setName("Notebooks should not store large data structures")
             .setHtmlDescription("<p>Large arrays or images in notebook variables consume memory. Save to files and load as needed.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags(TAG_PERFORMANCE, "memory", "notebook")
+            .setTags(TAG_PERFORMANCE, MEMORY, "notebook")
             .setStatus(RuleStatus.READY);
 
         repository.createRule(NO_CLEAR_AFTER_USE_KEY)
@@ -100,7 +103,7 @@ public final class ResourceManagementRulesDefinition {
                 + "<h2>Example</h2><pre>largeMatrix = RandomReal[1, {10000, 10000}];\n"
                 + "(* ... use matrix ... *)\nClear[largeMatrix]; (* Free memory *)</pre>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags(TAG_PERFORMANCE, "memory")
+            .setTags(TAG_PERFORMANCE, MEMORY)
             .setStatus(RuleStatus.READY);
     }
 }

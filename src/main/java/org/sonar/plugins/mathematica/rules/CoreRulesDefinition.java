@@ -43,6 +43,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WEA
  */
 final class CoreRulesDefinition {
 
+    private static final String OWASP = "owasp";
+    private static final String ERROR_HANDLING = "error-handling";
+    private static final String INJECTION = "injection";
+
     private CoreRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
     }
@@ -221,7 +225,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("error-handling", TAG_SECURITY, "owasp");
+            .setTags(ERROR_HANDLING, TAG_SECURITY, OWASP);
 
             rule7.setDebtRemediationFunction(rule7.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
@@ -266,7 +270,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "owasp", "production-readiness");
+            .setTags(TAG_SECURITY, OWASP, "production-readiness");
 
             rule8.setDebtRemediationFunction(rule8.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
     }
@@ -302,7 +306,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", TAG_SECURITY);
+            .setTags("cwe", OWASP, TAG_SECURITY);
 
             rule9.setDebtRemediationFunction(rule9.debtRemediationFunctions().constantPerIssue("60min"));
 
@@ -331,7 +335,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "injection", TAG_SECURITY);
+            .setTags("cwe", OWASP, INJECTION, TAG_SECURITY);
 
             rule10.setDebtRemediationFunction(rule10.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -359,7 +363,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "sql", "injection", TAG_SECURITY);
+            .setTags("cwe", OWASP, "sql", INJECTION, TAG_SECURITY);
 
             rule11.setDebtRemediationFunction(rule11.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -387,7 +391,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "injection", TAG_SECURITY);
+            .setTags("cwe", OWASP, INJECTION, TAG_SECURITY);
 
             rule12.setDebtRemediationFunction(rule12.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -421,7 +425,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "path-traversal", TAG_SECURITY);
+            .setTags("cwe", OWASP, "path-traversal", TAG_SECURITY);
 
             rule13.setDebtRemediationFunction(rule13.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -460,7 +464,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "cryptography", TAG_SECURITY);
+            .setTags("cwe", OWASP, "cryptography", TAG_SECURITY);
 
             rule14.setDebtRemediationFunction(rule14.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -501,7 +505,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "ssrf", TAG_SECURITY);
+            .setTags("cwe", OWASP, "ssrf", TAG_SECURITY);
 
             rule15.setDebtRemediationFunction(rule15.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -555,7 +559,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "owasp", "deserialization", TAG_SECURITY);
+            .setTags("cwe", OWASP, "deserialization", TAG_SECURITY);
 
             rule16.setDebtRemediationFunction(rule16.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
     }
@@ -592,7 +596,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "error-handling");
+            .setTags(TAG_RELIABILITY, ERROR_HANDLING);
 
             rule17.setDebtRemediationFunction(rule17.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -657,7 +661,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.MEDIUM)
-            .setTags(TAG_RELIABILITY, "error-handling");
+            .setTags(TAG_RELIABILITY, ERROR_HANDLING);
 
             rule19.setDebtRemediationFunction(rule19.debtRemediationFunctions().constantPerIssue(TIME_20MIN));
 
@@ -792,7 +796,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "file-upload", "owasp");
+            .setTags(TAG_SECURITY, "file-upload", OWASP);
 
             rule22.setDebtRemediationFunction(rule22.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
 
@@ -903,7 +907,7 @@ final class CoreRulesDefinition {
                 + "</ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags(TAG_SECURITY, "cryptography", "owasp");
+            .setTags(TAG_SECURITY, "cryptography", OWASP);
 
             rule24.setDebtRemediationFunction(rule24.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
     }
