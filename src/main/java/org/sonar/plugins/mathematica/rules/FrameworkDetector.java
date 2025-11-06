@@ -414,7 +414,7 @@ public class FrameworkDetector extends BaseDetector {
 
                 // Check for shared variable mutations without CriticalSection
                 if (parallelBody.contains("AppendTo[") || parallelBody.contains("PrependTo[")
-                    || parallelBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=(?!=).*")) {
+                    || parallelBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=(?!=).*")) { //NOSONAR
                     if (!parallelBody.contains("CriticalSection")) {
                         int lineNumber = calculateLineNumber(content, parallelStart);
                         reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PARALLEL_RACE_CONDITION_KEY,

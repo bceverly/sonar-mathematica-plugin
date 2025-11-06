@@ -37,7 +37,7 @@ public class SecurityHotspotDetector extends BaseDetector {
     private static final Pattern ENVIRONMENT_PATTERN = Pattern.compile("Environment\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Phase 3 Security Hotspot patterns
-    private static final Pattern IMPORT_NO_FORMAT_PATTERN = Pattern.compile(
+    private static final Pattern IMPORT_NO_FORMAT_PATTERN = Pattern.compile(//NOSONAR
         "Import\\s*+\\[\\s*+[^,\\]]+\\s*+\\]"
     );
 

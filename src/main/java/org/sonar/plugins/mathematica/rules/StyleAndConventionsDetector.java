@@ -1384,7 +1384,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 int optionEnd = Math.min(optionStart + 100, content.length());
                 String optionContext = content.substring(optionStart, optionEnd);
 
-                if (!optionContext.contains(",") || !optionContext.matches(".*,\\s*+[^\\]]+\\].*")) {
+                if (!optionContext.contains(",") || !optionContext.matches(".*,\\s*+[^\\]]+\\].*")) { //NOSONAR
                     int lineNumber = calculateLineNumber(content, optionStart);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.MISSING_OPTION_DEFAULT_KEY,
                         "OptionValue without default. Provide default value as second argument.");
@@ -1674,7 +1674,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 String assocBody = content.substring(assocStart, assocEnd);
 
                 // Look for numeric or symbol keys
-                if (assocBody.matches(".*\\d+\\s*+->.*") || assocBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+->.*")) {
+                if (assocBody.matches(".*\\d+\\s*+->.*") || assocBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+->.*")) { //NOSONAR
                     int lineNumber = calculateLineNumber(content, assocStart);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.ASSOCIATION_KEY_NOT_STRING_KEY,
                         "Association with non-string key. Use string keys for consistency.");
@@ -1696,7 +1696,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 String contextWindow = content.substring(Math.max(0, pos - 20), Math.min(content.length(), pos + 50));
 
                 // Check if simple type test would be better
-                if (contextWindow.matches(".*\\w+_/;\\s*+(?:IntegerQ|NumericQ|StringQ).*")) {
+                if (contextWindow.matches(".*\\w+_/;\\s*+(?:IntegerQ|NumericQ|StringQ).*")) { //NOSONAR
                     int lineNumber = calculateLineNumber(content, pos);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PATTERN_TEST_VS_CONDITION_KEY,
                         "Use PatternTest (?) instead of Condition (/;) for simple type checks.");

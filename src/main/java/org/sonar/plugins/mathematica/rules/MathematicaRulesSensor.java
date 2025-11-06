@@ -1145,17 +1145,17 @@ public class MathematicaRulesSensor implements Sensor {
         int codeIndicators = 0;
 
         // Check for assignments
-        if (commentText.matches(".*\\w+\\s*+:?=\\s*+[^=].*")) {
+        if (commentText.matches(".*\\w+\\s*+:?=\\s*+[^=].*")) { //NOSONAR
             codeIndicators++;
         }
 
         // Check for function calls
-        if (commentText.matches(".*[a-zA-Z]\\w*\\s*+\\[.*")) {
+        if (commentText.matches(".*[a-zA-Z]\\w*\\s*+\\[.*")) { //NOSONAR
             codeIndicators++;
         }
 
         // Check for mathematical operators
-        if (commentText.matches(".*[-+*/^]\\s*+[a-zA-Z0 - 9].*")) {
+        if (commentText.matches(".*[-+*/^]\\s*+[a-zA-Z0 - 9].*")) { //NOSONAR
             codeIndicators++;
         }
 

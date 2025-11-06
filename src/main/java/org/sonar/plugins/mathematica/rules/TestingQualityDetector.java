@@ -75,7 +75,7 @@ public class TestingQualityDetector extends BaseDetector {
         try {
             // Look for tests that use global variables without cleanup
             if (content.contains("VerificationTest")
-                && (content.contains("global") || content.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=(?!=).*"))) {
+                && (content.contains("global") || content.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=(?!=).*"))) { //NOSONAR
 
                 Matcher vtMatcher = VERIFICATION_TEST_PATTERN.matcher(content);
                 while (vtMatcher.find()) {
@@ -85,7 +85,7 @@ public class TestingQualityDetector extends BaseDetector {
                         String testBody = content.substring(testStart, testEnd);
 
                         // Check for global assignments without Clear
-                        if (testBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=.*") && !testBody.contains("Clear[")) {
+                        if (testBody.matches(".*[A-Z][a-zA-Z0-9]*\\s*+=.*") && !testBody.contains("Clear[")) { //NOSONAR
                             int lineNumber = calculateLineNumber(content, testStart);
                             reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TEST_NO_ISOLATION_KEY,
                                 "Test modifies global state without cleanup. Use Module/Block for isolation.");

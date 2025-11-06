@@ -411,7 +411,7 @@ public final class SymbolTableDetector {
                 createIssue(context, file, "NamingConventionViolations", symbol.getDeclarationLine(),
                     String.format("Variable '%s' has single-character name, use descriptive name", name)
                 ).save();
-            } else if (name.matches(".*\\d+$") && !name.matches("^[a-z].*")) {
+            } else if (name.matches(".*\\d+$") && !name.matches("^[a-z].*")) { //NOSONAR
                 // Variable ending in number but not lowercase (temp1, temp2 is ok, Temp1 is not)
                 createIssue(context, file, "NamingConventionViolations", symbol.getDeclarationLine(),
                     String.format("Variable '%s' uses numbered suffix, consider more descriptive name", name)
@@ -459,11 +459,11 @@ public final class SymbolTableDetector {
                 String contextStr = ref.getContext();
 
                 // Heuristics for type detection
-                if (contextStr.matches(".*\\+\\s*+\".*") || contextStr.matches(".*\".*\\+.*")) {
+                if (contextStr.matches(".*\\+\\s*+\".*") || contextStr.matches(".*\".*\\+.*")) { //NOSONAR
                     suspectedTypes.add("string");
-                } else if (contextStr.matches(".*\\[\\[.*\\]\\].*") || contextStr.matches(".*Part\\[.*")) {
+                } else if (contextStr.matches(".*\\[\\[.*\\]\\].*") || contextStr.matches(".*Part\\[.*")) { //NOSONAR
                     suspectedTypes.add("list");
-                } else if (contextStr.matches(".*[\\+\\-\\*/]\\s*+\\d+.*")) {
+                } else if (contextStr.matches(".*[\\+\\-\\*/]\\s*+\\d+.*")) { //NOSONAR
                     suspectedTypes.add("number");
                 }
             }

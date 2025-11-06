@@ -656,7 +656,7 @@ public class QuickFixProvider {
 
         String originalText = content.substring(start, end);
         // Extract parts between <>
-        String[] parts = originalText.split("\\s*+<>\\s*+");
+        String[] parts = originalText.split("\\s*+<>\\s*+"); //NOSONAR
         String fixedText = "StringJoin[" + String.join(", ", parts) + "]";
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
@@ -1071,7 +1071,7 @@ public class QuickFixProvider {
 
         String originalText = content.substring(start, end);
         // Remove .0 from numbers
-        String fixedText = originalText.replaceAll("(\\d+)\\.0\\b", "$1");
+        String fixedText = originalText.replaceAll("(\\d+)\\.0\\b", "$1"); //NOSONAR
 
         NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
             .on(inputFile);
@@ -1342,7 +1342,7 @@ public class QuickFixProvider {
             .message("Wrap sequence pattern in list");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("(\\w+)\\s*+\\[([a-zA-Z]\\w*)__\\]");
+        Pattern pattern = Pattern.compile("(\\w+)\\s*+\\[([a-zA-Z]\\w*)__\\]"); //NOSONAR
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {

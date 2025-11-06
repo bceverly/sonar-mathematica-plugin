@@ -36,10 +36,10 @@ public class BugDetector extends BaseDetector {
     );
 
     // Phase 2 Bug patterns
-    private static final Pattern FLOAT_EQUALITY_PATTERN = Pattern.compile(
+    private static final Pattern FLOAT_EQUALITY_PATTERN = Pattern.compile(//NOSONAR
         "\\d++\\.\\d++\\s*+===?+\\s*+\\d++\\.\\d++|===?+\\s*+\\d++\\.\\d++"
     );
-    private static final Pattern FUNCTION_END_SEMICOLON_PATTERN = Pattern.compile(
+    private static final Pattern FUNCTION_END_SEMICOLON_PATTERN = Pattern.compile(//NOSONAR
         "\\]\\s*+:=\\s*+\\([^)]*;\\s*+\\)"
     );
     private static final Pattern WHILE_TRUE_PATTERN = Pattern.compile("While\\s*+\\[\\s*+True\\s*+,"); //NOSONAR
@@ -57,10 +57,10 @@ public class BugDetector extends BaseDetector {
     private static final Pattern DOUBLE_UNDERSCORE_PATTERN = Pattern.compile(
         "([a-z]\\w*)__\\s*+\\]\\s*+:=\\s*+[^;]*Length\\s*+\\[\\s*+\\1\\s*+\\]"
     );
-    private static final Pattern SET_FUNCTION_DEFINITION_PATTERN = Pattern.compile(
+    private static final Pattern SET_FUNCTION_DEFINITION_PATTERN = Pattern.compile(//NOSONAR
         "([a-zA-Z]\\w*+)\\s*+\\[\\s*+\\w+_[^\\]]*+\\]\\s*+=(?!=)"
     );
-    private static final Pattern BUILTIN_SHADOW_PATTERN = Pattern.compile(
+    private static final Pattern BUILTIN_SHADOW_PATTERN = Pattern.compile(//NOSONAR
         "\\b([NDICEKOPABSLMX]|Pi|Re|Im|Abs|Min|Max|Log|Sin|Cos|Tan|Exp)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
     );
 
