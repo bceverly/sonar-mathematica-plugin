@@ -60,12 +60,15 @@ public class BugDetector extends BaseDetector {
     private static final Pattern SET_FUNCTION_DEFINITION_PATTERN = Pattern.compile(//NOSONAR
         "([a-zA-Z]\\w*+)\\s*+\\[\\s*+\\w+_[^\\]]*+\\]\\s*+=(?!=)"
     );
-    // Split into two patterns to reduce regex complexity
+    // Split into three patterns to reduce regex complexity
     private static final Pattern BUILTIN_SHADOW_SINGLE_PATTERN = Pattern.compile(//NOSONAR
         "\\b([NDICEKOPABSLMX])\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
     );
-    private static final Pattern BUILTIN_SHADOW_MULTI_PATTERN = Pattern.compile(//NOSONAR
-        "\\b(Pi|Re|Im|Abs|Min|Max|Log|Sin|Cos|Tan|Exp)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
+    private static final Pattern BUILTIN_SHADOW_MULTI_A_PATTERN = Pattern.compile(//NOSONAR
+        "\\b(Pi|Re|Im|Abs|Min|Max)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
+    );
+    private static final Pattern BUILTIN_SHADOW_MULTI_B_PATTERN = Pattern.compile(//NOSONAR
+        "\\b(Log|Sin|Cos|Tan|Exp)\\s*+(?:\\[\\w+_[^\\]]*+\\]\\s*+:?+=|=(?!=))"
     );
 
     // Phase 3 Resource management patterns
@@ -542,9 +545,10 @@ public class BugDetector extends BaseDetector {
      */
     public void detectSymbolNameCollision(SensorContext context, InputFile inputFile, String content) {
         try {
-            // Check both patterns to keep regex complexity under limit
+            // Check all patterns to keep regex complexity under limit
             checkBuiltinShadow(context, inputFile, content, BUILTIN_SHADOW_SINGLE_PATTERN);
-            checkBuiltinShadow(context, inputFile, content, BUILTIN_SHADOW_MULTI_PATTERN);
+            checkBuiltinShadow(context, inputFile, content, BUILTIN_SHADOW_MULTI_A_PATTERN);
+            checkBuiltinShadow(context, inputFile, content, BUILTIN_SHADOW_MULTI_B_PATTERN);
         } catch (Exception e) {
             LOG.warn("Skipping symbol name collision detection due to error in file: {}", inputFile.filename());
         }
