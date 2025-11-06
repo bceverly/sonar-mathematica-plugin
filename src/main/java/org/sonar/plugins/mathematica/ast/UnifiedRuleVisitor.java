@@ -20,6 +20,11 @@ import java.util.Set;
  */
 public class UnifiedRuleVisitor implements AstVisitor {
 
+    private static final String FUNCTION_PREFIX = "Function '";
+    private static final String IMPORT = "Import";
+    private static final String RANDOM = "Random";
+    private static final String CLOUD_DEPLOY = "CloudDeploy";
+
     private final InputFile inputFile;
     private final MathematicaRulesSensor sensor;
 
@@ -172,7 +177,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         for (String funcName : definedFunctions) {
             if (!calledFunctions.contains(funcName)) {
                 reportIssue(1, MathematicaRulesDefinition.FUNCTION_DEFINED_NEVER_CALLED_KEY,
-                    "Function '" + funcName + "' is defined but never called.");
+                    FUNCTION_PREFIX + funcName + "' is defined but never called.");
             }
         }
 
@@ -180,7 +185,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         for (Map.Entry<String, Integer> entry : functionCallCounts.entrySet()) {
             if (entry.getValue() > 3) {
                 reportIssue(1, MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY,
-                    "Function '" + entry.getKey() + "' is called " + entry.getValue() + " times. Consider caching the result.");
+                    FUNCTION_PREFIX + entry.getKey() + "' is called " + entry.getValue() + " times. Consider caching the result.");
             }
         }
     }
@@ -190,7 +195,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     private void checkFunctionNaming(FunctionDefNode node, String funcName) {
         if (!Character.isUpperCase(funcName.charAt(0))) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.WRONG_CAPITALIZATION_KEY,
-                "Function '" + funcName + "' should start with uppercase letter per Mathematica convention.");
+                FUNCTION_PREFIX + funcName + "' should start with uppercase letter per Mathematica convention.");
         }
     }
 
@@ -243,7 +248,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         Set<String> deprecated = Set.of("$Version", "Removed", "Experimental");
         if (deprecated.contains(funcName)) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY,
-                "Function '" + funcName + "' is deprecated.");
+                FUNCTION_PREFIX + funcName + "' is deprecated.");
         }
     }
 
@@ -364,7 +369,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkPathTraversal(FunctionCallNode node) {
-        Set<String> fileOps = Set.of("Import", "Export", "Get", "Put", "DeleteFile", "RenameFile", "CopyFile");
+        Set<String> fileOps = Set.of(IMPORT, "Export", "Get", "Put", "DeleteFile", "RenameFile", "CopyFile");
         if (fileOps.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.PATH_TRAVERSAL_KEY,
                 "Potential path traversal. Validate file paths in " + node.getFunctionName() + ".");
@@ -387,7 +392,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkInsecureDeserialization(FunctionCallNode node) {
-        if (node.getFunctionName().equals("Import") && !node.getArguments().isEmpty()) {
+        if (node.getFunctionName().equals(IMPORT) && !node.getArguments().isEmpty()) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.INSECURE_DESERIALIZATION_KEY,
                 "Potential insecure deserialization. Validate imported data format and source.");
         }
@@ -401,7 +406,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkXXE(FunctionCallNode node) {
-        if (node.getFunctionName().equals("XMLObject") || node.getFunctionName().equals("Import")) {
+        if (node.getFunctionName().equals("XMLObject") || node.getFunctionName().equals(IMPORT)) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.XXE_KEY,
                 "Potential XXE vulnerability. Disable external entity processing for XML.");
         }
@@ -412,14 +417,14 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkInsecureRandom(FunctionCallNode node) {
-        if (node.getFunctionName().equals("Random") || node.getFunctionName().equals("RandomInteger")) {
+        if (node.getFunctionName().equals(RANDOM) || node.getFunctionName().equals("RandomInteger")) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.INSECURE_RANDOM_EXPANDED_KEY,
                 "Use RandomCrypto for cryptographic random numbers instead of Random/RandomInteger.");
         }
     }
 
     private void checkUnsafeCloudDeploy(FunctionCallNode node) {
-        if (node.getFunctionName().equals("CloudDeploy") || node.getFunctionName().equals("CloudPublish")) {
+        if (node.getFunctionName().equals(CLOUD_DEPLOY) || node.getFunctionName().equals("CloudPublish")) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.UNSAFE_CLOUD_DEPLOY_KEY,
                 "Ensure proper authentication and permissions for cloud deployment.");
         }
@@ -447,7 +452,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkMissingCloudAuth(FunctionCallNode node) {
-        Set<String> cloudFuncs = Set.of("APIFunction", "FormFunction", "CloudDeploy");
+        Set<String> cloudFuncs = Set.of("APIFunction", "FormFunction", CLOUD_DEPLOY);
         if (cloudFuncs.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.MISSING_CLOUD_AUTH_KEY,
                 "Cloud functions should require authentication. Use Permissions option.");
@@ -466,7 +471,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkExposingSensitiveData(FunctionCallNode node) {
-        Set<String> exposeFuncs = Set.of("CloudDeploy", "Export", "Put");
+        Set<String> exposeFuncs = Set.of(CLOUD_DEPLOY, "Export", "Put");
         if (exposeFuncs.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.EXPOSING_SENSITIVE_DATA_KEY,
                 "Ensure no sensitive data is exposed via " + node.getFunctionName() + ".");
@@ -483,10 +488,10 @@ public class UnifiedRuleVisitor implements AstVisitor {
     // ========== Security Hotspot Rules ==========
 
     private void checkFileUploadValidation(FunctionCallNode node) {
-        Set<String> fileOps = Set.of("Import", "Get", "OpenRead", "OpenWrite", "Put");
+        Set<String> fileOps = Set.of(IMPORT, "Get", "OpenRead", "OpenWrite", "Put");
         if (fileOps.contains(node.getFunctionName())) {
             String message;
-            if (node.getFunctionName().equals("Import") || node.getFunctionName().equals("Get")) {
+            if (node.getFunctionName().equals(IMPORT) || node.getFunctionName().equals("Get")) {
                 message = "Review: Ensure file uploads/imports are validated for type, size, and content.";
             } else {
                 message = "Review: Ensure file operations validate and sanitize file paths.";
@@ -504,10 +509,10 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkCryptoKeyGeneration(FunctionCallNode node) {
-        Set<String> keyFuncs = Set.of("RandomInteger", "Random", "GenerateSymmetricKey", "GenerateAsymmetricKeyPair");
+        Set<String> keyFuncs = Set.of("RandomInteger", RANDOM, "GenerateSymmetricKey", "GenerateAsymmetricKeyPair");
         if (keyFuncs.contains(node.getFunctionName())) {
             String message;
-            if (node.getFunctionName().equals("Random")) {
+            if (node.getFunctionName().equals(RANDOM)) {
                 message = "Review: Random[] is not cryptographically secure. Use RandomInteger for keys.";
             } else {
                 message = "Review: Ensure cryptographic keys are generated with sufficient entropy and stored securely.";
@@ -540,7 +545,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkImportWithoutFormat(FunctionCallNode node) {
-        if (node.getFunctionName().equals("Import")) {
+        if (node.getFunctionName().equals(IMPORT)) {
             // Check if Import has only 1 argument (no format specified)
             // This is a simple heuristic - more sophisticated would parse arguments
             if (node.getArguments().size() == 1) {

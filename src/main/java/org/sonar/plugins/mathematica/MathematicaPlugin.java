@@ -14,6 +14,8 @@ import org.sonar.plugins.mathematica.sca.PacletSCASensor;
  */
 public class MathematicaPlugin implements Plugin {
 
+    private static final String CATEGORY_MATHEMATICA = "Mathematica";
+
     @Override
     public void define(Context context) {
         // Register the Mathematica language
@@ -42,7 +44,7 @@ public class MathematicaPlugin implements Plugin {
                 .description("Comma-separated list of file suffixes to analyze. Default: "
                     + MathematicaLanguage.DEFAULT_FILE_SUFFIXES)
                 .defaultValue(MathematicaLanguage.DEFAULT_FILE_SUFFIXES)
-                .category("Mathematica")
+                .category(CATEGORY_MATHEMATICA)
                 .subCategory("General")
                 .multiValues(true)
                 .build()
@@ -53,7 +55,7 @@ public class MathematicaPlugin implements Plugin {
                 .name("Minimum Tokens")
                 .description("Minimum number of tokens for duplication detection. Default: 250")
                 .defaultValue("250")
-                .category("Mathematica")
+                .category(CATEGORY_MATHEMATICA)
                 .subCategory("Duplication")
                 .type(PropertyType.INTEGER)
                 .build()
@@ -64,7 +66,7 @@ public class MathematicaPlugin implements Plugin {
                 .name("Minimum Lines")
                 .description("Minimum number of lines for duplication detection. Default: 25")
                 .defaultValue("25")
-                .category("Mathematica")
+                .category(CATEGORY_MATHEMATICA)
                 .subCategory("Duplication")
                 .type(PropertyType.INTEGER)
                 .build()
@@ -75,7 +77,7 @@ public class MathematicaPlugin implements Plugin {
                 .name("Maximum Function Length")
                 .description("Maximum number of lines allowed in a function. Default: 150")
                 .defaultValue("150")
-                .category("Mathematica")
+                .category(CATEGORY_MATHEMATICA)
                 .subCategory("Code Quality")
                 .type(PropertyType.INTEGER)
                 .build()
@@ -86,7 +88,7 @@ public class MathematicaPlugin implements Plugin {
                 .name("Maximum File Length")
                 .description("Maximum number of lines allowed in a file. Default: 1000")
                 .defaultValue("1000")
-                .category("Mathematica")
+                .category(CATEGORY_MATHEMATICA)
                 .subCategory("Code Quality")
                 .type(PropertyType.INTEGER)
                 .build()
