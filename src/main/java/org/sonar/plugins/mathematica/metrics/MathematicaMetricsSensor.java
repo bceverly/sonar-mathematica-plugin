@@ -123,14 +123,18 @@ public class MathematicaMetricsSensor implements Sensor {
             saveMeasure(context, inputFile, CoreMetrics.NCLOC_DATA, nclocData);
 
             // Log high complexity functions for debugging
-            for (FunctionComplexity fc : functionComplexities) {
-                if (fc.getCyclomaticComplexity() > 15 || fc.getCognitiveComplexity() > 15) {
-                    LOG.debug("High complexity function in {}: {}", inputFile.filename(), fc);
+            if (LOG.isDebugEnabled()) {
+                for (FunctionComplexity fc : functionComplexities) {
+                    if (fc.getCyclomaticComplexity() > 15 || fc.getCognitiveComplexity() > 15) {
+                        LOG.debug("High complexity function in {}: {}", inputFile.filename(), fc);
+                    }
                 }
             }
 
-            LOG.debug("Metrics for {}: cyclomatic={}, cognitive={}, functions={}, ncloc={}",
-                inputFile.filename(), cyclomaticComplexity, cognitiveComplexity, functionComplexities.size(), ncloc);
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Metrics for {}: cyclomatic={}, cognitive={}, functions={}, ncloc={}",
+                    inputFile.filename(), cyclomaticComplexity, cognitiveComplexity, functionComplexities.size(), ncloc);
+            }
 
         } catch (IOException e) {
             LOG.error("Error reading file: {}", inputFile, e);

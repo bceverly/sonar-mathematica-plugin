@@ -493,8 +493,10 @@ public class MathematicaRulesSensor implements Sensor {
                 // STEP 3: Post-traversal checks (whole-file analyses)
                 visitor.performPostTraversalChecks();
 
-                long analysisTime = System.currentTimeMillis() - analysisStart;
-                LOG.debug("Unified AST analysis for {} completed in {}ms", inputFile.filename(), analysisTime);
+                if (LOG.isDebugEnabled()) {
+                    long analysisTime = System.currentTimeMillis() - analysisStart;
+                    LOG.debug("Unified AST analysis for {} completed in {}ms", inputFile.filename(), analysisTime);
+                }
 
             } catch (Exception e) {
                 LOG.error("Error in unified AST analysis for: {}", inputFile.filename(), e);
@@ -776,7 +778,9 @@ public class MathematicaRulesSensor implements Sensor {
                 CustomRuleDetector customRuleDetector = new CustomRuleDetector();
                 customRuleDetector.setSensor(this);
                 customRuleDetector.executeCustomRules(context, inputFile, content, customRules);
-                LOG.debug("Executed {} custom rules for {}", customRules.size(), inputFile.filename());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Executed {} custom rules for {}", customRules.size(), inputFile.filename());
+                }
             }
         } catch (Exception e) {
             LOG.error("Error executing custom rules for {}: {}", inputFile.filename(), e.getMessage());
@@ -1018,7 +1022,7 @@ public class MathematicaRulesSensor implements Sensor {
             long totalFileTime = System.currentTimeMillis() - fileStartTime;
 
             // Only log very slow files (>2 seconds) with detailed breakdown (debug mode only)
-            if (totalFileTime > 2000) {
+            if (totalFileTime > 2000 && LOG.isDebugEnabled()) {
                 LOG.debug("PERF: SLOW FILE - {} took {}ms total ({} lines) - UnifiedAST: {}ms ({}%), SymbolTable: {}ms ({}%)",
                     inputFile.filename(), totalFileTime, inputFile.lines(),
                     analysisTime, (analysisTime * 100 / Math.max(totalFileTime, 1)),

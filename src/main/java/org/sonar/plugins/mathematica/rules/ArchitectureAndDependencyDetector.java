@@ -840,13 +840,11 @@ public final class ArchitectureAndDependencyDetector {
 
         for (String symbol : exports) {
             Set<String> usages = SYMBOL_USAGES.get(symbol);
-            if (usages != null) {
-                // Check if used only in the defining file
-                if (usages.size() == 1 && usages.contains(filename)) {
-                    createIssue(context, inputFile, MathematicaRulesDefinition.UNUSED_EXPORT_KEY,
-                        0, content.length(),
-                        "Symbol exported but only used internally: " + symbol);
-                }
+            // Check if used only in the defining file
+            if (usages != null && usages.size() == 1 && usages.contains(filename)) {
+                createIssue(context, inputFile, MathematicaRulesDefinition.UNUSED_EXPORT_KEY,
+                    0, content.length(),
+                    "Symbol exported but only used internally: " + symbol);
             }
         }
     }

@@ -60,7 +60,9 @@ public class PacletSCASensor implements Sensor {
                 String content = pacletFile.contents();
                 List<PacletDependency> dependencies = parser.parsePacletInfo(content);
 
-                LOG.debug("Found {} dependencies in {}", dependencies.size(), pacletFile.filename());
+                if (LOG.isDebugEnabled()) {
+                    LOG.debug("Found {} dependencies in {}", dependencies.size(), pacletFile.filename());
+                }
 
                 for (PacletDependency dep : dependencies) {
                     List<PacletVulnerabilityDatabase.Vulnerability> vulns =
@@ -112,8 +114,10 @@ public class PacletSCASensor implements Sensor {
             issue.at(location);
             issue.save();
 
-            LOG.debug("Reported vulnerability: {} in {}:{}",
-                     vuln.getIdentifier(), file.filename(), dep.getLineNumber());
+            if (LOG.isDebugEnabled()) {
+                LOG.debug("Reported vulnerability: {} in {}:{}",
+                         vuln.getIdentifier(), file.filename(), dep.getLineNumber());
+            }
 
         } catch (Exception e) {
             LOG.error("Failed to report vulnerability for {}: {}", dep.getName(), e.getMessage());
