@@ -58,6 +58,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRO
  */
 final class UnusedCodeAndNamingRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+    private static final String TIME_2MIN = "2min";
+
     private static final String SCOPING = "scoping";
     private static final String IMPORTS = "imports";
     private static final String SHADOWING = "shadowing";
@@ -103,7 +107,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule160.setDebtRemediationFunction(rule160.debtRemediationFunctions().constantPerIssue("5min"));
+            rule160.setDebtRemediationFunction(rule160.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule161 = repository.createRule(UNUSED_FUNCTION_PARAMETER_KEY)
             .setName("Unused function parameters should be removed or prefixed with underscore")
@@ -117,7 +121,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "parameters");
 
-            rule161.setDebtRemediationFunction(rule161.debtRemediationFunctions().constantPerIssue("5min"));
+            rule161.setDebtRemediationFunction(rule161.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule162 = repository.createRule(UNUSED_MODULE_VARIABLE_KEY)
             .setName("Unused Module variables should be removed")
@@ -131,7 +135,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, SCOPING);
 
-            rule162.setDebtRemediationFunction(rule162.debtRemediationFunctions().constantPerIssue("5min"));
+            rule162.setDebtRemediationFunction(rule162.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule163 = repository.createRule(UNUSED_WITH_VARIABLE_KEY)
             .setName("Unused With variables should be removed")
@@ -145,7 +149,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, SCOPING);
 
-            rule163.setDebtRemediationFunction(rule163.debtRemediationFunctions().constantPerIssue("5min"));
+            rule163.setDebtRemediationFunction(rule163.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule164 = repository.createRule(UNUSED_IMPORT_KEY)
             .setName("Unused package imports should be removed")
@@ -159,7 +163,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, IMPORTS);
 
-            rule164.setDebtRemediationFunction(rule164.debtRemediationFunctions().constantPerIssue("5min"));
+            rule164.setDebtRemediationFunction(rule164.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule165 = repository.createRule(UNUSED_PATTERN_NAME_KEY)
             .setName("Unused pattern names should use blank patterns")
@@ -173,7 +177,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_PATTERNS);
 
-            rule165.setDebtRemediationFunction(rule165.debtRemediationFunctions().constantPerIssue("5min"));
+            rule165.setDebtRemediationFunction(rule165.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
     }
 
@@ -190,7 +194,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "parameters");
 
-            rule166.setDebtRemediationFunction(rule166.debtRemediationFunctions().constantPerIssue("5min"));
+            rule166.setDebtRemediationFunction(rule166.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule167 = repository.createRule(DEAD_AFTER_RETURN_KEY)
             .setName("Code after Return statement is unreachable")
@@ -232,7 +236,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule169.setDebtRemediationFunction(rule169.debtRemediationFunctions().constantPerIssue("5min"));
+            rule169.setDebtRemediationFunction(rule169.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule170 = repository.createRule(FUNCTION_DEFINED_NEVER_CALLED_KEY)
             .setName("Global function defined but never called")
@@ -246,7 +250,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule170.setDebtRemediationFunction(rule170.debtRemediationFunctions().constantPerIssue("2min"));
+            rule170.setDebtRemediationFunction(rule170.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule171 = repository.createRule(REDEFINED_WITHOUT_USE_KEY)
             .setName("Variable redefined without using previous value")
@@ -274,7 +278,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "loops");
 
-            rule172.setDebtRemediationFunction(rule172.debtRemediationFunctions().constantPerIssue("5min"));
+            rule172.setDebtRemediationFunction(rule172.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -294,7 +298,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "error-handling");
 
-            rule173.setDebtRemediationFunction(rule173.debtRemediationFunctions().constantPerIssue("5min"));
+            rule173.setDebtRemediationFunction(rule173.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule174 = repository.createRule(CONDITION_ALWAYS_FALSE_KEY)
             .setName("Condition is always false")
@@ -324,7 +328,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SHADOWING, NAMING);
 
-            rule175.setDebtRemediationFunction(rule175.debtRemediationFunctions().constantPerIssue("5min"));
+            rule175.setDebtRemediationFunction(rule175.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule176 = repository.createRule(PARAMETER_SHADOWS_BUILTIN_KEY)
             .setName("Parameter shadows built-in function")
@@ -366,7 +370,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redefinition", TAG_PATTERNS);
 
-            rule178.setDebtRemediationFunction(rule178.debtRemediationFunctions().constantPerIssue("2min"));
+            rule178.setDebtRemediationFunction(rule178.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
     }
 
@@ -383,7 +387,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, TAG_READABILITY);
 
-            rule179.setDebtRemediationFunction(rule179.debtRemediationFunctions().constantPerIssue("2min"));
+            rule179.setDebtRemediationFunction(rule179.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule180 = repository.createRule(SYMBOL_NAME_TOO_LONG_KEY)
             .setName("Symbol name exceeds 50 characters")
@@ -397,7 +401,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, TAG_READABILITY);
 
-            rule180.setDebtRemediationFunction(rule180.debtRemediationFunctions().constantPerIssue("2min"));
+            rule180.setDebtRemediationFunction(rule180.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule181 = repository.createRule(INCONSISTENT_NAMING_CONVENTION_KEY)
             .setName("Inconsistent naming convention (mix of camelCase, snake_case, PascalCase)")
@@ -411,7 +415,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, "consistency");
 
-            rule181.setDebtRemediationFunction(rule181.debtRemediationFunctions().constantPerIssue("2min"));
+            rule181.setDebtRemediationFunction(rule181.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule182 = repository.createRule(BUILTIN_NAME_IN_LOCAL_SCOPE_KEY)
             .setName("Built-in function name used in local scope")
@@ -425,7 +429,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SHADOWING, BUILT_INS);
 
-            rule182.setDebtRemediationFunction(rule182.debtRemediationFunctions().constantPerIssue("5min"));
+            rule182.setDebtRemediationFunction(rule182.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule183 = repository.createRule(CONTEXT_CONFLICTS_KEY)
             .setName("Symbol defined in multiple contexts")
@@ -467,7 +471,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("encapsulation", PACKAGES);
 
-            rule185.setDebtRemediationFunction(rule185.debtRemediationFunctions().constantPerIssue("5min"));
+            rule185.setDebtRemediationFunction(rule185.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -515,7 +519,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(PACKAGES, CONTEXTS);
 
-            rule188.setDebtRemediationFunction(rule188.debtRemediationFunctions().constantPerIssue("5min"));
+            rule188.setDebtRemediationFunction(rule188.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule189 = repository.createRule(TEMP_VARIABLE_NOT_TEMP_KEY)
             .setName("Variables named 'temp' or 'tmp' used multiple times")
@@ -529,7 +533,7 @@ final class UnusedCodeAndNamingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, TAG_READABILITY);
 
-            rule189.setDebtRemediationFunction(rule189.debtRemediationFunctions().constantPerIssue("2min"));
+            rule189.setDebtRemediationFunction(rule189.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         // Undefined Symbol Detection Rules (Items 91-100)
 

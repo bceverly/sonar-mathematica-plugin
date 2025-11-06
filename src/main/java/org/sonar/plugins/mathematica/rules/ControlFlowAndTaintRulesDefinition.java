@@ -56,6 +56,8 @@ final class ControlFlowAndTaintRulesDefinition {
     private static final String LOGIC_ERROR = "logic-error";
     private static final String CONDITIONAL = "conditional";
     private static final String OWASP_A03 = "owasp-a03";
+    private static final String TIME_5MIN = "5min";
+    private static final String TIME_2MIN = "2min";
 
     private ControlFlowAndTaintRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
@@ -257,7 +259,7 @@ final class ControlFlowAndTaintRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_DEAD_CODE, "return");
 
-            rule245.setDebtRemediationFunction(rule245.debtRemediationFunctions().constantPerIssue("5min"));
+            rule245.setDebtRemediationFunction(rule245.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule246 = repository.createRule(ELSE_BRANCH_NEVER_TAKEN_KEY)
             .setName("Else branch is never reachable")
@@ -329,7 +331,7 @@ final class ControlFlowAndTaintRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_DEAD_CODE, "exception");
 
-            rule249.setDebtRemediationFunction(rule249.debtRemediationFunctions().constantPerIssue("5min"));
+            rule249.setDebtRemediationFunction(rule249.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule250 = repository.createRule(BREAK_OUTSIDE_LOOP_KEY)
             .setName("Break[] outside loop context causes runtime error")
@@ -630,7 +632,7 @@ final class ControlFlowAndTaintRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, CONDITIONAL);
 
-            rule267.setDebtRemediationFunction(rule267.debtRemediationFunctions().constantPerIssue("5min"));
+            rule267.setDebtRemediationFunction(rule267.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule268 = repository.createRule(NESTED_IF_DEPTH_KEY)
             .setName("Deeply nested If statements (>4 levels) are hard to understand")
@@ -645,7 +647,7 @@ final class ControlFlowAndTaintRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", "nesting");
 
-            rule268.setDebtRemediationFunction(rule268.debtRemediationFunctions().constantPerIssue("5min"));
+            rule268.setDebtRemediationFunction(rule268.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule269 = repository.createRule(TOO_MANY_RETURN_POINTS_KEY)
             .setName("Function with more than 5 Return statements is hard to reason about")
@@ -673,7 +675,7 @@ final class ControlFlowAndTaintRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", "return");
 
-            rule269.setDebtRemediationFunction(rule269.debtRemediationFunctions().constantPerIssue("5min"));
+            rule269.setDebtRemediationFunction(rule269.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule270 = repository.createRule(MISSING_ELSE_CONSIDERED_HARMFUL_KEY)
             .setName("If without else can have unclear intent")
@@ -690,7 +692,7 @@ final class ControlFlowAndTaintRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity", CONDITIONAL);
 
-            rule270.setDebtRemediationFunction(rule270.debtRemediationFunctions().constantPerIssue("2min"));
+            rule270.setDebtRemediationFunction(rule270.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
     }
 
 }

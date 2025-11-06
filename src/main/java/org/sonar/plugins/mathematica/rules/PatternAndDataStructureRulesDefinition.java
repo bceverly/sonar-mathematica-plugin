@@ -52,6 +52,9 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.VER
  */
 final class PatternAndDataStructureRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+
     private static final String CLARITY = "clarity";
     private static final String LISTS = "lists";
     private static final String ASSOCIATIONS = "associations";
@@ -91,7 +94,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, "type-safety");
 
-            rule125.setDebtRemediationFunction(rule125.debtRemediationFunctions().constantPerIssue("5min"));
+            rule125.setDebtRemediationFunction(rule125.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule126 = repository.createRule(PATTERN_TEST_VS_CONDITION_KEY)
             .setName("PatternTest (?) is more efficient than Condition (/;) for simple tests")
@@ -119,7 +122,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
-            rule127.setDebtRemediationFunction(rule127.debtRemediationFunctions().constantPerIssue("5min"));
+            rule127.setDebtRemediationFunction(rule127.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule128 = repository.createRule(NESTED_OPTIONAL_PATTERNS_KEY)
             .setName("Optional pattern defaults should not depend on other parameters")
@@ -164,7 +167,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, CLARITY);
 
-            rule130.setDebtRemediationFunction(rule130.debtRemediationFunctions().constantPerIssue("5min"));
+            rule130.setDebtRemediationFunction(rule130.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule131 = repository.createRule(PATTERN_TEST_PURE_FUNCTION_KEY)
             .setName("Avoid pure functions in PatternTest for hot code")
@@ -178,7 +181,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
-            rule131.setDebtRemediationFunction(rule131.debtRemediationFunctions().constantPerIssue("5min"));
+            rule131.setDebtRemediationFunction(rule131.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule132 = repository.createRule(MISSING_PATTERN_DEFAULTS_KEY)
             .setName("Optional arguments should have sensible defaults")
@@ -232,7 +235,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, "clutter");
 
-            rule135.setDebtRemediationFunction(rule135.debtRemediationFunctions().constantPerIssue("5min"));
+            rule135.setDebtRemediationFunction(rule135.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -278,7 +281,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
-            rule138.setDebtRemediationFunction(rule138.debtRemediationFunctions().constantPerIssue("5min"));
+            rule138.setDebtRemediationFunction(rule138.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule139 = repository.createRule(PATTERN_MATCHING_LARGE_LISTS_KEY)
             .setName("Avoid pattern matching on large lists")
@@ -292,7 +295,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PATTERNS, TAG_PERFORMANCE);
 
-            rule139.setDebtRemediationFunction(rule139.debtRemediationFunctions().constantPerIssue("5min"));
+            rule139.setDebtRemediationFunction(rule139.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // List/Array Rules (Items 31-40)
         NewRule rule140 = repository.createRule(EMPTY_LIST_INDEXING_KEY)
@@ -366,7 +369,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(LISTS, TAG_PERFORMANCE);
 
-            rule144.setDebtRemediationFunction(rule144.debtRemediationFunctions().constantPerIssue("5min"));
+            rule144.setDebtRemediationFunction(rule144.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule145 = repository.createRule(LENGTH_IN_LOOP_CONDITION_KEY)
             .setName("Cache list length outside loops")
@@ -380,7 +383,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(LISTS, TAG_PERFORMANCE);
 
-            rule145.setDebtRemediationFunction(rule145.debtRemediationFunctions().constantPerIssue("5min"));
+            rule145.setDebtRemediationFunction(rule145.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule146 = repository.createRule(REVERSE_TWICE_KEY)
             .setName("Double Reverse is a no-op")
@@ -394,7 +397,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(LISTS, "redundant");
 
-            rule146.setDebtRemediationFunction(rule146.debtRemediationFunctions().constantPerIssue("5min"));
+            rule146.setDebtRemediationFunction(rule146.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -414,7 +417,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(LISTS, TAG_PERFORMANCE);
 
-            rule147.setDebtRemediationFunction(rule147.debtRemediationFunctions().constantPerIssue("5min"));
+            rule147.setDebtRemediationFunction(rule147.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule148 = repository.createRule(POSITION_VS_SELECT_KEY)
             .setName("Use Select instead of Extract with Position")
@@ -428,7 +431,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(LISTS, CLARITY);
 
-            rule148.setDebtRemediationFunction(rule148.debtRemediationFunctions().constantPerIssue("5min"));
+            rule148.setDebtRemediationFunction(rule148.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule149 = repository.createRule(NESTED_PART_EXTRACTION_KEY)
             .setName("Use multi-dimensional Part syntax")
@@ -442,7 +445,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(LISTS, CLARITY);
 
-            rule149.setDebtRemediationFunction(rule149.debtRemediationFunctions().constantPerIssue("5min"));
+            rule149.setDebtRemediationFunction(rule149.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Association Rules (Items 41-50)
         NewRule rule150 = repository.createRule(MISSING_KEY_CHECK_KEY)
@@ -485,7 +488,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ASSOCIATIONS, TAG_PERFORMANCE);
 
-            rule152.setDebtRemediationFunction(rule152.debtRemediationFunctions().constantPerIssue("5min"));
+            rule152.setDebtRemediationFunction(rule152.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
     }
 
@@ -516,7 +519,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ASSOCIATIONS, CLARITY);
 
-            rule154.setDebtRemediationFunction(rule154.debtRemediationFunctions().constantPerIssue("5min"));
+            rule154.setDebtRemediationFunction(rule154.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule155 = repository.createRule(MERGE_WITHOUT_CONFLICT_STRATEGY_KEY)
             .setName("Specify merge function for Merge")
@@ -558,7 +561,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ASSOCIATIONS, TAG_PERFORMANCE);
 
-            rule157.setDebtRemediationFunction(rule157.debtRemediationFunctions().constantPerIssue("5min"));
+            rule157.setDebtRemediationFunction(rule157.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule158 = repository.createRule(LOOKUP_WITH_MISSING_DEFAULT_KEY)
             .setName("Don't specify Missing as Lookup default")
@@ -572,7 +575,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ASSOCIATIONS, "redundant");
 
-            rule158.setDebtRemediationFunction(rule158.debtRemediationFunctions().constantPerIssue("5min"));
+            rule158.setDebtRemediationFunction(rule158.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule159 = repository.createRule(GROUPBY_WITHOUT_AGGREGATION_KEY)
             .setName("Use GatherBy when not aggregating")
@@ -586,7 +589,7 @@ final class PatternAndDataStructureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ASSOCIATIONS, CLARITY);
 
-            rule159.setDebtRemediationFunction(rule159.debtRemediationFunctions().constantPerIssue("5min"));
+            rule159.setDebtRemediationFunction(rule159.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
 }

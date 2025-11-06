@@ -45,6 +45,9 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.XXE
  */
 final class ExtendedCoreRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+
     private static final String BRAIN_OVERLOAD = "brain-overload";
 
     private ExtendedCoreRulesDefinition() {
@@ -201,7 +204,7 @@ final class ExtendedCoreRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation");
 
-            rule29.setDebtRemediationFunction(rule29.debtRemediationFunctions().constantPerIssue("5min"));
+            rule29.setDebtRemediationFunction(rule29.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Inconsistent Naming
         defineNewCodeSmellRules2(repository);
@@ -230,7 +233,7 @@ final class ExtendedCoreRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("convention");
 
-            rule30.setDebtRemediationFunction(rule30.debtRemediationFunctions().constantPerIssue("5min"));
+            rule30.setDebtRemediationFunction(rule30.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Identical Branches
         NewRule rule31 = repository.createRule(IDENTICAL_BRANCHES_KEY)
@@ -317,7 +320,7 @@ final class ExtendedCoreRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("suspicious");
 
-            rule34.setDebtRemediationFunction(rule34.debtRemediationFunctions().constantPerIssue("5min"));
+            rule34.setDebtRemediationFunction(rule34.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**

@@ -53,6 +53,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRO
  */
 final class TypeCheckingAndDataFlowRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+    private static final String TIME_2MIN = "2min";
+
     private static final String TYPE_MISMATCH = "type-mismatch";
     private static final String REDUNDANT = "redundant";
     private static final String DATA_FLOW = "data-flow";
@@ -154,7 +158,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TYPE_MISMATCH, "comparison");
 
-            rule204.setDebtRemediationFunction(rule204.debtRemediationFunctions().constantPerIssue("5min"));
+            rule204.setDebtRemediationFunction(rule204.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule205 = repository.createRule(MIXED_NUMERIC_TYPES_KEY)
             .setName("Mixing exact and approximate numbers loses precision")
@@ -168,7 +172,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("numeric-precision", TYPE_MISMATCH);
 
-            rule205.setDebtRemediationFunction(rule205.debtRemediationFunctions().constantPerIssue("5min"));
+            rule205.setDebtRemediationFunction(rule205.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
     }
 
@@ -242,7 +246,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("return-type", "api-design");
 
-            rule210.setDebtRemediationFunction(rule210.debtRemediationFunctions().constantPerIssue("5min"));
+            rule210.setDebtRemediationFunction(rule210.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule211 = repository.createRule(NULL_ASSIGNMENT_TO_TYPED_VARIABLE_KEY)
             .setName("Null assigned to variable expected to be numeric")
@@ -290,7 +294,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(REDUNDANT, "type-conversion");
 
-            rule213.setDebtRemediationFunction(rule213.debtRemediationFunctions().constantPerIssue("5min"));
+            rule213.setDebtRemediationFunction(rule213.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule214 = repository.createRule(GRAPHICS_OBJECT_IN_NUMERIC_CONTEXT_KEY)
             .setName("Graphics object used in numeric computation")
@@ -318,7 +322,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("symbolic", "numeric-context");
 
-            rule215.setDebtRemediationFunction(rule215.debtRemediationFunctions().constantPerIssue("5min"));
+            rule215.setDebtRemediationFunction(rule215.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule216 = repository.createRule(IMAGE_OPERATION_ON_NON_IMAGE_KEY)
             .setName("Image operation on non-Image object")
@@ -421,7 +425,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("dead-store", TAG_PERFORMANCE);
 
-            rule222.setDebtRemediationFunction(rule222.debtRemediationFunctions().constantPerIssue("5min"));
+            rule222.setDebtRemediationFunction(rule222.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule223 = repository.createRule(OVERWRITTEN_BEFORE_READ_KEY)
             .setName("Assignment overwritten before being read")
@@ -435,7 +439,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(REDUNDANT, DATA_FLOW);
 
-            rule223.setDebtRemediationFunction(rule223.debtRemediationFunctions().constantPerIssue("5min"));
+            rule223.setDebtRemediationFunction(rule223.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -511,7 +515,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(REDUNDANT, "code-smell");
 
-            rule228.setDebtRemediationFunction(rule228.debtRemediationFunctions().constantPerIssue("2min"));
+            rule228.setDebtRemediationFunction(rule228.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule229 = repository.createRule(MUTATION_IN_PURE_FUNCTION_KEY)
             .setName("Pure function mutates outer variable")
@@ -525,7 +529,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("pure-functions", "side-effects");
 
-            rule229.setDebtRemediationFunction(rule229.debtRemediationFunctions().constantPerIssue("5min"));
+            rule229.setDebtRemediationFunction(rule229.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
     }
 
@@ -542,7 +546,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("global-state", "mutable-state");
 
-            rule230.setDebtRemediationFunction(rule230.debtRemediationFunctions().constantPerIssue("5min"));
+            rule230.setDebtRemediationFunction(rule230.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule231 = repository.createRule(VARIABLE_SCOPE_ESCAPE_KEY)
             .setName("Module local variable escapes its scope")
@@ -598,7 +602,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(REDUNDANT, "return-value");
 
-            rule234.setDebtRemediationFunction(rule234.debtRemediationFunctions().constantPerIssue("2min"));
+            rule234.setDebtRemediationFunction(rule234.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule235 = repository.createRule(VARIABLE_NEVER_MODIFIED_KEY)
             .setName("Module variable never modified, use With instead")
@@ -612,7 +616,7 @@ final class TypeCheckingAndDataFlowRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("immutability", "best-practice");
 
-            rule235.setDebtRemediationFunction(rule235.debtRemediationFunctions().constantPerIssue("2min"));
+            rule235.setDebtRemediationFunction(rule235.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
     }
 
 }

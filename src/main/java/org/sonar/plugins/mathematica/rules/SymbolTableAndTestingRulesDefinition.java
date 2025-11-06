@@ -55,6 +55,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.WRI
  */
 final class SymbolTableAndTestingRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+    private static final String TIME_2MIN = "2min";
+
     private static final String COVERAGE = "coverage";
     private static final String TESTING = "testing";
     private static final String COMPILATION = "compilation";
@@ -96,7 +100,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TESTING, COVERAGE);
 
-            rule361.setDebtRemediationFunction(rule361.debtRemediationFunctions().constantPerIssue("2min"));
+            rule361.setDebtRemediationFunction(rule361.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule362 = repository.createRule(UNTESTED_PUBLIC_FUNCTION_KEY)
             .setName("Public function has no tests")
@@ -110,7 +114,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TESTING, COVERAGE);
 
-            rule362.setDebtRemediationFunction(rule362.debtRemediationFunctions().constantPerIssue("5min"));
+            rule362.setDebtRemediationFunction(rule362.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule363 = repository.createRule(UNTESTED_BRANCH_KEY)
             .setName("Branch never executed in tests")
@@ -124,7 +128,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TESTING, COVERAGE);
 
-            rule363.setDebtRemediationFunction(rule363.debtRemediationFunctions().constantPerIssue("5min"));
+            rule363.setDebtRemediationFunction(rule363.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule364 = repository.createRule(TEST_ONLY_CODE_IN_PRODUCTION_KEY)
             .setName("Code only executed in tests is dead in production")
@@ -154,7 +158,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, COMPILATION);
 
-            rule365.setDebtRemediationFunction(rule365.debtRemediationFunctions().constantPerIssue("5min"));
+            rule365.setDebtRemediationFunction(rule365.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule366 = repository.createRule(COMPILATION_TARGET_MISSING_KEY)
             .setName("Compile should target C not MVM")
@@ -168,7 +172,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, COMPILATION);
 
-            rule366.setDebtRemediationFunction(rule366.debtRemediationFunctions().constantPerIssue("5min"));
+            rule366.setDebtRemediationFunction(rule366.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule367 = repository.createRule(NON_COMPILABLE_CONSTRUCT_IN_COMPILE_KEY)
             .setName("Non-compilable function in Compile[] falls back to slow evaluation")
@@ -210,7 +214,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, TAG_PATTERNS);
 
-            rule369.setDebtRemediationFunction(rule369.debtRemediationFunctions().constantPerIssue("5min"));
+            rule369.setDebtRemediationFunction(rule369.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineSymbolTableRules2(repository);
     }
@@ -228,7 +232,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "numeric");
 
-            rule370.setDebtRemediationFunction(rule370.debtRemediationFunctions().constantPerIssue("5min"));
+            rule370.setDebtRemediationFunction(rule370.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule371 = repository.createRule(MISSING_MEMOIZATION_OPPORTUNITY_ENHANCED_KEY)
             .setName("Recursive function without memoization")
@@ -242,7 +246,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "memoization");
 
-            rule371.setDebtRemediationFunction(rule371.debtRemediationFunctions().constantPerIssue("5min"));
+            rule371.setDebtRemediationFunction(rule371.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineSymbolTableRulesFinal(repository);
     }
@@ -260,7 +264,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "strings");
 
-            rule372.setDebtRemediationFunction(rule372.debtRemediationFunctions().constantPerIssue("5min"));
+            rule372.setDebtRemediationFunction(rule372.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule373 = repository.createRule(LIST_CONCATENATION_IN_LOOP_KEY)
             .setName("List concatenation in loop has quadratic complexity")
@@ -274,7 +278,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "lists");
 
-            rule373.setDebtRemediationFunction(rule373.debtRemediationFunctions().constantPerIssue("5min"));
+            rule373.setDebtRemediationFunction(rule373.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -295,7 +299,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule374.setDebtRemediationFunction(rule374.debtRemediationFunctions().constantPerIssue("5min"));
+            rule374.setDebtRemediationFunction(rule374.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule375 = repository.createRule(ASSIGNED_BUT_NEVER_READ_KEY)
             .setName("Variable assigned but value never read")
@@ -340,7 +344,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("confusing", "naming");
 
-            rule377.setDebtRemediationFunction(rule377.debtRemediationFunctions().constantPerIssue("5min"));
+            rule377.setDebtRemediationFunction(rule377.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineSymbolTableRulesContinued(repository);
     }
@@ -362,7 +366,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "parameters");
 
-            rule378.setDebtRemediationFunction(rule378.debtRemediationFunctions().constantPerIssue("5min"));
+            rule378.setDebtRemediationFunction(rule378.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule379 = repository.createRule(WRITE_ONLY_VARIABLE_KEY)
             .setName("Variable is only written to, never read")
@@ -390,7 +394,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("redundant", "code-smell");
 
-            rule380.setDebtRemediationFunction(rule380.debtRemediationFunctions().constantPerIssue("5min"));
+            rule380.setDebtRemediationFunction(rule380.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule381 = repository.createRule(VARIABLE_IN_WRONG_SCOPE_KEY)
             .setName("Variable could be declared in more specific scope")
@@ -404,7 +408,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SCOPE, "best-practice");
 
-            rule381.setDebtRemediationFunction(rule381.debtRemediationFunctions().constantPerIssue("2min"));
+            rule381.setDebtRemediationFunction(rule381.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule382 = repository.createRule(VARIABLE_ESCAPES_SCOPE_KEY)
             .setName("Module variable captured in closure may fail")
@@ -440,7 +444,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SCOPE, "memory", MAINTAINABILITY);
 
-            rule383.setDebtRemediationFunction(rule383.debtRemediationFunctions().constantPerIssue("5min"));
+            rule383.setDebtRemediationFunction(rule383.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule384 = repository.createRule(MODIFIED_IN_UNEXPECTED_SCOPE_KEY)
             .setName("Variable modified in unexpected scope")
@@ -496,7 +500,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("naming", TAG_READABILITY);
 
-            rule387.setDebtRemediationFunction(rule387.debtRemediationFunctions().constantPerIssue("5min"));
+            rule387.setDebtRemediationFunction(rule387.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule388 = repository.createRule(CONSTANT_NOT_MARKED_AS_CONSTANT_KEY)
             .setName("Variable assigned once should be constant")
@@ -510,7 +514,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("constants", "best-practice");
 
-            rule388.setDebtRemediationFunction(rule388.debtRemediationFunctions().constantPerIssue("5min"));
+            rule388.setDebtRemediationFunction(rule388.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineTestingRulesContinued(repository);
     }
@@ -542,7 +546,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity", MAINTAINABILITY);
 
-            rule390.setDebtRemediationFunction(rule390.debtRemediationFunctions().constantPerIssue("5min"));
+            rule390.setDebtRemediationFunction(rule390.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule391 = repository.createRule(INCORRECT_CLOSURE_CAPTURE_KEY)
             .setName("Loop variable incorrectly captured in closure")
@@ -598,7 +602,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "file-size", MAINTAINABILITY);
 
-            rule393.setDebtRemediationFunction(rule393.debtRemediationFunctions().constantPerIssue("2min"));
+            rule393.setDebtRemediationFunction(rule393.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule394 = repository.createRule(ANALYSIS_TIMEOUT_KEY)
             .setName("Symbol table analysis timeout")
@@ -626,7 +630,7 @@ final class SymbolTableAndTestingRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "complexity", "analysis-limits");
 
-            rule394.setDebtRemediationFunction(rule394.debtRemediationFunctions().constantPerIssue("2min"));
+            rule394.setDebtRemediationFunction(rule394.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
     }
 
     }

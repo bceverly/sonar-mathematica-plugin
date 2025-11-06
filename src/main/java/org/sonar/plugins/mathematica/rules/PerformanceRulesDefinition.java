@@ -45,6 +45,9 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNS
  */
 final class PerformanceRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+
     private static final String NAMING = "naming";
 
     private PerformanceRulesDefinition() {
@@ -112,7 +115,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
-            rule51.setDebtRemediationFunction(rule51.debtRemediationFunctions().constantPerIssue("5min"));
+            rule51.setDebtRemediationFunction(rule51.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule52 = repository.createRule(STRING_CONCAT_IN_LOOP_KEY)
             .setName("String concatenation should not be used in loops")
@@ -151,7 +154,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "optimization");
 
-            rule53.setDebtRemediationFunction(rule53.debtRemediationFunctions().constantPerIssue("5min"));
+            rule53.setDebtRemediationFunction(rule53.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule54 = repository.createRule(PACKED_ARRAY_BREAKING_KEY)
             .setName("Operations should preserve packed arrays")
@@ -168,7 +171,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "arrays");
 
-            rule54.setDebtRemediationFunction(rule54.debtRemediationFunctions().constantPerIssue("5min"));
+            rule54.setDebtRemediationFunction(rule54.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule55 = repository.createRule(NESTED_MAP_TABLE_KEY)
             .setName("Nested Map/Table should be refactored")
@@ -188,7 +191,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, TAG_READABILITY);
 
-            rule55.setDebtRemediationFunction(rule55.debtRemediationFunctions().constantPerIssue("5min"));
+            rule55.setDebtRemediationFunction(rule55.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule56 = repository.createRule(LARGE_TEMP_EXPRESSIONS_KEY)
             .setName("Large temporary expressions should be assigned to variables")
@@ -199,7 +202,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("memory", TAG_PERFORMANCE);
 
-            rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue("5min"));
+            rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineVisualizationAndInputValidationRules(repository);
     }
@@ -376,7 +379,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, NAMING);
 
-            rule63.setDebtRemediationFunction(rule63.debtRemediationFunctions().constantPerIssue("5min"));
+            rule63.setDebtRemediationFunction(rule63.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule64 = repository.createRule(MISSING_USAGE_MESSAGE_KEY)
             .setName("Public functions should have usage messages")
@@ -395,7 +398,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation");
 
-            rule64.setDebtRemediationFunction(rule64.debtRemediationFunctions().constantPerIssue("5min"));
+            rule64.setDebtRemediationFunction(rule64.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule65 = repository.createRule(MISSING_OPTIONS_PATTERN_KEY)
             .setName("Functions with multiple optional parameters should use OptionsPattern")
@@ -418,7 +421,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("maintainability", "api-design");
 
-            rule65.setDebtRemediationFunction(rule65.debtRemediationFunctions().constantPerIssue("5min"));
+            rule65.setDebtRemediationFunction(rule65.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule66 = repository.createRule(SIDE_EFFECTS_NAMING_KEY)
             .setName("Functions with side effects should have descriptive names")
@@ -438,7 +441,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, "side-effects");
 
-            rule66.setDebtRemediationFunction(rule66.debtRemediationFunctions().constantPerIssue("5min"));
+            rule66.setDebtRemediationFunction(rule66.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule67 = repository.createRule(COMPLEX_BOOLEAN_KEY)
             .setName("Complex boolean expressions should be simplified")
@@ -459,7 +462,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, "complexity");
 
-            rule67.setDebtRemediationFunction(rule67.debtRemediationFunctions().constantPerIssue("5min"));
+            rule67.setDebtRemediationFunction(rule67.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineSecurityVulnerabilityRules(repository);
     }
@@ -478,7 +481,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api-design", "safety");
 
-            rule68.setDebtRemediationFunction(rule68.debtRemediationFunctions().constantPerIssue("5min"));
+            rule68.setDebtRemediationFunction(rule68.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule69 = repository.createRule(MISSING_RETURN_KEY)
             .setName("Complex functions should have explicit Return statements")
@@ -497,7 +500,7 @@ final class PerformanceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY);
 
-            rule69.setDebtRemediationFunction(rule69.debtRemediationFunctions().constantPerIssue("5min"));
+            rule69.setDebtRemediationFunction(rule69.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // SECURITY & SAFETY (3 rules)
 

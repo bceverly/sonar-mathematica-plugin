@@ -58,6 +58,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNU
  */
 final class DependencyAndArchitectureRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+    private static final String TIME_2MIN = "2min";
+
     private static final String ARCHITECTURE = "architecture";
     private static final String DEPENDENCY = "dependency";
     private static final String NAMING = "naming";
@@ -119,7 +123,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, DEPENDENCY);
 
-            rule272.setDebtRemediationFunction(rule272.debtRemediationFunctions().constantPerIssue("5min"));
+            rule272.setDebtRemediationFunction(rule272.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule273 = repository.createRule(MISSING_PACKAGE_IMPORT_KEY)
             .setName("Using symbol from package without Needs may fail in fresh kernel")
@@ -151,7 +155,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(DEPENDENCY, "fragile");
 
-            rule274.setDebtRemediationFunction(rule274.debtRemediationFunctions().constantPerIssue("5min"));
+            rule274.setDebtRemediationFunction(rule274.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule275 = repository.createRule(DIAMOND_DEPENDENCY_KEY)
             .setName("Diamond dependency pattern may cause version conflicts")
@@ -165,7 +169,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ARCHITECTURE, DEPENDENCY);
 
-            rule275.setDebtRemediationFunction(rule275.debtRemediationFunctions().constantPerIssue("2min"));
+            rule275.setDebtRemediationFunction(rule275.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule276 = repository.createRule(GOD_PACKAGE_TOO_MANY_DEPENDENCIES_KEY)
             .setName("Package with too many dependencies (>10) has high coupling")
@@ -181,7 +185,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ARCHITECTURE, "coupling");
 
-            rule276.setDebtRemediationFunction(rule276.debtRemediationFunctions().constantPerIssue("5min"));
+            rule276.setDebtRemediationFunction(rule276.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
     }
 
@@ -213,7 +217,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ARCHITECTURE, "coupling");
 
-            rule278.setDebtRemediationFunction(rule278.debtRemediationFunctions().constantPerIssue("5min"));
+            rule278.setDebtRemediationFunction(rule278.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule279 = repository.createRule(LAYER_VIOLATION_KEY)
             .setName("Lower layer depending on higher layer violates architecture")
@@ -227,7 +231,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ARCHITECTURE, "layering");
 
-            rule279.setDebtRemediationFunction(rule279.debtRemediationFunctions().constantPerIssue("5min"));
+            rule279.setDebtRemediationFunction(rule279.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule280 = repository.createRule(UNSTABLE_DEPENDENCY_KEY)
             .setName("Stable package depending on unstable package causes ripple effects")
@@ -241,7 +245,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ARCHITECTURE, "stability");
 
-            rule280.setDebtRemediationFunction(rule280.debtRemediationFunctions().constantPerIssue("5min"));
+            rule280.setDebtRemediationFunction(rule280.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule281 = repository.createRule(PACKAGE_TOO_LARGE_KEY)
             .setName("Package with more than 3000 lines should be split")
@@ -255,7 +259,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("size", "maintainability");
 
-            rule281.setDebtRemediationFunction(rule281.debtRemediationFunctions().constantPerIssue("2min"));
+            rule281.setDebtRemediationFunction(rule281.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule282 = repository.createRule(PACKAGE_TOO_SMALL_KEY)
             .setName("Package with fewer than 50 lines may be over-modularized")
@@ -269,7 +273,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("size", "over-modularization");
 
-            rule282.setDebtRemediationFunction(rule282.debtRemediationFunctions().constantPerIssue("2min"));
+            rule282.setDebtRemediationFunction(rule282.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule283 = repository.createRule(INCONSISTENT_PACKAGE_NAMING_KEY)
             .setName("Package names should follow consistent naming convention")
@@ -285,7 +289,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, "consistency");
 
-            rule283.setDebtRemediationFunction(rule283.debtRemediationFunctions().constantPerIssue("2min"));
+            rule283.setDebtRemediationFunction(rule283.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
     }
 
     /**
@@ -305,7 +309,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api", "cohesion");
 
-            rule284.setDebtRemediationFunction(rule284.debtRemediationFunctions().constantPerIssue("2min"));
+            rule284.setDebtRemediationFunction(rule284.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule285 = repository.createRule(PACKAGE_EXPORTS_TOO_LITTLE_KEY)
             .setName("Package exporting 0-1 symbols may have questionable design")
@@ -319,7 +323,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("api", "design");
 
-            rule285.setDebtRemediationFunction(rule285.debtRemediationFunctions().constantPerIssue("2min"));
+            rule285.setDebtRemediationFunction(rule285.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule286 = repository.createRule(INCOMPLETE_PUBLIC_API_KEY)
             .setName("Public function relying on private function breaks encapsulation")
@@ -333,7 +337,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ENCAPSULATION, "api");
 
-            rule286.setDebtRemediationFunction(rule286.debtRemediationFunctions().constantPerIssue("5min"));
+            rule286.setDebtRemediationFunction(rule286.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule287 = repository.createRule(PRIVATE_SYMBOL_USED_EXTERNALLY_KEY)
             .setName("Private` symbol used from another package breaks encapsulation")
@@ -377,7 +381,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "discoverability");
 
-            rule289.setDebtRemediationFunction(rule289.debtRemediationFunctions().constantPerIssue("2min"));
+            rule289.setDebtRemediationFunction(rule289.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
     }
 
@@ -394,7 +398,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("versioning", "api");
 
-            rule290.setDebtRemediationFunction(rule290.debtRemediationFunctions().constantPerIssue("5min"));
+            rule290.setDebtRemediationFunction(rule290.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Unused Export & Dead Code (Items 231-245)
 
@@ -410,7 +414,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule291.setDebtRemediationFunction(rule291.debtRemediationFunctions().constantPerIssue("5min"));
+            rule291.setDebtRemediationFunction(rule291.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule292 = repository.createRule(UNUSED_EXPORT_KEY)
             .setName("Symbol exported but never imported anywhere")
@@ -424,7 +428,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, "api");
 
-            rule292.setDebtRemediationFunction(rule292.debtRemediationFunctions().constantPerIssue("5min"));
+            rule292.setDebtRemediationFunction(rule292.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule293 = repository.createRule(DEAD_PACKAGE_KEY)
             .setName("Package never imported by anyone is dead code")
@@ -438,7 +442,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_UNUSED, TAG_DEAD_CODE);
 
-            rule293.setDebtRemediationFunction(rule293.debtRemediationFunctions().constantPerIssue("5min"));
+            rule293.setDebtRemediationFunction(rule293.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule294 = repository.createRule(FUNCTION_ONLY_CALLED_ONCE_KEY)
             .setName("Function called from exactly one place should be inlined")
@@ -453,7 +457,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ABSTRACTION, "yagni");
 
-            rule294.setDebtRemediationFunction(rule294.debtRemediationFunctions().constantPerIssue("2min"));
+            rule294.setDebtRemediationFunction(rule294.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule295 = repository.createRule(OVER_ABSTRACTED_API_KEY)
             .setName("API with single implementation violates YAGNI")
@@ -468,7 +472,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(ABSTRACTION, "yagni");
 
-            rule295.setDebtRemediationFunction(rule295.debtRemediationFunctions().constantPerIssue("2min"));
+            rule295.setDebtRemediationFunction(rule295.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule296 = repository.createRule(ORPHANED_TEST_FILE_KEY)
             .setName("Test file for non-existent implementation")
@@ -482,7 +486,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TESTING, "orphaned");
 
-            rule296.setDebtRemediationFunction(rule296.debtRemediationFunctions().constantPerIssue("5min"));
+            rule296.setDebtRemediationFunction(rule296.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -502,7 +506,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TESTING, "coverage");
 
-            rule297.setDebtRemediationFunction(rule297.debtRemediationFunctions().constantPerIssue("2min"));
+            rule297.setDebtRemediationFunction(rule297.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule298 = repository.createRule(DEPRECATED_API_STILL_USED_INTERNALLY_KEY)
             .setName("Deprecated function still called from same package should migrate")
@@ -517,7 +521,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("deprecated", "migration");
 
-            rule298.setDebtRemediationFunction(rule298.debtRemediationFunctions().constantPerIssue("5min"));
+            rule298.setDebtRemediationFunction(rule298.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule299 = repository.createRule(INTERNAL_API_USED_LIKE_PUBLIC_KEY)
             .setName("Internal` symbol called from multiple packages should be public or private")
@@ -545,7 +549,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("commented-code", DEPENDENCY);
 
-            rule300.setDebtRemediationFunction(rule300.debtRemediationFunctions().constantPerIssue("2min"));
+            rule300.setDebtRemediationFunction(rule300.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule301 = repository.createRule(CONDITIONAL_PACKAGE_LOAD_KEY)
             .setName("Conditional Needs[] creates fragile dependency")
@@ -559,7 +563,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(DEPENDENCY, "fragile");
 
-            rule301.setDebtRemediationFunction(rule301.debtRemediationFunctions().constantPerIssue("5min"));
+            rule301.setDebtRemediationFunction(rule301.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule302 = repository.createRule(PACKAGE_LOADED_BUT_NOT_LISTED_IN_METADATA_KEY)
             .setName("Needs[] not reflected in PacletInfo.m is incomplete metadata")
@@ -573,7 +577,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("metadata", DEPENDENCY);
 
-            rule302.setDebtRemediationFunction(rule302.debtRemediationFunctions().constantPerIssue("5min"));
+            rule302.setDebtRemediationFunction(rule302.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule303 = repository.createRule(DUPLICATE_SYMBOL_DEFINITION_ACROSS_PACKAGES_KEY)
             .setName("Same symbol defined in multiple packages causes conflict")
@@ -642,7 +646,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "api", "package");
 
-            rule306.setDebtRemediationFunction(rule306.debtRemediationFunctions().constantPerIssue("2min"));
+            rule306.setDebtRemediationFunction(rule306.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule307 = repository.createRule(INCONSISTENT_PARAMETER_NAMES_ACROSS_OVERLOADS_KEY)
             .setName("Inconsistent parameter names across overloads is confusing")
@@ -658,7 +662,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, "consistency");
 
-            rule307.setDebtRemediationFunction(rule307.debtRemediationFunctions().constantPerIssue("2min"));
+            rule307.setDebtRemediationFunction(rule307.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule308 = repository.createRule(PUBLIC_FUNCTION_WITH_IMPLEMENTATION_DETAILS_IN_NAME_KEY)
             .setName("Public symbol with 'Internal', 'Helper', 'Private' in name is leaky abstraction")
@@ -672,7 +676,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(NAMING, ABSTRACTION);
 
-            rule308.setDebtRemediationFunction(rule308.debtRemediationFunctions().constantPerIssue("5min"));
+            rule308.setDebtRemediationFunction(rule308.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule309 = repository.createRule(PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY)
             .setName("Public symbol not in package context is wrong context")
@@ -706,7 +710,7 @@ final class DependencyAndArchitectureRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TESTING, "organization");
 
-            rule310.setDebtRemediationFunction(rule310.debtRemediationFunctions().constantPerIssue("5min"));
+            rule310.setDebtRemediationFunction(rule310.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
 }

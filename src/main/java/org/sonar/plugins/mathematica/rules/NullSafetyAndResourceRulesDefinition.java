@@ -69,6 +69,10 @@ import static org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.UNN
  */
 final class NullSafetyAndResourceRulesDefinition {
 
+
+    private static final String TIME_5MIN = "5min";
+    private static final String TIME_2MIN = "2min";
+
     private static final String NULL_SAFETY = "null-safety";
     private static final String SEMANTICS = "semantics";
     private static final String ERROR_HANDLING = "error-handling";
@@ -173,7 +177,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", NULL_SAFETY);
 
-            rule315.setDebtRemediationFunction(rule315.debtRemediationFunctions().constantPerIssue("5min"));
+            rule315.setDebtRemediationFunction(rule315.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule316 = repository.createRule(COMPARISON_WITH_NULL_KEY)
             .setName("Use === for Null comparison, not ==")
@@ -337,7 +341,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("documentation", "messaging");
 
-            rule326.setDebtRemediationFunction(rule326.debtRemediationFunctions().constantPerIssue("5min"));
+            rule326.setDebtRemediationFunction(rule326.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Constant & Expression Analysis (Items 267-280)
 
@@ -384,7 +388,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity");
 
-            rule329.setDebtRemediationFunction(rule329.debtRemediationFunctions().constantPerIssue("2min"));
+            rule329.setDebtRemediationFunction(rule329.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule330 = repository.createRule(REDUNDANT_COMPUTATION_KEY)
             .setName("Same expression computed multiple times")
@@ -398,7 +402,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "caching");
 
-            rule330.setDebtRemediationFunction(rule330.debtRemediationFunctions().constantPerIssue("5min"));
+            rule330.setDebtRemediationFunction(rule330.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule331 = repository.createRule(PURE_EXPRESSION_IN_LOOP_KEY)
             .setName("Pure expression computed in every iteration")
@@ -412,7 +416,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "loop-optimization");
 
-            rule331.setDebtRemediationFunction(rule331.debtRemediationFunctions().constantPerIssue("5min"));
+            rule331.setDebtRemediationFunction(rule331.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule332 = repository.createRule(CONSTANT_EXPRESSION_KEY)
             .setName("Constant expression should be simplified")
@@ -426,7 +430,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule332.setDebtRemediationFunction(rule332.debtRemediationFunctions().constantPerIssue("2min"));
+            rule332.setDebtRemediationFunction(rule332.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule333 = repository.createRule(IDENTITY_OPERATION_KEY)
             .setName("Identity operation has no effect")
@@ -440,7 +444,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule333.setDebtRemediationFunction(rule333.debtRemediationFunctions().constantPerIssue("2min"));
+            rule333.setDebtRemediationFunction(rule333.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule334 = repository.createRule(COMPARISON_OF_IDENTICAL_EXPRESSIONS_KEY)
             .setName("Comparing identical expressions")
@@ -502,7 +506,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule337.setDebtRemediationFunction(rule337.debtRemediationFunctions().constantPerIssue("2min"));
+            rule337.setDebtRemediationFunction(rule337.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule338 = repository.createRule(DOUBLE_NEGATION_KEY)
             .setName("Double negation should be simplified")
@@ -516,7 +520,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule338.setDebtRemediationFunction(rule338.debtRemediationFunctions().constantPerIssue("2min"));
+            rule338.setDebtRemediationFunction(rule338.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule339 = repository.createRule(COMPLEX_BOOLEAN_EXPRESSION_ENHANCED_KEY)
             .setName("Boolean expression too complex")
@@ -530,7 +534,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", TAG_READABILITY);
 
-            rule339.setDebtRemediationFunction(rule339.debtRemediationFunctions().constantPerIssue("5min"));
+            rule339.setDebtRemediationFunction(rule339.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule340 = repository.createRule(DE_MORGANS_LAW_OPPORTUNITY_KEY)
             .setName("De Morgan's Law could improve clarity")
@@ -544,7 +548,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity");
 
-            rule340.setDebtRemediationFunction(rule340.debtRemediationFunctions().constantPerIssue("2min"));
+            rule340.setDebtRemediationFunction(rule340.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         // Mathematica-Specific Patterns (Items 281-300)
 
@@ -606,7 +610,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule344.setDebtRemediationFunction(rule344.debtRemediationFunctions().constantPerIssue("2min"));
+            rule344.setDebtRemediationFunction(rule344.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule345 = repository.createRule(RELEASE_HOLD_AFTER_HOLD_KEY)
             .setName("ReleaseHold after Hold is redundant")
@@ -620,7 +624,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule345.setDebtRemediationFunction(rule345.debtRemediationFunctions().constantPerIssue("2min"));
+            rule345.setDebtRemediationFunction(rule345.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
         NewRule rule346 = repository.createRule(EVALUATE_IN_HELD_CONTEXT_KEY)
             .setName("Evaluate in held context may not be intended")
@@ -738,7 +742,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(SIMPLIFICATION);
 
-            rule353.setDebtRemediationFunction(rule353.debtRemediationFunctions().constantPerIssue("2min"));
+            rule353.setDebtRemediationFunction(rule353.debtRemediationFunctions().constantPerIssue(TIME_2MIN));
 
     }
 
@@ -769,7 +773,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, ATTRIBUTES);
 
-            rule355.setDebtRemediationFunction(rule355.debtRemediationFunctions().constantPerIssue("5min"));
+            rule355.setDebtRemediationFunction(rule355.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule356 = repository.createRule(ONE_IDENTITY_ATTRIBUTE_MISUSE_KEY)
             .setName("OneIdentity attribute causes subtle issues")
@@ -839,7 +843,7 @@ final class NullSafetyAndResourceRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("sequence", "idiom");
 
-            rule360.setDebtRemediationFunction(rule360.debtRemediationFunctions().constantPerIssue("5min"));
+            rule360.setDebtRemediationFunction(rule360.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
 }
