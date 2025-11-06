@@ -5,16 +5,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Executes user-defined custom rules based on rule templates.
  * Handles pattern matching, function name validation, and forbidden API detection.
  */
 public class CustomRuleDetector extends BaseDetector {
-
-    private static final Logger LOG = LoggerFactory.getLogger(CustomRuleDetector.class);
 
     /**
      * Execute all active custom rules on the given file.

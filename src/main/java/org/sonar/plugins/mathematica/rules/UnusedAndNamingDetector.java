@@ -2,8 +2,6 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -19,7 +17,6 @@ import java.util.HashMap;
  * - Undefined Symbol Detection (10 rules)
  */
 public class UnusedAndNamingDetector extends BaseDetector {
-    private static final Logger LOG = LoggerFactory.getLogger(UnusedAndNamingDetector.class);
 
     // ===== Pre-compiled patterns for Unused Code Detection =====
 

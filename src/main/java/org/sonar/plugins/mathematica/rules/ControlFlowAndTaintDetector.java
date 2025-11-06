@@ -8,8 +8,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Chunk 4 Detector: Control Flow & Taint Analysis (Items 161-200 from ROADMAP_325.md)
@@ -23,7 +21,6 @@ import org.slf4j.LoggerFactory;
  * and control flow analysis.
  */
 public class ControlFlowAndTaintDetector extends BaseDetector {
-    private static final Logger LOG = LoggerFactory.getLogger(ControlFlowAndTaintDetector.class);
 
     // ===== PRE-COMPILED PATTERNS FOR PERFORMANCE =====
 
@@ -325,6 +322,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     /**
      * Item 171: Detect else branch that is never taken
      */
+    @SuppressWarnings("unused")
     public void detectElseBranchNeverTaken(SensorContext context, InputFile inputFile, String content) {
         try {
             // This is detected via constant propagation in detectConditionAlwaysEvaluatesSame
@@ -405,6 +403,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     /**
      * Item 174: Detect exception tags that are never thrown
      */
+    @SuppressWarnings("unused")
     public void detectExceptionNeverThrown(SensorContext context, InputFile inputFile, String content) {
         try {
             // Placeholder - requires more sophisticated control flow analysis
@@ -561,6 +560,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     /**
      * Item 186: Detect LDAP injection (placeholder - Mathematica rarely uses LDAP)
      */
+    @SuppressWarnings("unused")
     public void detectLdapInjection(SensorContext context, InputFile inputFile, String content) {
         // Placeholder - LDAP rarely used in Mathematica
     }

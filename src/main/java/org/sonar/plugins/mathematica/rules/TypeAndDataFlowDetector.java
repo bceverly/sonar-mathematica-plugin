@@ -2,8 +2,6 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,7 +16,6 @@ import java.util.HashMap;
  * - Data Flow Analysis (16 rules)
  */
 public class TypeAndDataFlowDetector extends BaseDetector {
-    private static final Logger LOG = LoggerFactory.getLogger(TypeAndDataFlowDetector.class);
 
     // ===== Pre-compiled patterns for Type Mismatch Detection =====
 
@@ -322,6 +319,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         }
     }
 
+    @SuppressWarnings("unused")
     public void detectReturnTypeInconsistent(SensorContext context, InputFile inputFile, String content) {
         // Already partially covered by detectFunctionReturnsWrongType
         // This is a placeholder for enhanced detection
@@ -603,6 +601,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         }
     }
 
+    @SuppressWarnings("unused")
     public void detectOverwrittenBeforeRead(SensorContext context, InputFile inputFile, String content) {
         // Covered by detectDeadStore - this is essentially the same rule
     }
