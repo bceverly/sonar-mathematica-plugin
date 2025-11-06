@@ -114,7 +114,7 @@ public class MathematicaParser {
                 String functionName = matcher.group(1);
                 String parametersStr = matcher.group(2);
                 String assignOp = matcher.group(3);
-                boolean isDelayed = assignOp.equals(":=");
+                boolean isDelayed = ":=".equals(assignOp);
 
                 int startPos = matcher.start();
                 int startLine = calculateLine(content, startPos);

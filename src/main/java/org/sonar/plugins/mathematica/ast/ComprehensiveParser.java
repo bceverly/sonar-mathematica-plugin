@@ -94,7 +94,7 @@ public class ComprehensiveParser {
                 List<String> paramList = parseParams(params);
 
                 functions.add(new FunctionDefNode(
-                    name, paramList, body, op.equals(":="),
+                    name, paramList, body, ":=".equals(op),
                     startLine, startCol, endLine, endCol
                 ));
             } catch (Exception e) {

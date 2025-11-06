@@ -130,7 +130,7 @@ public class CodeSmellDetector extends BaseDetector {
             while (numberMatcher.find()) {
                 String number = numberMatcher.group();
                 // Skip common non-magic numbers
-                if (number.equals("0") || number.equals("1") || number.equals("2")) {
+                if ("0".equals(number) || "1".equals(number) || "2".equals(number)) {
                     continue;
                 }
 

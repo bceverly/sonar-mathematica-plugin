@@ -125,7 +125,6 @@ public class SymbolTable {
         List<ShadowingPair> issues = new ArrayList<>();
 
         for (Map.Entry<String, List<Symbol>> entry : symbolsByName.entrySet()) {
-            String name = entry.getKey();
             List<Symbol> symbols = entry.getValue();
             if (symbols.size() < 2) {
                 continue;

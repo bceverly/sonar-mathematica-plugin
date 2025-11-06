@@ -403,7 +403,7 @@ public class BugDetector extends BaseDetector {
 
             while (matcher.find()) {
                 String range = matcher.group(1);
-                String message = range.equals("0")
+                String message = "0".equals(range)
                     ? "Loop starts at 0 but Mathematica lists are 1-indexed."
                     : "Loop goes beyond Length, causing out-of-bounds access.";
                 int lineNumber = calculateLineNumber(content, matcher.start());

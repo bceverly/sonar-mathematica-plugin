@@ -300,7 +300,7 @@ public class TestingQualityDetector extends BaseDetector {
             while (matcher.find()) {
                 String number = matcher.group(1);
                 // Skip common test values
-                if (!number.equals("100") && !number.equals("1000")) {
+                if (!"100".equals(number) && !"1000".equals(number)) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TEST_MAGIC_NUMBER_KEY,
                         String.format("Magic number '%s' in test. Use named constant for clarity.", number));
@@ -339,8 +339,8 @@ public class TestingQualityDetector extends BaseDetector {
         while (matcher.find()) {
             String funcName = matcher.group(1);
             // Skip common test utilities
-            if (!funcName.equals("Equal") && !funcName.equals("SameQ")
-                && !funcName.equals("MatchQ") && !funcName.equals("Length")) {
+            if (!"Equal".equals(funcName) && !"SameQ".equals(funcName)
+                && !"MatchQ".equals(funcName) && !"Length".equals(funcName)) {
                 uniqueFunctions.add(funcName);
             }
         }

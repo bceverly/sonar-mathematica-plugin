@@ -223,7 +223,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.CONDITION_ALWAYS_EVALUATES_SAME_KEY,
                     String.format("Condition '%s %s %s' always evaluates to %s after assignment.",
-                        varName, operator, value, operator.equals("==") ? "True" : "False"));
+                        varName, operator, value, "==".equals(operator) ? "True" : "False"));
             }
         } catch (Exception e) {
             LOG.debug("Error detecting always-same conditions in {}", inputFile.filename(), e);

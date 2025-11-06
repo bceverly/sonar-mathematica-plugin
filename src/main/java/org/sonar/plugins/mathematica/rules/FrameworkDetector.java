@@ -489,13 +489,12 @@ public class FrameworkDetector extends BaseDetector {
             Matcher cloudMatcher = CLOUD_DEPLOY_PATTERN.matcher(content);
             Matcher apiMatcher = API_FUNCTION_PATTERN.matcher(content);
 
-            if (cloudMatcher.find() || apiMatcher.find()) {
-                // Check for validation patterns
-                if (!content.contains("StringQ") && !content.contains("NumericQ")
-                    && !content.contains("IntegerQ") && !content.contains("MatchQ")) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.CLOUD_DEPLOY_NO_VALIDATION_KEY,
-                        "Cloud deployment missing input validation. Validate all user inputs.");
-                }
+            // Check for validation patterns
+            if ((cloudMatcher.find() || apiMatcher.find())
+                && !content.contains("StringQ") && !content.contains("NumericQ")
+                && !content.contains("IntegerQ") && !content.contains("MatchQ")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.CLOUD_DEPLOY_NO_VALIDATION_KEY,
+                    "Cloud deployment missing input validation. Validate all user inputs.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping cloud deployment validation detection: {}", inputFile.filename());
