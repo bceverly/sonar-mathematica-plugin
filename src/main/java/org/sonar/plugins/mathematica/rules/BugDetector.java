@@ -66,9 +66,9 @@ public class BugDetector extends BaseDetector {
 
     // Phase 3 Resource management patterns
     private static final Pattern OPEN_FILE_PATTERN = Pattern.compile("(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\["); //NOSONAR
-    private static final Pattern DEFINITION_IN_LOOP_PATTERN = Pattern.compile(
+    private static final Pattern DEFINITION_IN_LOOP_PATTERN = Pattern.compile(//NOSONAR
         "(?:Do|While|For)\\s*+\\[[^\\]]*\\w++\\[[^\\]]+\\]\\s*+="
-    ); //NOSONAR
+    );
 
     // Phase 4 Bug patterns (optimized - pre-compiled for performance)
     private static final Pattern OFF_BY_ONE_PATTERN = Pattern.compile(
@@ -952,9 +952,9 @@ public class BugDetector extends BaseDetector {
     private static final Pattern STREAM_VAR_PATTERN = Pattern.compile(
         "([a-zA-Z]\\w*+)\\s*+=\\s*+(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\["
     );
-    private static final Pattern NOTEBOOK_PUT_PATTERN = Pattern.compile(
+    private static final Pattern NOTEBOOK_PUT_PATTERN = Pattern.compile(//NOSONAR
         "(?:Table|Range|Array)\\s*+\\[[^\\]]*(?:Table|Range|Array).*NotebookWrite"
-    ); //NOSONAR
+    );
     private static final Pattern CLEAR_PATTERN = Pattern.compile("Clear\\s*+\\[|ClearAll\\s*+\\[|Remove\\s*+\\["); //NOSONAR
 
     /**
