@@ -84,7 +84,7 @@ public class BugDetector extends BaseDetector {
     //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern FIRST_LAST_PATTERN = Pattern.compile("(?:First|Last)\\s*+\\[([a-zA-Z]\\w*+)\\]");
     //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SYMBOLIC_WITH_FLOAT_PATTERN = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*+\\[[^\\]]*+\\d++\\.\\d++");
+    private static final Pattern SYMBOLIC_WITH_FLOAT_PATTERN = Pattern.compile("(?:Solve|DSolve|Integrate|Limit)\\s*+\\[[^\\]]*\\d+\\.\\d+");
     //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern ASSIGNMENT_FROM_IMPORT_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+=\\s*+(?:Import|Get|URLFetch)\\s*+\\[");
     //NOSONAR - Possessive quantifiers prevent backtracking

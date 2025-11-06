@@ -55,7 +55,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern RELEASE_HOLD = Pattern.compile("ReleaseHold\\s*+\\[\\s*+Hold\\s*+\\[");
     //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*+\\[[^\\]]*+Evaluate\\s*+\\[");
+    private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*+\\[[^\\]]*Evaluate\\s*+\\[");
     private static final Pattern UNEVALUATED = Pattern.compile("Unevaluated\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Pattern/replacement patterns
@@ -102,7 +102,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern COMPILATION_TARGET = Pattern.compile("CompilationTarget\\s*+->\\s*+\"(\\w++)\"");
     //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*+\\[[^\\]]*+(?:Sort|Select|Cases|DeleteCases)");
+    private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*+\\[[^\\]]*(?:Sort|Select|Cases|DeleteCases)");
 
     // Test patterns
     private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*\\."); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -114,7 +114,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern N_LATE = Pattern.compile("N\\s*+\\[\\s*+(?:Integrate|Sum|Product|Solve)");
     private static final Pattern STRING_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*+<>"); //NOSONAR - Possessive quantifiers prevent backtracking
     //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern LIST_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*+Join\\s*+\\[");
+    private static final Pattern LIST_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*Join\\s*+\\[");
 
     private static NewIssue createIssue(SensorContext context, InputFile file, String ruleKey, int line, String msg) {
         NewIssue issue = context.newIssue().forRule(org.sonar.api.rule.RuleKey.of(
