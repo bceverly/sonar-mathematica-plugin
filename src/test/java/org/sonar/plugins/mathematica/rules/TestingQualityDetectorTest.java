@@ -2,10 +2,15 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
@@ -62,18 +67,18 @@ class TestingQualityDetectorTest {
         assertDoesNotThrow(() -> detector.detectTestNamingConvention(context, inputFile, content));
     }
 
-    @Test
-    void testDetectTestNamingConventionGoodName() {
-        String content = "testValidateInputRange[x_] := VerificationTest[x > 0]";
-        detector.detectTestNamingConvention(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> testNamingConventionNoIssueData() {
+        return Stream.of(
+            Arguments.of("testValidateInputRange[x_] := VerificationTest[x > 0]"),
+            Arguments.of("ValidateTest[x_] := VerificationTest[x]"),
+            Arguments.of("testDescriptiveName[x_] := VerificationTest[x == 5]")
+        );
     }
 
-    @Test
-    void testDetectTestNamingConventionSuffixStyle() {
-        String content = "ValidateTest[x_] := VerificationTest[x]";
+    @ParameterizedTest
+    @MethodSource("testNamingConventionNoIssueData")
+    void testDetectTestNamingConventionNoIssue(String content) {
         detector.detectTestNamingConvention(context, inputFile, content);
-        // Should not trigger - "Validate" is not in the generic list
         verify(context, never()).newIssue();
     }
 
@@ -92,16 +97,17 @@ class TestingQualityDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectTestNoIsolationWithClear() {
-        String content = "VerificationTest[MyGlobal = 5; result = MyGlobal == 5; Clear[MyGlobal]; result]";
-        detector.detectTestNoIsolation(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> testNoIsolationNoIssueData() {
+        return Stream.of(
+            Arguments.of("VerificationTest[MyGlobal = 5; result = MyGlobal == 5; Clear[MyGlobal]; result]"),
+            Arguments.of("VerificationTest[Module[{x = 5}, x == 5]]"),
+            Arguments.of("VerificationTest[Block[{y = 10}, y == 10]]")
+        );
     }
 
-    @Test
-    void testDetectTestNoIsolationWithModule() {
-        String content = "VerificationTest[Module[{x = 5}, x == 5]]";
+    @ParameterizedTest
+    @MethodSource("testNoIsolationNoIssueData")
+    void testDetectTestNoIsolationNoIssue(String content) {
         detector.detectTestNoIsolation(context, inputFile, content);
         verify(context, never()).newIssue();
     }
@@ -156,32 +162,24 @@ class TestingQualityDetectorTest {
 
     // ========== Test Ignored Tests ==========
 
-    @Test
-    void testDetectTestIgnoredCommentedOut() {
-        String content = "(* VerificationTest[x == 5] *)";
-        detector.detectTestIgnored(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
+    private static Stream<Arguments> testIgnoredTestData() {
+        return Stream.of(
+            Arguments.of("(* VerificationTest[x == 5] *)", true),
+            Arguments.of("VerificationTest[x == 5, \"Skip\"]", true),
+            Arguments.of("VerificationTest[x == 5, True, \"Ignore\"]", true),
+            Arguments.of("VerificationTest[x == 5]", false)
+        );
     }
 
-    @Test
-    void testDetectTestIgnoredWithSkipOption() {
-        String content = "VerificationTest[x == 5, \"Skip\"]";
+    @ParameterizedTest
+    @MethodSource("testIgnoredTestData")
+    void testDetectTestIgnored(String content, boolean shouldRaiseIssue) {
         detector.detectTestIgnored(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectTestIgnoredWithIgnoreOption() {
-        String content = "VerificationTest[x == 5, True, \"Ignore\"]";
-        detector.detectTestIgnored(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectTestIgnoredEnabledTest() {
-        String content = "VerificationTest[x == 5]";
-        detector.detectTestIgnored(context, inputFile, content);
-        verify(context, never()).newIssue();
+        if (shouldRaiseIssue) {
+            verify(context, atLeastOnce()).newIssue();
+        } else {
+            verify(context, never()).newIssue();
+        }
     }
 
     @Test
@@ -301,23 +299,17 @@ class TestingQualityDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectTestAssertCountGoodCount() {
-        String content = "VerificationTest[x == 5 && y == 10]";
-        detector.detectTestAssertCount(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> testAssertCountNoIssueData() {
+        return Stream.of(
+            Arguments.of("VerificationTest[x == 5 && y == 10]"),
+            Arguments.of("VerificationTest[SameQ[x, y]]"),
+            Arguments.of("VerificationTest[MatchQ[x, _Integer]]")
+        );
     }
 
-    @Test
-    void testDetectTestAssertCountWithSameQ() {
-        String content = "VerificationTest[SameQ[x, y]]";
-        detector.detectTestAssertCount(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectTestAssertCountWithMatchQ() {
-        String content = "VerificationTest[MatchQ[x, _Integer]]";
+    @ParameterizedTest
+    @MethodSource("testAssertCountNoIssueData")
+    void testDetectTestAssertCountNoIssue(String content) {
         detector.detectTestAssertCount(context, inputFile, content);
         verify(context, never()).newIssue();
     }
@@ -400,27 +392,18 @@ class TestingQualityDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectTestMagicNumberCommonValue100() {
-        String content = "VerificationTest[x == 100]";
-        detector.detectTestMagicNumber(context, inputFile, content);
-        // 100 is filtered out
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> testMagicNumberNoIssueData() {
+        return Stream.of(
+            Arguments.of("VerificationTest[x == 100]"),
+            Arguments.of("VerificationTest[x == 1000]"),
+            Arguments.of("VerificationTest[x == 42]")
+        );
     }
 
-    @Test
-    void testDetectTestMagicNumberCommonValue1000() {
-        String content = "VerificationTest[x == 1000]";
+    @ParameterizedTest
+    @MethodSource("testMagicNumberNoIssueData")
+    void testDetectTestMagicNumberNoIssue(String content) {
         detector.detectTestMagicNumber(context, inputFile, content);
-        // 1000 is filtered out
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectTestMagicNumberSmallInteger() {
-        String content = "VerificationTest[x == 42]";
-        detector.detectTestMagicNumber(context, inputFile, content);
-        // Two-digit number should not trigger (< 3 digits)
         verify(context, never()).newIssue();
     }
 

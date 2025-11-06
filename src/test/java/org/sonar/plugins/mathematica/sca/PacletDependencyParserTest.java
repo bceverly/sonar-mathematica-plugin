@@ -3,9 +3,12 @@ package org.sonar.plugins.mathematica.sca;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -158,39 +161,24 @@ class PacletDependencyParserTest {
         assertThat(dependencies.get(0).getLineNumber()).isEqualTo(3);
     }
 
-    @Test
-    void testParseNestedPackageName() {
-        String content = "Needs[\"Developer`Utilities`\"]";
-
-        List<PacletDependency> dependencies = parser.parsePacletInfo(content);
-
-        assertThat(dependencies).hasSize(1);
-        assertThat(dependencies.get(0).getName()).isEqualTo("Developer`Utilities");
+    static Stream<Arguments> parseFormatEdgeCasesData() {
+        return Stream.of(
+            Arguments.of("Needs[\"Developer`Utilities`\"]", 1, "Developer`Utilities", null),
+            Arguments.of("Dependencies -> {\"Pkg1\" -> \"1.2.3+\",\"Pkg2\" -> \"2.0.0\",\"Pkg3\" -> \"0.9+\"}", 3, "Pkg1", "1.2.3+"),
+            Arguments.of("(* Comment *) Dependencies -> {\"Pkg\" -> \"1.0\"} (* Another comment *)", 1, "Pkg", "1.0")
+        );
     }
 
-    @Test
-    void testParseComplexVersionConstraints() {
-        String content = "Dependencies -> {"
-                        + "\"Pkg1\" -> \"1.2.3+\","
-                        + "\"Pkg2\" -> \"2.0.0\","
-                        + "\"Pkg3\" -> \"0.9+\"}";
-
+    @ParameterizedTest
+    @MethodSource("parseFormatEdgeCasesData")
+    void testParseFormatEdgeCases(String content, int expectedSize, String firstDepName, String firstDepVersion) {
         List<PacletDependency> dependencies = parser.parsePacletInfo(content);
 
-        assertThat(dependencies).hasSize(3);
-        assertThat(dependencies.get(0).getVersion()).isEqualTo("1.2.3+");
-        assertThat(dependencies.get(1).getVersion()).isEqualTo("2.0.0");
-        assertThat(dependencies.get(2).getVersion()).isEqualTo("0.9+");
-    }
-
-    @Test
-    void testParseWithComments() {
-        String content = "(* Comment *) Dependencies -> {\"Pkg\" -> \"1.0\"} (* Another comment *)";
-
-        List<PacletDependency> dependencies = parser.parsePacletInfo(content);
-
-        assertThat(dependencies).hasSize(1);
-        assertThat(dependencies.get(0).getName()).isEqualTo("Pkg");
+        assertThat(dependencies).hasSize(expectedSize);
+        assertThat(dependencies.get(0).getName()).isEqualTo(firstDepName);
+        if (firstDepVersion != null) {
+            assertThat(dependencies.get(0).getVersion()).isEqualTo(firstDepVersion);
+        }
     }
 
     @Test
