@@ -278,7 +278,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
 
     private void checkAssociationVsListConfusion(FunctionCallNode node) {
         String funcName = node.getFunctionName();
-        if (funcName.equals("Part") && node.getArguments().size() > 0) {
+        if (funcName.equals("Part") && !node.getArguments().isEmpty()) {
             // Check if first arg looks like an association variable
             AstNode firstArg = node.getArguments().get(0);
             if (firstArg instanceof IdentifierNode) {
@@ -292,7 +292,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkInefficientKeyLookup(FunctionCallNode node) {
-        if (node.getFunctionName().equals("Select") && node.getArguments().size() > 0) {
+        if (node.getFunctionName().equals("Select") && !node.getArguments().isEmpty()) {
             AstNode firstArg = node.getArguments().get(0);
             if (firstArg instanceof FunctionCallNode) {
                 FunctionCallNode inner = (FunctionCallNode) firstArg;

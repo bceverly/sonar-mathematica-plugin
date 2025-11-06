@@ -346,7 +346,6 @@ public final class ArchitectureAndDependencyDetector {
             }
 
             // Check if symbol comes from a package we haven't imported
-            boolean found = false;
             for (Map.Entry<String, Set<String>> entry : PACKAGE_EXPORTS.entrySet()) {
                 if (entry.getValue().contains(symbol)) {
                     if (!imported.contains(entry.getKey())) {
@@ -354,7 +353,6 @@ public final class ArchitectureAndDependencyDetector {
                             callMatcher.start(), callMatcher.end(),
                             "Missing import for package: " + entry.getKey());
                     }
-                    found = true;
                     break;
                 }
             }
@@ -683,7 +681,7 @@ public final class ArchitectureAndDependencyDetector {
         Set<String> exports = PACKAGE_EXPORTS.getOrDefault(currentPackage, new HashSet<>());
 
         final int minExports = 3;
-        if (exports.size() > 0 && exports.size() < minExports) {
+        if (!exports.isEmpty() && exports.size() < minExports) {
             createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_EXPORTS_TOO_LITTLE_KEY,
                 pkgMatcher.start(), pkgMatcher.end(),
                 "Package exports only " + exports.size() + " symbols (min " + minExports + ")");
@@ -728,8 +726,6 @@ public final class ArchitectureAndDependencyDetector {
      * Rule 227: Private symbol used externally
      */
     public static void detectPrivateSymbolUsedExternally(SensorContext context, InputFile inputFile, String content) {
-        String filename = inputFile.filename();
-
         // Check for usage of Private` symbols from other files
         Matcher contextMatcher = CONTEXT_SYMBOL.matcher(content);
         while (contextMatcher.find()) {
@@ -776,7 +772,6 @@ public final class ArchitectureAndDependencyDetector {
         }
 
         String currentPackage = pkgMatcher.group(1);
-        Set<String> exports = PACKAGE_EXPORTS.getOrDefault(currentPackage, new HashSet<>());
 
         // Check if package has usage documentation
         Pattern pkgUsage = Pattern.compile(currentPackage.replace("`", "") + "::usage\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -923,7 +918,7 @@ public final class ArchitectureAndDependencyDetector {
         Set<String> privateSymbols = PACKAGE_PRIVATE_SYMBOLS.getOrDefault(currentPackage, new HashSet<>());
 
         // If we have many private functions but few exports, might be over-abstracted
-        if (exports.size() > 0 && privateSymbols.size() / exports.size() > 10) {
+        if (!exports.isEmpty() && privateSymbols.size() / exports.size() > 10) {
             createIssue(context, inputFile, MathematicaRulesDefinition.OVER_ABSTRACTED_API_KEY,
                 pkgMatcher.start(), pkgMatcher.end(),
                 "Ratio of private to public functions is very high ("                 + privateSymbols.size() + "/" + exports.size() + ")");
@@ -1149,7 +1144,6 @@ public final class ArchitectureAndDependencyDetector {
         }
 
         String currentPackage = pkgMatcher.group(1);
-        Set<String> deps = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>());
 
         // Check if dependencies have version requirements
         //NOSONAR - Possessive quantifiers prevent backtracking

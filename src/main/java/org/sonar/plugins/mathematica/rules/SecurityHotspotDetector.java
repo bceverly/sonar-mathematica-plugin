@@ -269,11 +269,10 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectMissingAuthorization(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains(APIFUNCTION) || content.contains("FormFunction")) {
-                if (!content.contains(PERMISSIONS) && !content.contains("$RequesterAddress")) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_AUTHORIZATION_KEY,
-                        "Review: Missing authorization checks in API/Form functions.");
-                }
+            if ((content.contains(APIFUNCTION) || content.contains("FormFunction"))
+                && !content.contains(PERMISSIONS) && !content.contains("$RequesterAddress")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_AUTHORIZATION_KEY,
+                    "Review: Missing authorization checks in API/Form functions.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping missing authorization detection: {}", inputFile.filename());
@@ -303,7 +302,6 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = DEFAULT_CRED_PATTERN.matcher(content);
             while (matcher.find()) {
-                String match = matcher.group();
                 if (content.substring(Math.max(0, matcher.start() - 20), matcher.start())
                     .matches(".*(?:password|pwd|passwd|credential)\\s*+=\\s*+$")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -353,11 +351,10 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectMissingAccessControl(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains("CloudDeploy") || content.contains(APIFUNCTION)) {
-                if (!content.contains(PERMISSIONS) && !content.contains("$Permissions")) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_ACCESS_CONTROL_KEY,
-                        "Review: Missing access control checks for cloud/API functions.");
-                }
+            if ((content.contains("CloudDeploy") || content.contains(APIFUNCTION))
+                && !content.contains(PERMISSIONS) && !content.contains("$Permissions")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_ACCESS_CONTROL_KEY,
+                    "Review: Missing access control checks for cloud/API functions.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping missing access control detection: {}", inputFile.filename());

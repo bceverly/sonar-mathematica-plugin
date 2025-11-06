@@ -909,10 +909,6 @@ public class PatternAndDataStructureDetector extends BaseDetector {
         boolean params1HasTypes = params1.matches(".*_[a-zA-Z]\\w*.*"); //NOSONAR
         boolean params2HasTypes = params2.matches(".*_[a-zA-Z]\\w*.*"); //NOSONAR
 
-        if (params1HasTypes && !params2HasTypes && params1HasBlanks && params2HasBlanks) {
-            return true; // Type-restricted pattern is more specific than unrestricted
-        }
-
-        return false;
+        return params1HasTypes && !params2HasTypes && params1HasBlanks && params2HasBlanks;
     }
 }

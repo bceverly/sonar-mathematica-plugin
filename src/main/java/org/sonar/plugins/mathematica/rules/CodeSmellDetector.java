@@ -1426,7 +1426,6 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher matcher = TODO_COMMENT_PATTERN.matcher(content);
             while (matcher.find()) {
                 int lineNumber = calculateLineNumber(content, matcher.start());
-                String comment = matcher.group();
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TODO_TRACKING_KEY,
                     "TODO comment found. Track in issue tracker and add reference.");
             }

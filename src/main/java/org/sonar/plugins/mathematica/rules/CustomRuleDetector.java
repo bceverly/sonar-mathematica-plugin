@@ -5,7 +5,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
-import org.sonar.api.rule.RuleKey;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,7 +50,6 @@ public class CustomRuleDetector extends BaseDetector {
      */
     private void executeCustomRule(SensorContext context, InputFile inputFile, String content,
                                    org.sonar.api.batch.rule.ActiveRule activeRule) {
-        RuleKey ruleKey = activeRule.ruleKey();
         String templateKey = activeRule.templateRuleKey();
 
         if (templateKey == null) {

@@ -363,7 +363,6 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF.matcher(content);
             while (matcher.find()) {
-                String funcName = matcher.group(1);
                 String params = matcher.group(2);
 
                 // Extract named patterns
@@ -425,7 +424,6 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = RETURN_STATEMENT.matcher(content);
             while (matcher.find()) {
-                int returnPos = matcher.start();
                 int returnEnd = findMatchingBracket(content, matcher.end());
 
                 // Check if there's code after the Return in the same scope
@@ -457,7 +455,6 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Matcher matcher = ABORT_THROW.matcher(content);
             while (matcher.find()) {
                 String statement = matcher.group(1);
-                int statementPos = matcher.start();
                 int statementEnd = findMatchingBracket(content, matcher.end());
 
                 // Check if there's code after Abort/Throw
@@ -554,7 +551,6 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Matcher matcher = assignment.matcher(content);
 
             Map<String, Integer> firstAssignment = new HashMap<>();
-            Set<String> usedVariables = new HashSet<>();
 
             int lastAssignmentEnd = 0;
             String lastVarName = null;

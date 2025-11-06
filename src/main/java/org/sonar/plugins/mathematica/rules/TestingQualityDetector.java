@@ -56,7 +56,7 @@ public class TestingQualityDetector extends BaseDetector {
                 String funcName = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
                 if (funcName != null) {
                     // Check if name is too generic or unclear
-                    if (funcName.matches("(?i)test[0-9]+|test|testA|testB|testCase")) {
+                    if (funcName.matches("(?i)test\\d+|test|testA|testB|testCase")) {
                         int lineNumber = calculateLineNumber(content, matcher.start());
                         reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TEST_NAMING_CONVENTION_KEY,
                             String.format("Test name '%s' is too generic. Use descriptive names like 'testValidateInputRange'.", funcName));

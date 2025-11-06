@@ -397,7 +397,6 @@ public class StyleAndConventionsDetector extends BaseDetector {
             int newLine = 0;
 
             while (matcher.find()) {
-                String match = matcher.group();
                 int pos = matcher.start();
 
                 // Check if opening brace is on same line as previous content

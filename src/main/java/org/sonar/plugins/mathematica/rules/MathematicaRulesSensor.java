@@ -427,7 +427,6 @@ public class MathematicaRulesSensor implements Sensor {
      */
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         long fileStartTime = System.currentTimeMillis();
-        int issueCountBefore = 0;
 
         try {
             // Skip very small files quickly (likely empty or trivial)
@@ -462,9 +461,7 @@ public class MathematicaRulesSensor implements Sensor {
                 return;
             }
 
-            long readStartTime = System.currentTimeMillis();
             String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
-            long readTime = System.currentTimeMillis() - readStartTime;
 
             // Skip empty or whitespace-only files
             if (content.trim().isEmpty()) {
