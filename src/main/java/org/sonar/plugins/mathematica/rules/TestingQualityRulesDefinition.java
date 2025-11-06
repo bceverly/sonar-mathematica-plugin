@@ -19,8 +19,6 @@ import org.sonar.api.issue.impact.Severity;
  */
 public final class TestingQualityRulesDefinition {
 
-    private static final String TAG_RELIABILITY = "reliability";
-
     private static final String TESTS = "tests";
     private static final String VERIFICATION_TEST = "verification-test";
 

@@ -29,9 +29,6 @@ public class FrameworkDetector extends BaseDetector {
     private static final Pattern HEAVY_COMPUTE_PATTERN = Pattern.compile(
         "(?:Integrate|DSolve|NDSolve|NIntegrate|FindRoot|Solve)\\s*+\\["
     );
-    private static final Pattern TRACKING_PATTERN = Pattern.compile(
-        "(?:TrackedSymbols|Refresh|UpdateInterval)\\s*+->"
-    );
 
     // Package patterns
     private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("BeginPackage\\s*+\\["); //NOSONAR

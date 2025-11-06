@@ -23,7 +23,6 @@ public final class FrameworkIntegrationRulesDefinition {
 
     private static final String TAG_SECURITY = "security";
     private static final String TAG_PERFORMANCE = "performance";
-    private static final String TAG_RELIABILITY = "reliability";
 
     private static final String NOTEBOOK = "notebook";
     private static final String PACKAGE = "package";
