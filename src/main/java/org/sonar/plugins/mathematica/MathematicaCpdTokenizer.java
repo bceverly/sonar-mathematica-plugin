@@ -134,7 +134,7 @@ public class MathematicaCpdTokenizer implements Sensor {
             while (position < content.length()) {
                 char ch = content.charAt(position);
 
-                if (trySkipWhitespace(ch) || tryMatchComment(cpdTokens) || tryMatchString(cpdTokens)
+                if (trySkipWhitespace(ch) || tryMatchComment() || tryMatchString(cpdTokens)
                     || tryMatchNumber(cpdTokens) || tryMatchIdentifier(cpdTokens) || tryMatchOperator(cpdTokens)) {
                     continue;
                 }
@@ -160,7 +160,7 @@ public class MathematicaCpdTokenizer implements Sensor {
             return false;
         }
 
-        private boolean tryMatchComment(NewCpdTokens cpdTokens) {
+        private boolean tryMatchComment() {
             Matcher commentMatcher = COMMENT_PATTERN.matcher(content.substring(position));
             if (commentMatcher.lookingAt()) {
                 String comment = commentMatcher.group();
