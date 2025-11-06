@@ -159,7 +159,7 @@ public class QuickFixProvider {
 
                 // ===== PHASE 5: ADDING SAFETY =====
                 default:
-                    addAdditionalQuickFixes(issue, inputFile, ruleKey, fileContent, issueStartOffset, issueEndOffset, context);
+                    addAdditionalQuickFixes(issue, inputFile, ruleKey, fileContent, issueStartOffset, issueEndOffset);
                     break;
             }
         } catch (Exception e) {
@@ -174,8 +174,7 @@ public class QuickFixProvider {
             String ruleKey,
             String fileContent,
             int issueStartOffset,
-            int issueEndOffset,
-            QuickFixContext context) {
+            int issueEndOffset) {
 
         try {
             switch (ruleKey) {
@@ -1347,8 +1346,8 @@ public class QuickFixProvider {
 
         if (matcher.find()) {
             String func = matcher.group(1);
-            String var = matcher.group(2);
-            String fixedText = func + "[{" + var + "}]";
+            String varName = matcher.group(2);
+            String fixedText = func + "[{" + varName + "}]";
 
             NewInputFileEdit inputFileEdit = quickFix.newInputFileEdit()
                 .on(inputFile);

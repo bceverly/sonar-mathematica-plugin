@@ -86,14 +86,14 @@ public class UnifiedRuleVisitor implements AstVisitor {
         checkInsecureDeserialization(node);
         checkUnsafeSymbol(node);
         checkXXE(node);
-        checkMissingSanitization(node);
+        checkMissingSanitization();
         checkInsecureRandom(node);
         checkUnsafeCloudDeploy(node);
         checkDynamicInjection(node);
         checkToExpressionOnInput(node);
         checkUnsanitizedRunProcess(node);
         checkMissingCloudAuth(node);
-        checkHardcodedApiKeys(node);
+        checkHardcodedApiKeys();
         checkNeedsGetUntrusted(node);
         checkExposingSensitiveData(node);
         checkMissingFormFunctionValidation(node);
@@ -415,7 +415,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         }
     }
 
-    private void checkMissingSanitization(FunctionCallNode node) {
+    private void checkMissingSanitization() {
         // Already covered by other checks
     }
 
@@ -462,7 +462,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         }
     }
 
-    private void checkHardcodedApiKeys(FunctionCallNode node) {
+    private void checkHardcodedApiKeys() {
         // Checked via literals
     }
 

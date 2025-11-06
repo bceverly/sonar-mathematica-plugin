@@ -259,7 +259,7 @@ public final class ArchitectureAndDependencyDetector {
         if (hasCircularDependency(currentPackage, visited, recursionStack)) {
             List<String> cycle = new ArrayList<>(recursionStack);
             createIssue(context, inputFile, MathematicaRulesDefinition.CIRCULAR_PACKAGE_DEPENDENCY_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Circular dependency detected: " + String.join(" -> ", cycle));
         }
     }
@@ -312,7 +312,7 @@ public final class ArchitectureAndDependencyDetector {
 
                 if (!anyUsed) {
                     createIssue(context, inputFile, MathematicaRulesDefinition.UNUSED_PACKAGE_IMPORT_KEY,
-                        needsMatcher.start(), needsMatcher.end(),
+                        needsMatcher.start(),
                         "Unused import: " + importedPkg);
                 }
             }
@@ -348,7 +348,7 @@ public final class ArchitectureAndDependencyDetector {
                 if (entry.getValue().contains(symbol)) {
                     if (!imported.contains(entry.getKey())) {
                         createIssue(context, inputFile, MathematicaRulesDefinition.MISSING_PACKAGE_IMPORT_KEY,
-                            callMatcher.start(), callMatcher.end(),
+                            callMatcher.start(),
                             "Missing import for package: " + entry.getKey());
                     }
                     break;
@@ -391,7 +391,7 @@ public final class ArchitectureAndDependencyDetector {
                     Set<String> usages = SYMBOL_USAGES.get(symbol);
                     if (usages != null && usages.contains(filename)) {
                         createIssue(context, inputFile, MathematicaRulesDefinition.TRANSITIVE_DEPENDENCY_COULD_BE_DIRECT_KEY,
-                            pkgMatcher.start(), pkgMatcher.end(),
+                            pkgMatcher.start(),
                             "Add direct dependency on: " + transitiveDep);
                         break;
                     }
@@ -442,7 +442,7 @@ public final class ArchitectureAndDependencyDetector {
         if (!commonDeps.isEmpty()) {
             for (Map.Entry<String, List<String>> entry : commonDeps.entrySet()) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.DIAMOND_DEPENDENCY_KEY,
-                    pkgMatcher.start(), pkgMatcher.end(),
+                    pkgMatcher.start(),
                     "Diamond dependency on " + entry.getKey() + " via " + entry.getValue());
             }
         }
@@ -463,7 +463,7 @@ public final class ArchitectureAndDependencyDetector {
         final int maxDependencies = 10;
         if (deps.size() > maxDependencies) {
             createIssue(context, inputFile, MathematicaRulesDefinition.GOD_PACKAGE_TOO_MANY_DEPENDENCIES_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package has " + deps.size() + " dependencies (max " + maxDependencies + ")");
         }
     }
@@ -486,7 +486,7 @@ public final class ArchitectureAndDependencyDetector {
             for (String dep : deps) {
                 if (dep.contains("App") || dep.contains("Main")) {
                     createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_DEPENDS_ON_APPLICATION_CODE_KEY,
-                        pkgMatcher.start(), pkgMatcher.end(),
+                        pkgMatcher.start(),
                         "Library package depends on application: " + dep);
                 }
             }
@@ -519,7 +519,7 @@ public final class ArchitectureAndDependencyDetector {
             for (String dep : deps) {
                 if (LAYER_DATA.matcher(dep).find()) {
                     createIssue(context, inputFile, MathematicaRulesDefinition.LAYER_VIOLATION_KEY,
-                        pkgMatcher.start(), pkgMatcher.end(),
+                        pkgMatcher.start(),
                         "UI layer should not depend directly on Data layer: " + dep);
                 }
             }
@@ -563,7 +563,7 @@ public final class ArchitectureAndDependencyDetector {
 
                 if (depInstability > 0.7) { // Unstable dependency
                     createIssue(context, inputFile, MathematicaRulesDefinition.UNSTABLE_DEPENDENCY_KEY,
-                        pkgMatcher.start(), pkgMatcher.end(),
+                        pkgMatcher.start(),
                         "Stable package depends on unstable: " + dep);
                 }
             }
@@ -584,7 +584,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (lines > maxLines) {
             createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_TOO_LARGE_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package has " + lines + " lines (max " + maxLines + ")");
         }
     }
@@ -603,7 +603,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (lines < minLines) {
             createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_TOO_SMALL_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package has only " + lines + " lines (min " + minLines + ") - consider merging");
         }
     }
@@ -633,14 +633,14 @@ public final class ArchitectureAndDependencyDetector {
             // Check if PascalCase
             if (!segment.matches("[A-Z][a-zA-Z0-9]*")) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.INCONSISTENT_PACKAGE_NAMING_KEY,
-                    pkgMatcher.start(), pkgMatcher.end(),
+                    pkgMatcher.start(),
                     "Package segment should use PascalCase: " + segment);
             }
 
             // Check if too short
             if (segment.length() < 2) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.INCONSISTENT_PACKAGE_NAMING_KEY,
-                    pkgMatcher.start(), pkgMatcher.end(),
+                    pkgMatcher.start(),
                     "Package segment too short: " + segment);
             }
         }
@@ -661,7 +661,7 @@ public final class ArchitectureAndDependencyDetector {
         final int maxExports = 50;
         if (exports.size() > maxExports) {
             createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_EXPORTS_TOO_MUCH_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package exports " + exports.size() + " symbols (max " + maxExports + ")");
         }
     }
@@ -681,7 +681,7 @@ public final class ArchitectureAndDependencyDetector {
         final int minExports = 3;
         if (!exports.isEmpty() && exports.size() < minExports) {
             createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_EXPORTS_TOO_LITTLE_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package exports only " + exports.size() + " symbols (min " + minExports + ")");
         }
     }
@@ -705,7 +705,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (hasCreate && !hasDelete) {
             createIssue(context, inputFile, MathematicaRulesDefinition.INCOMPLETE_PUBLIC_API_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "API has Create* but no Delete* function");
         }
 
@@ -715,7 +715,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (hasSet && !hasGet) {
             createIssue(context, inputFile, MathematicaRulesDefinition.INCOMPLETE_PUBLIC_API_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "API has Set* but no Get* function");
         }
     }
@@ -730,7 +730,7 @@ public final class ArchitectureAndDependencyDetector {
             String contextStr = contextMatcher.group(0);
             if (contextStr.contains("Private`")) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.PRIVATE_SYMBOL_USED_EXTERNALLY_KEY,
-                    contextMatcher.start(), contextMatcher.end(),
+                    contextMatcher.start(),
                     "Using private symbol from another package: " + contextStr);
             }
         }
@@ -754,7 +754,7 @@ public final class ArchitectureAndDependencyDetector {
         for (String export : exports) {
             if (implPattern.matcher(export).find()) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.INTERNAL_IMPLEMENTATION_EXPOSED_KEY,
-                    0, content.length(),
+                    0,
                     "Implementation detail exposed in public API: " + export);
             }
         }
@@ -775,7 +775,7 @@ public final class ArchitectureAndDependencyDetector {
         Pattern pkgUsage = Pattern.compile(currentPackage.replace("`", "") + "::usage\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
         if (!pkgUsage.matcher(content).find()) {
             createIssue(context, inputFile, MathematicaRulesDefinition.MISSING_PACKAGE_DOCUMENTATION_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package missing usage documentation");
         }
     }
@@ -794,7 +794,7 @@ public final class ArchitectureAndDependencyDetector {
         String currentPackage = pkgMatcher.group(1);
         if (!PACKAGE_VERSIONS.containsKey(currentPackage)) {
             createIssue(context, inputFile, MathematicaRulesDefinition.PUBLIC_API_CHANGED_WITHOUT_VERSION_BUMP_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package missing version information");
         }
     }
@@ -819,7 +819,7 @@ public final class ArchitectureAndDependencyDetector {
             Integer callCount = SYMBOL_CALL_COUNT.get(symbol);
             if (callCount == null || callCount == 0) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.UNUSED_PUBLIC_FUNCTION_KEY,
-                    0, content.length(),
+                    0,
                     "Exported function never called: " + symbol);
             }
         }
@@ -843,7 +843,7 @@ public final class ArchitectureAndDependencyDetector {
             // Check if used only in the defining file
             if (usages != null && usages.size() == 1 && usages.contains(filename)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.UNUSED_EXPORT_KEY,
-                    0, content.length(),
+                    0,
                     "Symbol exported but only used internally: " + symbol);
             }
         }
@@ -873,7 +873,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (!exports.isEmpty() && !anyUsedExternally) {
             createIssue(context, inputFile, MathematicaRulesDefinition.DEAD_PACKAGE_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package not used externally - consider removing");
         }
     }
@@ -894,7 +894,7 @@ public final class ArchitectureAndDependencyDetector {
             Integer callCount = SYMBOL_CALL_COUNT.get(symbol);
             if (callCount != null && callCount == 1) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.FUNCTION_ONLY_CALLED_ONCE_KEY,
-                    0, content.length(),
+                    0,
                     "Private function called only once - consider inlining: " + symbol);
             }
         }
@@ -916,7 +916,7 @@ public final class ArchitectureAndDependencyDetector {
         // If we have many private functions but few exports, might be over-abstracted
         if (!exports.isEmpty() && privateSymbols.size() / exports.size() > 10) {
             createIssue(context, inputFile, MathematicaRulesDefinition.OVER_ABSTRACTED_API_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Ratio of private to public functions is very high ("                 + privateSymbols.size() + "/" + exports.size() + ")");
         }
     }
@@ -936,7 +936,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (!hasImpl) {
             createIssue(context, inputFile, MathematicaRulesDefinition.ORPHANED_TEST_FILE_KEY,
-                0, content.length(),
+                0,
                 "Test file has no corresponding implementation");
         }
     }
@@ -961,7 +961,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (!hasTest) {
             createIssue(context, inputFile, MathematicaRulesDefinition.IMPLEMENTATION_WITHOUT_TESTS_KEY,
-                pkgMatcher.start(), pkgMatcher.end(),
+                pkgMatcher.start(),
                 "Package has no test coverage");
         }
     }
@@ -993,7 +993,7 @@ public final class ArchitectureAndDependencyDetector {
             Set<String> usages = SYMBOL_USAGES.get(symbol);
             if (usages != null && usages.contains(filename)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.DEPRECATED_API_STILL_USED_INTERNALLY_KEY,
-                    0, content.length(),
+                    0,
                     "Deprecated symbol still used internally: " + symbol);
             }
         }
@@ -1016,7 +1016,7 @@ public final class ArchitectureAndDependencyDetector {
             Integer callCount = SYMBOL_CALL_COUNT.get(symbol);
             if (callCount != null && callCount > 10) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.INTERNAL_API_USED_LIKE_PUBLIC_KEY,
-                    0, content.length(),
+                    0,
                     "Private symbol heavily used (" + callCount + " times) - consider making public: " + symbol);
             }
         }
@@ -1031,7 +1031,7 @@ public final class ArchitectureAndDependencyDetector {
 
         while (matcher.find()) {
             createIssue(context, inputFile, MathematicaRulesDefinition.COMMENTED_OUT_PACKAGE_LOAD_KEY,
-                matcher.start(), matcher.end(),
+                matcher.start(),
                 "Commented-out package load - remove if not needed");
         }
     }
@@ -1044,7 +1044,7 @@ public final class ArchitectureAndDependencyDetector {
 
         if (matcher.find()) {
             createIssue(context, inputFile, MathematicaRulesDefinition.CONDITIONAL_PACKAGE_LOAD_KEY,
-                matcher.start(), matcher.end(),
+                matcher.start(),
                 "Conditional package loading can cause load order issues");
         }
     }
@@ -1073,7 +1073,7 @@ public final class ArchitectureAndDependencyDetector {
             String needed = needsMatcher.group(1);
             if (!declared.contains(needed)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_LOADED_BUT_NOT_LISTED_IN_METADATA_KEY,
-                    needsMatcher.start(), needsMatcher.end(),
+                    needsMatcher.start(),
                     "Package loaded but not declared in BeginPackage: " + needed);
             }
         }
@@ -1091,7 +1091,7 @@ public final class ArchitectureAndDependencyDetector {
 
             if (files.size() > 1 && files.contains(filename)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.DUPLICATE_SYMBOL_DEFINITION_ACROSS_PACKAGES_KEY,
-                    0, content.length(),
+                    0,
                     "Symbol defined in multiple packages: " + symbol + " in " + files);
             }
         }
@@ -1121,7 +1121,7 @@ public final class ArchitectureAndDependencyDetector {
                 String symbol = defMatcher.group(1);
                 if (importedSymbols.contains(symbol)) {
                     createIssue(context, inputFile, MathematicaRulesDefinition.SYMBOL_REDEFINITION_AFTER_IMPORT_KEY,
-                        0, content.length(),
+                        0,
                         "Symbol redefined after import: " + symbol);
                 }
             }
@@ -1149,7 +1149,7 @@ public final class ArchitectureAndDependencyDetector {
 
             if (actualVersion != null && !actualVersion.equals(requiredVersion)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.PACKAGE_VERSION_MISMATCH_KEY,
-                    versionMatcher.start(), versionMatcher.end(),
+                    versionMatcher.start(),
                     "Version mismatch for " + dep + ": required " + requiredVersion + ", found " + actualVersion);
             }
         }
@@ -1182,7 +1182,7 @@ public final class ArchitectureAndDependencyDetector {
         for (String symbol : exports) {
             if (!documented.contains(symbol)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.PUBLIC_EXPORT_MISSING_USAGE_MESSAGE_KEY,
-                    0, content.length(),
+                    0,
                     "Exported function missing usage message: " + symbol);
             }
         }
@@ -1217,7 +1217,7 @@ public final class ArchitectureAndDependencyDetector {
 
                 if (paramNames.size() > entry.getValue().size()) {
                     createIssue(context, inputFile, MathematicaRulesDefinition.INCONSISTENT_PARAMETER_NAMES_ACROSS_OVERLOADS_KEY,
-                        0, content.length(),
+                        0,
                         "Inconsistent parameter names in overloads of: " + entry.getKey());
                 }
             }
@@ -1242,7 +1242,7 @@ public final class ArchitectureAndDependencyDetector {
         for (String symbol : exports) {
             if (implDetails.matcher(symbol).find()) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.PUBLIC_FUNCTION_WITH_IMPLEMENTATION_DETAILS_IN_NAME_KEY,
-                    0, content.length(),
+                    0,
                     "Public function name contains implementation details: " + symbol);
             }
         }
@@ -1280,7 +1280,7 @@ public final class ArchitectureAndDependencyDetector {
                     String symbol = funcMatcher.group(1);
                     if (Character.isUpperCase(symbol.charAt(0))) {
                         createIssue(context, inputFile, MathematicaRulesDefinition.PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY,
-                            i, i + line.length(),
+                            i,
                             "Public function defined outside package context: " + symbol);
                     }
                 }
@@ -1300,7 +1300,7 @@ public final class ArchitectureAndDependencyDetector {
         Matcher testMatcher = TEST_PATTERN.matcher(content);
         if (testMatcher.find()) {
             createIssue(context, inputFile, MathematicaRulesDefinition.TEST_FUNCTION_IN_PRODUCTION_CODE_KEY,
-                testMatcher.start(), testMatcher.end(),
+                testMatcher.start(),
                 "Test function found in production code");
         }
     }
@@ -1313,7 +1313,7 @@ public final class ArchitectureAndDependencyDetector {
      * Create an issue at the specified location
      */
     private static void createIssue(SensorContext context, InputFile inputFile, String ruleKey,
-                                     int startOffset, int endOffset, String message) {
+                                     int startOffset, String message) {
         try {
             NewIssue issue = context.newIssue()
                 .forRule(org.sonar.api.rule.RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, ruleKey));
