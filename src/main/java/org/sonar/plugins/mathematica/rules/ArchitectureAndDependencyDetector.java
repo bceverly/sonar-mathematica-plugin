@@ -293,12 +293,10 @@ public final class ArchitectureAndDependencyDetector {
      */
     public static void detectUnusedPackageImport(SensorContext context, InputFile inputFile, String content) {
         String filename = inputFile.filename();
-        Set<String> imported = new HashSet<>();
 
         Matcher needsMatcher = NEEDS.matcher(content);
         while (needsMatcher.find()) {
             String importedPkg = needsMatcher.group(1);
-            imported.add(importedPkg);
 
             // Check if any symbols from this package are actually used
             Set<String> exportedSymbols = PACKAGE_EXPORTS.get(importedPkg);
@@ -1106,7 +1104,6 @@ public final class ArchitectureAndDependencyDetector {
      */
     public static void detectSymbolRedefinitionAfterImport(SensorContext context, InputFile inputFile, String content) {
         Set<String> importedSymbols = new HashSet<>();
-        Set<String> definedSymbols = new HashSet<>();
 
         String[] lines = content.split("\n");
         for (String line : lines) {
@@ -1129,7 +1126,6 @@ public final class ArchitectureAndDependencyDetector {
                         0, content.length(),
                         "Symbol redefined after import: " + symbol);
                 }
-                definedSymbols.add(symbol);
             }
         }
     }
@@ -1142,8 +1138,6 @@ public final class ArchitectureAndDependencyDetector {
         if (!pkgMatcher.find()) {
             return;
         }
-
-        String currentPackage = pkgMatcher.group(1);
 
         // Check if dependencies have version requirements
         //NOSONAR - Possessive quantifiers prevent backtracking

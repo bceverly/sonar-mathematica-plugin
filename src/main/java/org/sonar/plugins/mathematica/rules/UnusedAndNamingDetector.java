@@ -1073,15 +1073,6 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
     public void detectUndefinedVariableReference(SensorContext context, InputFile inputFile, String content) {
         try {
-            Set<String> definedVars = new HashSet<>();
-
-            // Collect all variable assignments
-            Pattern assignment = Pattern.compile("\\b([a-zA-Z]\\w*)\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
-            Matcher assignMatcher = assignment.matcher(content);
-            while (assignMatcher.find()) {
-                definedVars.add(assignMatcher.group(1));
-            }
-
             // Check for references to undefined variables (simplified)
             // This is a basic heuristic and would need data flow analysis for accuracy
         } catch (Exception e) {

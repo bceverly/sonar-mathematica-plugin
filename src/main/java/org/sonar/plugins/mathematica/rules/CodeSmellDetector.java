@@ -208,14 +208,12 @@ public class CodeSmellDetector extends BaseDetector {
     public void detectEmptyCatchBlocks(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = SIMPLE_CHECK_PATTERN.matcher(content);
-            matcher = SIMPLE_CHECK_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
                     "Empty error handling - consider logging or handling the error.", matcher.start(), matcher.end());
             }
 
-            matcher = QUIET_PATTERN.matcher(content);
             matcher = QUIET_PATTERN.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -454,7 +452,6 @@ public class CodeSmellDetector extends BaseDetector {
     public void detectIdenticalBranches(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = IF_PATTERN.matcher(content);
-            matcher = IF_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 String trueBranch = matcher.group(2).trim();

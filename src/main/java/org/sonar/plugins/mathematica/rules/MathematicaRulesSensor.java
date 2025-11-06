@@ -1195,21 +1195,4 @@ public class MathematicaRulesSensor implements Sensor {
         issue.save();
     }
 
-    /**
-     * Logs when a rule starts execution to help identify hanging rules.
-     */
-    private void logRuleStart(String ruleName) {
-        LOG.debug("→ Starting rule: {}", ruleName);
-    }
-
-    /**
-     * Logs slow rules (>100ms) to help identify performance bottlenecks.
-     */
-    private void logSlowRule(InputFile inputFile, String ruleName, long startTime) {
-        long elapsed = System.currentTimeMillis() - startTime;
-        if (elapsed > 100) {
-            LOG.info("PERF: SLOW RULE - {} in {} took {}ms", ruleName, inputFile.filename(), elapsed);
-        }
-    }
-
 }
