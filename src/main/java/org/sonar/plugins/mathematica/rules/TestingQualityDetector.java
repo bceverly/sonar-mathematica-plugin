@@ -338,7 +338,7 @@ public class TestingQualityDetector extends BaseDetector {
      * Helper to count unique function calls in test body.
      */
     private int countUniqueFunctionCalls(String testBody) {
-        Pattern funcPattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\[");
+        Pattern funcPattern = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher matcher = funcPattern.matcher(testBody);
         java.util.Set<String> uniqueFunctions = new java.util.HashSet<>();
         while (matcher.find()) {

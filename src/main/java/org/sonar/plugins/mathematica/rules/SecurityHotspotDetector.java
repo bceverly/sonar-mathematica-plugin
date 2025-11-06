@@ -13,6 +13,8 @@ public class SecurityHotspotDetector extends BaseDetector {
 
     // ===== PATTERNS FOR SECURITY HOTSPOT DETECTION =====
 
+
+
     private static final Pattern FILE_IMPORT_PATTERN = Pattern.compile(
         "(?:Import|Get|OpenRead|OpenWrite|Put)\\s*+\\["
     );

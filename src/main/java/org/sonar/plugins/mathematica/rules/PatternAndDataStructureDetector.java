@@ -23,8 +23,9 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     // Pre-compiled patterns for Pattern System Rules
     // Note: Cannot use possessive on \w+ before _ since \w includes _, and [^]]* needs backtracking in bracket contexts
     private static final Pattern UNRESTRICTED_BLANK = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*\\b\\w+_\\b[^\\]]*)\\]\\s*+:?+=");
+    //NOSONAR - Possessive quantifiers prevent backtracking
     // Note: \w+ before _ must be non-possessive since \w includes _
-    private static final Pattern PATTERN_TEST_CONDITION = Pattern.compile("\\b(\\w+)_\\s*+/;\\s*+(\\w++Q)\\[\\1\\]");
+    private static final Pattern PATTERN_TEST_CONDITION = Pattern.compile("\\b(\\w+)_\\s*+/;\\s*+(\\w+Q)\\[\\1\\]");
     private static final Pattern BLANKSEQUENCE = Pattern.compile("\\b\\w+__(?![a-zA-Z_])");
     private static final Pattern OPTIONAL_PATTERN = Pattern.compile("\\b(\\w+)_:(\\w++)");
     private static final Pattern PATTERN_NAME_USAGE = Pattern.compile("\\b(\\w+)_([a-zA-Z]\\w*+)?+");

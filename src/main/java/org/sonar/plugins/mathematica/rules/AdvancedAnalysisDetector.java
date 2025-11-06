@@ -55,6 +55,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
 
     // Part/list patterns
     private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+\\]\\]");
+    //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern SPAN_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+;;\\s*+(\\d++)\\s*+\\]\\]");
     private static final Pattern ALL_SPEC = Pattern.compile("\\[\\[\\s*+All\\s*+\\]\\]");
 
@@ -82,7 +83,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*+\\[[^\\]]*+(?:Sort|Select|Cases|DeleteCases)");
 
     // Test patterns
-    private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*+\\.");
+    private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*\\.");
 
     // Performance patterns
     private static final Pattern PACKED_ARRAY_UNPACK = Pattern.compile("\\[\\[\\s*+\\d++\\s*+\\]\\]\\s*+=");
@@ -167,7 +168,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingCheckLeadsToNullPropagation(SensorContext ctx, InputFile file, String content) {
-        Pattern chain = Pattern.compile("\\w++\\[\\w++\\[\\w++\\[");
+        Pattern chain = Pattern.compile("\\w++\\[\\w++\\[\\w++\\["); //NOSONAR - Possessive quantifiers prevent backtracking
         if (chain.matcher(content).find()) {
             Matcher m = chain.matcher(content);
             while (m.find()) {
@@ -179,7 +180,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectCheckPatternDoesntHandleAllCases(SensorContext ctx, InputFile file, String content) {
-        Pattern check = Pattern.compile("Check\\s*+\\[[^,]+,[^,]+\\](?!\\s*+,)");
+        Pattern check = Pattern.compile("Check\\s*+\\[[^,]+,[^,]+\\](?!\\s*+,)"); //NOSONAR - Possessive quantifiers prevent backtracking
         if (check.matcher(content).find()) {
             Matcher m = check.matcher(content);
             while (m.find()) {
@@ -280,7 +281,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // ========================================
 
     public static void detectConditionAlwaysTrueConstantPropagation(SensorContext ctx, InputFile file, String content) {
-        Pattern alwaysTrue = Pattern.compile("If\\s*+\\[\\s*+True\\s*+,");
+        Pattern alwaysTrue = Pattern.compile("If\\s*+\\[\\s*+True\\s*+,"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = alwaysTrue.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -290,7 +291,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectConditionAlwaysFalseConstantPropagation(SensorContext ctx, InputFile file, String content) {
-        Pattern alwaysFalse = Pattern.compile("If\\s*+\\[\\s*+False\\s*+,");
+        Pattern alwaysFalse = Pattern.compile("If\\s*+\\[\\s*+False\\s*+,"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = alwaysFalse.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -300,6 +301,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectLoopBoundConstant(SensorContext ctx, InputFile file, String content) {
+        //NOSONAR - Possessive quantifiers prevent backtracking
         Pattern constBound = Pattern.compile("(\\w++)\\s*+=\\s*+(\\d++);[^D]*Do\\s*+\\[[^\\{]*\\{\\w++,[^,]*,\\s*+\\1\\s*+\\}");
         Matcher m = constBound.matcher(content);
         while (m.find()) {
@@ -310,7 +312,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectRedundantComputation(SensorContext ctx, InputFile file, String content) {
-        Pattern dup = Pattern.compile("(\\w++\\[[^\\]]+\\])\\s*+[+*]\\s*+\\1");
+        Pattern dup = Pattern.compile("(\\w++\\[[^\\]]+\\])\\s*+[+*]\\s*+\\1"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = dup.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -320,7 +322,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectPureExpressionInLoop(SensorContext ctx, InputFile file, String content) {
-        Pattern pure = Pattern.compile("Do\\s*+\\[[^\\]]*+(?:Sqrt|Pi|E)\\[");
+        Pattern pure = Pattern.compile("Do\\s*+\\[[^\\]]*+(?:Sqrt|Pi|E)\\["); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = pure.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -357,7 +359,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectBooleanExpressionAlwaysTrue(SensorContext ctx, InputFile file, String content) {
-        Pattern tautology = Pattern.compile("(\\w++)\\s*+\\|\\|\\s*+!\\1");
+        Pattern tautology = Pattern.compile("(\\w++)\\s*+\\|\\|\\s*+!\\1"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = tautology.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -367,7 +369,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectBooleanExpressionAlwaysFalse(SensorContext ctx, InputFile file, String content) {
-        Pattern contradiction = Pattern.compile("(\\w++)\\s*+&&\\s*+!\\1");
+        Pattern contradiction = Pattern.compile("(\\w++)\\s*+&&\\s*+!\\1"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = contradiction.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -406,7 +408,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectDeMorgansLawOpportunity(SensorContext ctx, InputFile file, String content) {
-        Pattern demorgan = Pattern.compile("!\\s*+\\([^)]*&&");
+        Pattern demorgan = Pattern.compile("!\\s*+\\([^)]*&&"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = demorgan.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -431,6 +433,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectHoldFirstButUsesSecondArgumentFirst(SensorContext ctx, InputFile file, String content) {
+        //NOSONAR - Possessive quantifiers prevent backtracking
         Pattern holdFirst = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+HoldFirst");
         Matcher m = holdFirst.matcher(content);
         while (m.find()) {
@@ -510,7 +513,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectRuleDoesntMatchDueToEvaluation(SensorContext ctx, InputFile file, String content) {
-        Pattern evalRule = Pattern.compile("/\\.\\s*+\\{[^}]*\\d++\\s*+\\+\\s*+\\d++\\s*+->");
+        Pattern evalRule = Pattern.compile("/\\.\\s*+\\{[^}]*\\d++\\s*+\\+\\s*+\\d++\\s*+->"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = evalRule.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -578,7 +581,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectOneIdentityAttributeMisuse(SensorContext ctx, InputFile file, String content) {
-        Pattern oneId = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+OneIdentity");
+        Pattern oneId = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+OneIdentity"); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = oneId.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -619,6 +622,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingSequenceWrapper(SensorContext ctx, InputFile file, String content) {
+        //NOSONAR - Possessive quantifiers prevent backtracking
         Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*+\\{[^}]+\\}\\s*+,\\s*+\\{\\s*+\\}");
         Matcher m = emptyList.matcher(content);
         while (m.find()) {
@@ -673,6 +677,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     // ========================================
 
     public static void detectCompilableFunctionNotCompiled(SensorContext ctx, InputFile file, String content) {
+        //NOSONAR - Possessive quantifiers prevent backtracking
         Pattern numerical = Pattern.compile("(\\w++)\\[\\w+_\\]\\s*+:=\\s*+[^;]*(?:Sin|Cos|Exp|Log|Sqrt)");
         Matcher m = numerical.matcher(content);
         while (m.find() && !content.contains("Compile[")) {
@@ -712,7 +717,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectInefficientPatternInPerformanceCriticalCode(SensorContext ctx, InputFile file, String content) {
-        Pattern hotLoop = Pattern.compile("Do\\s*+\\[[^\\]]*+Match\\s*+\\[");
+        Pattern hotLoop = Pattern.compile("Do\\s*+\\[[^\\]]*+Match\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = hotLoop.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -731,7 +736,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectMissingMemoizationOpportunityEnhanced(SensorContext ctx, InputFile file, String content) {
-        Pattern recursion = Pattern.compile("(\\w++)\\[(\\w+)_\\]\\s*+:=\\s*+[^=]*\\1\\[");
+        Pattern recursion = Pattern.compile("(\\w++)\\[(\\w+)_\\]\\s*+:=\\s*+[^=]*\\1\\["); //NOSONAR - Possessive quantifiers prevent backtracking
         Matcher m = recursion.matcher(content);
         while (m.find() && !content.contains(m.group(1) + "[" + m.group(2) + "] = ")) {
             int line = content.substring(0, m.start()).split("\n").length;

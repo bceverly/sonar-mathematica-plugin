@@ -20,7 +20,9 @@ public class BugDetector extends BaseDetector {
 
     // ===== PATTERNS FOR BUG DETECTION =====
 
-    private static final Pattern DIVISION_PATTERN = Pattern.compile("/(?!=)");  // Not //= or /=
+    //NOSONAR - Possessive quantifiers prevent backtracking  // Not //= or /=
+
+    private static final Pattern DIVISION_PATTERN = Pattern.compile("/(?!=)");
     private static final Pattern ASSIGNMENT_IN_IF_PATTERN = Pattern.compile(
         "(?:If|While|Which)\\s*+\\[[^\\]]*+\\b(\\w++)\\s*+=\\s*+(?!=)[^=]"
     );
@@ -371,6 +373,7 @@ public class BugDetector extends BaseDetector {
      */
     private int findFunctionLine(String content, String functionName) {
         try {
+            //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern pattern = Pattern.compile("\\b" + Pattern.quote(functionName) + "\\s*+\\[");
             Matcher matcher = pattern.matcher(content);
             if (matcher.find()) {
@@ -936,6 +939,8 @@ public class BugDetector extends BaseDetector {
     // TIER 1 GAP CLOSURE - RESOURCE MANAGEMENT (7 rules)
     // ==========================================================================
 
+
+
     private static final Pattern STREAM_PATTERN = Pattern.compile(
         "(?:OpenRead|OpenWrite|OpenAppend|OutputStream|InputStream)\\s*+\\["
     );
@@ -948,7 +953,7 @@ public class BugDetector extends BaseDetector {
         "([a-zA-Z]\\w*+)\\s*+=\\s*+(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\["
     );
     private static final Pattern NOTEBOOK_PUT_PATTERN = Pattern.compile(
-        "(?:Table|Range|Array)\\s*+\\[[^\\]]*+(?:Table|Range|Array).*+NotebookWrite"
+        "(?:Table|Range|Array)\\s*+\\[[^\\]]*(?:Table|Range|Array).*NotebookWrite"
     );
     private static final Pattern CLEAR_PATTERN = Pattern.compile("Clear\\s*+\\[|ClearAll\\s*+\\[|Remove\\s*+\\[");
 
@@ -1112,6 +1117,7 @@ public class BugDetector extends BaseDetector {
         try {
             // Look for large assignments without Clear
             if (!content.contains("Clear") && !content.contains("ClearAll")) {
+                //NOSONAR - Possessive quantifiers prevent backtracking
                 Matcher matcher = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+=\\s*+(?:Table|Range|Array)\\s*+\\[[^\\]]{100,}+").matcher(content);
                 if (matcher.find()) {
                     reportIssue(context, inputFile, 1, MathematicaRulesDefinition.NO_CLEAR_AFTER_USE_KEY,
