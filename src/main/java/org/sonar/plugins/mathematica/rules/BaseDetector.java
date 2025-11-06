@@ -87,10 +87,8 @@ public abstract class BaseDetector {
         offsets[0] = 0;
         int lineIndex = 1;
         for (int i = 0; i < content.length(); i++) {
-            if (content.charAt(i) == '\n') {
-                if (lineIndex < offsets.length) {
-                    offsets[lineIndex++] = i + 1;
-                }
+            if (content.charAt(i) == '\n' && lineIndex < offsets.length) {
+                offsets[lineIndex++] = i + 1;
             }
         }
         return offsets;
@@ -212,10 +210,8 @@ public abstract class BaseDetector {
         int quoteCount = 0;
         int lineStart = content.lastIndexOf('\n', position) + 1;
         for (int i = lineStart; i < position; i++) {
-            if (content.charAt(i) == '"') {
-                if (i > 0 && content.charAt(i - 1) != '\\') {
-                    quoteCount++;
-                }
+            if (content.charAt(i) == '"' && i > 0 && content.charAt(i - 1) != '\\') {
+                quoteCount++;
             }
         }
         return quoteCount % 2 == 1;

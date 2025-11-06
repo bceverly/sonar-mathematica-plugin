@@ -131,8 +131,9 @@ public class InitializationTrackingVisitor implements AstVisitor {
     public Map<String, Set<String>> getAllVariablesUsedBeforeAssignment() {
         Map<String, Set<String>> result = new HashMap<>();
 
-        for (String functionName : usedBeforeAssigned.keySet()) {
-            Set<String> vars = usedBeforeAssigned.get(functionName);
+        for (Map.Entry<String, Set<String>> entry : usedBeforeAssigned.entrySet()) {
+            String functionName = entry.getKey();
+            Set<String> vars = entry.getValue();
             if (!vars.isEmpty()) {
                 result.put(functionName, vars);
             }

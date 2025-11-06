@@ -258,11 +258,10 @@ public class UnifiedRuleVisitor implements AstVisitor {
 
     private void checkUndefinedIdentifier(IdentifierNode node) {
         String name = node.getName();
-        if (Character.isUpperCase(name.charAt(0)) && !isBuiltin(name) && !definedFunctions.contains(name)) {
-            // Might be undefined function call
-            if (!calledFunctions.contains(name)) {
-                calledFunctions.add(name);  // Track it
-            }
+        // Might be undefined function call
+        if (Character.isUpperCase(name.charAt(0)) && !isBuiltin(name) && !definedFunctions.contains(name)
+            && !calledFunctions.contains(name)) {
+            calledFunctions.add(name);  // Track it
         }
     }
 
@@ -549,13 +548,11 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkImportWithoutFormat(FunctionCallNode node) {
-        if (node.getFunctionName().equals(IMPORT)) {
-            // Check if Import has only 1 argument (no format specified)
-            // This is a simple heuristic - more sophisticated would parse arguments
-            if (node.getArguments().size() == 1) {
-                reportIssue(node.getStartLine(), MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY,
-                    REVIEW_PREFIX + "Import without explicit format relies on file extension. Specify format for security.");
-            }
+        // Check if Import has only 1 argument (no format specified)
+        // This is a simple heuristic - more sophisticated would parse arguments
+        if (node.getFunctionName().equals(IMPORT) && node.getArguments().size() == 1) {
+            reportIssue(node.getStartLine(), MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY,
+                REVIEW_PREFIX + "Import without explicit format relies on file extension. Specify format for security.");
         }
     }
 

@@ -112,10 +112,9 @@ public class BugDetector extends BaseDetector {
                 int position = matcher.start();
 
                 // Skip URLs (http://, https://)
-                if (position > 0 && content.charAt(position - 1) == ':') {
-                    if (position + 1 < content.length() && content.charAt(position + 1) == '/') {
-                        continue;
-                    }
+                if (position > 0 && content.charAt(position - 1) == ':'
+                    && position + 1 < content.length() && content.charAt(position + 1) == '/') {
+                    continue;
                 }
 
                 // Skip if inside a string literal

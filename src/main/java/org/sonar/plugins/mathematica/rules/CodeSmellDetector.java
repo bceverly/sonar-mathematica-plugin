@@ -1467,13 +1467,11 @@ public class CodeSmellDetector extends BaseDetector {
             while (matcher.find()) {
                 String comment = matcher.group();
                 // Heuristic: contains code-like syntax
-                if (comment.matches(".*[a-zA-Z]\\w*\\s*+:?=.*") || comment.matches(".*\\w+\\s*+\\[.*\\].*")) { //NOSONAR
-                    // Skip if it looks like natural language
-                    if (!looksLikeNaturalLanguage(comment)) {
-                        int lineNumber = calculateLineNumber(content, matcher.start());
-                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.COMMENTED_OUT_CODE_KEY,
-                            "Commented-out code found. Remove it or use version control to retrieve.");
-                    }
+                if ((comment.matches(".*[a-zA-Z]\\w*\\s*+:?=.*") || comment.matches(".*\\w+\\s*+\\[.*\\].*")) //NOSONAR
+                    && !looksLikeNaturalLanguage(comment)) {
+                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.COMMENTED_OUT_CODE_KEY,
+                        "Commented-out code found. Remove it or use version control to retrieve.");
                 }
             }
         } catch (Exception e) {

@@ -309,10 +309,8 @@ public class MathematicaParser {
         offsets[0] = 0;
         int lineIndex = 1;
         for (int i = 0; i < content.length(); i++) {
-            if (content.charAt(i) == '\n') {
-                if (lineIndex < offsets.length) {
-                    offsets[lineIndex++] = i + 1;
-                }
+            if (content.charAt(i) == '\n' && lineIndex < offsets.length) {
+                offsets[lineIndex++] = i + 1;
             }
         }
         return offsets;

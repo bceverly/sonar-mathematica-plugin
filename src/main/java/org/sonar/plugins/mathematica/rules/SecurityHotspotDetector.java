@@ -526,11 +526,10 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectDnsRebinding(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains("URLRead") || content.contains("SocketConnect")) {
-                if (content.contains("localhost") || content.contains("127.0.0.1")) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.DNS_REBINDING_KEY,
-                        "Review: DNS rebinding risk with localhost connections. Validate origins.");
-                }
+            if ((content.contains("URLRead") || content.contains("SocketConnect"))
+                && (content.contains("localhost") || content.contains("127.0.0.1"))) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.DNS_REBINDING_KEY,
+                    "Review: DNS rebinding risk with localhost connections. Validate origins.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping DNS rebinding detection: {}", inputFile.filename());
@@ -558,11 +557,10 @@ public class SecurityHotspotDetector extends BaseDetector {
      */
     public void detectMissingSecurityHeaders(SensorContext context, InputFile inputFile, String content) {
         try {
-            if (content.contains(APIFUNCTION) || content.contains("FormPage")) {
-                if (!content.contains("HTTPResponse") && !content.contains("Headers")) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_SECURITY_HEADERS_KEY,
-                        "Review: Missing HTTP security headers (X-Frame-Options, CSP, etc.).");
-                }
+            if ((content.contains(APIFUNCTION) || content.contains("FormPage"))
+                && !content.contains("HTTPResponse") && !content.contains("Headers")) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_SECURITY_HEADERS_KEY,
+                    "Review: Missing HTTP security headers (X-Frame-Options, CSP, etc.).");
             }
         } catch (Exception e) {
             LOG.warn("Skipping missing security headers detection: {}", inputFile.filename());

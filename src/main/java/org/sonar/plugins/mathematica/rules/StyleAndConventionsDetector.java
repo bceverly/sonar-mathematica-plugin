@@ -219,12 +219,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 // Check if next line is blank
                 if (lineNumber < lines.length) {
                     String nextLine = lines[lineNumber].trim();
-                    if (!nextLine.isEmpty() && !nextLine.startsWith("(*")) {
-                        // Check if it's another function definition
-                        if (nextLine.matches("^[A-Z][a-zA-Z0-9]*\\s*+\\[.*")) {
-                            reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.MISSING_BLANK_LINE_AFTER_FUNCTION_KEY,
-                                "Missing blank line after function definition. Add blank line for readability.");
-                        }
+                    // Check if it's another function definition
+                    if (!nextLine.isEmpty() && !nextLine.startsWith("(*")
+                        && nextLine.matches("^[A-Z][a-zA-Z0-9]*\\s*+\\[.*")) {
+                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.MISSING_BLANK_LINE_AFTER_FUNCTION_KEY,
+                            "Missing blank line after function definition. Add blank line for readability.");
                     }
                 }
             }
@@ -558,13 +557,12 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = CONSTANT_PATTERN.matcher(content);
             while (matcher.find()) {
                 String constName = matcher.group(1);
-                if (!constName.equals(constName.toUpperCase()) || constName.contains("_")) {
-                    // Allow some exceptions for Mathematica symbols
-                    if (!constName.matches("^[A-Z][a-zA-Z0-9]*$")) {
-                        int lineNumber = calculateLineNumber(content, matcher.start());
-                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CONSTANT_NOT_UPPERCASE_KEY,
-                            String.format("Constant '%s' should be UPPER_CASE.", constName));
-                    }
+                // Allow some exceptions for Mathematica symbols
+                if ((!constName.equals(constName.toUpperCase()) || constName.contains("_"))
+                    && !constName.matches("^[A-Z][a-zA-Z0-9]*$")) {
+                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CONSTANT_NOT_UPPERCASE_KEY,
+                        String.format("Constant '%s' should be UPPER_CASE.", constName));
                 }
             }
         } catch (Exception e) {

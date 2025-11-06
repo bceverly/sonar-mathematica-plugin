@@ -124,8 +124,9 @@ public class SymbolTable {
     public List<ShadowingPair> findShadowingIssues() {
         List<ShadowingPair> issues = new ArrayList<>();
 
-        for (String name : symbolsByName.keySet()) {
-            List<Symbol> symbols = symbolsByName.get(name);
+        for (Map.Entry<String, List<Symbol>> entry : symbolsByName.entrySet()) {
+            String name = entry.getKey();
+            List<Symbol> symbols = entry.getValue();
             if (symbols.size() < 2) {
                 continue;
             }
