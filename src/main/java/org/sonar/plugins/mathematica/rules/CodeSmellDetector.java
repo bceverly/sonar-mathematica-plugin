@@ -1411,7 +1411,7 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]*)\\]\\s*+:="); //NOSONAR
 
     /**
-     * Detect TODO comments that should be tracked.
+     * Detect task tracking comments that should be addressed.
      */
     public void detectTodoTracking(SensorContext context, InputFile inputFile, String content) {
         try {

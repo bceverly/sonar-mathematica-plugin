@@ -55,7 +55,7 @@ public final class CodeSmellRules {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(READABILITY);
 
-        // TODO/FIXME
+        // Comment tracking rules
         repository.createRule(MathematicaRulesDefinition.TODO_FIXME_KEY)
             .setName("Track TODO and FIXME comments")
             .setHtmlDescription(

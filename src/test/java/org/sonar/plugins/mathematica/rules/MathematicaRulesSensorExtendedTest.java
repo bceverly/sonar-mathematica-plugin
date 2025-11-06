@@ -355,7 +355,7 @@ class MathematicaRulesSensorExtendedTest {
         // Create a file with code that should trigger various rules
         Path tempFile = Files.createTempFile("test", ".m");
         StringBuilder content = new StringBuilder();
-        content.append("(* TODO: implement this *)\n");  // Should trigger TODO rule
+        content.append("(* TODO: implement this *)\n");  // Should trigger task tracking rule
         content.append("Print[x]\n");  // Should trigger debug code rule
         content.append("result = 42 + 3.14159\n");  // Magic numbers
         content.append("Module[{}, ]\n");  // Empty block

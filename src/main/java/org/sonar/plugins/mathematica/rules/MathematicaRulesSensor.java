@@ -1064,7 +1064,7 @@ public class MathematicaRulesSensor implements Sensor {
     }
 
     /**
-     * Analyzes comments in the file, detecting commented code and TODO/FIXME comments.
+     * Analyzes comments in the file, detecting commented code and task tracking markers.
      * Returns comment ranges for use by other detectors.
      *
      * This is a single-pass optimization: parse comments once, extract issues, and
@@ -1091,7 +1091,7 @@ public class MathematicaRulesSensor implements Sensor {
                         "Remove this commented out code.");
                 }
 
-                // Detect TODO/FIXME comments
+                // Detect task tracking comment markers
                 String lowerComment = commentText.toLowerCase();
                 if (lowerComment.contains("todo") || lowerComment.contains("fixme")) {
                     int line = calculateLineNumber(content, start);

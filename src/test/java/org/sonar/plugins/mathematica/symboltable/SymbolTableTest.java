@@ -15,7 +15,7 @@ import static org.mockito.Mockito.when;
 /**
  * Unit tests for symbol table core classes.
  */
-public class SymbolTableTest {
+class SymbolTableTest {
 
     private InputFile createMockFile(String filename) {
         InputFile file = mock(InputFile.class);
@@ -24,7 +24,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testSymbolCreation() {
+    void testSymbolCreation() {
         Scope globalScope = new Scope(ScopeType.GLOBAL, 1, 100, null);
         Symbol symbol = new Symbol("x", 10, globalScope, false, true);
 
@@ -36,7 +36,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testSymbolReference() {
+    void testSymbolReference() {
         SymbolReference ref = new SymbolReference(10, 5, ReferenceType.WRITE, "x = 5");
 
         assertEquals(10, ref.getLine());
@@ -47,7 +47,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testScopeHierarchy() {
+    void testScopeHierarchy() {
         Scope globalScope = new Scope(ScopeType.GLOBAL, 1, 100, null);
         Scope moduleScope = new Scope(ScopeType.MODULE, 10, 50, globalScope);
         Scope blockScope = new Scope(ScopeType.BLOCK, 20, 40, moduleScope);
@@ -61,7 +61,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testSymbolLookup() {
+    void testSymbolLookup() {
         Scope globalScope = new Scope(ScopeType.GLOBAL, 1, 100, null);
         Scope moduleScope = new Scope(ScopeType.MODULE, 10, 50, globalScope);
 
@@ -87,7 +87,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testSymbolTable() {
+    void testSymbolTable() {
         InputFile file = createMockFile("test.m");
 
         SymbolTable table = new SymbolTable(file, 100);
@@ -103,7 +103,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testUnusedSymbol() {
+    void testUnusedSymbol() {
         Scope globalScope = new Scope(ScopeType.GLOBAL, 1, 100, null);
         Symbol symbol = new Symbol("unused", 10, globalScope, false, true);
 
@@ -124,7 +124,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testShadowingDetection() {
+    void testShadowingDetection() {
         InputFile file = createMockFile("test.m");
 
         SymbolTable table = new SymbolTable(file, 100);
@@ -146,7 +146,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testScopeContainsLine() {
+    void testScopeContainsLine() {
         Scope scope = new Scope(ScopeType.MODULE, 10, 50, null);
 
         assertFalse(scope.containsLine(5));
@@ -157,7 +157,7 @@ public class SymbolTableTest {
     }
 
     @Test
-    public void testGetScopeAtLine() {
+    void testGetScopeAtLine() {
         Scope globalScope = new Scope(ScopeType.GLOBAL, 1, 100, null);
         Scope moduleScope = new Scope(ScopeType.MODULE, 10, 50, globalScope);
         Scope blockScope = new Scope(ScopeType.BLOCK, 20, 30, moduleScope);

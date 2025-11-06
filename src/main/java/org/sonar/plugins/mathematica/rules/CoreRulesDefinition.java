@@ -114,7 +114,7 @@ final class CoreRulesDefinition {
 
             rule2.setDebtRemediationFunction(rule2.debtRemediationFunctions().constantPerIssue("5min"));
 
-        // Define the TODO/FIXME comment rule
+        // Define the comment tracking rule
         NewRule rule3 = repository.createRule(TODO_FIXME_KEY)
             .setName("Track TODO and FIXME comments")
             .setHtmlDescription(

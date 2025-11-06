@@ -14,7 +14,7 @@ import static org.mockito.Mockito.when;
 /**
  * Tests for SymbolTableBuilder - parsing Mathematica code into symbol tables.
  */
-public class SymbolTableBuilderTest {
+class SymbolTableBuilderTest {
 
     private InputFile createMockFile(String filename, int lines) {
         InputFile file = mock(InputFile.class);
@@ -25,7 +25,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testSimpleAssignment() {
+    void testSimpleAssignment() {
         String code = "x = 5;\ny = 10;\nPrint[x + y];";
         InputFile file = createMockFile("test.m", 3);
 
@@ -49,7 +49,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testModuleScope() {
+    void testModuleScope() {
         String code = "Module[{x, y},\n"
                      + "  x = 5;\n"
                      + "  y = 10;\n"
@@ -74,7 +74,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testNestedScopes() {
+    void testNestedScopes() {
         String code = "Module[{x},\n"
                      + "  x = 5;\n"
                      + "  Block[{y},\n"
@@ -103,7 +103,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testFunctionParameters() {
+    void testFunctionParameters() {
         String code = "f[x_, y_] := x + y";
         InputFile file = createMockFile("test.m", 1);
 
@@ -125,7 +125,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testUnusedVariable() {
+    void testUnusedVariable() {
         String code = "Module[{x, y, unused},\n"
                      + "  x = 5;\n"
                      + "  y = 10;\n"
@@ -147,7 +147,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testAssignedButNeverRead() {
+    void testAssignedButNeverRead() {
         String code = "x = 5;\n"
                      + "y = 10;\n"
                      + "Print[x];\n";
@@ -161,7 +161,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testBuiltinsNotTracked() {
+    void testBuiltinsNotTracked() {
         String code = "x = Print[5];";
         InputFile file = createMockFile("test.m", 1);
 
@@ -174,7 +174,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testShadowing() {
+    void testShadowing() {
         String code = "x = 1;\n"
                      + "Module[{x},\n"
                      + "  x = 2;\n"
@@ -191,7 +191,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testMultipleAssignments() {
+    void testMultipleAssignments() {
         String code = "x = 5;\n"
                      + "x = 10;\n"
                      + "x = 15;\n"
@@ -207,7 +207,7 @@ public class SymbolTableBuilderTest {
     }
 
     @Test
-    public void testWithScope() {
+    void testWithScope() {
         String code = "With[{x = 5, y = 10},\n"
                      + "  Print[x + y]\n"
                      + "]";
