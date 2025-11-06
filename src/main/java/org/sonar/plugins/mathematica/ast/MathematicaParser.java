@@ -117,7 +117,7 @@ public class MathematicaParser {
                 boolean isDelayed = ":=".equals(assignOp);
 
                 int startPos = matcher.start();
-                int startLine = calculateLine(content, startPos);
+                int startLine = calculateLine(startPos);
                 int startColumn = calculateColumn(content, startPos);
 
                 // Parse parameters
@@ -133,7 +133,7 @@ public class MathematicaParser {
                 AstNode body = parseExpression(bodyStr, startLine, startColumn);
                 totalParseExpr += (System.currentTimeMillis() - startExpr);
 
-                int endLine = calculateLine(content, bodyEnd);
+                int endLine = calculateLine(bodyEnd);
                 int endColumn = calculateColumn(content, bodyEnd);
 
                 FunctionDefNode funcNode = new FunctionDefNode(
@@ -320,7 +320,7 @@ public class MathematicaParser {
      * Calculate line number from position using binary search on cached offsets.
      * PERFORMANCE: O(log n) instead of O(n) linear scan.
      */
-    private int calculateLine(String content, int position) {
+    private int calculateLine(int position) {
         if (lineOffsets == null || lineOffsets.length == 0) {
             return 1;
         }
@@ -348,7 +348,7 @@ public class MathematicaParser {
             return 0;
         }
 
-        int line = calculateLine(content, position);
+        int line = calculateLine(position);
         int lineStartOffset = lineOffsets[line - 1];
         return position - lineStartOffset;
     }

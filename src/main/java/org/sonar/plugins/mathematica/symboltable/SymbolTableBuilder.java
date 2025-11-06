@@ -98,7 +98,7 @@ public final class SymbolTableBuilder {
             Matcher moduleMatcher = MODULE_PATTERN.matcher(line);
             if (moduleMatcher.find()) {
                 int startLine = lineNumber;
-                int endLine = findScopeEnd(lines, i, "Module");
+                int endLine = findScopeEnd(lines, i);
                 Scope currentScope = scopeStack.peek().scope;
                 Scope moduleScope = new Scope(ScopeType.MODULE, startLine, endLine, currentScope);
                 scopeStack.push(new ScopeInfo(moduleScope, endLine));
@@ -112,7 +112,7 @@ public final class SymbolTableBuilder {
             Matcher blockMatcher = BLOCK_PATTERN.matcher(line);
             if (blockMatcher.find()) {
                 int startLine = lineNumber;
-                int endLine = findScopeEnd(lines, i, "Block");
+                int endLine = findScopeEnd(lines, i);
                 Scope currentScope = scopeStack.peek().scope;
                 Scope blockScope = new Scope(ScopeType.BLOCK, startLine, endLine, currentScope);
                 scopeStack.push(new ScopeInfo(blockScope, endLine));
@@ -126,7 +126,7 @@ public final class SymbolTableBuilder {
             Matcher withMatcher = WITH_PATTERN.matcher(line);
             if (withMatcher.find()) {
                 int startLine = lineNumber;
-                int endLine = findScopeEnd(lines, i, "With");
+                int endLine = findScopeEnd(lines, i);
                 Scope currentScope = scopeStack.peek().scope;
                 Scope withScope = new Scope(ScopeType.WITH, startLine, endLine, currentScope);
                 scopeStack.push(new ScopeInfo(withScope, endLine));
@@ -186,7 +186,7 @@ public final class SymbolTableBuilder {
             }
 
             // Track references (reads)
-            trackReferences(table, line, lineNumber, scope);
+            trackReferences(line, lineNumber, scope);
         }
     }
 
@@ -194,7 +194,7 @@ public final class SymbolTableBuilder {
      * Tracks variable references in a line.
      * PERFORMANCE: Uses O(1) HashSet check instead of O(n) stream search.
      */
-    private static void trackReferences(SymbolTable table, String line, int lineNumber, Scope scope) {
+    private static void trackReferences(String line, int lineNumber, Scope scope) {
         // Remove assignments to avoid double-counting
         String lineNoAssignments = line.replaceAll("\\w+\\s*+=", ""); //NOSONAR
 
@@ -223,14 +223,14 @@ public final class SymbolTableBuilder {
     private static void parseVariableDeclarations(SymbolTable table, Scope scope,
                                                   String vars, int lineNumber, boolean isModuleVariable) {
         String[] varList = vars.split(",");
-        for (String var : varList) {
-            var = var.trim();
+        for (String varDecl : varList) {
+            String varName = varDecl.trim();
             // Remove default values (x = 5 -> x)
-            if (var.contains("=")) {
-                var = var.substring(0, var.indexOf("=")).trim();
+            if (varName.contains("=")) {
+                varName = varName.substring(0, varName.indexOf("=")).trim();
             }
-            if (!var.isEmpty() && !BUILTINS.contains(var)) {
-                Symbol symbol = new Symbol(var, lineNumber, scope, false, isModuleVariable);
+            if (!varName.isEmpty() && !BUILTINS.contains(varName)) {
+                Symbol symbol = new Symbol(varName, lineNumber, scope, false, isModuleVariable);
                 scope.addSymbol(symbol);
                 table.addSymbol(symbol);
             }
@@ -260,7 +260,7 @@ public final class SymbolTableBuilder {
     /**
      * Finds the end line of a scope (simple bracket counting).
      */
-    private static int findScopeEnd(String[] lines, int startIdx, String scopeType) {
+    private static int findScopeEnd(String[] lines, int startIdx) {
         int bracketCount = 0;
         boolean started = false;
 
