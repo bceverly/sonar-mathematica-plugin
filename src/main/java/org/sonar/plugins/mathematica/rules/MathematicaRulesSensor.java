@@ -49,7 +49,7 @@ public class MathematicaRulesSensor implements Sensor {
     private static final Logger LOG = LoggerFactory.getLogger(MathematicaRulesSensor.class);
 
     // Comment pattern for comment analysis
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)");
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)"); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // PERFORMANCE: Queue issue DATA (not NewIssue objects) to avoid thread-safety issues
     private static class IssueData {

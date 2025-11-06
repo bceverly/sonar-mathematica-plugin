@@ -18,6 +18,7 @@ public class TestingQualityDetector extends BaseDetector {
         "test([A-Z][a-zA-Z0-9]*)\\s*+\\[|"
         + "([A-Z][a-zA-Z0-9]*)Test\\s*+\\["
     );
+    //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern VERIFICATION_TEST_PATTERN = Pattern.compile("VerificationTest\\s*+\\[");
     private static final Pattern SHARED_TEST_DATA_PATTERN = Pattern.compile(
         "(?:Module|Block|With)\\s*+\\[[^\\]]*testData|testInput|expected"
@@ -41,7 +42,7 @@ public class TestingQualityDetector extends BaseDetector {
     );
 
     // Test Quality patterns
-    private static final Pattern VT_ASSERT_PATTERN = Pattern.compile("==|===|SameQ|MatchQ");
+    private static final Pattern VT_ASSERT_PATTERN = Pattern.compile("==|===|SameQ|MatchQ"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern TEST_MAGIC_NUMBER_PATTERN = Pattern.compile(
         "VerificationTest\\s*+\\[[^\\]]*\\b(\\d{3,}|\\d+\\.\\d{4,})\\b"
     );

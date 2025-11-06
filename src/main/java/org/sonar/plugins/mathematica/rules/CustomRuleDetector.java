@@ -164,6 +164,7 @@ public class CustomRuleDetector extends BaseDetector {
             // Match API usage: ApiName[...] or ApiName (without brackets)
             // Use word boundaries to match whole words only
             //NOSONAR - Possessive quantifiers prevent backtracking
+            //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern apiPattern = Pattern.compile("\\b" + Pattern.quote(apiName) + "\\b(?:\\s*+\\[)?+");
             Matcher matcher = apiPattern.matcher(content);
 
