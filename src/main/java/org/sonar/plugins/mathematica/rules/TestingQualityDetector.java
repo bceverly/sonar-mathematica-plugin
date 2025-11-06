@@ -19,9 +19,6 @@ public class TestingQualityDetector extends BaseDetector {
         + "([A-Z][a-zA-Z0-9]*)Test\\s*+\\["
     );
     private static final Pattern VERIFICATION_TEST_PATTERN = Pattern.compile("VerificationTest\\s*+\\["); //NOSONAR
-    private static final Pattern SHARED_TEST_DATA_PATTERN = Pattern.compile(
-        "(?:Module|Block|With)\\s*+\\[[^\\]]*testData|testInput|expected"
-    );
     private static final Pattern DISABLED_TEST_PATTERN = Pattern.compile(
         "\\(\\*\\s*+VerificationTest|"  + "VerificationTest\\s*+\\[[^\\]]*,\\s*+\"(?:Ignore|Skip|Disabled)\""
     );

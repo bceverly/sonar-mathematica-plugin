@@ -33,9 +33,6 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern DEBUG_CODE_PATTERN = Pattern.compile(
         "(?:Print|Echo|PrintTemporary|TracePrint|Trace|Monitor)\\s*+\\[|"         + "\\$DebugMessages\\s*+=\\s*+True"
     );
-    private static final Pattern MODULE_BLOCK_WITH_PATTERN = Pattern.compile(
-        "(?:Module|Block|With)\\s*+\\[\\s*+\\{([^}]+)\\}"
-    );
     private static final Pattern DOUBLE_SEMICOLON_PATTERN = Pattern.compile(
         ";;|\\[\\s*+,\\s*+;|,\\s*+;\\s*+\\]"
     );
@@ -81,8 +78,6 @@ public class CodeSmellDetector extends BaseDetector {
     // Pre-compiled patterns for performance
     private static final Pattern ASSIGNMENT_PATTERN = Pattern.compile("\\w++\\s*+=\\s*+[^=]"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern FUNCTION_CALL_PATTERN = Pattern.compile("[a-zA-Z]\\w*+\\s*+\\["); //NOSONAR
-    private static final Pattern KEYWORD_PATTERN = Pattern.compile(
-        "\\b(?:Module|Block|With|Table|Map|Apply|Function|If|While|Do|For|Return|Print|Plot|Solve)\\s*+\\[");
     private static final Pattern OPERATOR_PATTERN_OPTIMIZED = Pattern.compile("[-+*/^]\\s*+[a-zA-Z0-9]"); //NOSONAR
 
     // Phase 4 patterns (performance optimization - pre-compiled)

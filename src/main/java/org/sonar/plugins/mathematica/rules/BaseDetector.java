@@ -251,38 +251,76 @@ public abstract class BaseDetector {
      */
     protected List<int[]> analyzeComments(String content) {
         List<int[]> commentRanges = new java.util.ArrayList<>();
-        int depth = 0;
-        int commentStart = -1;
+        CommentState state = new CommentState();
         int i = 0;
 
         while (i < content.length()) {
-            // Check for comment start: (*
-            if (i < content.length() - 1 && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
-                if (depth == 0) {
-                    commentStart = i;
-                }
-                depth++;
-                i += 2;
-                continue;
-            }
-
-            // Check for comment end: *)
-            if (i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
-                if (depth > 0) {
-                    depth--;
-                    if (depth == 0 && commentStart >= 0) {
-                        commentRanges.add(new int[]{commentStart, i + 2});
-                        commentStart = -1;
-                    }
-                }
-                i += 2;
-                continue;
-            }
-
-            i++;
+            i = processCommentCharacter(content, i, state, commentRanges);
         }
 
         return commentRanges;
+    }
+
+    /**
+     * Process a single character position for comment parsing.
+     */
+    private int processCommentCharacter(String content, int i, CommentState state, List<int[]> commentRanges) {
+        if (isCommentStart(content, i)) {
+            return handleCommentStart(i, state);
+        }
+
+        if (isCommentEnd(content, i)) {
+            return handleCommentEnd(i, state, commentRanges);
+        }
+
+        return i + 1;
+    }
+
+    /**
+     * Check if position marks the start of a comment.
+     */
+    private boolean isCommentStart(String content, int i) {
+        return i < content.length() - 1 && content.charAt(i) == '(' && content.charAt(i + 1) == '*';
+    }
+
+    /**
+     * Check if position marks the end of a comment.
+     */
+    private boolean isCommentEnd(String content, int i) {
+        return i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')';
+    }
+
+    /**
+     * Handle comment start delimiter.
+     */
+    private int handleCommentStart(int i, CommentState state) {
+        if (state.depth == 0) {
+            state.commentStart = i;
+        }
+        state.depth++;
+        return i + 2;
+    }
+
+    /**
+     * Handle comment end delimiter.
+     */
+    private int handleCommentEnd(int i, CommentState state, List<int[]> commentRanges) {
+        if (state.depth > 0) {
+            state.depth--;
+            if (state.depth == 0 && state.commentStart >= 0) {
+                commentRanges.add(new int[]{state.commentStart, i + 2});
+                state.commentStart = -1;
+            }
+        }
+        return i + 2;
+    }
+
+    /**
+     * Helper class to track comment parsing state.
+     */
+    private static final class CommentState {
+        int depth = 0;
+        int commentStart = -1;
     }
 
     /**

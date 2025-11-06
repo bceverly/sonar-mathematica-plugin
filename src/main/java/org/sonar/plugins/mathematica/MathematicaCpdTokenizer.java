@@ -134,80 +134,8 @@ public class MathematicaCpdTokenizer implements Sensor {
             while (position < content.length()) {
                 char ch = content.charAt(position);
 
-                // Skip whitespace but track line/column
-                if (Character.isWhitespace(ch)) {
-                    if (ch == '\n') {
-                        line++;
-                        column = 0;  // Reset to 0 for new line
-                    } else {
-                        column++;
-                    }
-                    position++;
-                    continue;
-                }
-
-                // Try to match comment
-                Matcher commentMatcher = COMMENT_PATTERN.matcher(content.substring(position));
-                if (commentMatcher.lookingAt()) {
-                    String comment = commentMatcher.group();
-                    // Count newlines in comment
-                    for (char c : comment.toCharArray()) {
-                        if (c == '\n') {
-                            line++;
-                            column = 0;  // Reset to 0 for new line (0-based indexing)
-                        } else {
-                            column++;
-                        }
-                    }
-                    position += comment.length();
-                    continue;
-                }
-
-                // Try to match string literal
-                Matcher stringMatcher = STRING_PATTERN.matcher(content.substring(position));
-                if (stringMatcher.lookingAt()) {
-                    String str = stringMatcher.group();
-                    // Add normalized token (all strings treated as equivalent for CPD)
-                    int endColumn = column + str.length();  // End column is exclusive (one past the last char)
-                    safeAddToken(cpdTokens, line, column, line, endColumn, "\"STRING\"");
-                    column += str.length();
-                    position += str.length();
-                    continue;
-                }
-
-                // Try to match number
-                Matcher numberMatcher = NUMBER_PATTERN.matcher(content.substring(position));
-                if (numberMatcher.lookingAt()) {
-                    String num = numberMatcher.group();
-                    // Add normalized token (all numbers treated as equivalent for CPD)
-                    int endColumn = column + num.length();  // End column is exclusive (one past the last char)
-                    safeAddToken(cpdTokens, line, column, line, endColumn, "NUMBER");
-                    column += num.length();
-                    position += num.length();
-                    continue;
-                }
-
-                // Try to match identifier (function names, variables, etc.)
-                Matcher identifierMatcher = IDENTIFIER_PATTERN.matcher(content.substring(position));
-                if (identifierMatcher.lookingAt()) {
-                    String identifier = identifierMatcher.group();
-                    // Keep actual identifier for CPD (so 'Module' differs from 'Block')
-                    int endColumn = column + identifier.length();  // End column is exclusive (one past the last char)
-                    safeAddToken(cpdTokens, line, column, line, endColumn, identifier);
-                    column += identifier.length();
-                    position += identifier.length();
-                    continue;
-                }
-
-                // Try to match operator
-                Matcher operatorMatcher = OPERATOR_PATTERN.matcher(content.substring(position));
-                if (operatorMatcher.lookingAt()) {
-                    String operator = operatorMatcher.group();
-                    // Keep actual operator
-                    int endColumn = column + operator.length();  // End column is exclusive (one past the last char)
-                    safeAddToken(cpdTokens, line, column, line, endColumn, operator);
-                    column += operator.length();
-                    position += operator.length();
+                if (trySkipWhitespace(ch) || tryMatchComment(cpdTokens) || tryMatchString(cpdTokens)
+                    || tryMatchNumber(cpdTokens) || tryMatchIdentifier(cpdTokens) || tryMatchOperator(cpdTokens)) {
                     continue;
                 }
 
@@ -216,6 +144,95 @@ public class MathematicaCpdTokenizer implements Sensor {
                 column++;
                 position++;
             }
+        }
+
+        private boolean trySkipWhitespace(char ch) {
+            if (Character.isWhitespace(ch)) {
+                if (ch == '\n') {
+                    line++;
+                    column = 0;  // Reset to 0 for new line
+                } else {
+                    column++;
+                }
+                position++;
+                return true;
+            }
+            return false;
+        }
+
+        private boolean tryMatchComment(NewCpdTokens cpdTokens) {
+            Matcher commentMatcher = COMMENT_PATTERN.matcher(content.substring(position));
+            if (commentMatcher.lookingAt()) {
+                String comment = commentMatcher.group();
+                // Count newlines in comment
+                for (char c : comment.toCharArray()) {
+                    if (c == '\n') {
+                        line++;
+                        column = 0;  // Reset to 0 for new line (0-based indexing)
+                    } else {
+                        column++;
+                    }
+                }
+                position += comment.length();
+                return true;
+            }
+            return false;
+        }
+
+        private boolean tryMatchString(NewCpdTokens cpdTokens) {
+            Matcher stringMatcher = STRING_PATTERN.matcher(content.substring(position));
+            if (stringMatcher.lookingAt()) {
+                String str = stringMatcher.group();
+                // Add normalized token (all strings treated as equivalent for CPD)
+                int endColumn = column + str.length();  // End column is exclusive (one past the last char)
+                safeAddToken(cpdTokens, line, column, line, endColumn, "\"STRING\"");
+                column += str.length();
+                position += str.length();
+                return true;
+            }
+            return false;
+        }
+
+        private boolean tryMatchNumber(NewCpdTokens cpdTokens) {
+            Matcher numberMatcher = NUMBER_PATTERN.matcher(content.substring(position));
+            if (numberMatcher.lookingAt()) {
+                String num = numberMatcher.group();
+                // Add normalized token (all numbers treated as equivalent for CPD)
+                int endColumn = column + num.length();  // End column is exclusive (one past the last char)
+                safeAddToken(cpdTokens, line, column, line, endColumn, "NUMBER");
+                column += num.length();
+                position += num.length();
+                return true;
+            }
+            return false;
+        }
+
+        private boolean tryMatchIdentifier(NewCpdTokens cpdTokens) {
+            Matcher identifierMatcher = IDENTIFIER_PATTERN.matcher(content.substring(position));
+            if (identifierMatcher.lookingAt()) {
+                String identifier = identifierMatcher.group();
+                // Keep actual identifier for CPD (so 'Module' differs from 'Block')
+                int endColumn = column + identifier.length();  // End column is exclusive (one past the last char)
+                safeAddToken(cpdTokens, line, column, line, endColumn, identifier);
+                column += identifier.length();
+                position += identifier.length();
+                return true;
+            }
+            return false;
+        }
+
+        private boolean tryMatchOperator(NewCpdTokens cpdTokens) {
+            Matcher operatorMatcher = OPERATOR_PATTERN.matcher(content.substring(position));
+            if (operatorMatcher.lookingAt()) {
+                String operator = operatorMatcher.group();
+                // Keep actual operator
+                int endColumn = column + operator.length();  // End column is exclusive (one past the last char)
+                safeAddToken(cpdTokens, line, column, line, endColumn, operator);
+                column += operator.length();
+                position += operator.length();
+                return true;
+            }
+            return false;
         }
     }
 }

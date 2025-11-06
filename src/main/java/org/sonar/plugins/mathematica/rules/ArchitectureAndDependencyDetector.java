@@ -46,13 +46,13 @@ public final class ArchitectureAndDependencyDetector {
     private static final Pattern NEEDS = Pattern.compile("Needs\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]"); //NOSONAR
 
     // Symbol definitions
-    private static final Pattern FUNCTION_DEF = Pattern.compile("([A-Z][a-zA-Z0 - 9]*+)\\s*+\\[([^\\]]*+)\\]\\s*+:="); //NOSONAR
-    private static final Pattern USAGE_MSG = Pattern.compile("([A-Z][a-zA-Z0 - 9]*+)::usage\\s*+="); //NOSONAR
+    private static final Pattern FUNCTION_DEF = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]*+)\\]\\s*+:="); //NOSONAR
+    private static final Pattern USAGE_MSG = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+="); //NOSONAR
 
     // Context and scoping
     private static final Pattern BEGIN = Pattern.compile("Begin\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]"); //NOSONAR
     private static final Pattern END = Pattern.compile("End\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CONTEXT_SYMBOL = Pattern.compile("`([A-Z][a-zA-Z0 - 9]*+)(?:`|\\s|\\[)"); //NOSONAR
+    private static final Pattern CONTEXT_SYMBOL = Pattern.compile("`([A-Z][a-zA-Z0-9]*+)(?:`|\\s|\\[)"); //NOSONAR
 
     // Function calls
     private static final Pattern FUNCTION_CALL = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\["); //NOSONAR
@@ -631,7 +631,7 @@ public final class ArchitectureAndDependencyDetector {
             }
 
             // Check if PascalCase
-            if (!segment.matches("[A-Z][a-zA-Z0 - 9]*")) {
+            if (!segment.matches("[A-Z][a-zA-Z0-9]*")) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.INCONSISTENT_PACKAGE_NAMING_KEY,
                     pkgMatcher.start(), pkgMatcher.end(),
                     "Package segment should use PascalCase: " + segment);

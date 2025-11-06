@@ -73,6 +73,8 @@ final class AdvancedPatternAndFunctionRulesDefinition {
     private static final String VALIDATION = "validation";
     private static final String CORRECTNESS = "correctness";
     private static final String OWASP_A03 = "owasp-a03";
+    private static final String TIME_5MIN = "5min";
+    private static final String TAG_CWE = "cwe";
 
     private AdvancedPatternAndFunctionRulesDefinition() {
         throw new UnsupportedOperationException("Utility class");
@@ -110,7 +112,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("complexity", "maintainability");
 
-            rule75.setDebtRemediationFunction(rule75.debtRemediationFunctions().constantPerIssue("5min"));
+            rule75.setDebtRemediationFunction(rule75.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule76 = repository.createRule(INCONSISTENT_RULE_TYPES_KEY)
             .setName("Rule and RuleDelayed should be used consistently")
@@ -124,7 +126,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("consistency");
 
-            rule76.setDebtRemediationFunction(rule76.debtRemediationFunctions().constantPerIssue("5min"));
+            rule76.setDebtRemediationFunction(rule76.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule77 = repository.createRule(MISSING_FUNCTION_ATTRIBUTES_KEY)
             .setName("Public functions should have appropriate attributes")
@@ -138,7 +140,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("best-practice");
 
-            rule77.setDebtRemediationFunction(rule77.debtRemediationFunctions().constantPerIssue("5min"));
+            rule77.setDebtRemediationFunction(rule77.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule78 = repository.createRule(MISSING_DOWNVALUES_DOC_KEY)
             .setName("Complex pattern-based functions should have documentation")
@@ -180,7 +182,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY);
 
-            rule80.setDebtRemediationFunction(rule80.debtRemediationFunctions().constantPerIssue("5min"));
+            rule80.setDebtRemediationFunction(rule80.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule81 = repository.createRule(MISSING_OPERATOR_PRECEDENCE_KEY)
             .setName("Complex operator expressions should use parentheses for clarity")
@@ -194,7 +196,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY);
 
-            rule81.setDebtRemediationFunction(rule81.debtRemediationFunctions().constantPerIssue("5min"));
+            rule81.setDebtRemediationFunction(rule81.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule82 = repository.createRule(HARDCODED_FILE_PATHS_KEY)
             .setName("File paths should not be hardcoded")
@@ -236,7 +238,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("usability");
 
-            rule84.setDebtRemediationFunction(rule84.debtRemediationFunctions().constantPerIssue("5min"));
+            rule84.setDebtRemediationFunction(rule84.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule85 = repository.createRule(GLOBAL_STATE_MODIFICATION_KEY)
             .setName("Functions modifying global state should be clearly named")
@@ -262,7 +264,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("scoping");
 
-            rule86.setDebtRemediationFunction(rule86.debtRemediationFunctions().constantPerIssue("5min"));
+            rule86.setDebtRemediationFunction(rule86.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -282,7 +284,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("conventions");
 
-            rule87.setDebtRemediationFunction(rule87.debtRemediationFunctions().constantPerIssue("5min"));
+            rule87.setDebtRemediationFunction(rule87.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Data Structure Rules (5 rules)
 
@@ -296,7 +298,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("resource-management");
 
-            rule88.setDebtRemediationFunction(rule88.debtRemediationFunctions().constantPerIssue("5min"));
+            rule88.setDebtRemediationFunction(rule88.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule89 = repository.createRule(NESTED_LISTS_INSTEAD_ASSOCIATION_KEY)
             .setName("Use Association instead of nested indexed lists")
@@ -311,7 +313,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY, "maintainability");
 
-            rule89.setDebtRemediationFunction(rule89.debtRemediationFunctions().constantPerIssue("5min"));
+            rule89.setDebtRemediationFunction(rule89.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule90 = repository.createRule(REPEATED_PART_EXTRACTION_KEY)
             .setName("Repeated Part extractions should be destructured")
@@ -325,7 +327,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("clarity");
 
-            rule90.setDebtRemediationFunction(rule90.debtRemediationFunctions().constantPerIssue("5min"));
+            rule90.setDebtRemediationFunction(rule90.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         defineHoldAttributesAndEvaluationRules(repository);
     }
@@ -341,7 +343,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
-            rule91.setDebtRemediationFunction(rule91.debtRemediationFunctions().constantPerIssue("5min"));
+            rule91.setDebtRemediationFunction(rule91.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule92 = repository.createRule(STRINGJOIN_FOR_TEMPLATES_KEY)
             .setName("Use StringTemplate instead of repeated StringJoin")
@@ -355,7 +357,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_READABILITY);
 
-            rule92.setDebtRemediationFunction(rule92.debtRemediationFunctions().constantPerIssue("5min"));
+            rule92.setDebtRemediationFunction(rule92.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Type & Value Error Rules (8 new bugs)
 
@@ -629,7 +631,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "idiomatic");
 
-            rule110.setDebtRemediationFunction(rule110.debtRemediationFunctions().constantPerIssue("5min"));
+            rule110.setDebtRemediationFunction(rule110.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
     }
 
     /**
@@ -649,7 +651,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
-            rule111.setDebtRemediationFunction(rule111.debtRemediationFunctions().constantPerIssue("5min"));
+            rule111.setDebtRemediationFunction(rule111.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule112 = repository.createRule(MISSING_PARALLELIZATION_KEY)
             .setName("Large independent iterations should use parallelization")
@@ -661,7 +663,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "parallelization");
 
-            rule112.setDebtRemediationFunction(rule112.debtRemediationFunctions().constantPerIssue("5min"));
+            rule112.setDebtRemediationFunction(rule112.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule113 = repository.createRule(MISSING_SPARSE_ARRAY_KEY)
             .setName("Use SparseArray for arrays with >80% zeros")
@@ -673,7 +675,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "memory");
 
-            rule113.setDebtRemediationFunction(rule113.debtRemediationFunctions().constantPerIssue("5min"));
+            rule113.setDebtRemediationFunction(rule113.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule114 = repository.createRule(UNNECESSARY_TRANSPOSE_KEY)
             .setName("Avoid repeatedly transposing data")
@@ -685,7 +687,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
-            rule114.setDebtRemediationFunction(rule114.debtRemediationFunctions().constantPerIssue("5min"));
+            rule114.setDebtRemediationFunction(rule114.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule115 = repository.createRule(DELETEDUPS_ON_LARGE_DATA_KEY)
             .setName("DeleteDuplicates on large lists should use alternative methods")
@@ -697,7 +699,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
-            rule115.setDebtRemediationFunction(rule115.debtRemediationFunctions().constantPerIssue("5min"));
+            rule115.setDebtRemediationFunction(rule115.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule116 = repository.createRule(REPEATED_STRING_PARSING_KEY)
             .setName("Parsing the same string multiple times should be avoided")
@@ -711,7 +713,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE);
 
-            rule116.setDebtRemediationFunction(rule116.debtRemediationFunctions().constantPerIssue("5min"));
+            rule116.setDebtRemediationFunction(rule116.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         NewRule rule117 = repository.createRule(MISSING_COMPILATION_TARGET_KEY)
             .setName("Numerical code should use CompilationTarget->C")
@@ -723,7 +725,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_PERFORMANCE, "compilation");
 
-            rule117.setDebtRemediationFunction(rule117.debtRemediationFunctions().constantPerIssue("5min"));
+            rule117.setDebtRemediationFunction(rule117.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
 
         // Security Vulnerability Rules (7 rules)
 
@@ -743,7 +745,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/94.html'>CWE-94</a> - Code Injection</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "injection", OWASP_A03);
+            .setTags(TAG_CWE, "injection", OWASP_A03);
 
             rule118.setDebtRemediationFunction(rule118.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -759,7 +761,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/78.html'>CWE-78</a> - OS Command Injection</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "injection", OWASP_A03);
+            .setTags(TAG_CWE, "injection", OWASP_A03);
 
             rule119.setDebtRemediationFunction(rule119.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -775,7 +777,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/306.html'>CWE-306</a> - Missing Authentication</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "authentication", "owasp-a01");
+            .setTags(TAG_CWE, "authentication", "owasp-a01");
 
             rule120.setDebtRemediationFunction(rule120.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -791,7 +793,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/798.html'>CWE-798</a> - Hard-coded Credentials</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "credentials", "owasp-a07");
+            .setTags(TAG_CWE, "credentials", "owasp-a07");
 
             rule121.setDebtRemediationFunction(rule121.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -805,7 +807,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/829.html'>CWE-829</a> - Untrusted Control Sphere</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.HIGH)
-            .setTags("cwe", "code-injection");
+            .setTags(TAG_CWE, "code-injection");
 
             rule122.setDebtRemediationFunction(rule122.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
@@ -819,7 +821,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/200.html'>CWE-200</a> - Information Exposure</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags("cwe", "information-disclosure");
+            .setTags(TAG_CWE, "information-disclosure");
 
             rule123.setDebtRemediationFunction(rule123.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
@@ -833,7 +835,7 @@ final class AdvancedPatternAndFunctionRulesDefinition {
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/20.html'>CWE-20</a> - Improper Input Validation</li></ul>"
             )
             .addDefaultImpact(SoftwareQuality.SECURITY, Severity.MEDIUM)
-            .setTags("cwe", VALIDATION, OWASP_A03);
+            .setTags(TAG_CWE, VALIDATION, OWASP_A03);
 
             rule124.setDebtRemediationFunction(rule124.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
     }

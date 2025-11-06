@@ -24,6 +24,10 @@ public class UnifiedRuleVisitor implements AstVisitor {
     private static final String IMPORT = "Import";
     private static final String RANDOM = "Random";
     private static final String CLOUD_DEPLOY = "CloudDeploy";
+    private static final String GET = "Get";
+    private static final String PART = "Part";
+    private static final String PUT = "Put";
+    private static final String REVIEW_PREFIX = "Review: ";
 
     private final InputFile inputFile;
     private final MathematicaRulesSensor sensor;
@@ -266,11 +270,11 @@ public class UnifiedRuleVisitor implements AstVisitor {
         // Simplified builtin check
         return name.equals("Print") || name.equals("If") || name.equals("Module")
                || name.equals("Block") || name.equals("With") || name.equals("Map")
-               || name.equals("Table") || name.equals("Length") || name.equals("Part");
+               || name.equals("Table") || name.equals("Length") || name.equals(PART);
     }
 
     private void checkListIndexOutOfBounds(FunctionCallNode node) {
-        if (node.getFunctionName().equals("Part")) {
+        if (node.getFunctionName().equals(PART)) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.LIST_INDEX_OUT_OF_BOUNDS_KEY,
                 "Potential list index out of bounds. Use Quiet[Part[...]] or check Length first.");
         }
@@ -278,7 +282,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
 
     private void checkAssociationVsListConfusion(FunctionCallNode node) {
         String funcName = node.getFunctionName();
-        if (funcName.equals("Part") && !node.getArguments().isEmpty()) {
+        if (funcName.equals(PART) && !node.getArguments().isEmpty()) {
             // Check if first arg looks like an association variable
             AstNode firstArg = node.getArguments().get(0);
             if (firstArg instanceof IdentifierNode) {
@@ -369,7 +373,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkPathTraversal(FunctionCallNode node) {
-        Set<String> fileOps = Set.of(IMPORT, "Export", "Get", "Put", "DeleteFile", "RenameFile", "CopyFile");
+        Set<String> fileOps = Set.of(IMPORT, "Export", GET, PUT, "DeleteFile", "RenameFile", "CopyFile");
         if (fileOps.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.PATH_TRAVERSAL_KEY,
                 "Potential path traversal. Validate file paths in " + node.getFunctionName() + ".");
@@ -464,14 +468,14 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkNeedsGetUntrusted(FunctionCallNode node) {
-        if (node.getFunctionName().equals("Get") || node.getFunctionName().equals("Needs")) {
+        if (node.getFunctionName().equals(GET) || node.getFunctionName().equals("Needs")) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.NEEDS_GET_UNTRUSTED_KEY,
                 "Loading untrusted packages is dangerous. Verify source of " + node.getFunctionName() + ".");
         }
     }
 
     private void checkExposingSensitiveData(FunctionCallNode node) {
-        Set<String> exposeFuncs = Set.of(CLOUD_DEPLOY, "Export", "Put");
+        Set<String> exposeFuncs = Set.of(CLOUD_DEPLOY, "Export", PUT);
         if (exposeFuncs.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.EXPOSING_SENSITIVE_DATA_KEY,
                 "Ensure no sensitive data is exposed via " + node.getFunctionName() + ".");
@@ -488,13 +492,13 @@ public class UnifiedRuleVisitor implements AstVisitor {
     // ========== Security Hotspot Rules ==========
 
     private void checkFileUploadValidation(FunctionCallNode node) {
-        Set<String> fileOps = Set.of(IMPORT, "Get", "OpenRead", "OpenWrite", "Put");
+        Set<String> fileOps = Set.of(IMPORT, GET, "OpenRead", "OpenWrite", PUT);
         if (fileOps.contains(node.getFunctionName())) {
             String message;
-            if (node.getFunctionName().equals(IMPORT) || node.getFunctionName().equals("Get")) {
-                message = "Review: Ensure file uploads/imports are validated for type, size, and content.";
+            if (node.getFunctionName().equals(IMPORT) || node.getFunctionName().equals(GET)) {
+                message = REVIEW_PREFIX + "Ensure file uploads/imports are validated for type, size, and content.";
             } else {
-                message = "Review: Ensure file operations validate and sanitize file paths.";
+                message = REVIEW_PREFIX + "Ensure file operations validate and sanitize file paths.";
             }
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.FILE_UPLOAD_VALIDATION_KEY, message);
         }
@@ -504,7 +508,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         Set<String> apiCalls = Set.of("URLRead", "URLFetch", "URLExecute", "URLSubmit", "ServiceExecute", "ServiceConnect");
         if (apiCalls.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY,
-                "Review: Ensure this API call has timeout, error handling, and rate limiting.");
+                REVIEW_PREFIX + "Ensure this API call has timeout, error handling, and rate limiting.");
         }
     }
 
@@ -513,9 +517,9 @@ public class UnifiedRuleVisitor implements AstVisitor {
         if (keyFuncs.contains(node.getFunctionName())) {
             String message;
             if (node.getFunctionName().equals(RANDOM)) {
-                message = "Review: Random[] is not cryptographically secure. Use RandomInteger for keys.";
+                message = REVIEW_PREFIX + "Random[] is not cryptographically secure. Use RandomInteger for keys.";
             } else {
-                message = "Review: Ensure cryptographic keys are generated with sufficient entropy and stored securely.";
+                message = REVIEW_PREFIX + "Ensure cryptographic keys are generated with sufficient entropy and stored securely.";
             }
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.CRYPTO_KEY_GENERATION_KEY, message);
         }
@@ -525,7 +529,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
         Set<String> networkOps = Set.of("SocketConnect", "SocketOpen", "SocketListen", "WebExecute");
         if (networkOps.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY,
-                "Review: Network operation should use TLS, have timeout, and proper error handling.");
+                REVIEW_PREFIX + "Network operation should use TLS, have timeout, and proper error handling.");
         }
     }
 
@@ -533,14 +537,14 @@ public class UnifiedRuleVisitor implements AstVisitor {
         Set<String> fileMods = Set.of("DeleteFile", "DeleteDirectory", "RenameFile", "CopyFile", "SetFileDate");
         if (fileMods.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY,
-                "Review: File system modification should validate paths and log operations.");
+                REVIEW_PREFIX + "File system modification should validate paths and log operations.");
         }
     }
 
     private void checkEnvironmentVariable(FunctionCallNode node) {
         if (node.getFunctionName().equals("Environment")) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY,
-                "Review: Environment variable may contain secrets. Ensure not logged or exposed.");
+                REVIEW_PREFIX + "Environment variable may contain secrets. Ensure not logged or exposed.");
         }
     }
 
@@ -550,7 +554,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
             // This is a simple heuristic - more sophisticated would parse arguments
             if (node.getArguments().size() == 1) {
                 reportIssue(node.getStartLine(), MathematicaRulesDefinition.IMPORT_WITHOUT_FORMAT_KEY,
-                    "Review: Import without explicit format relies on file extension. Specify format for security.");
+                    REVIEW_PREFIX + "Import without explicit format relies on file extension. Specify format for security.");
             }
         }
     }
