@@ -15,6 +15,9 @@ public final class CodeSmellRules {
     private static final String COMPLEXITY = "complexity";
     private static final String NAMING = "naming";
     private static final String PERFORMANCE = "performance";
+    private static final String DUPLICATION = "duplication";
+    private static final String DOCUMENTATION = "documentation";
+    private static final String API_DESIGN = "api-design";
 
     // Private constructor to prevent instantiation
     private CodeSmellRules() {
@@ -120,7 +123,7 @@ public final class CodeSmellRules {
             .setName("Duplicate function definitions should be avoided")
             .setHtmlDescription("<p>Multiple identical function definitions indicate copy-paste code.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("duplication");
+            .setTags(DUPLICATION);
 
         repository.createRule(MathematicaRulesDefinition.TOO_MANY_PARAMETERS_KEY)
             .setName("Functions should not have too many parameters")
@@ -138,7 +141,7 @@ public final class CodeSmellRules {
             .setName("Complex functions should have documentation")
             .setHtmlDescription("<p>Functions with high complexity should have comments explaining their logic.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("documentation");
+            .setTags(DOCUMENTATION);
 
         repository.createRule(MathematicaRulesDefinition.INCONSISTENT_NAMING_KEY)
             .setName("Naming should be consistent")
@@ -150,7 +153,7 @@ public final class CodeSmellRules {
             .setName("Identical branches should be merged")
             .setHtmlDescription("<p>If/Switch branches with identical code should be merged.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
-            .setTags("duplication");
+            .setTags(DUPLICATION);
 
         repository.createRule(MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY)
             .setName("Expressions should not be too complex")
@@ -235,13 +238,13 @@ public final class CodeSmellRules {
             .setName("Public functions should have usage messages")
             .setHtmlDescription("<p>Public functions should define ::usage documentation.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("documentation");
+            .setTags(DOCUMENTATION);
 
         repository.createRule(MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY)
             .setName("Functions with multiple optional parameters should use OptionsPattern")
             .setHtmlDescription("<p>3+ optional parameters should use OptionsPattern.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("api-design");
+            .setTags(API_DESIGN);
 
         repository.createRule(MathematicaRulesDefinition.SIDE_EFFECTS_NAMING_KEY)
             .setName("Functions with side effects should have descriptive names")
@@ -259,7 +262,7 @@ public final class CodeSmellRules {
             .setName("Public API symbols should be protected")
             .setHtmlDescription("<p>Public functions in packages should use Protect[].</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
-            .setTags("api-design");
+            .setTags(API_DESIGN);
 
         repository.createRule(MathematicaRulesDefinition.MISSING_RETURN_KEY)
             .setName("Complex functions should have explicit Return statements")
