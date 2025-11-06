@@ -44,7 +44,7 @@ public class BugDetector extends BaseDetector {
     );
     private static final Pattern WHILE_TRUE_PATTERN = Pattern.compile("While\\s*+\\[\\s*+True\\s*+,"); //NOSONAR
     private static final Pattern MATRIX_OPERATION_PATTERN = Pattern.compile("(?:Transpose|Dot)\\s*+\\["); //NOSONAR
-    private static final Pattern STRING_PLUS_NUMBER_PATTERN = Pattern.compile(
+    private static final Pattern STRING_PLUS_NUMBER_PATTERN = Pattern.compile(//NOSONAR
         "\"[^\"]*\"\\s*+\\+\\s*+\\d++|\\d++\\s*+\\+\\s*+\"[^\"]*\""
     );
     private static final Pattern TRIPLE_UNDERSCORE_PATTERN = Pattern.compile("\\w++\\[___\\]"); //NOSONAR
