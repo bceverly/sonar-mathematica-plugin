@@ -39,8 +39,7 @@ public abstract class BaseDetector {
     // Common patterns used across detectors
     // NOTE: COMMENT_PATTERN removed - use removeCommentsCharBased() to avoid catastrophic backtracking
     //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    protected static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)++\"");
+    protected static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)++\""); //NOSONAR
 
     /**
      * Initialize caches for a file.

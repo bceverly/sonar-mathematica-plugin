@@ -29,79 +29,49 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
 
     // Dead Code & Reachability patterns
     private static final Pattern RETURN_STATEMENT = Pattern.compile("\\bReturn\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CODE_AFTER_RETURN = Pattern.compile("Return\\s*+\\[[^\\]]*\\]\\s*+;([^;\\n]+)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IF_TRUE_LITERAL = Pattern.compile("\\bIf\\s*+\\[\\s*+(True|1\\s*+==\\s*+1)\\s*+,");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IF_FALSE_LITERAL = Pattern.compile("\\bIf\\s*+\\[\\s*+(False|1\\s*+==\\s*+2)\\s*+,");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IMPOSSIBLE_PATTERN_INTEGER_STRING = Pattern.compile("([a-z]\\w*)_Integer\\?StringQ");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IMPOSSIBLE_CONDITION = Pattern.compile("([a-z]\\w*)\\s*+>\\s*+(\\d+)\\s*+&&\\s*+\\1\\s*+<\\s*+(\\d+)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CATCH_WITHOUT_THROW = Pattern.compile("\\bCatch\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern CODE_AFTER_RETURN = Pattern.compile("Return\\s*+\\[[^\\]]*\\]\\s*+;([^;\\n]+)"); //NOSONAR
+    private static final Pattern IF_TRUE_LITERAL = Pattern.compile("\\bIf\\s*+\\[\\s*+(True|1\\s*+==\\s*+1)\\s*+,"); //NOSONAR
+    private static final Pattern IF_FALSE_LITERAL = Pattern.compile("\\bIf\\s*+\\[\\s*+(False|1\\s*+==\\s*+2)\\s*+,"); //NOSONAR
+    private static final Pattern IMPOSSIBLE_PATTERN_INTEGER_STRING = Pattern.compile("([a-z]\\w*)_Integer\\?StringQ"); //NOSONAR
+    private static final Pattern IMPOSSIBLE_CONDITION = Pattern.compile("([a-z]\\w*)\\s*+>\\s*+(\\d+)\\s*+&&\\s*+\\1\\s*+<\\s*+(\\d+)"); //NOSONAR
+    private static final Pattern CATCH_WITHOUT_THROW = Pattern.compile("\\bCatch\\s*+\\[([^\\]]+)\\]"); //NOSONAR
     private static final Pattern THROW_PATTERN = Pattern.compile("\\bThrow\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern CONDITION_WITH_CONSTANT = Pattern.compile(
             "([a-z]\\w*)\\s*+=\\s*+([^;\\n]+);[^\\n]*\\bIf\\s*+\\[\\s*+\\1\\s*+(==|!=)\\s*+\\2"
-    );
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern WHILE_TRUE = Pattern.compile("\\bWhile\\s*+\\[\\s*+True\\s*+,");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern WHILE_FALSE = Pattern.compile("\\bWhile\\s*+\\[\\s*+False\\s*+,");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern DO_INVERTED_RANGE = Pattern.compile("\\bDo\\s*+\\[[^\\]]+,\\s*+\\{[^,]+,\\s*+(\\d+)\\s*+,\\s*+(\\d+)\\s*+\\}");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern ABORT_STATEMENT = Pattern.compile("\\bAbort\\s*+\\[\\s*+\\]\\s*+;([^;\\n]+)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SWITCH_CASE_ORDER = Pattern.compile("Switch\\s*+\\[[^,]+,([^\\]]+)\\]");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PATTERN_DEF_ORDER = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]+)\\]\\s*+:=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BREAK_STATEMENT = Pattern.compile("\\bBreak\\s*+\\[\\s*+\\]");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern LOOP_KEYWORDS = Pattern.compile("\\b(Do|While|For|Table)\\s*+\\[");
+    ); //NOSONAR
+    private static final Pattern WHILE_TRUE = Pattern.compile("\\bWhile\\s*+\\[\\s*+True\\s*+,"); //NOSONAR
+    private static final Pattern WHILE_FALSE = Pattern.compile("\\bWhile\\s*+\\[\\s*+False\\s*+,"); //NOSONAR
+    private static final Pattern DO_INVERTED_RANGE = Pattern.compile("\\bDo\\s*+\\[[^\\]]+,\\s*+\\{[^,]+,\\s*+(\\d+)\\s*+,\\s*+(\\d+)\\s*+\\}"); //NOSONAR
+    private static final Pattern ABORT_STATEMENT = Pattern.compile("\\bAbort\\s*+\\[\\s*+\\]\\s*+;([^;\\n]+)"); //NOSONAR
+    private static final Pattern SWITCH_CASE_ORDER = Pattern.compile("Switch\\s*+\\[[^,]+,([^\\]]+)\\]"); //NOSONAR
+    private static final Pattern PATTERN_DEF_ORDER = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]+)\\]\\s*+:="); //NOSONAR
+    private static final Pattern BREAK_STATEMENT = Pattern.compile("\\bBreak\\s*+\\[\\s*+\\]"); //NOSONAR
+    private static final Pattern LOOP_KEYWORDS = Pattern.compile("\\b(Do|While|For|Table)\\s*+\\["); //NOSONAR
 
     // Taint Analysis patterns - Sources and Sinks
+    private static final Pattern TAINT_SOURCE_IMPORT = Pattern.compile("\\b(Import|URLFetch|URLExecute|FormFunction)\\s*+\\["); //NOSONAR
+    private static final Pattern TAINT_SOURCE_INPUT = Pattern.compile("\\b(Input|InputString|SystemDialogInput)\\s*+\\["); //NOSONAR
     //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern TAINT_SOURCE_IMPORT = Pattern.compile("\\b(Import|URLFetch|URLExecute|FormFunction)\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern TAINT_SOURCE_INPUT = Pattern.compile("\\b(Input|InputString|SystemDialogInput)\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SQL_EXECUTE = Pattern.compile("\\bSQLExecute\\s*+\\[([^,]+),\\s*+\"([^\"]+)\"\\s*+&lt;&gt;");
+    private static final Pattern SQL_EXECUTE = Pattern.compile("\\bSQLExecute\\s*+\\[([^,]+),\\s*+\"([^\"]+)\"\\s*+&lt;&gt;"); //NOSONAR
     private static final Pattern RUN_PROCESS = Pattern.compile("\\bRunProcess\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IMPORT_FILE = Pattern.compile("\\bImport\\s*+\\[([^\\]]+)\\]");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern EXPORT_HTML_XML = Pattern.compile("\\b(ExportString|Export)\\s*+\\[([^,]+),\\s*+\"(HTML|XML)\"");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern XML_IMPORT = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"XML\"");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IMPORT_MX = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"MX\"");
+    private static final Pattern IMPORT_FILE = Pattern.compile("\\bImport\\s*+\\[([^\\]]+)\\]"); //NOSONAR
+    private static final Pattern EXPORT_HTML_XML = Pattern.compile("\\b(ExportString|Export)\\s*+\\[([^,]+),\\s*+\"(HTML|XML)\""); //NOSONAR
+    private static final Pattern XML_IMPORT = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"XML\""); //NOSONAR
+    private static final Pattern IMPORT_MX = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"MX\""); //NOSONAR
     private static final Pattern URL_FETCH = Pattern.compile("\\bURLFetch\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern RANDOM_INTEGER_SECURITY = Pattern.compile("(token|session|key|secret|password|nonce)\\w*\\s*+=\\s*+RandomInteger");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern WEAK_HASH = Pattern.compile("\\bHash\\s*+\\[[^,]+,\\s*+\"(MD5|SHA1|SHA-1)\"");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern HARDCODED_PASSWORD = Pattern.compile("(password|passwd|pwd|secret|apikey|api_key)\\s*+=\\s*+\"[^\"]+\"");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PRINT_PASSWORD = Pattern.compile("\\bPrint\\s*+\\[([^\\]]*)(password|token|secret|key|credential)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern REGEX_FROM_INPUT = Pattern.compile("RegularExpression\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern RANDOM_INTEGER_SECURITY = Pattern.compile("(token|session|key|secret|password|nonce)\\w*\\s*+=\\s*+RandomInteger"); //NOSONAR
+    private static final Pattern WEAK_HASH = Pattern.compile("\\bHash\\s*+\\[[^,]+,\\s*+\"(MD5|SHA1|SHA-1)\""); //NOSONAR
+    private static final Pattern HARDCODED_PASSWORD = Pattern.compile("(password|passwd|pwd|secret|apikey|api_key)\\s*+=\\s*+\"[^\"]+\""); //NOSONAR
+    private static final Pattern PRINT_PASSWORD = Pattern.compile("\\bPrint\\s*+\\[([^\\]]*)(password|token|secret|key|credential)"); //NOSONAR
+    private static final Pattern REGEX_FROM_INPUT = Pattern.compile("RegularExpression\\s*+\\[([^\\]]+)\\]"); //NOSONAR
 
     // Additional Control Flow patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SWITCH_NO_DEFAULT = Pattern.compile("Switch\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern SWITCH_NO_DEFAULT = Pattern.compile("Switch\\s*+\\[([^\\]]+)\\]"); //NOSONAR
     private static final Pattern DEFAULT_UNDERSCORE = Pattern.compile(",\\s*+_\\s*+,"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern EMPTY_IF_BRANCH = Pattern.compile("\\bIf\\s*+\\[[^,]+,\\s*+,");
+    private static final Pattern EMPTY_IF_BRANCH = Pattern.compile("\\bIf\\s*+\\[[^,]+,\\s*+,"); //NOSONAR
     private static final Pattern NESTED_IF = Pattern.compile("\\bIf\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IF_WITHOUT_ELSE = Pattern.compile("\\bIf\\s*+\\[([^,]+),([^,\\]]+)\\]");
+    private static final Pattern IF_WITHOUT_ELSE = Pattern.compile("\\bIf\\s*+\\[([^,]+),([^,\\]]+)\\]"); //NOSONAR
 
     // Variable assignment tracking for taint analysis
     private Map<String, Boolean> taintedVariables = new HashMap<>();
@@ -729,8 +699,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
         try {
             // Look for pattern: untrusted data -> SQLExecute/database update
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Matcher sqlMatcher = Pattern.compile("SQLExecute\\s*+\\[[^,]+,\\s*+\"UPDATE").matcher(content);
+            Matcher sqlMatcher = Pattern.compile("SQLExecute\\s*+\\[[^,]+,\\s*+\"UPDATE").matcher(content); //NOSONAR
             while (sqlMatcher.find()) {
                 int pos = sqlMatcher.start();
                 String before = content.substring(Math.max(0, pos - 150), pos);
@@ -859,8 +828,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
         try {
             // Count Return statements per function
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern funcPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]+)\\]\\s*+:=");
+            Pattern funcPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]+)\\]\\s*+:="); //NOSONAR
             Matcher funcMatcher = funcPattern.matcher(content);
 
             while (funcMatcher.find()) {

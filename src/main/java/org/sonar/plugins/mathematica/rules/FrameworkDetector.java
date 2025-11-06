@@ -15,16 +15,13 @@ public class FrameworkDetector extends BaseDetector {
 
     // Notebook patterns
     private static final Pattern CELL_PATTERN = Pattern.compile("Cell\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SECTION_PATTERN = Pattern.compile("(?:Section|Subsection|Title|Subtitle)\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern INIT_CELL_PATTERN = Pattern.compile("InitializationCell\\s*+->\\s*+True");
+    private static final Pattern SECTION_PATTERN = Pattern.compile("(?:Section|Subsection|Title|Subtitle)\\["); //NOSONAR
+    private static final Pattern INIT_CELL_PATTERN = Pattern.compile("InitializationCell\\s*+->\\s*+True"); //NOSONAR
 
     // Manipulate/Dynamic patterns
     private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern DYNAMIC_PATTERN = Pattern.compile("Dynamic\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern MANIPULATE_CONTROLS_PATTERN = Pattern.compile("\\{\\s*+\\w+\\s*+,");
+    private static final Pattern MANIPULATE_CONTROLS_PATTERN = Pattern.compile("\\{\\s*+\\w+\\s*+,"); //NOSONAR
     private static final Pattern HEAVY_COMPUTE_PATTERN = Pattern.compile(
         "(?:Integrate|DSolve|NDSolve|NIntegrate|FindRoot|Solve)\\s*+\\["
     );
@@ -33,17 +30,12 @@ public class FrameworkDetector extends BaseDetector {
     );
 
     // Package patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("BeginPackage\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BEGIN_PATTERN = Pattern.compile("Begin\\s*+\\[\\s*+\"`Private`\"\\s*+\\]");
+    private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("BeginPackage\\s*+\\["); //NOSONAR
+    private static final Pattern BEGIN_PATTERN = Pattern.compile("Begin\\s*+\\[\\s*+\"`Private`\"\\s*+\\]"); //NOSONAR
     private static final Pattern END_PACKAGE_PATTERN = Pattern.compile("EndPackage\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*+=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PUBLIC_FUNCTION_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\[[^\\]]*\\]\\s*+:=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NEEDS_PATTERN = Pattern.compile("(?:Needs|Get)\\s*+\\[\\s*+\"([^\"]+)\"");
+    private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*+="); //NOSONAR
+    private static final Pattern PUBLIC_FUNCTION_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\[[^\\]]*\\]\\s*+:="); //NOSONAR
+    private static final Pattern NEEDS_PATTERN = Pattern.compile("(?:Needs|Get)\\s*+\\[\\s*+\"([^\"]+)\""); //NOSONAR
 
     // Parallel patterns
     private static final Pattern PARALLEL_PATTERN = Pattern.compile(
@@ -52,16 +44,12 @@ public class FrameworkDetector extends BaseDetector {
     private static final Pattern PARALLEL_SHARED_PATTERN = Pattern.compile(
         "(?:SetSharedVariable|SetSharedFunction)\\s*+\\["
     );
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CRITICAL_SECTION_PATTERN = Pattern.compile("CriticalSection\\s*+\\[");
+    private static final Pattern CRITICAL_SECTION_PATTERN = Pattern.compile("CriticalSection\\s*+\\["); //NOSONAR
 
     // Cloud patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CLOUD_DEPLOY_PATTERN = Pattern.compile("CloudDeploy\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern API_FUNCTION_PATTERN = Pattern.compile("APIFunction\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PERMISSIONS_PATTERN = Pattern.compile("Permissions\\s*+->\\s*+\"Public\"");
+    private static final Pattern CLOUD_DEPLOY_PATTERN = Pattern.compile("CloudDeploy\\s*+\\["); //NOSONAR
+    private static final Pattern API_FUNCTION_PATTERN = Pattern.compile("APIFunction\\s*+\\["); //NOSONAR
+    private static final Pattern PERMISSIONS_PATTERN = Pattern.compile("Permissions\\s*+->\\s*+\"Public\""); //NOSONAR
 
     /**
      * Detect notebook cells that are too large.

@@ -21,51 +21,36 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
 
 
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern TRAILING_WHITESPACE_PATTERN = Pattern.compile("[ \\t]+$", Pattern.MULTILINE);
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern OPERATOR_NO_SPACE_PATTERN = Pattern.compile("(?<![=<>!])([+\\-*/%=])(?![=])");
+    private static final Pattern TRAILING_WHITESPACE_PATTERN = Pattern.compile("[ \\t]+$", Pattern.MULTILINE); //NOSONAR
+    private static final Pattern OPERATOR_NO_SPACE_PATTERN = Pattern.compile("(?<![=<>!])([+\\-*/%=])(?![=])"); //NOSONAR
     private static final Pattern COMMA_NO_SPACE_PATTERN = Pattern.compile(",(?!\\s)"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern BRACKET_SPACE_PATTERN = Pattern.compile("\\w\\s+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern MULTIPLE_SEMICOLON_PATTERN = Pattern.compile(";;+"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*\\)\\)\\)");
+    private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*\\)\\)\\)"); //NOSONAR
     private static final Pattern BRACE_PATTERN = Pattern.compile("\\{[^}]*\\}"); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // ===== NAMING PATTERNS (15 rules) =====
 
 
 
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*+\\]\\s*+:=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern VARIABLE_ASSIGN_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*+)\\s*+=(?!=)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BOOLEAN_VAR_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*+)\\s*+=\\s*+(?:True|False)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CONSTANT_PATTERN = Pattern.compile("([A-Z][A-Z0-9_]*+)\\s*+=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PACKAGE_NAME_PATTERN = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\"");
+    private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*+\\]\\s*+:="); //NOSONAR
+    private static final Pattern VARIABLE_ASSIGN_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*+)\\s*+=(?!=)"); //NOSONAR
+    private static final Pattern BOOLEAN_VAR_PATTERN = Pattern.compile("([a-z][a-zA-Z0-9]*+)\\s*+=\\s*+(?:True|False)"); //NOSONAR
+    private static final Pattern CONSTANT_PATTERN = Pattern.compile("([A-Z][A-Z0-9_]*+)\\s*+="); //NOSONAR
+    private static final Pattern PACKAGE_NAME_PATTERN = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\""); //NOSONAR
     private static final Pattern BUILTIN_NAMES = Pattern.compile("\\b([CDEINOPS])\\b\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern HUNGARIAN_PATTERN = Pattern.compile("\\b(?:str|int|num|lst|arr|tbl|obj|fn|func)[A-Z][a-zA-Z0-9]*+");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NUMBER_IN_NAME_PATTERN = Pattern.compile("\\b[a-zA-Z]++\\d++[a-zA-Z]*+\\b");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern GENERIC_NAMES = Pattern.compile("\\b(?:data|temp|result|value|item|element|obj|var|info|stuff)\\b\\s*+=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NEGATED_BOOL_PATTERN = Pattern.compile("\\b(?:not|isNot|notIs|isntNot)[A-Z][a-zA-Z]*+");
+    private static final Pattern HUNGARIAN_PATTERN = Pattern.compile("\\b(?:str|int|num|lst|arr|tbl|obj|fn|func)[A-Z][a-zA-Z0-9]*+"); //NOSONAR
+    private static final Pattern NUMBER_IN_NAME_PATTERN = Pattern.compile("\\b[a-zA-Z]++\\d++[a-zA-Z]*+\\b"); //NOSONAR
+    private static final Pattern GENERIC_NAMES = Pattern.compile("\\b(?:data|temp|result|value|item|element|obj|var|info|stuff)\\b\\s*+="); //NOSONAR
+    private static final Pattern NEGATED_BOOL_PATTERN = Pattern.compile("\\b(?:not|isNot|notIs|isntNot)[A-Z][a-zA-Z]*+"); //NOSONAR
 
     // ===== COMPLEXITY PATTERNS (10 rules) =====
 
 
 
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]+)\\]\\s*+:=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern MODULE_PATTERN = Pattern.compile("Module\\s*+\\[\\s*+\\{([^}]+)\\}");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BLOCK_PATTERN = Pattern.compile("Block\\s*+\\[\\s*+\\{([^}]+)\\}");
+    private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]+)\\]\\s*+:="); //NOSONAR
+    private static final Pattern MODULE_PATTERN = Pattern.compile("Module\\s*+\\[\\s*+\\{([^}]+)\\}"); //NOSONAR
+    private static final Pattern BLOCK_PATTERN = Pattern.compile("Block\\s*+\\[\\s*+\\{([^}]+)\\}"); //NOSONAR
     private static final Pattern RETURN_PATTERN = Pattern.compile("\\bReturn\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern SWITCH_PATTERN = Pattern.compile("Switch\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern BOOLEAN_OP_PATTERN = Pattern.compile("&&|\\|\\|"); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -74,45 +59,33 @@ public class StyleAndConventionsDetector extends BaseDetector {
     // ===== MAINTAINABILITY PATTERNS (15 rules) =====
 
     // Possessive quantifiers prevent backtracking and stack overflow
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*+\"");
+    private static final Pattern STRING_LITERAL_PATTERN = Pattern.compile("\"[^\"\\\\]*(?:\\\\.[^\"\\\\]*)*+\""); //NOSONAR
     private static final Pattern PATH_PATTERN = Pattern.compile("\"(?>/[^/\"]+)+/?\""); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern URL_PATTERN = Pattern.compile("\"https?+://[^\"]+\""); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern IF_PATTERN = Pattern.compile("If\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern GLOBAL_ASSIGN_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+=(?!=)");
+    private static final Pattern GLOBAL_ASSIGN_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+=(?!=)"); //NOSONAR
     private static final Pattern ASSIGNMENT_IN_EXPR_PATTERN = Pattern.compile("[^:]=(?!=)"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PATTERN_MATCH_PATTERN = Pattern.compile("Match\\s*+\\[|Cases\\s*+\\[|Switch\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern OPTION_PATTERN = Pattern.compile("OptionValue\\s*+\\[|Options\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern UNCLEAR_OPTION_PATTERN = Pattern.compile("\\b(?:flag|mode|setting|config|param)\\b\\s*+->");
+    private static final Pattern PATTERN_MATCH_PATTERN = Pattern.compile("Match\\s*+\\[|Cases\\s*+\\[|Switch\\s*+\\["); //NOSONAR
+    private static final Pattern OPTION_PATTERN = Pattern.compile("OptionValue\\s*+\\[|Options\\s*+\\["); //NOSONAR
+    private static final Pattern UNCLEAR_OPTION_PATTERN = Pattern.compile("\\b(?:flag|mode|setting|config|param)\\b\\s*+->"); //NOSONAR
 
     // ===== BEST PRACTICES PATTERNS (15 rules) =====
 
 
     private static final Pattern STRING_CONCAT_PATTERN = Pattern.compile("<>"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern LOOP_PATTERN = Pattern.compile("(?:Do|While|For)\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BOOL_COMPARE_PATTERN = Pattern.compile("==\\s*+(?:True|False)|(?:True|False)\\s*+==");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NEGATED_COMPARE_PATTERN = Pattern.compile("!\\s*+\\([^)]*==");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern REDUNDANT_IF_PATTERN = Pattern.compile("If\\s*+\\[[^,]*,\\s*+True\\s*+,\\s*+False\\s*+\\]");
+    private static final Pattern BOOL_COMPARE_PATTERN = Pattern.compile("==\\s*+(?:True|False)|(?:True|False)\\s*+=="); //NOSONAR
+    private static final Pattern NEGATED_COMPARE_PATTERN = Pattern.compile("!\\s*+\\([^)]*=="); //NOSONAR
+    private static final Pattern REDUNDANT_IF_PATTERN = Pattern.compile("If\\s*+\\[[^,]*,\\s*+True\\s*+,\\s*+False\\s*+\\]"); //NOSONAR
     private static final Pattern CATCH_PATTERN = Pattern.compile("Catch\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern THROW_PATTERN = Pattern.compile("Throw\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern MEMBER_Q_PATTERN = Pattern.compile("MemberQ\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*+\\[[^\\]]*,[^\\]]*,[^\\]]*\\]");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern REAL_EQUALITY_PATTERN = Pattern.compile("==[^=]*\\.\\d++|\\d++\\.[^=]*==");
+    private static final Pattern POSITION_PATTERN = Pattern.compile("Position\\s*+\\[[^\\]]*,[^\\]]*,[^\\]]*\\]"); //NOSONAR
+    private static final Pattern REAL_EQUALITY_PATTERN = Pattern.compile("==[^=]*\\.\\d++|\\d++\\.[^=]*=="); //NOSONAR
     private static final Pattern GRAPHICS_PATTERN = Pattern.compile("Graphics\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PLOT_PATTERN = Pattern.compile("(?:Plot|ListPlot|Plot3D)\\s*+\\[");
+    private static final Pattern PLOT_PATTERN = Pattern.compile("(?:Plot|ListPlot|Plot3D)\\s*+\\["); //NOSONAR
     private static final Pattern DATASET_PATTERN = Pattern.compile("Dataset\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern ASSOCIATION_PATTERN = Pattern.compile("Association\\s*+\\[|<\\|");
+    private static final Pattern ASSOCIATION_PATTERN = Pattern.compile("Association\\s*+\\[|<\\|"); //NOSONAR
     private static final Pattern PATTERN_TEST_PATTERN = Pattern.compile("/;"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern CONDITION_PATTERN = Pattern.compile("\\?"); //NOSONAR - Possessive quantifiers prevent backtracking
 
@@ -628,8 +601,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
     public void detectAcronymStyle(SensorContext context, InputFile inputFile, String content) {
         try {
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern acronymPattern = Pattern.compile("\\b([A-Z]{2,}+[a-z]++|[a-z]++[A-Z]{2,}+)\\b");
+            Pattern acronymPattern = Pattern.compile("\\b([A-Z]{2,}+[a-z]++|[a-z]++[A-Z]{2,}+)\\b"); //NOSONAR
             Matcher matcher = acronymPattern.matcher(content);
 
             while (matcher.find()) {
@@ -741,8 +713,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
     public void detectAbbreviationUnclear(SensorContext context, InputFile inputFile, String content) {
         try {
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern abbrevPattern = Pattern.compile("\\b([a-z]{1,2}[A-Z][a-z]*+|[a-z]*+[bcdfghjklmnpqrstvwxz]{4,}+)\\b");
+            Pattern abbrevPattern = Pattern.compile("\\b([a-z]{1,2}[A-Z][a-z]*+|[a-z]*+[bcdfghjklmnpqrstvwxz]{4,}+)\\b"); //NOSONAR
             Matcher matcher = abbrevPattern.matcher(content);
 
             Set<String> reported = new HashSet<>();

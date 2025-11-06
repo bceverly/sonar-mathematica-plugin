@@ -125,10 +125,9 @@ public class CustomRuleDetector extends BaseDetector {
 
         try {
             // Match function definitions: functionName[params] := body OR functionName[params] = body
-            //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern functionDefPattern = Pattern.compile(
                 "(" + functionPatternString + ")\\s*+\\[[^\\]]*+\\]\\s*+:?="
-            );
+            ); //NOSONAR
 
             Matcher matcher = functionDefPattern.matcher(content);
 
@@ -164,8 +163,7 @@ public class CustomRuleDetector extends BaseDetector {
             // Match API usage: ApiName[...] or ApiName (without brackets)
             // Use word boundaries to match whole words only
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern apiPattern = Pattern.compile("\\b" + Pattern.quote(apiName) + "\\b(?:\\s*+\\[)?+");
+            Pattern apiPattern = Pattern.compile("\\b" + Pattern.quote(apiName) + "\\b(?:\\s*+\\[)?+"); //NOSONAR
             Matcher matcher = apiPattern.matcher(content);
 
             while (matcher.find()) {

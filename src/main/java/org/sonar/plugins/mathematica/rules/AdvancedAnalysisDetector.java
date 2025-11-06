@@ -32,89 +32,64 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern NULL_DEREF = Pattern.compile("(\\w++)\\s*+\\[\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern NULL_CHECK = Pattern.compile("(?:===|=!=)\\s*+Null"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern NULL_COMPARISON_WRONG = Pattern.compile("==\\s*+Null"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern LENGTH_NULL = Pattern.compile("Length\\s*+\\[\\s*+Null\\s*+\\]");
+    private static final Pattern LENGTH_NULL = Pattern.compile("Length\\s*+\\[\\s*+Null\\s*+\\]"); //NOSONAR
 
     // Expression patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IDENTITY_OP = Pattern.compile("(?:Reverse|Transpose)\\s*+\\[\\s*+(?:Reverse|Transpose)\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CONSTANT_EXPR = Pattern.compile("(\\w++)\\s*+(?:\\*\\s*+1|\\+\\s*+0|\\^\\s*+1)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern DOUBLE_NEG = Pattern.compile("(?:Not\\s*+\\[\\s*+Not\\s*+\\[|!!)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern BOOL_CONVERSION = Pattern.compile("If\\s*+\\[([^,]+),\\s*+True\\s*+,\\s*+False\\s*+\\]");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IDENTICAL_COMP = Pattern.compile("(\\w+)\\s*+==\\s*+\\1(?!\\w)");
+    private static final Pattern IDENTITY_OP = Pattern.compile("(?:Reverse|Transpose)\\s*+\\[\\s*+(?:Reverse|Transpose)\\s*+\\["); //NOSONAR
+    private static final Pattern CONSTANT_EXPR = Pattern.compile("(\\w++)\\s*+(?:\\*\\s*+1|\\+\\s*+0|\\^\\s*+1)"); //NOSONAR
+    private static final Pattern DOUBLE_NEG = Pattern.compile("(?:Not\\s*+\\[\\s*+Not\\s*+\\[|!!)"); //NOSONAR
+    private static final Pattern BOOL_CONVERSION = Pattern.compile("If\\s*+\\[([^,]+),\\s*+True\\s*+,\\s*+False\\s*+\\]"); //NOSONAR
+    private static final Pattern IDENTICAL_COMP = Pattern.compile("(\\w+)\\s*+==\\s*+\\1(?!\\w)"); //NOSONAR
 
     // Hold/evaluation patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern HOLD_ATTR = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+(?:HoldAll|HoldFirst|HoldRest)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern HOLD_LITERAL = Pattern.compile("Hold\\s*+\\[\\s*+(?:\\d++|\"[^\"]*\")\\s*+\\]");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern RELEASE_HOLD = Pattern.compile("ReleaseHold\\s*+\\[\\s*+Hold\\s*+\\[");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*+\\[[^\\]]*Evaluate\\s*+\\[");
+    private static final Pattern HOLD_ATTR = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+(?:HoldAll|HoldFirst|HoldRest)"); //NOSONAR
+    private static final Pattern HOLD_LITERAL = Pattern.compile("Hold\\s*+\\[\\s*+(?:\\d++|\"[^\"]*\")\\s*+\\]"); //NOSONAR
+    private static final Pattern RELEASE_HOLD = Pattern.compile("ReleaseHold\\s*+\\[\\s*+Hold\\s*+\\["); //NOSONAR
+    private static final Pattern EVALUATE_IN_HOLD = Pattern.compile("Hold\\s*+\\[[^\\]]*Evaluate\\s*+\\["); //NOSONAR
     private static final Pattern UNEVALUATED = Pattern.compile("Unevaluated\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Pattern/replacement patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*+\\([^)]*(?:Print|Message|Set)");
+    private static final Pattern PATTERN_SIDE_EFFECT = Pattern.compile("_\\?\\s*+\\([^)]*(?:Print|Message|Set)"); //NOSONAR
     private static final Pattern REPLACE_ALL = Pattern.compile("/\\."); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*+->[^,]*,\\s*+\\w++\\s*+->");
+    private static final Pattern RULE_ORDER = Pattern.compile("\\{[^}]*_\\s*+->[^,]*,\\s*+\\w++\\s*+->"); //NOSONAR
 
     // Part/list patterns
     private static final Pattern PART_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+\\]\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
     //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SPAN_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+;;\\s*+(\\d++)\\s*+\\]\\]");
+    private static final Pattern SPAN_SPEC = Pattern.compile("\\[\\[\\s*+(\\d++)\\s*+;;\\s*+(\\d++)\\s*+\\]\\]"); //NOSONAR
     private static final Pattern ALL_SPEC = Pattern.compile("\\[\\[\\s*+All\\s*+\\]\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Attribute patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern ORDERLESS = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Orderless");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern FLAT = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Flat");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern LISTABLE = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Listable");
+    private static final Pattern ORDERLESS = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Orderless"); //NOSONAR
+    private static final Pattern FLAT = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Flat"); //NOSONAR
+    private static final Pattern LISTABLE = Pattern.compile("SetAttributes\\s*+\\[[^,]+,\\s*+Listable"); //NOSONAR
 
     // Sequence patterns
     private static final Pattern SEQUENCE = Pattern.compile("Sequence\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Error handling patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern QUIET = Pattern.compile("Quiet\\s*+\\[([^\\]]+)\\](?!\\s*,)");
+    private static final Pattern QUIET = Pattern.compile("Quiet\\s*+\\[([^\\]]+)\\](?!\\s*,)"); //NOSONAR
     private static final Pattern OFF = Pattern.compile("Off\\s*+\\[\\s*+General::"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CATCH_ALL = Pattern.compile("Catch\\s*+\\[([^\\]]+)\\](?!\\s*,)");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern EMPTY_CATCH = Pattern.compile("Catch\\s*+\\[[^,]+,\\s*+_\\s*+,\\s*+Null\\s*+&");
+    private static final Pattern CATCH_ALL = Pattern.compile("Catch\\s*+\\[([^\\]]+)\\](?!\\s*,)"); //NOSONAR
+    private static final Pattern EMPTY_CATCH = Pattern.compile("Catch\\s*+\\[[^,]+,\\s*+_\\s*+,\\s*+Null\\s*+&"); //NOSONAR
     private static final Pattern THROW = Pattern.compile("Throw\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern ABORT = Pattern.compile("Abort\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern MESSAGE_CALL = Pattern.compile("Message\\s*+\\[\\s*+(\\w++)::(\\w++)");
+    private static final Pattern MESSAGE_CALL = Pattern.compile("Message\\s*+\\[\\s*+(\\w++)::(\\w++)"); //NOSONAR
     private static final Pattern MESSAGE_DEF = Pattern.compile("(\\w++)::(\\w++)\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Compilation patterns
     private static final Pattern COMPILE = Pattern.compile("Compile\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern COMPILATION_TARGET = Pattern.compile("CompilationTarget\\s*+->\\s*+\"(\\w++)\"");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*+\\[[^\\]]*(?:Sort|Select|Cases|DeleteCases)");
+    private static final Pattern COMPILATION_TARGET = Pattern.compile("CompilationTarget\\s*+->\\s*+\"(\\w++)\""); //NOSONAR
+    private static final Pattern NON_COMPILABLE = Pattern.compile("Compile\\s*+\\[[^\\]]*(?:Sort|Select|Cases|DeleteCases)"); //NOSONAR
 
     // Test patterns
     private static final Pattern TEST_FILE_PATTERN = Pattern.compile("(?i)test.*\\."); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Performance patterns
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PACKED_ARRAY_UNPACK = Pattern.compile("\\[\\[\\s*+\\d++\\s*+\\]\\]\\s*+=");
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern N_LATE = Pattern.compile("N\\s*+\\[\\s*+(?:Integrate|Sum|Product|Solve)");
+    private static final Pattern PACKED_ARRAY_UNPACK = Pattern.compile("\\[\\[\\s*+\\d++\\s*+\\]\\]\\s*+="); //NOSONAR
+    private static final Pattern N_LATE = Pattern.compile("N\\s*+\\[\\s*+(?:Integrate|Sum|Product|Solve)"); //NOSONAR
     private static final Pattern STRING_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*+<>"); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern LIST_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*Join\\s*+\\[");
+    private static final Pattern LIST_CONCAT_LOOP = Pattern.compile("Do\\s*+\\[[^\\]]*Join\\s*+\\["); //NOSONAR
 
     private static NewIssue createIssue(SensorContext context, InputFile file, String ruleKey, int line, String msg) {
         NewIssue issue = context.newIssue().forRule(org.sonar.api.rule.RuleKey.of(
@@ -327,8 +302,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
 
     public static void detectLoopBoundConstant(SensorContext ctx, InputFile file, String content) {
         //NOSONAR - Possessive quantifiers prevent backtracking
-        //NOSONAR - Possessive quantifiers prevent backtracking
-        Pattern constBound = Pattern.compile("(\\w+)\\s*+=\\s*+(\\d+);[^D]*Do\\s*+\\[[^\\{]*\\{\\w++,[^,]*,\\s*+\\1\\s*+\\}");
+        Pattern constBound = Pattern.compile("(\\w+)\\s*+=\\s*+(\\d+);[^D]*Do\\s*+\\[[^\\{]*\\{\\w++,[^,]*,\\s*+\\1\\s*+\\}"); //NOSONAR
         Matcher m = constBound.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -460,8 +434,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
 
     public static void detectHoldFirstButUsesSecondArgumentFirst(SensorContext ctx, InputFile file, String content) {
         //NOSONAR - Possessive quantifiers prevent backtracking
-        //NOSONAR - Possessive quantifiers prevent backtracking
-        Pattern holdFirst = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+HoldFirst");
+        Pattern holdFirst = Pattern.compile("SetAttributes\\s*+\\[\\s*+(\\w++)\\s*+,\\s*+HoldFirst"); //NOSONAR
         Matcher m = holdFirst.matcher(content);
         while (m.find()) {
             String func = m.group(1);
@@ -650,8 +623,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
 
     public static void detectMissingSequenceWrapper(SensorContext ctx, InputFile file, String content) {
         //NOSONAR - Possessive quantifiers prevent backtracking
-        //NOSONAR - Possessive quantifiers prevent backtracking
-        Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*+\\{[^}]+\\}\\s*+,\\s*+\\{\\s*+\\}");
+        Pattern emptyList = Pattern.compile("If\\[[^,]+,\\s*+\\{[^}]+\\}\\s*+,\\s*+\\{\\s*+\\}"); //NOSONAR
         Matcher m = emptyList.matcher(content);
         while (m.find()) {
             int line = content.substring(0, m.start()).split("\n").length;
@@ -706,8 +678,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
 
     public static void detectCompilableFunctionNotCompiled(SensorContext ctx, InputFile file, String content) {
         //NOSONAR - Possessive quantifiers prevent backtracking
-        //NOSONAR - Possessive quantifiers prevent backtracking
-        Pattern numerical = Pattern.compile("(\\w++)\\[\\w+_\\]\\s*+:=\\s*+[^;]*(?:Sin|Cos|Exp|Log|Sqrt)");
+        Pattern numerical = Pattern.compile("(\\w++)\\[\\w+_\\]\\s*+:=\\s*+[^;]*(?:Sin|Cos|Exp|Log|Sqrt)"); //NOSONAR
         Matcher m = numerical.matcher(content);
         while (m.find() && !content.contains("Compile[")) {
             int line = content.substring(0, m.start()).split("\n").length;

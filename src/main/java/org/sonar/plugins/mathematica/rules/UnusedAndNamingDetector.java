@@ -24,8 +24,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     // ===== Pre-compiled patterns for Unused Code Detection =====
 
     // Pattern for function definitions
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern FUNCTION_DEF = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+)\\]\\s*+:?+=");
+    private static final Pattern FUNCTION_DEF = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+)\\]\\s*+:?+="); //NOSONAR
 
     // Pattern for Return statements
     private static final Pattern RETURN_STATEMENT = Pattern.compile("\\bReturn\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -34,25 +33,20 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern ABORT_THROW = Pattern.compile("\\b(Abort|Throw)\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Pattern for Module variables
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern MODULE_VARS = Pattern.compile("\\bModule\\s*+\\[\\s*+\\{([^}]+)\\}");
+    private static final Pattern MODULE_VARS = Pattern.compile("\\bModule\\s*+\\[\\s*+\\{([^}]+)\\}"); //NOSONAR
 
     // Pattern for With variables
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern WITH_VARS = Pattern.compile("\\bWith\\s*+\\[\\s*+\\{([^}]+)\\}");
+    private static final Pattern WITH_VARS = Pattern.compile("\\bWith\\s*+\\[\\s*+\\{([^}]+)\\}"); //NOSONAR
 
     // Pattern for Needs/imports
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NEEDS_IMPORT = Pattern.compile("\\bNeeds\\s*+\\[\\s*+\"([^\"]+)\"");
+    private static final Pattern NEEDS_IMPORT = Pattern.compile("\\bNeeds\\s*+\\[\\s*+\"([^\"]+)\""); //NOSONAR
 
     // Pattern for optional parameters
     // Note: Cannot use possessive on \w+ before ___ since \w includes _
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern OPTIONAL_PARAM = Pattern.compile("(\\w+)___(?:\\s*+:?+=|\\s*+\\])");
+    private static final Pattern OPTIONAL_PARAM = Pattern.compile("(\\w+)___(?:\\s*+:?+=|\\s*+\\])"); //NOSONAR
 
     // Pattern for Do loop with iterator
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern DO_LOOP_ITERATOR = Pattern.compile("\\bDo\\s*+\\[([^\\]]+),\\s*+\\{\\s*+(\\w++)\\s*+,");
+    private static final Pattern DO_LOOP_ITERATOR = Pattern.compile("\\bDo\\s*+\\[([^\\]]+),\\s*+\\{\\s*+(\\w++)\\s*+,"); //NOSONAR
 
     // Pattern for Catch
     private static final Pattern CATCH_PATTERN = Pattern.compile("\\bCatch\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -67,8 +61,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
     // Pattern for BeginPackage/EndPackage
     private static final Pattern BEGIN_PACKAGE = Pattern.compile("\\bBeginPackage\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern END_PACKAGE = Pattern.compile("\\bEndPackage\\s*+\\[\\s*+\\]");
+    private static final Pattern END_PACKAGE = Pattern.compile("\\bEndPackage\\s*+\\[\\s*+\\]"); //NOSONAR
 
     // Pattern for Begin/End
     private static final Pattern BEGIN_CONTEXT = Pattern.compile("\\bBegin\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -81,13 +74,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern TEMP_VAR = Pattern.compile("\\b(temp|tmp)\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Pattern for symbol names
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SYMBOL_NAME = Pattern.compile("([a-zA-Z]\\w*+)\\s*+(?:=|:=|\\[)");
+    private static final Pattern SYMBOL_NAME = Pattern.compile("([a-zA-Z]\\w*+)\\s*+(?:=|:=|\\[)"); //NOSONAR
 
     // Pattern for camelCase, snake_case, PascalCase
     // FIXED: Use possessive quantifiers to prevent catastrophic backtracking
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CAMEL_CASE = Pattern.compile("^[a-z]++(?:[A-Z][a-z0-9]*+)++$");
+    private static final Pattern CAMEL_CASE = Pattern.compile("^[a-z]++(?:[A-Z][a-z0-9]*+)++$"); //NOSONAR
     private static final Pattern SNAKE_CASE = Pattern.compile("^[a-z]++(?:_[a-z0-9]++)++$"); //NOSONAR - Possessive quantifiers prevent backtracking
     // FIXED: Use possessive quantifier to prevent backtracking
     private static final Pattern PASCAL_CASE = Pattern.compile("^[A-Z][a-zA-Z0-9]*+$"); //NOSONAR - Possessive quantifiers prevent backtracking
@@ -116,8 +107,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     private static final Pattern CONTEXT_REF = Pattern.compile("(\\w++)`(\\w++)"); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Pattern for Get[]
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern GET_PATTERN = Pattern.compile("\\bGet\\s*+\\[\\s*+\"([^\"]+)\"");
+    private static final Pattern GET_PATTERN = Pattern.compile("\\bGet\\s*+\\[\\s*+\"([^\"]+)\""); //NOSONAR
 
     private static Set<String> createBuiltinSet() {
         Set<String> builtins = new HashSet<>();
@@ -208,8 +198,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
             // Check which functions are never called
             for (String funcName : definedFunctions) {
                 //NOSONAR - Possessive quantifiers prevent backtracking
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[");
+                Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\["); //NOSONAR
                 Matcher callMatcher = callPattern.matcher(content);
                 int callCount = 0;
                 while (callMatcher.find()) {
@@ -346,8 +335,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
                 // Check if any symbols from this package are used
                 //NOSONAR - Possessive quantifiers prevent backtracking
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern usagePattern = Pattern.compile("\\b" + Pattern.quote(packageContext) + "`\\w++");
+                Pattern usagePattern = Pattern.compile("\\b" + Pattern.quote(packageContext) + "`\\w++"); //NOSONAR
                 Matcher usageMatcher = usagePattern.matcher(content);
 
                 // Count occurrences (skip the Needs line itself)
@@ -498,9 +486,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
     public void detectAssignmentNeverRead(SensorContext context, InputFile inputFile, String content) {
         try {
             // Simplified detection: look for patterns like x = val1; x = val2 where val1 is never used
-            //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern assignment = Pattern.compile("\\b(\\w++)\\s*+=\\s*+([^;]+);"); //NOSONAR - Possessive quantifiers prevent backtracking
-            Matcher matcher = assignment.matcher(content);
+            Matcher matcher = assignment.matcher(content); //NOSONAR
 
             Map<String, Integer> lastAssignment = new HashMap<>();
 
@@ -541,8 +528,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
             // Check which functions are never called
             for (String funcName : definedFunctions) {
                 //NOSONAR - Possessive quantifiers prevent backtracking
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[");
+                Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\["); //NOSONAR
                 Matcher callMatcher = callPattern.matcher(content);
                 int callCount = 0;
                 while (callMatcher.find()) {
@@ -681,8 +667,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
             // Find global variable assignments (outside Module/Block/With)
             Set<String> globalVars = new HashSet<>();
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern globalAssignment = Pattern.compile("^\\s*+([a-zA-Z]\\w*)\\s*+=", Pattern.MULTILINE);
+            Pattern globalAssignment = Pattern.compile("^\\s*+([a-zA-Z]\\w*)\\s*+=", Pattern.MULTILINE); //NOSONAR
             Matcher globalMatcher = globalAssignment.matcher(content);
 
             while (globalMatcher.find()) {
@@ -1116,8 +1101,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
                 //NOSONAR - Possessive quantifiers prevent backtracking
 
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern typoPattern = Pattern.compile("\\b" + Pattern.quote(typo) + "\\s*+\\[");
+                Pattern typoPattern = Pattern.compile("\\b" + Pattern.quote(typo) + "\\s*+\\["); //NOSONAR
                 Matcher matcher = typoPattern.matcher(content);
 
                 if (matcher.find()) {
@@ -1139,8 +1123,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 String lowercase = builtin.toLowerCase();
                 if (!lowercase.equals(builtin)) {
                     //NOSONAR - Possessive quantifiers prevent backtracking
-                    //NOSONAR - Possessive quantifiers prevent backtracking
-                    Pattern pattern = Pattern.compile("\\b" + Pattern.quote(lowercase) + "\\s*+\\[");
+                    Pattern pattern = Pattern.compile("\\b" + Pattern.quote(lowercase) + "\\s*+\\["); //NOSONAR
                     Matcher matcher = pattern.matcher(content);
 
                     if (matcher.find()) {

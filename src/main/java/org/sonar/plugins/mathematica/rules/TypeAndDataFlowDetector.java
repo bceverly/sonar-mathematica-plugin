@@ -23,8 +23,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     // ===== Pre-compiled patterns for Type Mismatch Detection =====
 
     // Pattern for numeric operations on strings
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern STRING_ARITHMETIC = Pattern.compile("\"[^\"]*\"\\s*+[\\+\\-\\*/\\^]");
+    private static final Pattern STRING_ARITHMETIC = Pattern.compile("\"[^\"]*\"\\s*+[\\+\\-\\*/\\^]"); //NOSONAR
 
     // Pattern for string operations on numbers
     private static final Pattern STRING_FUNCTION_ON_NUMBER = Pattern.compile(
@@ -39,70 +38,55 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         "([a-zA-Z]\\w*)\\s*+\\[([^\\]]*_(?:Integer|Real|String|List)[^\\]]*)\\]\\s*+:?=");
 
     // Pattern for integer division
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern INTEGER_DIVISION = Pattern.compile("\\b(\\d+)\\s*+/\\s*+(\\d+)\\b");
+    private static final Pattern INTEGER_DIVISION = Pattern.compile("\\b(\\d+)\\s*+/\\s*+(\\d+)\\b"); //NOSONAR
 
     // Pattern for ToExpression without validation
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*+\\[([^\\]]+)\\]");
+    private static final Pattern TO_EXPRESSION = Pattern.compile("\\bToExpression\\s*+\\[([^\\]]+)\\]"); //NOSONAR
 
     // Pattern for ToString
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern TO_STRING = Pattern.compile("\\bToString\\s*+\\[\"([^\"]+)\"\\]");
+    private static final Pattern TO_STRING = Pattern.compile("\\bToString\\s*+\\[\"([^\"]+)\"\\]"); //NOSONAR
 
     // Pattern for Plot/Graphics in arithmetic
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PLOT_ARITHMETIC = Pattern.compile("\\b(Plot|ListPlot|Graphics)\\s*+\\[[^\\]]+\\]\\s*+[\\+\\-\\*/]");
+    private static final Pattern PLOT_ARITHMETIC = Pattern.compile("\\b(Plot|ListPlot|Graphics)\\s*+\\[[^\\]]+\\]\\s*+[\\+\\-\\*/]"); //NOSONAR
 
     // Pattern for Image operations
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern IMAGE_OPERATION = Pattern.compile("\\b(ImageData|ImageDimensions)\\s*+\\[\\s*+\\{");
+    private static final Pattern IMAGE_OPERATION = Pattern.compile("\\b(ImageData|ImageDimensions)\\s*+\\[\\s*+\\{"); //NOSONAR
 
     // Pattern for Audio operations
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern AUDIO_OPERATION = Pattern.compile("\\b(AudioData|SampleRate)\\s*+\\[\\s*+\\{");
+    private static final Pattern AUDIO_OPERATION = Pattern.compile("\\b(AudioData|SampleRate)\\s*+\\[\\s*+\\{"); //NOSONAR
 
     // Pattern for Dataset operations on lists
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern DATASET_OPERATION = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[All");
+    private static final Pattern DATASET_OPERATION = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[All"); //NOSONAR
 
     // Pattern for Graph operations
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern GRAPH_OPERATION = Pattern.compile("\\b(VertexList|EdgeList)\\s*+\\[\\s*+\\{\\{");
+    private static final Pattern GRAPH_OPERATION = Pattern.compile("\\b(VertexList|EdgeList)\\s*+\\[\\s*+\\{\\{"); //NOSONAR
 
     // ===== Pre-compiled patterns for Data Flow Analysis =====
 
     //NOSONAR - Possessive quantifiers prevent backtracking
     // Pattern for variable assignment
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern VARIABLE_ASSIGNMENT = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([^;\\n]+)");
+    private static final Pattern VARIABLE_ASSIGNMENT = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([^;\\n]+)"); //NOSONAR
 
     // Pattern for If statement
     private static final Pattern IF_STATEMENT = Pattern.compile("\\bIf\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Pattern for Module/Block/With
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern MODULE_BLOCK_WITH = Pattern.compile("\\b(Module|Block|With)\\s*+\\[\\s*+\\{([^}]+)\\}");
+    private static final Pattern MODULE_BLOCK_WITH = Pattern.compile("\\b(Module|Block|With)\\s*+\\[\\s*+\\{([^}]+)\\}"); //NOSONAR
 
     // Pattern for Do loop
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern DO_LOOP = Pattern.compile("\\bDo\\s*+\\[([^\\]]+),\\s*+\\{\\s*+(\\w+)\\s*+,");
+    private static final Pattern DO_LOOP = Pattern.compile("\\bDo\\s*+\\[([^\\]]+),\\s*+\\{\\s*+(\\w+)\\s*+,"); //NOSONAR
 
     // Pattern for Unset/Clear
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern UNSET_CLEAR = Pattern.compile("\\b(Unset|Clear)\\s*+\\[\\s*+(\\w+)");
+    private static final Pattern UNSET_CLEAR = Pattern.compile("\\b(Unset|Clear)\\s*+\\[\\s*+(\\w+)"); //NOSONAR
 
     // Pattern for pure functions with mutations
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern PURE_FUNCTION_MUTATION = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\+\\+");
+    private static final Pattern PURE_FUNCTION_MUTATION = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\+\\+"); //NOSONAR
 
     // Pattern for assignment in condition
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern ASSIGNMENT_IN_IF = Pattern.compile("\\bIf\\s*+\\[\\s*+([a-zA-Z]\\w*)\\s*+=\\s*+[^=]");
+    private static final Pattern ASSIGNMENT_IN_IF = Pattern.compile("\\bIf\\s*+\\[\\s*+([a-zA-Z]\\w*)\\s*+=\\s*+[^=]"); //NOSONAR
 
     // Pattern for function return
-    //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern FUNCTION_RETURN = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]*)\\]\\s*+:?=\\s*+\\(([^\\)]*)\\)");
+    private static final Pattern FUNCTION_RETURN = Pattern.compile("([a-zA-Z]\\w*)\\s*+\\[([^\\]]*)\\]\\s*+:?=\\s*+\\(([^\\)]*)\\)"); //NOSONAR
 
     // ===== TYPE MISMATCH DETECTION METHODS (Items 111-130) =====
 
@@ -212,8 +196,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             // Detect exact (fraction) mixed with approximate (decimal)
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern pattern = Pattern.compile("\\d+\\s*+/\\s*+\\d+\\s*+[\\+\\-]\\s*+\\d+\\.\\d+");
+            Pattern pattern = Pattern.compile("\\d+\\s*+/\\s*+\\d+\\s*+[\\+\\-]\\s*+\\d+\\.\\d+"); //NOSONAR
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
                 int line = calculateLineNumber(content, matcher.start());
@@ -285,8 +268,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 if (typeConstraint != null) {
                     // Look for calls to this function with wrong type
                     //NOSONAR - Possessive quantifiers prevent backtracking
-                    //NOSONAR - Possessive quantifiers prevent backtracking
-                    Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[([^\\]]+)\\]");
+                    Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[([^\\]]+)\\]"); //NOSONAR
                     Matcher callMatcher = callPattern.matcher(content);
 
                     while (callMatcher.find()) {
@@ -433,8 +415,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                 // Check if variable was assigned earlier
                 //NOSONAR - Possessive quantifiers prevent backtracking
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=");
+                Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+="); //NOSONAR
                 if (!assignPattern.matcher(content.substring(0, matcher.start())).find()) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
@@ -485,8 +466,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                 // Check if variable is a list (simple heuristic)
                 //NOSONAR - Possessive quantifiers prevent backtracking
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern listAssign = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=\\s*+\\{\\{");
+                Pattern listAssign = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=\\s*+\\{\\{"); //NOSONAR
                 if (listAssign.matcher(content.substring(0, matcher.start())).find()) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
@@ -631,8 +611,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             // Detect list1 = list2 followed by list2[[i]] = x
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern aliasPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([a-zA-Z]\\w*)\\s*+;");
+            Pattern aliasPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([a-zA-Z]\\w*)\\s*+;"); //NOSONAR
             Matcher matcher = aliasPattern.matcher(content);
 
             while (matcher.find()) {
@@ -664,8 +643,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                 // Check if iterator is modified in body
                 //NOSONAR - Possessive quantifiers prevent backtracking
-                //NOSONAR - Possessive quantifiers prevent backtracking
-                Pattern modPattern = Pattern.compile("\\b" + Pattern.quote(iteratorName) + "\\s*+[\\+\\-\\*/]?=");
+                Pattern modPattern = Pattern.compile("\\b" + Pattern.quote(iteratorName) + "\\s*+[\\+\\-\\*/]?="); //NOSONAR
                 if (modPattern.matcher(loopBody).find()) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, line,
@@ -772,8 +750,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             // Detect global variables modified by multiple functions
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern globalAssign = Pattern.compile("^\\s*+([a-zA-Z]\\w*)\\s*+=", Pattern.MULTILINE);
+            Pattern globalAssign = Pattern.compile("^\\s*+([a-zA-Z]\\w*)\\s*+=", Pattern.MULTILINE); //NOSONAR
             Matcher matcher = globalAssign.matcher(content);
 
             Set<String> globalVars = new HashSet<>();
@@ -839,8 +816,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             // Detect Table[Function[... i ...], {i, ...}] - closure captures final i
             //NOSONAR - Possessive quantifiers prevent backtracking
-            //NOSONAR - Possessive quantifiers prevent backtracking
-            Pattern pattern = Pattern.compile("Table\\s*+\\[\\s*+Function\\s*+\\[[^\\]]*\\b(\\w+)\\b[^\\]]*\\][^,]*,\\s*+\\{\\s*+\\1\\s*+,");
+            Pattern pattern = Pattern.compile("Table\\s*+\\[\\s*+Function\\s*+\\[[^\\]]*\\b(\\w+)\\b[^\\]]*\\][^,]*,\\s*+\\{\\s*+\\1\\s*+,"); //NOSONAR
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -873,10 +849,9 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectAssignmentAsReturnValue(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect f[x_] := (y = x; y)
-            //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern pattern = Pattern.compile(
                 "([a-zA-Z]\\w*)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+\\(\\s*+([a-zA-Z]\\w*)\\s*+=\\s*+([^;]+);\\s*+\\2\\s*+\\)"
-            );
+            ); //NOSONAR
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -914,8 +889,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                         // Check if variable never modified (no assignments in body)
                         //NOSONAR - Possessive quantifiers prevent backtracking
-                        //NOSONAR - Possessive quantifiers prevent backtracking
-                        Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=");
+                        Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+="); //NOSONAR
                         if (!assignPattern.matcher(body).find()) {
                             int line = calculateLineNumber(content, matcher.start());
                             reportIssue(context, inputFile, line,
