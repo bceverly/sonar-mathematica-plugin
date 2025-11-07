@@ -48,7 +48,9 @@ class BaseDetectorTest {
                                             int line, String ruleKey, String message,
                                             int startOffset, int endOffset,
                                             org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext) {
-            reportIssueWithFix(context, inputFile, line, ruleKey, message, startOffset, endOffset, fixContext);
+            IssueWithFixData issueData = new IssueWithFixData(inputFile, line, ruleKey, message,
+                                                               startOffset, endOffset, fixContext);
+            reportIssueWithFix(context, issueData);
         }
     }
 

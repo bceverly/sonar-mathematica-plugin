@@ -102,7 +102,9 @@ public final class ArchitectureAndDependencyDetector {
 
     /**
      * Initialize caches before analysis. Alias for clearCaches().
+     * @param content File content (unused, kept for API compatibility)
      */
+    @SuppressWarnings("unused")
     public static void initializeCaches(String content) {
         clearCaches();
     }

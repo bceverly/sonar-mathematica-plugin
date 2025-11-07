@@ -52,7 +52,7 @@ public class MathematicaRulesSensor implements Sensor {
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)"); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Helper class to group Quick Fix related data
-    private static class QuickFixData {
+    static class QuickFixData {
         final String fileContent;
         final int startOffset;
         final int endOffset;
@@ -186,19 +186,30 @@ public class MathematicaRulesSensor implements Sensor {
     }
 
     /**
-     * Queues issue with Quick Fix data.
+     * Queues issue with Quick Fix data using parameter object.
+     * Refactored to reduce parameter count from 8 to 5.
      */
     public void queueIssueWithFix(InputFile inputFile, int line, String ruleKey, String message,
-                                  String fileContent, int startOffset, int endOffset,
-                                  org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
+                                  QuickFixData quickFixData) {
         try {
-            QuickFixData quickFixData = new QuickFixData(fileContent, startOffset, endOffset, context);
             issueQueue.put(new IssueData(inputFile, line, ruleKey, message, quickFixData));
             queuedIssues.incrementAndGet();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             LOG.error("Interrupted while queueing issue with fix", e);
         }
+    }
+
+    /**
+     * Queues issue with Quick Fix data.
+     * @deprecated Use {@link #queueIssueWithFix(InputFile, int, String, String, QuickFixData)} instead
+     */
+    @Deprecated
+    public void queueIssueWithFix(InputFile inputFile, int line, String ruleKey, String message,
+                                  String fileContent, int startOffset, int endOffset,
+                                  org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
+        queueIssueWithFix(inputFile, line, ruleKey, message,
+                         new QuickFixData(fileContent, startOffset, endOffset, context));
     }
 
     /**
@@ -228,16 +239,7 @@ public class MathematicaRulesSensor implements Sensor {
 
                         // Add Quick Fix if available
                         if (data.quickFixData != null) {
-                            try {
-                                org.sonar.plugins.mathematica.fixes.QuickFixProvider quickFixProvider =
-                                    new org.sonar.plugins.mathematica.fixes.QuickFixProvider();
-                                quickFixProvider.addQuickFix(issue, data.inputFile, data.ruleKey,
-                                    data.quickFixData.fileContent, data.quickFixData.startOffset,
-                                    data.quickFixData.endOffset, data.quickFixData.context);
-                            } catch (Exception e) {
-                                // If Quick Fix fails, just skip it - don't break the issue reporting
-                                LOG.debug("Failed to add Quick Fix for rule {}: {}", data.ruleKey, e.getMessage());
-                            }
+                            addQuickFixToIssue(issue, data.inputFile, data.ruleKey, data.quickFixData);
                         }
 
                         issue.save();
@@ -299,6 +301,24 @@ public class MathematicaRulesSensor implements Sensor {
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             LOG.error("Interrupted waiting for issue saver thread", e);
+        }
+    }
+
+    /**
+     * Helper method to add Quick Fix to an issue without nested try blocks.
+     * Extracted to avoid nested try block code smell.
+     */
+    private void addQuickFixToIssue(org.sonar.api.batch.sensor.issue.NewIssue issue,
+                                     InputFile inputFile, String ruleKey, QuickFixData quickFixData) {
+        try {
+            org.sonar.plugins.mathematica.fixes.QuickFixProvider quickFixProvider =
+                new org.sonar.plugins.mathematica.fixes.QuickFixProvider();
+            quickFixProvider.addQuickFix(issue, inputFile, ruleKey,
+                quickFixData.fileContent, quickFixData.startOffset,
+                quickFixData.endOffset, quickFixData.context);
+        } catch (Exception e) {
+            // If Quick Fix fails, just skip it - don't break the issue reporting
+            LOG.debug("Failed to add Quick Fix for rule {}: {}", ruleKey, e.getMessage());
         }
     }
 
@@ -488,28 +508,7 @@ public class MathematicaRulesSensor implements Sensor {
             long analysisStart = System.currentTimeMillis();
 
             // NO SIZE LIMITS - Analyze all files completely
-            try {
-                // STEP 1: Parse once to build complete AST
-                ComprehensiveParser parser = new ComprehensiveParser();
-                List<AstNode> ast = parser.parse(content);
-
-                // STEP 2: Single visitor traversal checks ALL rules
-                UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(inputFile, this);
-                for (AstNode node : ast) {
-                    node.accept(visitor);
-                }
-
-                // STEP 3: Post-traversal checks (whole-file analyses)
-                visitor.performPostTraversalChecks();
-
-                if (LOG.isDebugEnabled()) {
-                    long analysisTime = System.currentTimeMillis() - analysisStart;
-                    LOG.debug("Unified AST analysis for {} completed in {}ms", inputFile.filename(), analysisTime);
-                }
-
-            } catch (Exception e) {
-                LOG.error("Error in unified AST analysis for: {}", inputFile.filename(), e);
-            }
+            performUnifiedAstAnalysis(inputFile, content, analysisStart);
 
             long analysisTime = System.currentTimeMillis() - analysisStart;
 
@@ -569,6 +568,35 @@ public class MathematicaRulesSensor implements Sensor {
             // Non-fatal exceptions: log and continue
             LOG.error("Error analyzing file {}: {}", inputFile.filename(), e.getMessage());
             LOG.debug("Full stacktrace for analysis error:", e);
+        }
+    }
+
+    /**
+     * Performs unified AST-based analysis to avoid nested try blocks.
+     * Extracted to avoid nested try block code smell.
+     */
+    private void performUnifiedAstAnalysis(InputFile inputFile, String content, long analysisStart) {
+        try {
+            // STEP 1: Parse once to build complete AST
+            ComprehensiveParser parser = new ComprehensiveParser();
+            List<AstNode> ast = parser.parse(content);
+
+            // STEP 2: Single visitor traversal checks ALL rules
+            UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(inputFile, this);
+            for (AstNode node : ast) {
+                node.accept(visitor);
+            }
+
+            // STEP 3: Post-traversal checks (whole-file analyses)
+            visitor.performPostTraversalChecks();
+
+            if (LOG.isDebugEnabled()) {
+                long analysisTime = System.currentTimeMillis() - analysisStart;
+                LOG.debug("Unified AST analysis for {} completed in {}ms", inputFile.filename(), analysisTime);
+            }
+
+        } catch (Exception e) {
+            LOG.error("Error in unified AST analysis for: {}", inputFile.filename(), e);
         }
     }
 

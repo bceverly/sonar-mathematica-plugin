@@ -31,16 +31,27 @@ public class ScopingNode extends AstNode {
         List<String> variables,
         List<AstNode> initializers,
         AstNode body,
+        SourceLocation location
+    ) {
+        super(NodeType.SCOPING, location);
+        this.scopingType = scopingType;
+        this.variables = variables;
+        this.initializers = initializers != null ? initializers : new ArrayList<>();
+        this.body = body;
+    }
+
+    public ScopingNode(
+        ScopingType scopingType,
+        List<String> variables,
+        List<AstNode> initializers,
+        AstNode body,
         int startLine,
         int startColumn,
         int endLine,
         int endColumn
     ) {
-        super(NodeType.SCOPING, startLine, startColumn, endLine, endColumn);
-        this.scopingType = scopingType;
-        this.variables = variables;
-        this.initializers = initializers != null ? initializers : new ArrayList<>();
-        this.body = body;
+        this(scopingType, variables, initializers, body,
+             new SourceLocation(startLine, startColumn, endLine, endColumn));
     }
 
     public ScopingType getScopingType() {

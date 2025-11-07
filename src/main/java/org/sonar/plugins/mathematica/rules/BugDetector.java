@@ -39,8 +39,9 @@ public class BugDetector extends BaseDetector {
     );
 
     // Phase 2 Bug patterns
+    // Simplified to reduce regex complexity from 23 to 20
     private static final Pattern FLOAT_EQUALITY_PATTERN = Pattern.compile(//NOSONAR
-        "\\d++\\.\\d++\\s*+===?\\s*+\\d++\\.\\d++|===?\\s*+\\d++\\.\\d++"
+        "(?:\\d++\\.\\d++\\s*+)?===?\\s*+\\d++\\.\\d++"
     );
     private static final Pattern FUNCTION_END_SEMICOLON_PATTERN = Pattern.compile(//NOSONAR
         "\\]\\s*+:=\\s*+\\([^)]*;\\s*+\\)"

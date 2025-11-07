@@ -18,8 +18,8 @@ public class FunctionDefNode extends AstNode {
     private final boolean isDelayed;  // := vs =
 
     public FunctionDefNode(String functionName, List<String> parameters, AstNode body,
-                           boolean isDelayed, int startLine, int startColumn, int endLine, int endColumn) {
-        super(NodeType.FUNCTION_DEF, startLine, startColumn, endLine, endColumn);
+                           boolean isDelayed, SourceLocation location) {
+        super(NodeType.FUNCTION_DEF, location);
         this.functionName = functionName;
         this.parameters = parameters;
         this.body = body;
@@ -28,6 +28,12 @@ public class FunctionDefNode extends AstNode {
         if (body != null) {
             addChild(body);
         }
+    }
+
+    public FunctionDefNode(String functionName, List<String> parameters, AstNode body,
+                           boolean isDelayed, int startLine, int startColumn, int endLine, int endColumn) {
+        this(functionName, parameters, body, isDelayed,
+             new SourceLocation(startLine, startColumn, endLine, endColumn));
     }
 
     public String getFunctionName() {

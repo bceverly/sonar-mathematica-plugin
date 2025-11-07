@@ -340,9 +340,10 @@ class MathematicaRulesSensorExtendedTest {
                 mock(org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext.class);
 
             // This exercises the queueIssueWithFix method
+            MathematicaRulesSensor.QuickFixData quickFixData =
+                new MathematicaRulesSensor.QuickFixData(content, 0, 10, mockFixContext);
             assertThatCode(() ->
-                sensor.queueIssueWithFix(mockInputFile, 1, "TEST_RULE", "Test message",
-                    content, 0, 10, mockFixContext)
+                sensor.queueIssueWithFix(mockInputFile, 1, "TEST_RULE", "Test message", quickFixData)
             ).doesNotThrowAnyException();
 
         } finally {

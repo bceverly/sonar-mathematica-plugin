@@ -20,6 +20,32 @@ public abstract class BaseDetector {
 
     protected static final Logger LOG = LoggerFactory.getLogger(BaseDetector.class);
 
+    /**
+     * Parameter object for issue reporting with Quick Fix data.
+     * Reduces method parameter count from 8 to 2.
+     */
+    protected static class IssueWithFixData {
+        final InputFile inputFile;
+        final int line;
+        final String ruleKey;
+        final String message;
+        final int startOffset;
+        final int endOffset;
+        final org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext;
+
+        public IssueWithFixData(InputFile inputFile, int line, String ruleKey, String message,
+                                int startOffset, int endOffset,
+                                org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext) {
+            this.inputFile = inputFile;
+            this.line = line;
+            this.ruleKey = ruleKey;
+            this.message = message;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.fixContext = fixContext;
+        }
+    }
+
     // Reference to sensor for queuing issues
     protected MathematicaRulesSensor sensor;
 
@@ -172,7 +198,9 @@ public abstract class BaseDetector {
             String fileContent = contentCache.get();
             org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext =
                 new org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext();
-            sensor.queueIssueWithFix(inputFile, line, ruleKey, message, fileContent, startOffset, endOffset, fixContext);
+            MathematicaRulesSensor.QuickFixData quickFixData =
+                new MathematicaRulesSensor.QuickFixData(fileContent, startOffset, endOffset, fixContext);
+            sensor.queueIssueWithFix(inputFile, line, ruleKey, message, quickFixData);
         } else {
             // Fallback: report without fix
             reportIssue(context, inputFile, line, ruleKey, message);
@@ -180,18 +208,33 @@ public abstract class BaseDetector {
     }
 
     /**
-     * Reports an issue with Quick Fix data and additional context.
+     * Reports an issue with Quick Fix data using parameter object.
+     * Refactored to reduce parameter count from 8 to 2.
      */
+    protected void reportIssueWithFix(SensorContext context, IssueWithFixData issueData) {
+        if (sensor != null) {
+            String fileContent = contentCache.get();
+            MathematicaRulesSensor.QuickFixData quickFixData =
+                new MathematicaRulesSensor.QuickFixData(fileContent, issueData.startOffset,
+                                                        issueData.endOffset, issueData.fixContext);
+            sensor.queueIssueWithFix(issueData.inputFile, issueData.line, issueData.ruleKey,
+                                     issueData.message, quickFixData);
+        } else {
+            // Fallback: report without fix
+            reportIssue(context, issueData.inputFile, issueData.line, issueData.ruleKey, issueData.message);
+        }
+    }
+
+    /**
+     * Reports an issue with Quick Fix data and additional context.
+     * @deprecated Use {@link #reportIssueWithFix(SensorContext, IssueWithFixData)} instead
+     */
+    @Deprecated
     protected void reportIssueWithFix(SensorContext context, InputFile inputFile, int line, String ruleKey, String message,
                                      int startOffset, int endOffset,
                                      org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext) {
-        if (sensor != null) {
-            String fileContent = contentCache.get();
-            sensor.queueIssueWithFix(inputFile, line, ruleKey, message, fileContent, startOffset, endOffset, fixContext);
-        } else {
-            // Fallback: report without fix
-            reportIssue(context, inputFile, line, ruleKey, message);
-        }
+        reportIssueWithFix(context, new IssueWithFixData(inputFile, line, ruleKey, message,
+                                                          startOffset, endOffset, fixContext));
     }
 
     /**

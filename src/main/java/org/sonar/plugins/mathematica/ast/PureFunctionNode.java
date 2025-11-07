@@ -29,16 +29,27 @@ public class PureFunctionNode extends AstNode {
         List<String> parameters,
         AstNode body,
         int maxSlotNumber,
+        SourceLocation location
+    ) {
+        super(NodeType.PURE_FUNCTION, location);
+        this.form = form;
+        this.parameters = parameters != null ? parameters : new ArrayList<>();
+        this.body = body;
+        this.maxSlotNumber = maxSlotNumber;
+    }
+
+    public PureFunctionNode(
+        PureFunctionForm form,
+        List<String> parameters,
+        AstNode body,
+        int maxSlotNumber,
         int startLine,
         int startColumn,
         int endLine,
         int endColumn
     ) {
-        super(NodeType.PURE_FUNCTION, startLine, startColumn, endLine, endColumn);
-        this.form = form;
-        this.parameters = parameters != null ? parameters : new ArrayList<>();
-        this.body = body;
-        this.maxSlotNumber = maxSlotNumber;
+        this(form, parameters, body, maxSlotNumber,
+             new SourceLocation(startLine, startColumn, endLine, endColumn));
     }
 
     public PureFunctionForm getForm() {
