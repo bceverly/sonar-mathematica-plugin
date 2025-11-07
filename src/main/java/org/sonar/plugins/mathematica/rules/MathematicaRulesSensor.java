@@ -565,20 +565,10 @@ public class MathematicaRulesSensor implements Sensor {
 
             performSymbolTableAnalysis(context, inputFile, content, fileStartTime, analysisTime);
 
-        } catch (Error fatalError) {
-            // Fatal error (StackOverflowError, OutOfMemoryError, etc.)
-            LOG.error("========================================");
-            LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
-            LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
-            LOG.error("File URI: {}", inputFile.uri());
-            LOG.error("File size: {} lines", inputFile.lines());
-            LOG.error("Error type: {}", fatalError.getClass().getName());
-            LOG.error("========================================");
-            // Re-throw fatal errors to crash the scanner
-            throw fatalError;
         } catch (Exception e) {
             // Non-fatal exceptions: log and continue
-            LOG.error("Error analyzing file: {}", inputFile, e);
+            LOG.error("Error analyzing file {}: {}", inputFile.filename(), e.getMessage());
+            LOG.debug("Full stacktrace for analysis error:", e);
         }
     }
 

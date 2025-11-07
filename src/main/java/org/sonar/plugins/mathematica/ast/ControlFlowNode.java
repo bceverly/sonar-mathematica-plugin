@@ -31,16 +31,27 @@ public class ControlFlowNode extends AstNode {
         AstNode condition,
         List<AstNode> branches,
         AstNode elseClause,
+        SourceLocation location
+    ) {
+        super(NodeType.CONTROL_FLOW, location);
+        this.controlFlowType = controlFlowType;
+        this.condition = condition;
+        this.branches = branches != null ? branches : new ArrayList<>();
+        this.elseClause = elseClause;
+    }
+
+    public ControlFlowNode(
+        ControlFlowType controlFlowType,
+        AstNode condition,
+        List<AstNode> branches,
+        AstNode elseClause,
         int startLine,
         int startColumn,
         int endLine,
         int endColumn
     ) {
-        super(NodeType.CONTROL_FLOW, startLine, startColumn, endLine, endColumn);
-        this.controlFlowType = controlFlowType;
-        this.condition = condition;
-        this.branches = branches != null ? branches : new ArrayList<>();
-        this.elseClause = elseClause;
+        this(controlFlowType, condition, branches, elseClause,
+             new SourceLocation(startLine, startColumn, endLine, endColumn));
     }
 
     public ControlFlowType getControlFlowType() {

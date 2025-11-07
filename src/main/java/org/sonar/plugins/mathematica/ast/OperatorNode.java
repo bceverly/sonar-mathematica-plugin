@@ -47,16 +47,27 @@ public class OperatorNode extends AstNode {
         AstNode leftOperand,
         AstNode rightOperand,
         String operatorSymbol,
+        SourceLocation location
+    ) {
+        super(NodeType.OPERATOR, location);
+        this.operatorType = operatorType;
+        this.leftOperand = leftOperand;
+        this.rightOperand = rightOperand;
+        this.operatorSymbol = operatorSymbol;
+    }
+
+    public OperatorNode(
+        OperatorType operatorType,
+        AstNode leftOperand,
+        AstNode rightOperand,
+        String operatorSymbol,
         int startLine,
         int startColumn,
         int endLine,
         int endColumn
     ) {
-        super(NodeType.OPERATOR, startLine, startColumn, endLine, endColumn);
-        this.operatorType = operatorType;
-        this.leftOperand = leftOperand;
-        this.rightOperand = rightOperand;
-        this.operatorSymbol = operatorSymbol;
+        this(operatorType, leftOperand, rightOperand, operatorSymbol,
+             new SourceLocation(startLine, startColumn, endLine, endColumn));
     }
 
     public OperatorType getOperatorType() {
