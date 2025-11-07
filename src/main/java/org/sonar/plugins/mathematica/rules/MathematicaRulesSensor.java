@@ -51,40 +51,44 @@ public class MathematicaRulesSensor implements Sensor {
     // Comment pattern for comment analysis
     private static final Pattern COMMENT_PATTERN = Pattern.compile("\\(\\*[\\s\\S]*?\\*\\)"); //NOSONAR - Possessive quantifiers prevent backtracking
 
+    // Helper class to group Quick Fix related data
+    private static class QuickFixData {
+        final String fileContent;
+        final int startOffset;
+        final int endOffset;
+        final org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context;
+
+        QuickFixData(String fileContent, int startOffset, int endOffset,
+                    org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
+            this.fileContent = fileContent;
+            this.startOffset = startOffset;
+            this.endOffset = endOffset;
+            this.context = context;
+        }
+    }
+
     // PERFORMANCE: Queue issue DATA (not NewIssue objects) to avoid thread-safety issues
     private static class IssueData {
         final InputFile inputFile;
         final int line;
         final String ruleKey;
         final String message;
-        // Quick Fix data
-        final String fileContent;
-        final int startOffset;
-        final int endOffset;
-        final org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context;
+        final QuickFixData quickFixData;
 
         IssueData(InputFile inputFile, int line, String ruleKey, String message) {
             this.inputFile = inputFile;
             this.line = line;
             this.ruleKey = ruleKey;
             this.message = message;
-            this.fileContent = null;
-            this.startOffset = -1;
-            this.endOffset = -1;
-            this.context = null;
+            this.quickFixData = null;
         }
 
-        IssueData(InputFile inputFile, int line, String ruleKey, String message,
-                 String fileContent, int startOffset, int endOffset,
-                 org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
+        IssueData(InputFile inputFile, int line, String ruleKey, String message, QuickFixData quickFixData) {
             this.inputFile = inputFile;
             this.line = line;
             this.ruleKey = ruleKey;
             this.message = message;
-            this.fileContent = fileContent;
-            this.startOffset = startOffset;
-            this.endOffset = endOffset;
-            this.context = context;
+            this.quickFixData = quickFixData;
         }
     }
 
@@ -188,7 +192,8 @@ public class MathematicaRulesSensor implements Sensor {
                                   String fileContent, int startOffset, int endOffset,
                                   org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
         try {
-            issueQueue.put(new IssueData(inputFile, line, ruleKey, message, fileContent, startOffset, endOffset, context));
+            QuickFixData quickFixData = new QuickFixData(fileContent, startOffset, endOffset, context);
+            issueQueue.put(new IssueData(inputFile, line, ruleKey, message, quickFixData));
             queuedIssues.incrementAndGet();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
@@ -222,12 +227,13 @@ public class MathematicaRulesSensor implements Sensor {
                         issue.at(location);
 
                         // Add Quick Fix if available
-                        if (data.fileContent != null && data.startOffset >= 0 && data.endOffset >= 0) {
+                        if (data.quickFixData != null) {
                             try {
                                 org.sonar.plugins.mathematica.fixes.QuickFixProvider quickFixProvider =
                                     new org.sonar.plugins.mathematica.fixes.QuickFixProvider();
                                 quickFixProvider.addQuickFix(issue, data.inputFile, data.ruleKey,
-                                    data.fileContent, data.startOffset, data.endOffset, data.context);
+                                    data.quickFixData.fileContent, data.quickFixData.startOffset,
+                                    data.quickFixData.endOffset, data.quickFixData.context);
                             } catch (Exception e) {
                                 // If Quick Fix fails, just skip it - don't break the issue reporting
                                 LOG.debug("Failed to add Quick Fix for rule {}: {}", data.ruleKey, e.getMessage());
