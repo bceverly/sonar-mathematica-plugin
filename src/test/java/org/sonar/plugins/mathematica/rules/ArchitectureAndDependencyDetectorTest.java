@@ -521,4 +521,355 @@ class ArchitectureAndDependencyDetectorTest {
         assertThat(ArchitectureAndDependencyDetector.getPackageDependenciesSize()).isGreaterThanOrEqualTo(0);
         assertThat(ArchitectureAndDependencyDetector.getSymbolDefinitionsSize()).isGreaterThanOrEqualTo(0);
     }
+
+    // ========================================
+    // ADDITIONAL TESTS FOR CONSTRUCTOR
+    // ========================================
+
+    @Test
+    void testConstructorThrowsException() {
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
+            java.lang.reflect.Constructor<ArchitectureAndDependencyDetector> constructor =
+                ArchitectureAndDependencyDetector.class.getDeclaredConstructor();
+            constructor.setAccessible(true);
+            constructor.newInstance();
+        });
+
+        assertThat(exception.getCause()).isInstanceOf(UnsupportedOperationException.class);
+    }
+
+    // ========================================
+    // ADDITIONAL BUILDCROSSFILEDATA TESTS
+    // ========================================
+
+    @Test
+    void testBuildCrossFileDataWithTestFile() {
+        when(mockInputFile.filename()).thenReturn("TestFile.wlt");
+        String content = "VerifyTest[MyFunction[1], 2]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testBuildCrossFileDataWithNeeds() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "Needs[\"UtilityPackage`\"]\n"
+                        + "Needs[\"DataPackage`\"]\n"
+                        + "EndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testBuildCrossFileDataWithVersion() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "Version -> \"1.0.0\"\n"
+                        + "EndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testBuildCrossFileDataWithPublicAndPrivateSections() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "PublicFunc::usage = \"test\"\n"
+                        + "PublicFunc[x_] := x + 1\n"
+                        + "Begin[\"`Private`\"]\n"
+                        + "PrivateFunc[x_] := x * 2\n"
+                        + "End[]\n"
+                        + "EndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testBuildCrossFileDataWithFunctionCalls() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "MyFunc[x_] := OtherFunc[x]\n"
+                        + "EndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    // ========================================
+    // POSITIVE TESTS (ISSUES DETECTED)
+    // ========================================
+
+    @Test
+    void testDetectPackageTooLargeDetectsIssue() {
+        StringBuilder largeContent = new StringBuilder("BeginPackage[\"LargePackage`\"]\n");
+        for (int i = 0; i < 2100; i++) {
+            largeContent.append("x = ").append(i).append("\n");
+        }
+        largeContent.append("EndPackage[]");
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, largeContent.toString());
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPackageTooLarge(
+            mockContext, mockInputFile, largeContent.toString()))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPackageTooSmallDetectsIssue() {
+        String smallContent = "BeginPackage[\"SmallPackage`\"]\nx = 1\nEndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, smallContent);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPackageTooSmall(
+            mockContext, mockInputFile, smallContent))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentPackageNamingWithBadName() {
+        String content = "BeginPackage[\"Bad`name`\"]\nEndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentPackageNamingWithShortSegment() {
+        String content = "BeginPackage[\"A`B`\"]\nEndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPrivateSymbolUsedExternallyWithPrivateContext() {
+        String content = "x = MyPackage`Private`InternalFunc[1]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPrivateSymbolUsedExternally(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectCommentedOutPackageLoadWithComment() {
+        String content = "(* Needs[\"OldPackage`\"] *)";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectCommentedOutPackageLoad(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectConditionalPackageLoadWithConditional() {
+        String content = "If[$VersionNumber > 12, Needs[\"NewPackage`\"]]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectConditionalPackageLoad(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectTestFunctionInProductionCodeDetectsIssue() {
+        when(mockInputFile.filename()).thenReturn("Production.m");
+        String content = "TestCreate[suite] := suite";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectTestFunctionInProductionCode(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingPackageDocumentationDetectsIssue() {
+        String content = "BeginPackage[\"UndocumentedPackage`\"]\nEndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectMissingPackageDocumentation(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPublicAPINotInPackageContextDetectsIssue() {
+        String content = "MyPublicFunc[x_] := x + 1";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPublicAPINotInPackageContext(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLayerViolationWithUICallData() {
+        String content = "BeginPackage[\"MyUI`\"]\nNeeds[\"MyData`\"]\nEndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectLayerViolation(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPackageDependsOnApplicationCodeWithLibraryDependingOnApp() {
+        String content = "BeginPackage[\"LibraryPackage`\"]\nNeeds[\"MyApp`\"]\nEndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPackageDependsOnApplicationCode(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectIncompletePublicAPIWithCreateButNoDelete() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "CreateObject::usage = \"test\"\n"
+                        + "CreateObject[x_] := {}\n"
+                        + "EndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectIncompletePublicAPI(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectIncompletePublicAPIWithSetButNoGet() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "SetValue::usage = \"test\"\n"
+                        + "SetValue[x_] := x\n"
+                        + "EndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectIncompletePublicAPI(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInternalImplementationExposedWithInternalName() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "InternalHelper::usage = \"test\"\n"
+                        + "InternalHelper[x_] := x\n"
+                        + "EndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectInternalImplementationExposed(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPublicFunctionWithImplementationDetailsInNameDetectsIssue() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "ProcessLoop::usage = \"test\"\n"
+                        + "ProcessLoop[x_] := x\n"
+                        + "EndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPublicFunctionWithImplementationDetailsInName(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentParameterNamesAcrossOverloadsDetectsIssue() {
+        String content = "MyFunc[x_] := x\nMyFunc[y_Integer] := y * 2\nMyFunc[z_Real] := z / 2";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectInconsistentParameterNamesAcrossOverloads(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectSymbolRedefinitionAfterImportDetectsIssue() {
+        String content1 = "BeginPackage[\"Package1`\"]\nMyFunc::usage = \"test\"\nMyFunc[x_] := x\nEndPackage[]";
+        String content2 = "BeginPackage[\"Package2`\"]\nNeeds[\"Package1`\"]\nMyFunc[x_] := x + 1\nEndPackage[]";
+
+        when(mockInputFile.filename()).thenReturn("Package1.m");
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content1);
+
+        when(mockInputFile.filename()).thenReturn("Package2.m");
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectSymbolRedefinitionAfterImport(
+            mockContext, mockInputFile, content2))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDeprecatedAPIStillUsedInternallyDetectsIssue() {
+        String content = "BeginPackage[\"MyPackage`\"]\n"
+                        + "(* @deprecated *)\n"
+                        + "OldFunc[x_] := x\n"
+                        + "NewFunc[y_] := OldFunc[y]\n"
+                        + "EndPackage[]";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, content);
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectDeprecatedAPIStillUsedInternally(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPackageVersionMismatchWithVersionRequirement() {
+        String content = "BeginPackage[\"MyPackage`\"]\nNeeds[\"OtherPackage`\", \"2.0.0\"]\nEndPackage[]";
+
+        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPackageVersionMismatch(
+            mockContext, mockInputFile, content))
+            .doesNotThrowAnyException();
+    }
+
+    // ========================================
+    // EDGE CASE TESTS
+    // ========================================
+
+    @Test
+    void testBuildCrossFileDataWithEmptyContent() {
+        assertThatCode(() -> ArchitectureAndDependencyDetector.buildCrossFileData(mockInputFile, ""))
+            .doesNotThrowAnyException();
+    }
+
+    @Test
+    void testAllDetectionMethodsWithEmptyContent() {
+        String content = "";
+
+        assertThatCode(() -> {
+            ArchitectureAndDependencyDetector.detectCircularPackageDependency(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectUnusedPackageImport(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectMissingPackageImport(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectTransitiveDependencyCouldBeDirect(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectDiamondDependency(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectGodPackageTooManyDependencies(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageDependsOnApplicationCode(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectCyclicCallBetweenPackages(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectLayerViolation(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectUnstableDependency(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageTooLarge(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageTooSmall(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageExportsTooMuch(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageExportsTooLittle(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectIncompletePublicAPI(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPrivateSymbolUsedExternally(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectInternalImplementationExposed(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectMissingPackageDocumentation(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicAPIChangedWithoutVersionBump(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectUnusedPublicFunction(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectUnusedExport(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectDeadPackage(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectFunctionOnlyCalledOnce(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectOverAbstractedAPI(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectOrphanedTestFile(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectImplementationWithoutTests(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectDeprecatedAPIStillUsedInternally(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectInternalAPIUsedLikePublic(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectCommentedOutPackageLoad(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectConditionalPackageLoad(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageLoadedButNotListedInMetadata(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectDuplicateSymbolDefinitionAcrossPackages(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectSymbolRedefinitionAfterImport(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPackageVersionMismatch(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicExportMissingUsageMessage(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectInconsistentParameterNamesAcrossOverloads(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicFunctionWithImplementationDetailsInName(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectPublicAPINotInPackageContext(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectTestFunctionInProductionCode(mockContext, mockInputFile, content);
+        }).doesNotThrowAnyException();
+    }
 }
