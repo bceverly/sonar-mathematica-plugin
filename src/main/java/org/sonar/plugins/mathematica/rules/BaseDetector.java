@@ -226,18 +226,6 @@ public abstract class BaseDetector {
     }
 
     /**
-     * Reports an issue with Quick Fix data and additional context.
-     * @deprecated Use {@link #reportIssueWithFix(SensorContext, IssueWithFixData)} instead
-     */
-    @Deprecated
-    protected void reportIssueWithFix(SensorContext context, InputFile inputFile, int line, String ruleKey, String message,
-                                     int startOffset, int endOffset,
-                                     org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext fixContext) {
-        reportIssueWithFix(context, new IssueWithFixData(inputFile, line, ruleKey, message,
-                                                          startOffset, endOffset, fixContext));
-    }
-
-    /**
      * Helper to count pattern occurrences using cached patterns.
      */
     protected int countOccurrences(String text, String patternString) {

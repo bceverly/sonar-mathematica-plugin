@@ -201,18 +201,6 @@ public class MathematicaRulesSensor implements Sensor {
     }
 
     /**
-     * Queues issue with Quick Fix data.
-     * @deprecated Use {@link #queueIssueWithFix(InputFile, int, String, String, QuickFixData)} instead
-     */
-    @Deprecated
-    public void queueIssueWithFix(InputFile inputFile, int line, String ruleKey, String message,
-                                  String fileContent, int startOffset, int endOffset,
-                                  org.sonar.plugins.mathematica.fixes.QuickFixProvider.QuickFixContext context) {
-        queueIssueWithFix(inputFile, line, ruleKey, message,
-                         new QuickFixData(fileContent, startOffset, endOffset, context));
-    }
-
-    /**
      * Starts the background thread that creates and saves issues from queued data.
      */
     private void startIssueSaverThread(SensorContext context) {
