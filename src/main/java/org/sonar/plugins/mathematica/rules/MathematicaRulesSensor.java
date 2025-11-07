@@ -344,7 +344,7 @@ public class MathematicaRulesSensor implements Sensor {
 
         // === PHASE 1: Build cross-file analysis data for Chunk5 ===
         LOG.info("Phase 1: Building cross-file dependency graph...");
-        ArchitectureAndDependencyDetector.initializeCaches();
+        ArchitectureAndDependencyDetector.clearCaches();
 
         fileList.stream().forEach(inputFile -> {
             try {
@@ -397,11 +397,13 @@ public class MathematicaRulesSensor implements Sensor {
         });
 
         long totalTimeMs = System.currentTimeMillis() - startTime;
-        double avgFilesPerSec = totalFiles / (totalTimeMs / 1000.0);
-        LOG.info("Analysis complete: {} files analyzed in {} seconds ({} files/sec)",
-            totalFiles,
-            totalTimeMs / 1000,
-            String.format("%.1f", avgFilesPerSec));
+        if (LOG.isInfoEnabled()) {
+            double avgFilesPerSec = totalFiles / (totalTimeMs / 1000.0);
+            LOG.info("Analysis complete: {} files analyzed in {} seconds ({} files/sec)",
+                totalFiles,
+                totalTimeMs / 1000,
+                String.format("%.1f", avgFilesPerSec));
+        }
 
         // NO FILES SKIPPED - Complete analysis on all files
 
@@ -438,9 +440,12 @@ public class MathematicaRulesSensor implements Sensor {
             // PERFORMANCE: Skip extremely large files to prevent hangs
             // Based on analysis: files >25,000 lines can cause pathological SymbolTable performance
             final int maxLines = 25000;
-            if (inputFile.lines() > maxLines) {
-                LOG.warn("SKIP: File {} has {} lines (exceeds limit of {}), skipping analysis to prevent timeout",
-                    inputFile.filename(), inputFile.lines(), maxLines);
+            int fileLines = inputFile.lines();
+            if (fileLines > maxLines) {
+                if (LOG.isWarnEnabled()) {
+                    LOG.warn("SKIP: File {} has {} lines (exceeds limit of {}), skipping analysis to prevent timeout",
+                        inputFile.filename(), fileLines, maxLines);
+                }
 
                 // Report INFO issue to make this visible in SonarQube UI
                 NewIssue issue = context.newIssue()
@@ -554,38 +559,36 @@ public class MathematicaRulesSensor implements Sensor {
 
             performSymbolTableAnalysis(context, inputFile, content, fileStartTime, analysisTime);
 
-        } catch (Throwable t) {
-            // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
-            if (t instanceof Error) {
-                Error fatalError = (Error) t;
-                LOG.error("========================================");
-                LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
-                LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
-                LOG.error("File URI: {}", inputFile.uri());
-                LOG.error("File size: {} lines", inputFile.lines());
-                LOG.error("Error type: {}", fatalError.getClass().getName());
-                LOG.error("========================================");
-                // Re-throw fatal errors to crash the scanner
-                throw fatalError;
-            }
+        } catch (Error fatalError) {
+            // Fatal error (StackOverflowError, OutOfMemoryError, etc.)
+            LOG.error("========================================");
+            LOG.error("FATAL ERROR while analyzing file: {}", inputFile.filename());
+            LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
+            LOG.error("File URI: {}", inputFile.uri());
+            LOG.error("File size: {} lines", inputFile.lines());
+            LOG.error("Error type: {}", fatalError.getClass().getName());
+            LOG.error("========================================");
+            // Re-throw fatal errors to crash the scanner
+            throw fatalError;
+        } catch (Exception e) {
             // Non-fatal exceptions: log and continue
-            LOG.error("Error analyzing file: {}", inputFile, t);
+            LOG.error("Error analyzing file: {}", inputFile, e);
         }
     }
 
     private void initializeDetectorCaches(String content) {
-        codeSmellDetector.get().initializeCaches(content);
-        bugDetector.get().initializeCaches(content);
-        vulnerabilityDetector.get().initializeCaches(content);
-        securityHotspotDetector.get().initializeCaches(content);
-        patternAndDataStructureDetector.get().initializeCaches(content);
-        unusedAndNamingDetector.get().initializeCaches(content);
-        typeAndDataFlowDetector.get().initializeCaches(content);
-        controlFlowAndTaintDetector.get().initializeCaches(content);
-        advancedAnalysisDetector.get().initializeCaches(content);
-        testingQualityDetector.get().initializeCaches(content);
-        frameworkDetector.get().initializeCaches(content);
-        styleAndConventionsDetector.get().initializeCaches(content);
+        codeSmellDetector.get().clearCaches(content);
+        bugDetector.get().clearCaches(content);
+        vulnerabilityDetector.get().clearCaches(content);
+        securityHotspotDetector.get().clearCaches(content);
+        patternAndDataStructureDetector.get().clearCaches(content);
+        unusedAndNamingDetector.get().clearCaches(content);
+        typeAndDataFlowDetector.get().clearCaches(content);
+        controlFlowAndTaintDetector.get().clearCaches(content);
+        advancedAnalysisDetector.get().clearCaches(content);
+        testingQualityDetector.get().clearCaches(content);
+        frameworkDetector.get().clearCaches(content);
+        styleAndConventionsDetector.get().clearCaches(content);
         // Note: ArchitectureAndDependencyDetector uses static caches (no per-file init needed)
     }
 

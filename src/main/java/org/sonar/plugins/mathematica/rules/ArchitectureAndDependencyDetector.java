@@ -101,23 +101,7 @@ public final class ArchitectureAndDependencyDetector {
     private static final Set<String> IMPLEMENTATION_FILES = new HashSet<>();
 
     /**
-     * Initialize caches before analysis
-     */
-    public static void initializeCaches() {
-        PACKAGE_DEPENDENCIES.clear();
-        PACKAGE_TO_FILE.clear();
-        PACKAGE_EXPORTS.clear();
-        PACKAGE_PRIVATE_SYMBOLS.clear();
-        SYMBOL_DEFINITIONS.clear();
-        SYMBOL_USAGES.clear();
-        SYMBOL_CALL_COUNT.clear();
-        PACKAGE_VERSIONS.clear();
-        TEST_FILES.clear();
-        IMPLEMENTATION_FILES.clear();
-    }
-
-    /**
-     * Clear caches after analysis
+     * Clear all caches. Use before or after analysis to reset state.
      */
     public static void clearCaches() {
         PACKAGE_DEPENDENCIES.clear();

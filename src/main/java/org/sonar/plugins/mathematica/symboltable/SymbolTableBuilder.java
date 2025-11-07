@@ -2,10 +2,11 @@ package org.sonar.plugins.mathematica.symboltable;
 
 import org.sonar.api.batch.fs.InputFile;
 
+import java.util.ArrayDeque;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -82,7 +83,7 @@ public final class SymbolTableBuilder {
      */
     private static void buildScopes(SymbolTable table, String[] lines) {
         Scope globalScope = table.getGlobalScope();
-        Stack<ScopeInfo> scopeStack = new Stack<>();
+        Deque<ScopeInfo> scopeStack = new ArrayDeque<>();
         scopeStack.push(new ScopeInfo(globalScope, lines.length + 1)); // Global ends beyond file
 
         for (int i = 0; i < lines.length; i++) {

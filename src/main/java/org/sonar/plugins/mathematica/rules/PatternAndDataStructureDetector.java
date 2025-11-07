@@ -309,7 +309,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
                             String params2 = parts2[0];
 
                             // Check if later definition is more specific
-                            if (isMoreSpecific(params2, params1)) {
+                            if (isMoreSpecific(params1, params2)) {
                                 int line = calculateLineNumber(content, Integer.parseInt(parts2[1]));
                                 reportIssue(context, inputFile, line,
                                     MathematicaRulesDefinition.ORDER_DEPENDENT_PATTERNS_KEY,

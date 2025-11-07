@@ -69,7 +69,7 @@ public class CodeSmellDetector extends BaseDetector {
         "\\w++\\[([^\\]]*_:[^\\]]*,){3,}+"
     );
     private static final Pattern GLOBAL_ASSIGNMENT_PATTERN = Pattern.compile(//NOSONAR
-        "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+\\([^;]*(?:[A-Z][a-zA-Z0-9]*+\\s*+=)"
+        "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+\\([^;]*[A-Z][a-zA-Z0-9]*+\\s*+="
     );
     private static final Pattern COMPLEX_BOOLEAN_PATTERN = Pattern.compile(//NOSONAR
         "If\\s*+\\[[^\\[]*(?:&&|\\|\\|)[^\\[]*(?:&&|\\|\\|)[^\\[]*(?:&&|\\|\\|)[^\\[]*(?:&&|\\|\\|)[^\\[]*(?:&&|\\|\\|)"

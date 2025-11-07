@@ -18,8 +18,6 @@ public class PacletDependencyParser {
 
     private static final Logger LOG = LoggerFactory.getLogger(PacletDependencyParser.class);
 
-    // Pattern to match Dependencies section in PacletInfo.wl
-    // Dependencies -> {"PacletName" -> "1.0+", "OtherPaclet" -> "2.0+"}
     private static final Pattern DEPENDENCIES_SECTION = Pattern.compile(
         "Dependencies\\s*+->\\s*+\\{([^}]+)\\}",
         Pattern.DOTALL
@@ -42,10 +40,7 @@ public class PacletDependencyParser {
         List<PacletDependency> dependencies = new ArrayList<>();
 
         try {
-            // Parse modern format: Dependencies -> {...}
             dependencies.addAll(parseModernFormat(content));
-
-            // Parse legacy format: Needs[...]
             dependencies.addAll(parseLegacyFormat(content));
 
         } catch (Exception e) {

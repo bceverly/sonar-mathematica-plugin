@@ -26,7 +26,7 @@ public class CustomRuleDetector extends BaseDetector {
             return;
         }
 
-        initializeCaches(content);
+        clearCaches(content);
 
         try {
             for (org.sonar.api.batch.rule.ActiveRule activeRule : customRules) {

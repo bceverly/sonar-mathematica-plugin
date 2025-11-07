@@ -270,13 +270,9 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
                     while (callMatcher.find()) {
                         String arg = callMatcher.group(1);
-                        boolean typeMismatch = false;
 
-                        if ("Integer".equals(typeConstraint) && arg.matches("\"[^\"]+\"")) {
-                            typeMismatch = true;
-                        } else if ("String".equals(typeConstraint) && arg.matches("\\d+")) {
-                            typeMismatch = true;
-                        }
+                        boolean typeMismatch = ("Integer".equals(typeConstraint) && arg.matches("\"[^\"]+\""))
+                            || ("String".equals(typeConstraint) && arg.matches("\\d+"));
 
                         if (typeMismatch) {
                             int line = calculateLineNumber(content, callMatcher.start());

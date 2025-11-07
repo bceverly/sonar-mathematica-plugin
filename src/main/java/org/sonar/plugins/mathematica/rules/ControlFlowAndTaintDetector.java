@@ -74,8 +74,8 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     private Map<String, Boolean> taintedVariables = new HashMap<>();
 
     @Override
-    public void initializeCaches(String content) {
-        super.initializeCaches(content);
+    public void clearCaches(String content) {
+        super.clearCaches(content);
         taintedVariables.clear();
 
         // Build taint source map

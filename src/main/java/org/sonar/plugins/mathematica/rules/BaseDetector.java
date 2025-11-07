@@ -45,7 +45,7 @@ public abstract class BaseDetector {
      * Initialize caches for a file.
      * PERFORMANCE: Parse AST once per file and cache for reuse by multiple rules.
      */
-    protected void initializeCaches(String content) {
+    protected void clearCaches(String content) {
         contentCache.set(content);
         lineOffsetCache.set(buildLineOffsetArray(content));
         linesCache.set(content.split("\n", -1));

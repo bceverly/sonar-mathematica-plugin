@@ -31,11 +31,8 @@ public class OperatorNode extends AstNode {
         POSTFIX,          // //
         PREFIX,           // @
         INFIX,            // ~f~
-        // Function application
         FUNCTION_APPLICATION, // f[x]
-        // Part
         PART,             // [[...]]
-        // Other
         RULE,             // ->
         DELAYED_RULE      // :>
     }
