@@ -38,8 +38,7 @@ class ComprehensiveParserTest {
         ComprehensiveParser parser = new ComprehensiveParser();
         List<AstNode> nodes = parser.parse("x = 1;");
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).isNotEmpty();
+        assertThat(nodes).isNotNull().isNotEmpty();
     }
 
     @Test
@@ -47,8 +46,7 @@ class ComprehensiveParserTest {
         ComprehensiveParser parser = new ComprehensiveParser();
         List<AstNode> nodes = parser.parse("f[x_] := x + 1");
 
-        assertThat(nodes).isNotNull();
-        assertThat(nodes).hasSizeGreaterThan(0);
+        assertThat(nodes).isNotNull().hasSizeGreaterThan(0);
     }
 
     @Test

@@ -421,19 +421,16 @@ public final class ArchitectureAndDependencyDetector {
             }
 
             for (String dep2 : directDeps) {
-                if (dep1.equals(dep2)) {
-                    continue;
-                }
-                Set<String> dep2Deps = PACKAGE_DEPENDENCIES.get(dep2);
-                if (dep2Deps == null) {
-                    continue;
-                }
-
-                for (String common : dep1Deps) {
-                    if (dep2Deps.contains(common)) {
-                        commonDeps.putIfAbsent(common, new ArrayList<>());
-                        commonDeps.get(common).add(dep1);
-                        commonDeps.get(common).add(dep2);
+                if (!dep1.equals(dep2)) {
+                    Set<String> dep2Deps = PACKAGE_DEPENDENCIES.get(dep2);
+                    if (dep2Deps != null) {
+                        for (String common : dep1Deps) {
+                            if (dep2Deps.contains(common)) {
+                                commonDeps.putIfAbsent(common, new ArrayList<>());
+                                commonDeps.get(common).add(dep1);
+                                commonDeps.get(common).add(dep2);
+                            }
+                        }
                     }
                 }
             }

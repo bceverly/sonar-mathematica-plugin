@@ -201,32 +201,26 @@ public final class SymbolTableDetector {
      */
     public static void detectVariableInWrongScope(SensorContext context, InputFile file, SymbolTable table) {
         for (Symbol symbol : table.getAllSymbols()) {
-            if (!symbol.isModuleVariable()) {
-                continue; // Only check Module/Block variables
-            }
-
-            List<SymbolReference> allRefs = symbol.getAllReferencesSorted();
-            if (allRefs.isEmpty()) {
-                continue;
-            }
-
-            // Check if all references are within a child scope
-            Scope symbolScope = symbol.getScope();
-            if (symbolScope.getChildren().isEmpty()) {
-                continue;
-            }
-
-            for (Scope childScope : symbolScope.getChildren()) {
+            if (symbol.isModuleVariable()) {
+                List<SymbolReference> allRefs = symbol.getAllReferencesSorted();
+                if (!allRefs.isEmpty()) {
+                    // Check if all references are within a child scope
+                    Scope symbolScope = symbol.getScope();
+                    if (!symbolScope.getChildren().isEmpty()) {
+                        for (Scope childScope : symbolScope.getChildren()) {
                 boolean allInChild = allRefs.stream()
                     .allMatch(ref -> ref.getLine() >= childScope.getStartLine()
                                     && ref.getLine() <= childScope.getEndLine());
 
-                if (allInChild) {
-                    createIssue(context, file, "VariableInWrongScope", symbol.getDeclarationLine(),
-                        String.format("Variable '%s' could be declared in inner scope (lines %d-%d)",
-                            symbol.getName(), childScope.getStartLine(), childScope.getEndLine())
-                    ).save();
-                    break;
+                            if (allInChild) {
+                                createIssue(context, file, "VariableInWrongScope", symbol.getDeclarationLine(),
+                                    String.format("Variable '%s' could be declared in inner scope (lines %d-%d)",
+                                        symbol.getName(), childScope.getStartLine(), childScope.getEndLine())
+                                    ).save();
+                                break;
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -268,27 +262,23 @@ public final class SymbolTableDetector {
      */
     public static void detectLifetimeExtendsBeyondScope(SensorContext context, InputFile file, SymbolTable table) {
         for (Symbol symbol : table.getAllSymbols()) {
-            if (!symbol.isModuleVariable()) {
-                continue;
-            }
+            if (symbol.isModuleVariable()) {
+                List<SymbolReference> allRefs = symbol.getAllReferencesSorted();
+                if (allRefs.size() >= 2) {
+                    // Check if all references are within a narrow line range
+                    int firstLine = allRefs.get(0).getLine();
+                    int lastLine = allRefs.get(allRefs.size() - 1).getLine();
+                    int scopeSize = symbol.getScope().getEndLine() - symbol.getScope().getStartLine();
+                    int usageRange = lastLine - firstLine;
 
-            List<SymbolReference> allRefs = symbol.getAllReferencesSorted();
-            if (allRefs.size() < 2) {
-                continue;
-            }
-
-            // Check if all references are within a narrow line range
-            int firstLine = allRefs.get(0).getLine();
-            int lastLine = allRefs.get(allRefs.size() - 1).getLine();
-            int scopeSize = symbol.getScope().getEndLine() - symbol.getScope().getStartLine();
-            int usageRange = lastLine - firstLine;
-
-            // If usage range is <20% of scope size, variable could be more local
-            if (scopeSize > 10 && usageRange < scopeSize * 0.2) {
-                createIssue(context, file, "LifetimeExtendsBeyondScope", symbol.getDeclarationLine(),
-                    String.format("Variable '%s' used only in lines %d-%d but declared in scope spanning %d lines",
-                        symbol.getName(), firstLine, lastLine, scopeSize)
-                ).save();
+                    // If usage range is <20% of scope size, variable could be more local
+                    if (scopeSize > 10 && usageRange < scopeSize * 0.2) {
+                        createIssue(context, file, "LifetimeExtendsBeyondScope", symbol.getDeclarationLine(),
+                            String.format("Variable '%s' used only in lines %d-%d but declared in scope spanning %d lines",
+                                symbol.getName(), firstLine, lastLine, scopeSize)
+                        ).save();
+                    }
+                }
             }
         }
     }

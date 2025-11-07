@@ -288,24 +288,19 @@ public class ComplexityCalculator {
             if (i < content.length() - 1 && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
                 depth++;
                 i += 2;
-                continue;
-            }
-
-            // Check for comment end: *)
-            if (i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+            } else if (i < content.length() - 1 && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                // Check for comment end: *)
                 if (depth > 0) {
                     depth--;
                 }
                 i += 2;
-                continue;
+            } else {
+                // If not in comment, add character to result
+                if (depth == 0) {
+                    result.append(content.charAt(i));
+                }
+                i++;
             }
-
-            // If not in comment, add character to result
-            if (depth == 0) {
-                result.append(content.charAt(i));
-            }
-
-            i++;
         }
 
         return result.toString();

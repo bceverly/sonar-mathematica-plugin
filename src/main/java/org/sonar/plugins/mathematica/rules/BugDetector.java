@@ -112,31 +112,24 @@ public class BugDetector extends BaseDetector {
                 int position = matcher.start();
 
                 // Skip URLs (http://, https://)
-                if (position > 0 && content.charAt(position - 1) == ':'
-                    && position + 1 < content.length() && content.charAt(position + 1) == '/') {
-                    continue;
-                }
+                boolean isUrl = position > 0 && content.charAt(position - 1) == ':'
+                    && position + 1 < content.length() && content.charAt(position + 1) == '/';
 
-                // Skip if inside a string literal
-                if (isInsideStringLiteral(content, position)) {
-                    continue;
-                }
+                if (!isUrl && !isInsideStringLiteral(content, position)) {
+                    // Check if there's validation
+                    int lineStart = content.lastIndexOf('\n', position) + 1;
+                    int lineEnd = content.indexOf('\n', position);
+                    if (lineEnd == -1) {
+                        lineEnd = content.length();
+                    }
+                    String line = content.substring(lineStart, lineEnd);
 
-                // Check if there's validation
-                int lineStart = content.lastIndexOf('\n', position) + 1;
-                int lineEnd = content.indexOf('\n', position);
-                if (lineEnd == -1) {
-                    lineEnd = content.length();
+                    if (!line.contains(CHECK) && !line.contains("!= 0") && !line.contains("> 0")) {
+                        int lineNumber = calculateLineNumber(content, position);
+                        reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY,
+                            "Ensure the divisor cannot be zero before performing division.", matcher.start(), matcher.end());
+                    }
                 }
-                String line = content.substring(lineStart, lineEnd);
-
-                if (line.contains(CHECK) || line.contains("!= 0") || line.contains("> 0")) {
-                    continue;
-                }
-
-                int lineNumber = calculateLineNumber(content, position);
-                reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY,
-                    "Ensure the divisor cannot be zero before performing division.", matcher.start(), matcher.end());
             }
         } catch (Exception e) {
             LOG.warn("Skipping division by zero detection due to error in file: {}", inputFile.filename());

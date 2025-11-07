@@ -130,25 +130,17 @@ public class CodeSmellDetector extends BaseDetector {
             while (numberMatcher.find()) {
                 String number = numberMatcher.group();
                 // Skip common non-magic numbers
-                if ("0".equals(number) || "1".equals(number) || "2".equals(number)) {
-                    continue;
+                if (!"0".equals(number) && !"1".equals(number) && !"2".equals(number)) {
+                    int position = numberMatcher.start();
+
+                    // Skip if in comment or string or is association mapping
+                    if (!isInsideComment(position, commentRanges) && !isInsideStringLiteral(content, position)
+                        && !isAssociationMapping(content, position)) {
+                        int line = calculateLineNumber(content, position);
+                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.MAGIC_NUMBER_KEY,
+                            "Replace this magic number with a named constant.");
+                    }
                 }
-
-                int position = numberMatcher.start();
-
-                // Skip if in comment or string
-                if (isInsideComment(position, commentRanges) || isInsideStringLiteral(content, position)) {
-                    continue;
-                }
-
-                // Skip if this is an association mapping (enum-like pattern: Key -> Number)
-                if (isAssociationMapping(content, position)) {
-                    continue;
-                }
-
-                int line = calculateLineNumber(content, position);
-                reportIssue(context, inputFile, line, MathematicaRulesDefinition.MAGIC_NUMBER_KEY,
-                    "Replace this magic number with a named constant.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping magic number detection due to error in file: {}", inputFile.filename());

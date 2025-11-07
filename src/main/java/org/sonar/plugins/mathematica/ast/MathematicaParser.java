@@ -389,23 +389,19 @@ public class MathematicaParser {
             if (i + 1 < content.length() && content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
                 depth++;
                 i += 2;
-                continue;
-            }
-
-            // Check for comment end *)
-            if (i + 1 < content.length() && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+            } else if (i + 1 < content.length() && content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                // Check for comment end *)
                 if (depth > 0) {
                     depth--;
                 }
                 i += 2;
-                continue;
+            } else {
+                // If not in a comment, append character
+                if (depth == 0) {
+                    result.append(content.charAt(i));
+                }
+                i++;
             }
-
-            // If not in a comment, append character
-            if (depth == 0) {
-                result.append(content.charAt(i));
-            }
-            i++;
         }
 
         return result.toString();

@@ -95,7 +95,6 @@ public class MathematicaRulesSensor implements Sensor {
     private volatile boolean shutdownSaver = false;
     private final java.util.concurrent.atomic.AtomicLong queuedIssues = new java.util.concurrent.atomic.AtomicLong(0);
     private final java.util.concurrent.atomic.AtomicLong savedIssues = new java.util.concurrent.atomic.AtomicLong(0);
-    private SensorContext sensorContext; // Store context for saver thread
 
     // Thread-local detector instances for parallel processing
     private final ThreadLocal<CodeSmellDetector> codeSmellDetector = ThreadLocal.withInitial(() -> {
@@ -201,7 +200,6 @@ public class MathematicaRulesSensor implements Sensor {
      * Starts the background thread that creates and saves issues from queued data.
      */
     private void startIssueSaverThread(SensorContext context) {
-        this.sensorContext = context;
         shutdownSaver = false;
         Thread thread = new Thread(() -> {
             LOG.debug("Issue saver thread started");

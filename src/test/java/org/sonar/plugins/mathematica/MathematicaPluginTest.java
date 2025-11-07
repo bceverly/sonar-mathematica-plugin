@@ -27,7 +27,6 @@ class MathematicaPluginTest {
         // Verify that extensions are registered
         // Cast to List<?> to avoid unchecked warning from raw List
         List<?> extensions = context.getExtensions();
-        assertThat(extensions).isNotEmpty();
-        assertThat(extensions).hasSizeGreaterThan(3);
+        assertThat(extensions).isNotEmpty().hasSizeGreaterThan(3);
     }
 }
