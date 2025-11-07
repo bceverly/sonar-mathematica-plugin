@@ -442,11 +442,7 @@ public final class ArchitectureAndDependencyDetector {
                                                         String filename, Set<String> directDeps,
                                                         Set<String> transitiveDeps, int position) {
         for (String transitiveDep : transitiveDeps) {
-            if (directDeps.contains(transitiveDep)) {
-                continue;
-            }
-
-            if (isTransitiveDependencyUsed(transitiveDep, filename)) {
+            if (!directDeps.contains(transitiveDep) && isTransitiveDependencyUsed(transitiveDep, filename)) {
                 createIssue(context, inputFile, MathematicaRulesDefinition.TRANSITIVE_DEPENDENCY_COULD_BE_DIRECT_KEY,
                     position, "Add direct dependency on: " + transitiveDep);
                 break;
@@ -481,36 +477,55 @@ public final class ArchitectureAndDependencyDetector {
         String currentPackage = pkgMatcher.group(1);
         Set<String> directDeps = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>());
 
-        // Find common dependencies
+        Map<String, List<String>> commonDeps = findCommonDependencies(directDeps);
+        reportDiamondDependencies(context, inputFile, commonDeps, pkgMatcher.start());
+    }
+
+    private static Map<String, List<String>> findCommonDependencies(Set<String> directDeps) {
         Map<String, List<String>> commonDeps = new HashMap<>();
         for (String dep1 : directDeps) {
             Set<String> dep1Deps = PACKAGE_DEPENDENCIES.get(dep1);
-            if (dep1Deps == null) {
-                continue;
-            }
-
-            for (String dep2 : directDeps) {
-                if (!dep1.equals(dep2)) {
-                    Set<String> dep2Deps = PACKAGE_DEPENDENCIES.get(dep2);
-                    if (dep2Deps != null) {
-                        for (String common : dep1Deps) {
-                            if (dep2Deps.contains(common)) {
-                                commonDeps.putIfAbsent(common, new ArrayList<>());
-                                commonDeps.get(common).add(dep1);
-                                commonDeps.get(common).add(dep2);
-                            }
-                        }
-                    }
-                }
+            if (dep1Deps != null) {
+                checkDependencyPairs(directDeps, dep1, dep1Deps, commonDeps);
             }
         }
+        return commonDeps;
+    }
 
-        if (!commonDeps.isEmpty()) {
-            for (Map.Entry<String, List<String>> entry : commonDeps.entrySet()) {
-                createIssue(context, inputFile, MathematicaRulesDefinition.DIAMOND_DEPENDENCY_KEY,
-                    pkgMatcher.start(),
-                    "Diamond dependency on " + entry.getKey() + " via " + entry.getValue());
+    private static void checkDependencyPairs(Set<String> directDeps, String dep1,
+                                              Set<String> dep1Deps, Map<String, List<String>> commonDeps) {
+        for (String dep2 : directDeps) {
+            if (!dep1.equals(dep2)) {
+                findCommonDepsForPair(dep1, dep2, dep1Deps, commonDeps);
             }
+        }
+    }
+
+    private static void findCommonDepsForPair(String dep1, String dep2, Set<String> dep1Deps,
+                                               Map<String, List<String>> commonDeps) {
+        Set<String> dep2Deps = PACKAGE_DEPENDENCIES.get(dep2);
+        if (dep2Deps != null) {
+            recordCommonDependencies(dep1, dep2, dep1Deps, dep2Deps, commonDeps);
+        }
+    }
+
+    private static void recordCommonDependencies(String dep1, String dep2, Set<String> dep1Deps,
+                                                  Set<String> dep2Deps, Map<String, List<String>> commonDeps) {
+        for (String common : dep1Deps) {
+            if (dep2Deps.contains(common)) {
+                commonDeps.putIfAbsent(common, new ArrayList<>());
+                commonDeps.get(common).add(dep1);
+                commonDeps.get(common).add(dep2);
+            }
+        }
+    }
+
+    private static void reportDiamondDependencies(SensorContext context, InputFile inputFile,
+                                                   Map<String, List<String>> commonDeps, int position) {
+        for (Map.Entry<String, List<String>> entry : commonDeps.entrySet()) {
+            createIssue(context, inputFile, MathematicaRulesDefinition.DIAMOND_DEPENDENCY_KEY,
+                position,
+                "Diamond dependency on " + entry.getKey() + " via " + entry.getValue());
         }
     }
 
@@ -1332,14 +1347,39 @@ public final class ArchitectureAndDependencyDetector {
      * Rule 249: Public API not in package context
      */
     public static void detectPublicAPINotInPackageContext(SensorContext context, InputFile inputFile, String content) {
-        // Check if there are public function definitions outside BeginPackage/Begin["Private`"]
-        boolean inPackage = false;
-        boolean inPrivate = false;
-
+        PackageContext pkgContext = new PackageContext();
         String[] lines = content.split("\n");
-        for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
 
+        for (int i = 0; i < lines.length; i++) {
+            pkgContext.updateContext(lines[i]);
+            checkForPublicFunctionOutsideContext(context, inputFile, lines[i], i, pkgContext);
+        }
+    }
+
+    private static void checkForPublicFunctionOutsideContext(SensorContext context, InputFile inputFile,
+                                                              String line, int lineNumber, PackageContext pkgContext) {
+        if (!pkgContext.isInPackage() && !pkgContext.isInPrivate()) {
+            Matcher funcMatcher = FUNCTION_DEF.matcher(line);
+            if (funcMatcher.find()) {
+                reportPublicFunctionOutsideContext(context, inputFile, funcMatcher.group(1), lineNumber);
+            }
+        }
+    }
+
+    private static void reportPublicFunctionOutsideContext(SensorContext context, InputFile inputFile,
+                                                            String symbol, int lineNumber) {
+        if (Character.isUpperCase(symbol.charAt(0))) {
+            createIssue(context, inputFile, MathematicaRulesDefinition.PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY,
+                lineNumber,
+                "Public function defined outside package context: " + symbol);
+        }
+    }
+
+    private static final class PackageContext {
+        private boolean inPackage = false;
+        private boolean inPrivate = false;
+
+        void updateContext(String line) {
             if (BEGIN_PACKAGE.matcher(line).find()) {
                 inPackage = true;
             }
@@ -1352,19 +1392,14 @@ public final class ArchitectureAndDependencyDetector {
             if (END.matcher(line).find()) {
                 inPrivate = false;
             }
+        }
 
-            // Check for function definitions outside proper context
-            if (!inPackage && !inPrivate) {
-                Matcher funcMatcher = FUNCTION_DEF.matcher(line);
-                if (funcMatcher.find()) {
-                    String symbol = funcMatcher.group(1);
-                    if (Character.isUpperCase(symbol.charAt(0))) {
-                        createIssue(context, inputFile, MathematicaRulesDefinition.PUBLIC_API_NOT_IN_PACKAGE_CONTEXT_KEY,
-                            i,
-                            "Public function defined outside package context: " + symbol);
-                    }
-                }
-            }
+        boolean isInPackage() {
+            return inPackage;
+        }
+
+        boolean isInPrivate() {
+            return inPrivate;
         }
     }
 

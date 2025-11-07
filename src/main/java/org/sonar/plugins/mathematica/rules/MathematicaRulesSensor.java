@@ -272,6 +272,20 @@ public class MathematicaRulesSensor implements Sensor {
             issue.save();
         }
 
+        private void addQuickFixToIssue(org.sonar.api.batch.sensor.issue.NewIssue issue,
+                                         InputFile inputFile, String ruleKey, QuickFixData quickFixData) {
+            try {
+                org.sonar.plugins.mathematica.fixes.QuickFixProvider quickFixProvider =
+                    new org.sonar.plugins.mathematica.fixes.QuickFixProvider();
+                quickFixProvider.addQuickFix(issue, inputFile, ruleKey,
+                    quickFixData.fileContent, quickFixData.startOffset,
+                    quickFixData.endOffset, quickFixData.context);
+            } catch (Exception e) {
+                // If Quick Fix fails, just skip it - don't break the issue reporting
+                LOG.debug("Failed to add Quick Fix for rule {}: {}", ruleKey, e.getMessage());
+            }
+        }
+
         private void logProgressIfNeeded(long saved, long saveDuration) {
             if (saveDuration > 2000) {
                 logSlowSave(saved, saveDuration);
@@ -322,23 +336,6 @@ public class MathematicaRulesSensor implements Sensor {
         }
     }
 
-    /**
-     * Helper method to add Quick Fix to an issue without nested try blocks.
-     * Extracted to avoid nested try block code smell.
-     */
-    private void addQuickFixToIssue(org.sonar.api.batch.sensor.issue.NewIssue issue,
-                                     InputFile inputFile, String ruleKey, QuickFixData quickFixData) {
-        try {
-            org.sonar.plugins.mathematica.fixes.QuickFixProvider quickFixProvider =
-                new org.sonar.plugins.mathematica.fixes.QuickFixProvider();
-            quickFixProvider.addQuickFix(issue, inputFile, ruleKey,
-                quickFixData.fileContent, quickFixData.startOffset,
-                quickFixData.endOffset, quickFixData.context);
-        } catch (Exception e) {
-            // If Quick Fix fails, just skip it - don't break the issue reporting
-            LOG.debug("Failed to add Quick Fix for rule {}: {}", ruleKey, e.getMessage());
-        }
-    }
 
     /**
      * Clean up all ThreadLocal variables to prevent memory leaks in thread pool.
