@@ -101,6 +101,20 @@ public final class ArchitectureAndDependencyDetector {
     private static final Set<String> IMPLEMENTATION_FILES = new HashSet<>();
 
     /**
+     * Initialize caches before analysis. Alias for clearCaches().
+     */
+    public static void initializeCaches(String content) {
+        clearCaches();
+    }
+
+    /**
+     * Initialize caches before analysis. Alias for clearCaches().
+     */
+    public static void initializeCaches() {
+        clearCaches();
+    }
+
+    /**
      * Clear all caches. Use before or after analysis to reset state.
      */
     public static void clearCaches() {

@@ -1068,7 +1068,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
         }
     }
 
-    public void detectUndefinedVariableReference(SensorContext context, InputFile inputFile) {
+    public void detectUndefinedVariableReference(SensorContext context, InputFile inputFile, String content) {
         try {
             // Check for references to undefined variables (simplified)
             // This is a basic heuristic and would need data flow analysis for accuracy

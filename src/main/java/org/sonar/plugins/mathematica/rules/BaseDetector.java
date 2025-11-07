@@ -42,6 +42,14 @@ public abstract class BaseDetector {
     protected static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)++\""); //NOSONAR
 
     /**
+     * Initialize caches for a file. Alias for clearCaches(String content).
+     * PERFORMANCE: Parse AST once per file and cache for reuse by multiple rules.
+     */
+    public void initializeCaches(String content) {
+        clearCaches(content);
+    }
+
+    /**
      * Initialize caches for a file.
      * PERFORMANCE: Parse AST once per file and cache for reuse by multiple rules.
      */
