@@ -351,7 +351,6 @@ class ArchitectureAndDependencyDetectorTest {
 
     @Test
     void testDetectOrphanedTestFileNoPackage() {
-        String content = "x = 1";
         assertThatCode(() -> ArchitectureAndDependencyDetector.detectOrphanedTestFile(
             mockContext, mockInputFile))
             .doesNotThrowAnyException();
@@ -407,7 +406,6 @@ class ArchitectureAndDependencyDetectorTest {
 
     @Test
     void testDetectDuplicateSymbolDefinitionAcrossPackagesNoPackage() {
-        String content = "x = 1";
         assertThatCode(() -> ArchitectureAndDependencyDetector.detectDuplicateSymbolDefinitionAcrossPackages(
             mockContext, mockInputFile))
             .doesNotThrowAnyException();
@@ -496,9 +494,9 @@ class ArchitectureAndDependencyDetectorTest {
 
     private static Stream<TriConsumer<SensorContext, InputFile, String>> provideDetectorMethods() {
         return Stream.of(
-            (ctx, file, content) -> ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(ctx, file, content),
-            (ctx, file, content) -> ArchitectureAndDependencyDetector.detectPrivateSymbolUsedExternally(ctx, file, content),
-            (ctx, file, content) -> ArchitectureAndDependencyDetector.detectPackageDependsOnApplicationCode(ctx, file, content)
+            ArchitectureAndDependencyDetector::detectInconsistentPackageNaming,
+            ArchitectureAndDependencyDetector::detectPrivateSymbolUsedExternally,
+            ArchitectureAndDependencyDetector::detectPackageDependsOnApplicationCode
         );
     }
 
@@ -534,7 +532,7 @@ class ArchitectureAndDependencyDetectorTest {
         constructor.setAccessible(true);
 
         Exception exception = org.junit.jupiter.api.Assertions.assertThrows(Exception.class,
-            () -> constructor.newInstance());
+            constructor::newInstance);
 
         assertThat(exception.getCause()).isInstanceOf(UnsupportedOperationException.class);
     }

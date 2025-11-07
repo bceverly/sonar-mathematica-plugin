@@ -45,7 +45,7 @@ class SymbolTableManagerTest {
             SymbolTableManager.class.getDeclaredConstructor();
         constructor.setAccessible(true);
 
-        Exception exception = assertThrows(Exception.class, () -> constructor.newInstance());
+        Exception exception = assertThrows(Exception.class, constructor::newInstance);
 
         // Verify the cause is UnsupportedOperationException
         assertTrue(exception.getCause() instanceof UnsupportedOperationException);

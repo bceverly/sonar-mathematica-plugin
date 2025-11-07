@@ -202,28 +202,32 @@ public final class SymbolTableDetector {
     public static void detectVariableInWrongScope(SensorContext context, InputFile file, SymbolTable table) {
         for (Symbol symbol : table.getAllSymbols()) {
             if (symbol.isModuleVariable()) {
-                List<SymbolReference> allRefs = symbol.getAllReferencesSorted();
-                if (!allRefs.isEmpty()) {
-                    // Check if all references are within a child scope
-                    Scope symbolScope = symbol.getScope();
-                    if (!symbolScope.getChildren().isEmpty()) {
-                        for (Scope childScope : symbolScope.getChildren()) {
-                boolean allInChild = allRefs.stream()
-                    .allMatch(ref -> ref.getLine() >= childScope.getStartLine()
-                                    && ref.getLine() <= childScope.getEndLine());
-
-                            if (allInChild) {
-                                createIssue(context, file, "VariableInWrongScope", symbol.getDeclarationLine(),
-                                    String.format("Variable '%s' could be declared in inner scope (lines %d-%d)",
-                                        symbol.getName(), childScope.getStartLine(), childScope.getEndLine())
-                                    ).save();
-                                break;
-                            }
-                        }
-                    }
-                }
+                checkSymbolScopeOptimization(context, file, symbol);
             }
         }
+    }
+
+    private static void checkSymbolScopeOptimization(SensorContext context, InputFile file, Symbol symbol) {
+        List<SymbolReference> allRefs = symbol.getAllReferencesSorted();
+        if (allRefs.isEmpty()) {
+            return;
+        }
+
+        Scope symbolScope = symbol.getScope();
+        for (Scope childScope : symbolScope.getChildren()) {
+            if (areAllReferencesInScope(allRefs, childScope)) {
+                createIssue(context, file, "VariableInWrongScope", symbol.getDeclarationLine(),
+                    String.format("Variable '%s' could be declared in inner scope (lines %d-%d)",
+                        symbol.getName(), childScope.getStartLine(), childScope.getEndLine())
+                ).save();
+                break;
+            }
+        }
+    }
+
+    private static boolean areAllReferencesInScope(List<SymbolReference> refs, Scope scope) {
+        return refs.stream().allMatch(ref ->
+            ref.getLine() >= scope.getStartLine() && ref.getLine() <= scope.getEndLine());
     }
 
     /**
