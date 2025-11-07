@@ -118,7 +118,7 @@ public class MathematicaParser {
 
                 int startPos = matcher.start();
                 int startLine = calculateLine(startPos);
-                int startColumn = calculateColumn(content, startPos);
+                int startColumn = calculateColumn(startPos);
 
                 // Parse parameters
                 List<String> parameters = parseParameters(parametersStr);
@@ -134,7 +134,7 @@ public class MathematicaParser {
                 totalParseExpr += (System.currentTimeMillis() - startExpr);
 
                 int endLine = calculateLine(bodyEnd);
-                int endColumn = calculateColumn(content, bodyEnd);
+                int endColumn = calculateColumn(bodyEnd);
 
                 FunctionDefNode funcNode = new FunctionDefNode(
                     functionName, parameters, body, isDelayed,
@@ -343,7 +343,7 @@ public class MathematicaParser {
      * Calculate column number from position using cached line offsets.
      * PERFORMANCE: O(1) instead of O(n) backward scan.
      */
-    private int calculateColumn(String content, int position) {
+    private int calculateColumn(int position) {
         if (lineOffsets == null || lineOffsets.length == 0) {
             return 0;
         }

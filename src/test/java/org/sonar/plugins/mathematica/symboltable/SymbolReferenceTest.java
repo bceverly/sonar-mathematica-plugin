@@ -70,14 +70,14 @@ class SymbolReferenceTest {
     void testEqualsNullObject() {
         SymbolReference ref = new SymbolReference(10, 5, ReferenceType.READ, "x");
 
-        assertNotEquals(ref, null);
+        assertNotEquals(null, ref);
     }
 
     @Test
     void testEqualsDifferentClass() {
         SymbolReference ref = new SymbolReference(10, 5, ReferenceType.READ, "x");
 
-        assertNotEquals(ref, "not a symbol reference");
+        assertNotEquals("not a symbol reference", ref);
     }
 
     @Test

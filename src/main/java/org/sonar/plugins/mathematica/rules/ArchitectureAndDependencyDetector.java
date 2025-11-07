@@ -924,7 +924,7 @@ public final class ArchitectureAndDependencyDetector {
     /**
      * Rule 236: Orphaned test file - no corresponding implementation
      */
-    public static void detectOrphanedTestFile(SensorContext context, InputFile inputFile, String content) {
+    public static void detectOrphanedTestFile(SensorContext context, InputFile inputFile) {
         String filename = inputFile.filename();
         if (!TEST_FILES.contains(filename)) {
             return;
@@ -1082,7 +1082,7 @@ public final class ArchitectureAndDependencyDetector {
     /**
      * Rule 243: Duplicate symbol definition across packages
      */
-    public static void detectDuplicateSymbolDefinitionAcrossPackages(SensorContext context, InputFile inputFile, String content) {
+    public static void detectDuplicateSymbolDefinitionAcrossPackages(SensorContext context, InputFile inputFile) {
         String filename = inputFile.filename();
 
         for (Map.Entry<String, Set<String>> entry : SYMBOL_DEFINITIONS.entrySet()) {

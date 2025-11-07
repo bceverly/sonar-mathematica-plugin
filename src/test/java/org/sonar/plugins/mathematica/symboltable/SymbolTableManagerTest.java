@@ -39,15 +39,13 @@ class SymbolTableManagerTest {
     }
 
     @Test
-    void testConstructorThrowsException() {
+    void testConstructorThrowsException() throws Exception {
         // Test utility class constructor throws exception via reflection
-        Exception exception = assertThrows(Exception.class, () -> {
-            // Use reflection to call private constructor
-            java.lang.reflect.Constructor<SymbolTableManager> constructor =
-                SymbolTableManager.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            constructor.newInstance();
-        });
+        java.lang.reflect.Constructor<SymbolTableManager> constructor =
+            SymbolTableManager.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        Exception exception = assertThrows(Exception.class, () -> constructor.newInstance());
 
         // Verify the cause is UnsupportedOperationException
         assertTrue(exception.getCause() instanceof UnsupportedOperationException);

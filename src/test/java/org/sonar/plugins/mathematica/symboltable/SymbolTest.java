@@ -247,9 +247,9 @@ class SymbolTest {
         symbol.addAssignment(new SymbolReference(12, 0, ReferenceType.WRITE, "x = 5"));
 
         List<SymbolReference> assignments = symbol.getAssignments();
+        SymbolReference newRef = new SymbolReference(15, 0, ReferenceType.WRITE, "x = 10");
 
-        assertThrows(UnsupportedOperationException.class, () ->
-            assignments.add(new SymbolReference(15, 0, ReferenceType.WRITE, "x = 10")));
+        assertThrows(UnsupportedOperationException.class, () -> assignments.add(newRef));
     }
 
     @Test
@@ -258,9 +258,9 @@ class SymbolTest {
         symbol.addReference(new SymbolReference(15, 0, ReferenceType.READ, "x"));
 
         List<SymbolReference> references = symbol.getReferences();
+        SymbolReference newRef = new SymbolReference(20, 0, ReferenceType.READ, "x + 1");
 
-        assertThrows(UnsupportedOperationException.class, () ->
-            references.add(new SymbolReference(20, 0, ReferenceType.READ, "x + 1")));
+        assertThrows(UnsupportedOperationException.class, () -> references.add(newRef));
     }
 
     @Test
@@ -285,14 +285,14 @@ class SymbolTest {
     void testEqualsNullObject() {
         Symbol symbol = new Symbol("x", 10, globalScope, false, false);
 
-        assertNotEquals(symbol, null);
+        assertNotEquals(null, symbol);
     }
 
     @Test
     void testEqualsDifferentClass() {
         Symbol symbol = new Symbol("x", 10, globalScope, false, false);
 
-        assertNotEquals(symbol, "not a symbol");
+        assertNotEquals("not a symbol", symbol);
     }
 
     @Test

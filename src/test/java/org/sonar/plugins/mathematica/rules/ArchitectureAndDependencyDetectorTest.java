@@ -3,12 +3,16 @@ package org.sonar.plugins.mathematica.rules;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.api.batch.sensor.issue.NewIssue;
 import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.api.rule.RuleKey;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -349,7 +353,7 @@ class ArchitectureAndDependencyDetectorTest {
     void testDetectOrphanedTestFileNoPackage() {
         String content = "x = 1";
         assertThatCode(() -> ArchitectureAndDependencyDetector.detectOrphanedTestFile(
-            mockContext, mockInputFile, content))
+            mockContext, mockInputFile))
             .doesNotThrowAnyException();
     }
 
@@ -405,7 +409,7 @@ class ArchitectureAndDependencyDetectorTest {
     void testDetectDuplicateSymbolDefinitionAcrossPackagesNoPackage() {
         String content = "x = 1";
         assertThatCode(() -> ArchitectureAndDependencyDetector.detectDuplicateSymbolDefinitionAcrossPackages(
-            mockContext, mockInputFile, content))
+            mockContext, mockInputFile))
             .doesNotThrowAnyException();
     }
 
@@ -477,28 +481,25 @@ class ArchitectureAndDependencyDetectorTest {
             .doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectInconsistentPackageNamingNoPackage() {
+    @FunctionalInterface
+    interface TriConsumer<T, U, V> {
+        void accept(T t, U u, V v);
+    }
+
+    @ParameterizedTest
+    @MethodSource("provideDetectorMethods")
+    void testDetectorMethodsNoPackage(TriConsumer<SensorContext, InputFile, String> detectorMethod) {
         String content = "x = 1";
-        assertThatCode(() -> ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(
-            mockContext, mockInputFile, content))
+        assertThatCode(() -> detectorMethod.accept(mockContext, mockInputFile, content))
             .doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectPrivateSymbolUsedExternallyNoPackage() {
-        String content = "x = 1";
-        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPrivateSymbolUsedExternally(
-            mockContext, mockInputFile, content))
-            .doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectPackageDependsOnApplicationCodeNoPackage() {
-        String content = "x = 1";
-        assertThatCode(() -> ArchitectureAndDependencyDetector.detectPackageDependsOnApplicationCode(
-            mockContext, mockInputFile, content))
-            .doesNotThrowAnyException();
+    private static Stream<TriConsumer<SensorContext, InputFile, String>> provideDetectorMethods() {
+        return Stream.of(
+            (ctx, file, content) -> ArchitectureAndDependencyDetector.detectInconsistentPackageNaming(ctx, file, content),
+            (ctx, file, content) -> ArchitectureAndDependencyDetector.detectPrivateSymbolUsedExternally(ctx, file, content),
+            (ctx, file, content) -> ArchitectureAndDependencyDetector.detectPackageDependsOnApplicationCode(ctx, file, content)
+        );
     }
 
     // ========================================
@@ -527,13 +528,13 @@ class ArchitectureAndDependencyDetectorTest {
     // ========================================
 
     @Test
-    void testConstructorThrowsException() {
-        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(Exception.class, () -> {
-            java.lang.reflect.Constructor<ArchitectureAndDependencyDetector> constructor =
-                ArchitectureAndDependencyDetector.class.getDeclaredConstructor();
-            constructor.setAccessible(true);
-            constructor.newInstance();
-        });
+    void testConstructorThrowsException() throws Exception {
+        java.lang.reflect.Constructor<ArchitectureAndDependencyDetector> constructor =
+            ArchitectureAndDependencyDetector.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+
+        Exception exception = org.junit.jupiter.api.Assertions.assertThrows(Exception.class,
+            () -> constructor.newInstance());
 
         assertThat(exception.getCause()).isInstanceOf(UnsupportedOperationException.class);
     }
@@ -855,14 +856,14 @@ class ArchitectureAndDependencyDetectorTest {
             ArchitectureAndDependencyDetector.detectDeadPackage(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectFunctionOnlyCalledOnce(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectOverAbstractedAPI(mockContext, mockInputFile, content);
-            ArchitectureAndDependencyDetector.detectOrphanedTestFile(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectOrphanedTestFile(mockContext, mockInputFile);
             ArchitectureAndDependencyDetector.detectImplementationWithoutTests(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectDeprecatedAPIStillUsedInternally(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectInternalAPIUsedLikePublic(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectCommentedOutPackageLoad(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectConditionalPackageLoad(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectPackageLoadedButNotListedInMetadata(mockContext, mockInputFile, content);
-            ArchitectureAndDependencyDetector.detectDuplicateSymbolDefinitionAcrossPackages(mockContext, mockInputFile, content);
+            ArchitectureAndDependencyDetector.detectDuplicateSymbolDefinitionAcrossPackages(mockContext, mockInputFile);
             ArchitectureAndDependencyDetector.detectSymbolRedefinitionAfterImport(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectPackageVersionMismatch(mockContext, mockInputFile, content);
             ArchitectureAndDependencyDetector.detectPublicExportMissingUsageMessage(mockContext, mockInputFile, content);
