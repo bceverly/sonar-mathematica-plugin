@@ -40,6 +40,7 @@ public class ScopingNode extends AstNode {
         this.body = body;
     }
 
+    @SuppressWarnings("java:S107") // Backward compatibility constructor, prefer SourceLocation-based one
     public ScopingNode(
         ScopingType scopingType,
         List<String> variables,

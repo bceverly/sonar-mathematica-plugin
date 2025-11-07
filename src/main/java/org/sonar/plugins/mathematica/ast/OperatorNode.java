@@ -22,19 +22,19 @@ public class OperatorNode extends AstNode {
         // Unary
         UNARY_MINUS, UNARY_PLUS, LOGICAL_NOT,
         // Special Mathematica operators
-        MAP,              // /@
-        APPLY,            // @@
-        APPLY_LEVEL_1,    // @@@
-        REPLACE_ALL,      // /.
-        REPLACE_REPEATED, // //.
-        CONDITION,        // /;
-        POSTFIX,          // //
-        PREFIX,           // @
-        INFIX,            // ~f~
-        FUNCTION_APPLICATION, // f[x]
-        PART,             // [[...]]
-        RULE,             // ->
-        DELAYED_RULE      // :>
+        MAP,              // /@ //NOSONAR - Mathematica operator syntax example
+        APPLY,            // @@ //NOSONAR - Mathematica operator syntax example
+        APPLY_LEVEL_1,    // @@@ //NOSONAR - Mathematica operator syntax example
+        REPLACE_ALL,      // /. //NOSONAR - Mathematica operator syntax example
+        REPLACE_REPEATED, // //. //NOSONAR - Mathematica operator syntax example
+        CONDITION,        // /; //NOSONAR - Mathematica operator syntax example, not commented code
+        POSTFIX,          // // //NOSONAR - Mathematica operator syntax example
+        PREFIX,           // @ //NOSONAR - Mathematica operator syntax example
+        INFIX,            // ~f~ //NOSONAR - Mathematica operator syntax example
+        FUNCTION_APPLICATION, // f[x] //NOSONAR - Mathematica syntax example
+        PART,             // [[...]] //NOSONAR - Mathematica syntax example
+        RULE,             // -> //NOSONAR - Mathematica operator syntax example
+        DELAYED_RULE      // :> //NOSONAR - Mathematica operator syntax example
     }
 
     private final OperatorType operatorType;
@@ -56,6 +56,7 @@ public class OperatorNode extends AstNode {
         this.operatorSymbol = operatorSymbol;
     }
 
+    @SuppressWarnings("java:S107") // Backward compatibility constructor, prefer SourceLocation-based one
     public OperatorNode(
         OperatorType operatorType,
         AstNode leftOperand,

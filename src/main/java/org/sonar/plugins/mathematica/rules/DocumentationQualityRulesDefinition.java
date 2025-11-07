@@ -17,6 +17,7 @@ import org.sonar.api.issue.impact.Severity;
  * Rules are fully defined and documented in SonarQube for manual review.
  * Detection patterns can be added incrementally as needed.
  */
+@SuppressWarnings("java:S1135") // This file defines rules for detecting task markers, not actual TODOs
 public final class DocumentationQualityRulesDefinition {
 
     private static final String TECHNICAL_DEBT = "technical-debt";

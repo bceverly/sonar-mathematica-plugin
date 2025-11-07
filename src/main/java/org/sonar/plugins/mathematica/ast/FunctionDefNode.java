@@ -30,6 +30,7 @@ public class FunctionDefNode extends AstNode {
         }
     }
 
+    @SuppressWarnings("java:S107") // Backward compatibility constructor, prefer SourceLocation-based one
     public FunctionDefNode(String functionName, List<String> parameters, AstNode body,
                            boolean isDelayed, int startLine, int startColumn, int endLine, int endColumn) {
         this(functionName, parameters, body, isDelayed,

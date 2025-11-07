@@ -1421,6 +1421,7 @@ public class CodeSmellDetector extends BaseDetector {
     /**
      * Detect FIXME comments that should be tracked.
      */
+    @SuppressWarnings("java:S1135") // This method detects FIXMEs, not a FIXME itself
     public void detectFixmeTracking(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FIXME_COMMENT_PATTERN.matcher(content);

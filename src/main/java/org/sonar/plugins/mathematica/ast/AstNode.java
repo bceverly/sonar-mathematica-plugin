@@ -33,8 +33,8 @@ public abstract class AstNode {
         FUNCTION_CALL,     // f[x]
         IDENTIFIER,        // variable or function name
         LITERAL,           // number or string
-        LIST,              // {1, 2, 3}
-        ASSOCIATION,       // <|a -> 1, b -> 2|>
+        LIST,              // {1, 2, 3} //NOSONAR - Mathematica syntax example, not commented code
+        ASSOCIATION,       // <|a -> 1, b -> 2|> //NOSONAR - Mathematica syntax example
         PATTERN,           // x_, x__, x___, x_?test
         OPERATOR,          // +, -, *, /, :=, ->, etc.
         CONTROL_FLOW,      // If, While, Do, For, etc.

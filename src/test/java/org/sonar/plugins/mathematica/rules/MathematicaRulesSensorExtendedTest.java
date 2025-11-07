@@ -2,6 +2,9 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.FileSystem;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
@@ -22,6 +25,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
@@ -84,67 +88,28 @@ class MathematicaRulesSensorExtendedTest {
             .doesNotThrowAnyException();
     }
 
-    @Test
-    void testExecuteWithSingleSmallFile() throws IOException {
-        // Create a temp file with simple Mathematica code
-        Path tempFile = Files.createTempFile("test", ".m");
-        Files.write(tempFile, "f[x_] := x + 1".getBytes(StandardCharsets.UTF_8));
-
-        try {
-            InputFile mockInputFile = createMockInputFile(tempFile, 1);
-            List<InputFile> files = new ArrayList<>();
-            files.add(mockInputFile);
-
-            when(mockPredicates.and(any(), any())).thenReturn(mock(org.sonar.api.batch.fs.FilePredicate.class));
-            when(mockFileSystem.inputFiles(any())).thenReturn(files);
-
-            // Execute should process the file
-            assertThatCode(() -> sensor.execute(mockContext))
-                .doesNotThrowAnyException();
-
-        } finally {
-            Files.deleteIfExists(tempFile);
-        }
+    static Stream<Arguments> provideFileTestCases() {
+        return Stream.of(
+            Arguments.of("f[x_] := x + 1", 1),  // Single small file
+            Arguments.of("x=1\ny=2", 2),        // File with 2 lines
+            Arguments.of("   \n  \n  ", 3)      // Empty/whitespace file
+        );
     }
 
-    @Test
-    void testExecuteWithFileThatHas2Lines() throws IOException {
-        // Test file with exactly 2 lines (< 3 line threshold)
+    @ParameterizedTest
+    @MethodSource("provideFileTestCases")
+    void testExecuteWithVariousFiles(String fileContent, int lineCount) throws IOException {
         Path tempFile = Files.createTempFile("test", ".m");
-        Files.write(tempFile, "x=1\ny=2".getBytes(StandardCharsets.UTF_8));
+        Files.write(tempFile, fileContent.getBytes(StandardCharsets.UTF_8));
 
         try {
-            InputFile mockInputFile = createMockInputFile(tempFile, 2);
+            InputFile mockInputFile = createMockInputFile(tempFile, lineCount);
             List<InputFile> files = new ArrayList<>();
             files.add(mockInputFile);
 
             when(mockPredicates.and(any(), any())).thenReturn(mock(org.sonar.api.batch.fs.FilePredicate.class));
             when(mockFileSystem.inputFiles(any())).thenReturn(files);
 
-            // Should skip file with <3 lines
-            assertThatCode(() -> sensor.execute(mockContext))
-                .doesNotThrowAnyException();
-
-        } finally {
-            Files.deleteIfExists(tempFile);
-        }
-    }
-
-    @Test
-    void testExecuteWithEmptyFile() throws IOException {
-        // Test file that is empty
-        Path tempFile = Files.createTempFile("test", ".m");
-        Files.write(tempFile, "   \n  \n  ".getBytes(StandardCharsets.UTF_8));
-
-        try {
-            InputFile mockInputFile = createMockInputFile(tempFile, 3);
-            List<InputFile> files = new ArrayList<>();
-            files.add(mockInputFile);
-
-            when(mockPredicates.and(any(), any())).thenReturn(mock(org.sonar.api.batch.fs.FilePredicate.class));
-            when(mockFileSystem.inputFiles(any())).thenReturn(files);
-
-            // Should skip empty/whitespace-only file
             assertThatCode(() -> sensor.execute(mockContext))
                 .doesNotThrowAnyException();
 

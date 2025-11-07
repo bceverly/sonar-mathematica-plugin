@@ -38,6 +38,7 @@ public class PureFunctionNode extends AstNode {
         this.maxSlotNumber = maxSlotNumber;
     }
 
+    @SuppressWarnings("java:S107") // Backward compatibility constructor, prefer SourceLocation-based one
     public PureFunctionNode(
         PureFunctionForm form,
         List<String> parameters,

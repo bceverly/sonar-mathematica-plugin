@@ -49,46 +49,25 @@ class ComprehensiveParserTest {
         assertThat(nodes).isNotNull().hasSizeGreaterThan(0);
     }
 
-    @Test
-    void testParseWithStringLiterals() {
-        // This test exercises the STRING pattern with possessive quantifiers
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "message = \"Hello, World!\";";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes).isNotNull();
-    }
-
-    @Test
-    void testParseWithEscapedQuotes() {
-        // Test that escaped quotes in strings are handled correctly
-        ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "message = \"He said \\\"Hello\\\"\";";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes).isNotNull();
-    }
-
-    @Test
-    void testParseWithLongString() {
-        // Test that long strings don't cause stack overflow with possessive quantifiers
-        ComprehensiveParser parser = new ComprehensiveParser();
+    static Stream<String> provideParseTestCases() {
         StringBuilder longString = new StringBuilder("message = \"");
         for (int i = 0; i < 10000; i++) {
             longString.append("a");
         }
         longString.append("\";");
 
-        List<AstNode> nodes = parser.parse(longString.toString());
-
-        assertThat(nodes).isNotNull();
+        return Stream.of(
+            "message = \"Hello, World!\";",  // String literals with possessive quantifiers
+            "message = \"He said \\\"Hello\\\"\";",  // Escaped quotes
+            longString.toString(),  // Long string (no stack overflow with possessive quantifiers)
+            "(* comment *) x = 1;"  // Comment removal
+        );
     }
 
-    @Test
-    void testParseWithComments() {
-        // Test comment removal
+    @ParameterizedTest
+    @MethodSource("provideParseTestCases")
+    void testParseVariousInputs(String code) {
         ComprehensiveParser parser = new ComprehensiveParser();
-        String code = "(* comment *) x = 1;";
         List<AstNode> nodes = parser.parse(code);
 
         assertThat(nodes).isNotNull();

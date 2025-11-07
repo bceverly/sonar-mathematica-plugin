@@ -40,6 +40,7 @@ public class ControlFlowNode extends AstNode {
         this.elseClause = elseClause;
     }
 
+    @SuppressWarnings("java:S107") // Backward compatibility constructor, prefer SourceLocation-based one
     public ControlFlowNode(
         ControlFlowType controlFlowType,
         AstNode condition,

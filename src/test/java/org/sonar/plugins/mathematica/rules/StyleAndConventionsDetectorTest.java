@@ -1,29 +1,26 @@
 package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.MethodSource;
+
+import java.util.stream.Stream;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
 class StyleAndConventionsDetectorTest {
 
-    @Test
-    void testStringLiteralPatternMatchesSimpleString() {
-        // Test that the STRING_LITERAL_PATTERN regex works correctly
-        String code = "message = \"Hello, World!\";";
-        assertThat(code).matches(".*\"[^\"\\\\]*+(?:\\\\.[^\"\\\\]*+)*+\".*");
+    static Stream<String> provideStringLiteralTestCases() {
+        return Stream.of(
+            "message = \"Hello, World!\";",          // Simple string
+            "message = \"He said \\\"Hello\\\"\";",  // Escaped quotes
+            "path = \"C:\\\\Users\\\\test\\\\\";"    // Escaped backslashes
+        );
     }
 
-    @Test
-    void testStringLiteralPatternMatchesEscapedQuotes() {
-        // Test that escaped quotes are handled correctly
-        String code = "message = \"He said \\\"Hello\\\"\";";
-        assertThat(code).matches(".*\"[^\"\\\\]*+(?:\\\\.[^\"\\\\]*+)*+\".*");
-    }
-
-    @Test
-    void testStringLiteralPatternMatchesEscapedBackslashes() {
-        // Test that escaped backslashes are handled correctly
-        String code = "path = \"C:\\\\Users\\\\test\\\\\";";
+    @ParameterizedTest
+    @MethodSource("provideStringLiteralTestCases")
+    void testStringLiteralPatternMatches(String code) {
         assertThat(code).matches(".*\"[^\"\\\\]*+(?:\\\\.[^\"\\\\]*+)*+\".*");
     }
 
