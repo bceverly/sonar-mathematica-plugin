@@ -361,13 +361,17 @@ public class MathematicaParser {
         List<Integer> semicolons = new ArrayList<>();
         List<Integer> assignments = new ArrayList<>();
 
-        for (int i = 0; i < content.length(); i++) {
+        int i = 0;
+        while (i < content.length()) {
             char c = content.charAt(i);
             if (c == ';') {
                 semicolons.add(i);
+                i++;
             } else if (c == ':' && i + 1 < content.length() && content.charAt(i + 1) == '=') {
                 assignments.add(i);
-                i++; // Skip the '=' character
+                i += 2; // Skip both ':' and '=' characters
+            } else {
+                i++;
             }
         }
 

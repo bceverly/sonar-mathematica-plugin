@@ -270,10 +270,10 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
                     // Check each variable
                     String[] varList = vars.split(",");
-                    for (String var : varList) {
-                        var = var.trim();
+                    for (String varEntry : varList) {
+                        varEntry = varEntry.trim();
                         // Extract variable name (before = or alone)
-                        String varName = var.split("\\s*+=")[0].trim(); //NOSONAR
+                        String varName = varEntry.split("\\s*+=")[0].trim(); //NOSONAR
 
                         if (!varName.isEmpty() && !body.contains(varName)) {
                             int line = calculateLineNumber(content, matcher.start());
@@ -303,10 +303,10 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
                     // Check each variable
                     String[] varList = vars.split(",");
-                    for (String var : varList) {
-                        var = var.trim();
+                    for (String varEntry : varList) {
+                        varEntry = varEntry.trim();
                         // Extract variable name (before =)
-                        String varName = var.split("\\s*+=")[0].trim(); //NOSONAR
+                        String varName = varEntry.split("\\s*+=")[0].trim(); //NOSONAR
 
                         if (!varName.isEmpty() && !body.contains(varName)) {
                             int line = calculateLineNumber(content, matcher.start());
@@ -673,8 +673,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
             while (moduleMatcher.find()) {
                 String vars = moduleMatcher.group(1);
                 String[] varList = vars.split(",");
-                for (String var : varList) {
-                    String varName = var.trim().split("\\s*+=")[0].trim(); //NOSONAR
+                for (String varEntry : varList) {
+                    String varName = varEntry.trim().split("\\s*+=")[0].trim(); //NOSONAR
                     if (globalVars.contains(varName)) {
                         int line = calculateLineNumber(content, moduleMatcher.start());
                         reportIssue(context, inputFile, line,
@@ -736,8 +736,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 while (moduleMatcher.find()) {
                     String vars = moduleMatcher.group(1);
                     String[] varList = vars.split(",");
-                    for (String var : varList) {
-                        String varName = var.trim().split("\\s*+=")[0].trim(); //NOSONAR
+                    for (String varEntry : varList) {
+                        String varName = varEntry.trim().split("\\s*+=")[0].trim(); //NOSONAR
                         if (paramNames.contains(varName)) {
                             int line = calculateLineNumber(content, bodyStart + moduleMatcher.start());
                             reportIssue(context, inputFile, line,
@@ -857,8 +857,8 @@ public class UnusedAndNamingDetector extends BaseDetector {
                 String vars = matcher.group(1);
                 String[] varList = vars.split(",");
 
-                for (String var : varList) {
-                    String varName = var.trim().split("\\s*+=")[0].trim(); //NOSONAR
+                for (String varEntry : varList) {
+                    String varName = varEntry.trim().split("\\s*+=")[0].trim(); //NOSONAR
                     if (BUILTIN_FUNCTIONS.contains(varName)) {
                         int line = calculateLineNumber(content, matcher.start());
                         reportIssue(context, inputFile, line,

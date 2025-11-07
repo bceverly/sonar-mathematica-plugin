@@ -66,22 +66,20 @@ public class MathematicaMetricsSensor implements Sensor {
         for (InputFile inputFile : inputFiles) {
             try {
                 analyzeFile(context, inputFile);
-            } catch (Throwable t) {
-                // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
-                if (t instanceof Error) {
-                    Error fatalError = (Error) t;
-                    LOG.error("========================================");
-                    LOG.error("FATAL ERROR in Metrics Sensor while analyzing file: {}", inputFile.filename());
-                    LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
-                    LOG.error("File URI: {}", inputFile.uri());
-                    LOG.error("File size: {} lines", inputFile.lines());
-                    LOG.error("Error type: {}", fatalError.getClass().getName());
-                    LOG.error("========================================");
-                    // Re-throw fatal errors to crash the scanner
-                    throw fatalError;
-                }
+            } catch (Error fatalError) {
+                // Fatal error (StackOverflowError, OutOfMemoryError, etc.)
+                LOG.error("========================================");
+                LOG.error("FATAL ERROR in Metrics Sensor while analyzing file: {}", inputFile.filename());
+                LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
+                LOG.error("File URI: {}", inputFile.uri());
+                LOG.error("File size: {} lines", inputFile.lines());
+                LOG.error("Error type: {}", fatalError.getClass().getName());
+                LOG.error("========================================");
+                // Re-throw fatal errors to crash the scanner
+                throw fatalError;
+            } catch (Exception e) {
                 // Non-fatal exceptions: log and continue
-                LOG.error("Error analyzing file: {}", inputFile, t);
+                LOG.error("Error analyzing file: {}", inputFile, e);
             }
         }
     }

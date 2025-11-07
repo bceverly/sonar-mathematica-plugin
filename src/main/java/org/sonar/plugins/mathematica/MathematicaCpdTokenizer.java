@@ -48,20 +48,18 @@ public class MathematicaCpdTokenizer implements Sensor {
             LOG.debug("Tokenizing file: {}", inputFile);
             try {
                 tokenize(context, inputFile);
-            } catch (Throwable t) {
-                // Check if this is a fatal error (StackOverflowError, OutOfMemoryError, etc.)
-                if (t instanceof Error) {
-                    Error fatalError = (Error) t;
-                    LOG.error("========================================");
-                    LOG.error("FATAL ERROR in CPD Tokenizer while analyzing file: {}", inputFile.filename());
-                    LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
-                    LOG.error("File URI: {}", inputFile.uri());
-                    LOG.error("File size: {} lines", inputFile.lines());
-                    LOG.error("Error type: {}", fatalError.getClass().getName());
-                    LOG.error("========================================");
-                    // Re-throw fatal errors to crash the scanner
-                    throw fatalError;
-                }
+            } catch (Error fatalError) {
+                // Fatal error (StackOverflowError, OutOfMemoryError, etc.)
+                LOG.error("========================================");
+                LOG.error("FATAL ERROR in CPD Tokenizer while analyzing file: {}", inputFile.filename());
+                LOG.error("Full file path: {}", Paths.get(inputFile.uri()).toAbsolutePath());
+                LOG.error("File URI: {}", inputFile.uri());
+                LOG.error("File size: {} lines", inputFile.lines());
+                LOG.error("Error type: {}", fatalError.getClass().getName());
+                LOG.error("========================================");
+                // Re-throw fatal errors to crash the scanner
+                throw fatalError;
+            } catch (Exception e) {
                 // Non-fatal exceptions already logged in tokenize()
             }
         }
@@ -107,7 +105,7 @@ public class MathematicaCpdTokenizer implements Sensor {
         private static final Pattern NUMBER_PATTERN = Pattern.compile("\\d+\\.?\\d*+(?:[eE][+-]?\\d+)?");
         private static final Pattern IDENTIFIER_PATTERN = Pattern.compile("[a-zA-Z$][a-zA-Z0-9$]*");
         private static final Pattern OPERATOR_PATTERN = Pattern.compile(
-            "->|:>|:=|@@|/@|//@|/\\.|//|/;|@@@|===|=!=|>=|<=|\\+\\+|--|&&|\\|\\||!=|==|"             + "[+\\-*/^=<>!&|~@#%;,\\[\\]{}().]"
+            "->|:>|:=|@@@|@@|//@|/@|/\\.|//|/;|===|=!=|>=|<=|\\+\\+|--|&&|\\|\\||[+\\-*/^=<>!&|~@#%;,\\[\\]{}().]"
         );
 
         MathematicaTokenizer(String content) {
