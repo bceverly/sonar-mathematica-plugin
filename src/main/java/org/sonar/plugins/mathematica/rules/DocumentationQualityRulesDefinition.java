@@ -9,7 +9,7 @@ import org.sonar.api.issue.impact.Severity;
  * Documentation Quality Rules for comments and code documentation.
  *
  * <p>This file contains 10 comment quality code smell rules:
- * - 3 Comment Tracking rules (task markers and FIXME/HACK)
+ * - 3 Comment Tracking rules (task markers and fix-me/hack style comments)
  * - 2 Commented Code rules
  * - 5 Documentation rules
  *

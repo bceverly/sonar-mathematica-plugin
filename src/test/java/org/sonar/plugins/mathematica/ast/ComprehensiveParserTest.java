@@ -12,6 +12,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 class ComprehensiveParserTest {
 
     static Stream<String> provideComplexCodeSamples() {
+        StringBuilder longString = new StringBuilder("message = \"");
+        for (int i = 0; i < 10000; i++) {
+            longString.append("a");
+        }
+        longString.append("\";");
+
         return Stream.of(
             "f[x_, y_] := Module[{z}, z = x + y; z * 2]",
             "(* outer (* nested *) comment *) x = 1;",
@@ -23,7 +29,11 @@ class ComprehensiveParserTest {
             "x = 42; y = 3.14; z = 1.5e-10;",
             "x := RandomReal[]",
             "f[x_Integer, y_Real] := x + y",
-            "]][[[invalid syntax"
+            "]][[[invalid syntax",
+            "message = \"Hello, World!\";",
+            "message = \"He said \\\"Hello\\\"\";",
+            longString.toString(),
+            "(* comment *) x = 1;"
         );
     }
 
@@ -49,33 +59,9 @@ class ComprehensiveParserTest {
         assertThat(nodes).isNotNull().hasSizeGreaterThan(0);
     }
 
-    static Stream<String> provideParseTestCases() {
-        StringBuilder longString = new StringBuilder("message = \"");
-        for (int i = 0; i < 10000; i++) {
-            longString.append("a");
-        }
-        longString.append("\";");
-
-        return Stream.of(
-            "message = \"Hello, World!\";",  // String literals with possessive quantifiers
-            "message = \"He said \\\"Hello\\\"\";",  // Escaped quotes
-            longString.toString(),  // Long string (no stack overflow with possessive quantifiers)
-            "(* comment *) x = 1;"  // Comment removal
-        );
-    }
-
-    @ParameterizedTest
-    @MethodSource("provideParseTestCases")
-    void testParseVariousInputs(String code) {
-        ComprehensiveParser parser = new ComprehensiveParser();
-        List<AstNode> nodes = parser.parse(code);
-
-        assertThat(nodes).isNotNull();
-    }
-
     @ParameterizedTest
     @MethodSource("provideComplexCodeSamples")
-    void testParseVariousComplexExpressions(String code) {
+    void testParseVariousInputs(String code) {
         ComprehensiveParser parser = new ComprehensiveParser();
         List<AstNode> nodes = parser.parse(code);
 
