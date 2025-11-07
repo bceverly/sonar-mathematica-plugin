@@ -249,44 +249,62 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher defMatcher = TYPED_FUNCTION_DEF.matcher(content);
             while (defMatcher.find()) {
-                String funcName = defMatcher.group(1);
-                String params = defMatcher.group(2);
-
-                // Extract type constraint
-                String typeConstraint = null;
-                if (params.contains("_Integer")) {
-                    typeConstraint = "Integer";
-                } else if (params.contains("_Real")) {
-                    typeConstraint = "Real";
-                } else if (params.contains("_String")) {
-                    typeConstraint = "String";
-                }
-
-                if (typeConstraint != null) {
-                    // Look for calls to this function with wrong type
-                    //NOSONAR - Possessive quantifiers prevent backtracking
-                    Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[([^\\]]+)\\]"); //NOSONAR
-                    Matcher callMatcher = callPattern.matcher(content);
-
-                    while (callMatcher.find()) {
-                        String arg = callMatcher.group(1);
-
-                        boolean typeMismatch = ("Integer".equals(typeConstraint) && arg.matches("\"[^\"]+\""))
-                            || ("String".equals(typeConstraint) && arg.matches("\\d+"));
-
-                        if (typeMismatch) {
-                            int line = calculateLineNumber(content, callMatcher.start());
-                            reportIssue(context, inputFile, line,
-                                MathematicaRulesDefinition.PATTERN_TYPE_MISMATCH_KEY,
-                                String.format("Function '%s' expects %s but called with incompatible type.",
-                                    funcName, typeConstraint));
-                        }
-                    }
-                }
+                checkFunctionDefinitionForTypeMismatch(context, inputFile, content, defMatcher);
             }
         } catch (Exception e) {
             LOG.debug("Error detecting pattern type mismatches in {}", inputFile.filename(), e);
         }
+    }
+
+    private void checkFunctionDefinitionForTypeMismatch(SensorContext context, InputFile inputFile,
+                                                         String content, Matcher defMatcher) {
+        String funcName = defMatcher.group(1);
+        String params = defMatcher.group(2);
+        String typeConstraint = extractTypeConstraint(params);
+
+        if (typeConstraint != null) {
+            checkFunctionCalls(context, inputFile, content, funcName, typeConstraint);
+        }
+    }
+
+    private String extractTypeConstraint(String params) {
+        if (params.contains("_Integer")) {
+            return "Integer";
+        } else if (params.contains("_Real")) {
+            return "Real";
+        } else if (params.contains("_String")) {
+            return "String";
+        }
+        return null;
+    }
+
+    private void checkFunctionCalls(SensorContext context, InputFile inputFile, String content,
+                                     String funcName, String typeConstraint) {
+        //NOSONAR - Possessive quantifiers prevent backtracking
+        Pattern callPattern = Pattern.compile("\\b" + Pattern.quote(funcName) + "\\s*+\\[([^\\]]+)\\]"); //NOSONAR
+        Matcher callMatcher = callPattern.matcher(content);
+
+        while (callMatcher.find()) {
+            checkCallForTypeMismatch(context, inputFile, content, funcName, typeConstraint, callMatcher);
+        }
+    }
+
+    private void checkCallForTypeMismatch(SensorContext context, InputFile inputFile, String content,
+                                          String funcName, String typeConstraint, Matcher callMatcher) {
+        String arg = callMatcher.group(1);
+
+        if (hasTypeMismatch(typeConstraint, arg)) {
+            int line = calculateLineNumber(content, callMatcher.start());
+            reportIssue(context, inputFile, line,
+                MathematicaRulesDefinition.PATTERN_TYPE_MISMATCH_KEY,
+                String.format("Function '%s' expects %s but called with incompatible type.",
+                    funcName, typeConstraint));
+        }
+    }
+
+    private boolean hasTypeMismatch(String typeConstraint, String arg) {
+        return ("Integer".equals(typeConstraint) && arg.matches("\"[^\"]+\""))
+            || ("String".equals(typeConstraint) && arg.matches("\\d+"));
     }
 
     public void detectOptionalTypeInconsistent(SensorContext context, InputFile inputFile, String content) {

@@ -205,51 +205,29 @@ public class MathematicaRulesSensor implements Sensor {
      */
     private void startIssueSaverThread(SensorContext context) {
         shutdownSaver = false;
-        Thread thread = new Thread(() -> {
+        Thread thread = new Thread(new IssueSaverRunnable(context), "MathematicaIssueSaver");
+        thread.setDaemon(false); // Ensure it completes before shutdown
+        thread.start();
+        issueSaverThread.set(thread);
+    }
+
+    /**
+     * Runnable that processes issues from the queue.
+     */
+    private class IssueSaverRunnable implements Runnable {
+        private final SensorContext context;
+        private long lastLogTime;
+
+        IssueSaverRunnable(SensorContext context) {
+            this.context = context;
+            this.lastLogTime = System.currentTimeMillis();
+        }
+
+        @Override
+        public void run() {
             LOG.debug("Issue saver thread started");
-            long lastLogTime = System.currentTimeMillis();
             try {
-                while (!shutdownSaver || !issueQueue.isEmpty()) {
-                    IssueData data = issueQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
-                    if (data != null) {
-                        long saveStart = System.currentTimeMillis();
-
-                        // Create and save issue on THIS thread (saver thread)
-                        org.sonar.api.batch.sensor.issue.NewIssue issue = context.newIssue()
-                            .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, data.ruleKey));
-
-                        org.sonar.api.batch.sensor.issue.NewIssueLocation location = issue.newLocation()
-                            .on(data.inputFile)
-                            .at(data.inputFile.selectLine(data.line))
-                            .message(data.message);
-
-                        issue.at(location);
-
-                        // Add Quick Fix if available
-                        if (data.quickFixData != null) {
-                            addQuickFixToIssue(issue, data.inputFile, data.ruleKey, data.quickFixData);
-                        }
-
-                        issue.save();
-
-                        long saveDuration = System.currentTimeMillis() - saveStart;
-                        long saved = savedIssues.incrementAndGet();
-
-                        // Log progress every 10,000 issues (DEBUG) or if save is extremely slow (DEBUG)
-                        if (saveDuration > 2000) {
-                            // Only log if save takes >2 seconds (truly problematic)
-                            LOG.debug("⚠ SLOW SAVE: Issue #{} took {}ms (queue: {})",
-                                saved, saveDuration, issueQueue.size());
-                        } else if (saved % 10000 == 0) {
-                            long elapsed = System.currentTimeMillis() - lastLogTime;
-                            // Fix rate calculation to avoid overflow/nonsense values
-                            int rate = elapsed > 0 ? (int) (10000000.0 / elapsed) : 0;
-                            LOG.debug("Issue saver progress: {}/{} saved ({} issues/sec, queue: {})",
-                                saved, queuedIssues.get(), rate, issueQueue.size());
-                            lastLogTime = System.currentTimeMillis();
-                        }
-                    }
-                }
+                processIssueQueue();
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
                 LOG.error("Issue saver thread interrupted", e);
@@ -257,11 +235,63 @@ public class MathematicaRulesSensor implements Sensor {
                 LOG.error("Error in issue saver thread", e);
             }
             LOG.info("Issue saver thread finished. Saved {}/{} issues", savedIssues.get(), queuedIssues.get());
-        }, "MathematicaIssueSaver");
+        }
 
-        thread.setDaemon(false); // Ensure it completes before shutdown
-        thread.start();
-        issueSaverThread.set(thread);
+        private void processIssueQueue() throws InterruptedException {
+            while (!shutdownSaver || !issueQueue.isEmpty()) {
+                IssueData data = issueQueue.poll(100, java.util.concurrent.TimeUnit.MILLISECONDS);
+                if (data != null) {
+                    processSingleIssue(data);
+                }
+            }
+        }
+
+        private void processSingleIssue(IssueData data) {
+            long saveStart = System.currentTimeMillis();
+            createAndSaveIssue(data);
+            long saveDuration = System.currentTimeMillis() - saveStart;
+            long saved = savedIssues.incrementAndGet();
+            logProgressIfNeeded(saved, saveDuration);
+        }
+
+        private void createAndSaveIssue(IssueData data) {
+            org.sonar.api.batch.sensor.issue.NewIssue issue = context.newIssue()
+                .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, data.ruleKey));
+
+            org.sonar.api.batch.sensor.issue.NewIssueLocation location = issue.newLocation()
+                .on(data.inputFile)
+                .at(data.inputFile.selectLine(data.line))
+                .message(data.message);
+
+            issue.at(location);
+
+            if (data.quickFixData != null) {
+                addQuickFixToIssue(issue, data.inputFile, data.ruleKey, data.quickFixData);
+            }
+
+            issue.save();
+        }
+
+        private void logProgressIfNeeded(long saved, long saveDuration) {
+            if (saveDuration > 2000) {
+                logSlowSave(saved, saveDuration);
+            } else if (saved % 10000 == 0) {
+                logPeriodicProgress(saved);
+            }
+        }
+
+        private void logSlowSave(long saved, long saveDuration) {
+            LOG.debug("⚠ SLOW SAVE: Issue #{} took {}ms (queue: {})",
+                saved, saveDuration, issueQueue.size());
+        }
+
+        private void logPeriodicProgress(long saved) {
+            long elapsed = System.currentTimeMillis() - lastLogTime;
+            int rate = elapsed > 0 ? (int) (10000000.0 / elapsed) : 0;
+            LOG.debug("Issue saver progress: {}/{} saved ({} issues/sec, queue: {})",
+                saved, queuedIssues.get(), rate, issueQueue.size());
+            lastLogTime = System.currentTimeMillis();
+        }
     }
 
     /**

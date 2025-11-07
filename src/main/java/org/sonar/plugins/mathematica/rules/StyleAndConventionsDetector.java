@@ -342,31 +342,54 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = listPattern.matcher(content);
 
             while (matcher.find()) {
-                String listContent = matcher.group();
-                String[] parts = listContent.split(",");
-
-                if (parts.length > 3) {
-                    // Check if some elements are aligned and some are not
-                    int withNewline = 0;
-                    int withoutNewline = 0;
-
-                    for (String part : parts) {
-                        if (part.contains("\n")) {
-                            withNewline++;
-                        } else {
-                            withoutNewline++;
-                        }
-                    }
-
-                    if (withNewline > 0 && withoutNewline > 0) {
-                        int lineNumber = calculateLineNumber(content, matcher.start());
-                        reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.ALIGNMENT_INCONSISTENT_KEY,
-                            "List has inconsistent alignment. Align all elements or put on same line.");
-                    }
-                }
+                checkListAlignment(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
             LOG.warn("Skipping alignment detection: {}", inputFile.filename());
+        }
+    }
+
+    private void checkListAlignment(SensorContext context, InputFile inputFile, String content, Matcher matcher) {
+        String listContent = matcher.group();
+        String[] parts = listContent.split(",");
+
+        if (parts.length > 3) {
+            AlignmentCounts counts = countAlignmentStyles(parts);
+            reportIfInconsistentAlignment(context, inputFile, content, matcher.start(), counts);
+        }
+    }
+
+    private AlignmentCounts countAlignmentStyles(String[] parts) {
+        int withNewline = 0;
+        int withoutNewline = 0;
+
+        for (String part : parts) {
+            if (part.contains("\n")) {
+                withNewline++;
+            } else {
+                withoutNewline++;
+            }
+        }
+
+        return new AlignmentCounts(withNewline, withoutNewline);
+    }
+
+    private void reportIfInconsistentAlignment(SensorContext context, InputFile inputFile, String content,
+                                                 int position, AlignmentCounts counts) {
+        if (counts.withNewline > 0 && counts.withoutNewline > 0) {
+            int lineNumber = calculateLineNumber(content, position);
+            reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.ALIGNMENT_INCONSISTENT_KEY,
+                "List has inconsistent alignment. Align all elements or put on same line.");
+        }
+    }
+
+    private static class AlignmentCounts {
+        final int withNewline;
+        final int withoutNewline;
+
+        AlignmentCounts(int withNewline, int withoutNewline) {
+            this.withNewline = withNewline;
+            this.withoutNewline = withoutNewline;
         }
     }
 

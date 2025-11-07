@@ -194,44 +194,14 @@ public class BugDetector extends BaseDetector {
     public void detectInfiniteRecursion(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher defMatcher = RECURSIVE_FUNCTION_PATTERN.matcher(content);
-            Map<String, Boolean> baseCaseCache = new HashMap<>();  // Cache base case lookups
+            Map<String, Boolean> baseCaseCache = new HashMap<>();
 
             while (defMatcher.find()) {
                 String functionName = defMatcher.group(1);
                 int defStart = defMatcher.start();
 
-                // Look for recursion
-                int bodyEnd = content.indexOf(";", defStart);
-                if (bodyEnd == -1) {
-                    bodyEnd = content.length();
-                }
-                int nextDef = content.indexOf(functionName + "[", defStart + functionName.length());
-
-                if (nextDef > 0 && nextDef < bodyEnd) {
-                    // Check for base case (with caching to avoid repeated pattern compilation)
-                    boolean hasBaseCase = baseCaseCache.computeIfAbsent(functionName, funcName -> {
-                        // OPTIMIZATION: Pattern compiled once per unique function name, not per occurrence
-                        Pattern baseCase = Pattern.compile(
-                            Pattern.quote(funcName) + "\\s*+\\[\\s*+\\d++\\s*+\\]\\s*+="
-                        );
-                        Matcher baseMatcher = baseCase.matcher(content);
-
-                        // Look for any base case definition
-                        while (baseMatcher.find()) {
-                            if (baseMatcher.start() != defStart) {
-                                return true;
-                            }
-                        }
-                        return false;
-                    });
-
-                    if (!hasBaseCase) {
-                        int lineNumber = calculateLineNumber(content, defStart);
-                        reportIssue(context, inputFile, lineNumber,
-                            MathematicaRulesDefinition.INFINITE_RECURSION_KEY,
-                            String.format("Function '%s' appears to be recursive but may lack a base case.",
-                                functionName));
-                    }
+                if (isRecursiveFunction(content, functionName, defStart)) {
+                    checkRecursionHasBaseCase(context, inputFile, content, functionName, defStart, baseCaseCache);
                 }
             }
         } catch (Exception e) {
@@ -239,50 +209,107 @@ public class BugDetector extends BaseDetector {
         }
     }
 
+    private boolean isRecursiveFunction(String content, String functionName, int defStart) {
+        int bodyEnd = findFunctionBodyEnd(content, defStart);
+        int nextDef = content.indexOf(functionName + "[", defStart + functionName.length());
+        return nextDef > 0 && nextDef < bodyEnd;
+    }
+
+    private int findFunctionBodyEnd(String content, int defStart) {
+        int bodyEnd = content.indexOf(";", defStart);
+        return (bodyEnd == -1) ? content.length() : bodyEnd;
+    }
+
+    private void checkRecursionHasBaseCase(SensorContext context, InputFile inputFile, String content,
+                                            String functionName, int defStart, Map<String, Boolean> baseCaseCache) {
+        boolean hasBaseCase = baseCaseCache.computeIfAbsent(functionName,
+            funcName -> findBaseCaseForFunction(content, funcName, defStart));
+
+        if (!hasBaseCase) {
+            int lineNumber = calculateLineNumber(content, defStart);
+            reportIssue(context, inputFile, lineNumber,
+                MathematicaRulesDefinition.INFINITE_RECURSION_KEY,
+                String.format("Function '%s' appears to be recursive but may lack a base case.", functionName));
+        }
+    }
+
+    private boolean findBaseCaseForFunction(String content, String funcName, int defStart) {
+        Pattern baseCase = Pattern.compile(Pattern.quote(funcName) + "\\s*+\\[\\s*+\\d++\\s*+\\]\\s*+="
+        );
+        Matcher baseMatcher = baseCase.matcher(content);
+
+        while (baseMatcher.find()) {
+            if (baseMatcher.start() != defStart) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Detect unreachable pattern definitions.
      */
     public void detectUnreachablePatterns(SensorContext context, InputFile inputFile, String content) {
         try {
-            Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
-            Map<String, List<PatternInfo>> functionPatterns = new HashMap<>();
-
-            while (matcher.find()) {
-                String funcName = matcher.group(1);
-                String pattern = matcher.group(2);
-                int lineNumber = calculateLineNumber(content, matcher.start());
-
-                functionPatterns.computeIfAbsent(funcName, k -> new java.util.ArrayList<>())
-                    .add(new PatternInfo(pattern, lineNumber));
-            }
-
-            // Check each function's patterns
-            for (Map.Entry<String, List<PatternInfo>> entry : functionPatterns.entrySet()) {
-                List<PatternInfo> patterns = entry.getValue();
-                if (patterns.size() < 2) {
-                    continue;
-                }
-
-                // Check if general pattern comes before specific patterns
-                for (int i = 0; i < patterns.size() - 1; i++) {
-                    String currentPattern = patterns.get(i).pattern;
-                    if (currentPattern.matches("\\w+_\\s*+")) {
-                        for (int j = i + 1; j < patterns.size(); j++) {
-                            String laterPattern = patterns.get(j).pattern;
-                            if (laterPattern.contains("_Integer") || laterPattern.contains("_String")
-                                || laterPattern.contains("_Real") || laterPattern.contains("_?")
-                                || laterPattern.contains("_Symbol")) {
-                                reportIssue(context, inputFile, patterns.get(j).lineNumber,
-                                    MathematicaRulesDefinition.UNREACHABLE_PATTERN_KEY,
-                                    "This specific pattern will never match because a more general pattern was defined earlier.");
-                            }
-                        }
-                    }
-                }
-            }
+            Map<String, List<PatternInfo>> functionPatterns = collectFunctionPatterns(content);
+            checkForUnreachablePatterns(context, inputFile, functionPatterns);
         } catch (Exception e) {
             LOG.warn("Skipping unreachable pattern detection due to error in file: {}", inputFile.filename());
         }
+    }
+
+    private Map<String, List<PatternInfo>> collectFunctionPatterns(String content) {
+        Map<String, List<PatternInfo>> functionPatterns = new HashMap<>();
+        Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
+
+        while (matcher.find()) {
+            String funcName = matcher.group(1);
+            String pattern = matcher.group(2);
+            int lineNumber = calculateLineNumber(content, matcher.start());
+
+            functionPatterns.computeIfAbsent(funcName, k -> new java.util.ArrayList<>())
+                .add(new PatternInfo(pattern, lineNumber));
+        }
+        return functionPatterns;
+    }
+
+    private void checkForUnreachablePatterns(SensorContext context, InputFile inputFile,
+                                              Map<String, List<PatternInfo>> functionPatterns) {
+        for (Map.Entry<String, List<PatternInfo>> entry : functionPatterns.entrySet()) {
+            List<PatternInfo> patterns = entry.getValue();
+            if (patterns.size() >= 2) {
+                checkPatternsForFunction(context, inputFile, patterns);
+            }
+        }
+    }
+
+    private void checkPatternsForFunction(SensorContext context, InputFile inputFile, List<PatternInfo> patterns) {
+        for (int i = 0; i < patterns.size() - 1; i++) {
+            if (isGeneralPattern(patterns.get(i).pattern)) {
+                reportUnreachableSpecificPatterns(context, inputFile, patterns, i);
+            }
+        }
+    }
+
+    private boolean isGeneralPattern(String pattern) {
+        return pattern.matches("\\w+_\\s*+");
+    }
+
+    private void reportUnreachableSpecificPatterns(SensorContext context, InputFile inputFile,
+                                                    List<PatternInfo> patterns, int generalPatternIndex) {
+        for (int j = generalPatternIndex + 1; j < patterns.size(); j++) {
+            if (isSpecificPattern(patterns.get(j).pattern)) {
+                reportIssue(context, inputFile, patterns.get(j).lineNumber,
+                    MathematicaRulesDefinition.UNREACHABLE_PATTERN_KEY,
+                    "This specific pattern will never match because a more general pattern was defined earlier.");
+            }
+        }
+    }
+
+    private boolean isSpecificPattern(String pattern) {
+        return pattern.contains("_Integer") || pattern.contains("_String")
+            || pattern.contains("_Real") || pattern.contains("_?")
+            || pattern.contains("_Symbol");
     }
 
     /**

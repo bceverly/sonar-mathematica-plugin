@@ -284,44 +284,60 @@ public class PatternAndDataStructureDetector extends BaseDetector {
      */
     public void detectOrderDependentPatterns(SensorContext context, InputFile inputFile, String content) {
         try {
-            Map<String, List<String>> functionDefinitions = new HashMap<>();
-            Matcher matcher = FUNCTION_DEFINITION.matcher(content);
-
-            while (matcher.find()) {
-                String funcName = matcher.group(1);
-                String params = matcher.group(2);
-                int position = matcher.start();
-
-                functionDefinitions.computeIfAbsent(funcName, k -> new java.util.ArrayList<>())
-                    .add(params + "@" + position);
-            }
-
-            // Check each function for order issues
-            for (Map.Entry<String, List<String>> entry : functionDefinitions.entrySet()) {
-                List<String> defs = entry.getValue();
-                if (defs.size() > 1) {
-                    for (int i = 0; i < defs.size(); i++) {
-                        String[] parts1 = defs.get(i).split("@");
-                        String params1 = parts1[0];
-
-                        for (int j = i + 1; j < defs.size(); j++) {
-                            String[] parts2 = defs.get(j).split("@");
-                            String params2 = parts2[0];
-
-                            // Check if later definition is more specific
-                            if (isMoreSpecific(params1, params2)) {
-                                int line = calculateLineNumber(content, Integer.parseInt(parts2[1]));
-                                reportIssue(context, inputFile, line,
-                                    MathematicaRulesDefinition.ORDER_DEPENDENT_PATTERNS_KEY,
-                                    String.format("Function '%s' has more specific pattern defined after general pattern. "
-                                        + "It will never match. Reorder definitions.", entry.getKey()));
-                            }
-                        }
-                    }
-                }
-            }
+            Map<String, List<String>> functionDefinitions = collectFunctionDefinitions(content);
+            checkForOrderDependentPatterns(context, inputFile, content, functionDefinitions);
         } catch (Exception e) {
             LOG.debug("Error detecting order-dependent patterns in {}", inputFile.filename(), e);
+        }
+    }
+
+    private Map<String, List<String>> collectFunctionDefinitions(String content) {
+        Map<String, List<String>> functionDefinitions = new HashMap<>();
+        Matcher matcher = FUNCTION_DEFINITION.matcher(content);
+
+        while (matcher.find()) {
+            String funcName = matcher.group(1);
+            String params = matcher.group(2);
+            int position = matcher.start();
+
+            functionDefinitions.computeIfAbsent(funcName, k -> new java.util.ArrayList<>())
+                .add(params + "@" + position);
+        }
+        return functionDefinitions;
+    }
+
+    private void checkForOrderDependentPatterns(SensorContext context, InputFile inputFile, String content,
+                                                 Map<String, List<String>> functionDefinitions) {
+        for (Map.Entry<String, List<String>> entry : functionDefinitions.entrySet()) {
+            List<String> defs = entry.getValue();
+            if (defs.size() > 1) {
+                checkDefinitionList(context, inputFile, content, entry.getKey(), defs);
+            }
+        }
+    }
+
+    private void checkDefinitionList(SensorContext context, InputFile inputFile, String content,
+                                      String funcName, List<String> definitions) {
+        for (int i = 0; i < definitions.size(); i++) {
+            String[] parts1 = definitions.get(i).split("@");
+            String params1 = parts1[0];
+            checkLaterDefinitionsForShadowing(context, inputFile, content, funcName, definitions, i, params1);
+        }
+    }
+
+    private void checkLaterDefinitionsForShadowing(SensorContext context, InputFile inputFile, String content,
+                                                    String funcName, List<String> definitions, int currentIndex, String params1) {
+        for (int j = currentIndex + 1; j < definitions.size(); j++) {
+            String[] parts2 = definitions.get(j).split("@");
+            String params2 = parts2[0];
+
+            if (isMoreSpecific(params1, params2)) {
+                int line = calculateLineNumber(content, Integer.parseInt(parts2[1]));
+                reportIssue(context, inputFile, line,
+                    MathematicaRulesDefinition.ORDER_DEPENDENT_PATTERNS_KEY,
+                    String.format("Function '%s' has more specific pattern defined after general pattern. "
+                        + "It will never match. Reorder definitions.", funcName));
+            }
         }
     }
 

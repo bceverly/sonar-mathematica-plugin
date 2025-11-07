@@ -159,83 +159,129 @@ public final class ArchitectureAndDependencyDetector {
      */
     public static void buildCrossFileData(InputFile inputFile, String content) {
         String filename = inputFile.filename();
+        classifyFile(filename);
+        String currentPackage = initializePackageData(filename, content);
+        extractPackageDependencies(content, currentPackage);
+        extractVersionInfo(content, currentPackage);
+        processSymbolsLineByLine(filename, content, currentPackage);
+    }
 
-        // Track test vs implementation files
+    private static void classifyFile(String filename) {
         if (TEST_FILE.matcher(filename).find()) {
             TEST_FILES.add(filename);
         } else {
             IMPLEMENTATION_FILES.add(filename);
         }
+    }
 
-        // Extract package name
+    private static String initializePackageData(String filename, String content) {
         Matcher pkgMatcher = BEGIN_PACKAGE.matcher(content);
-        String currentPackage = null;
         if (pkgMatcher.find()) {
-            currentPackage = pkgMatcher.group(1);
+            String currentPackage = pkgMatcher.group(1);
             PACKAGE_TO_FILE.put(currentPackage, filename);
             PACKAGE_DEPENDENCIES.putIfAbsent(currentPackage, new HashSet<>());
             PACKAGE_EXPORTS.putIfAbsent(currentPackage, new HashSet<>());
             PACKAGE_PRIVATE_SYMBOLS.putIfAbsent(currentPackage, new HashSet<>());
+            return currentPackage;
         }
+        return null;
+    }
 
-        // Extract package dependencies (Needs statements)
+    private static void extractPackageDependencies(String content, String currentPackage) {
+        if (currentPackage == null) {
+            return;
+        }
         Matcher needsMatcher = NEEDS.matcher(content);
         while (needsMatcher.find()) {
             String dependency = needsMatcher.group(1);
-            if (currentPackage != null) {
-                PACKAGE_DEPENDENCIES.get(currentPackage).add(dependency);
-            }
+            PACKAGE_DEPENDENCIES.get(currentPackage).add(dependency);
         }
+    }
 
-        // Extract version info
+    private static void extractVersionInfo(String content, String currentPackage) {
+        if (currentPackage == null) {
+            return;
+        }
         Matcher versionMatcher = VERSION_PATTERN.matcher(content);
-        if (versionMatcher.find() && currentPackage != null) {
+        if (versionMatcher.find()) {
             PACKAGE_VERSIONS.put(currentPackage, versionMatcher.group(1));
         }
+    }
 
-        // Track public vs private symbols
+    private static void processSymbolsLineByLine(String filename, String content, String currentPackage) {
         boolean inPublicSection = currentPackage != null;
         boolean inPrivateSection = false;
 
         String[] lines = content.split("\n");
         for (String line : lines) {
-            // Track Begin["Private`"] sections
-            if (BEGIN.matcher(line).find()) {
-                inPrivateSection = true;
-                inPublicSection = false;
-            }
-            if (END.matcher(line).find()) {
-                inPrivateSection = false;
-                inPublicSection = currentPackage != null;
-            }
-            if (END_PACKAGE.matcher(line).find()) {
-                inPublicSection = false;
-            }
+            SectionState state = new SectionState(inPublicSection, inPrivateSection, currentPackage);
+            state = updateSectionState(line, state);
+            inPublicSection = state.inPublic;
+            inPrivateSection = state.inPrivate;
 
-            // Track function definitions
-            Matcher funcMatcher = FUNCTION_DEF.matcher(line);
-            if (funcMatcher.find()) {
-                String symbol = funcMatcher.group(1);
-                SYMBOL_DEFINITIONS.putIfAbsent(symbol, new HashSet<>());
-                SYMBOL_DEFINITIONS.get(symbol).add(filename);
+            trackFunctionDefinition(line, filename, currentPackage, inPublicSection, inPrivateSection);
+            trackFunctionCalls(line, filename);
+        }
+    }
 
-                if (currentPackage != null) {
-                    if (inPublicSection && !inPrivateSection) {
-                        PACKAGE_EXPORTS.get(currentPackage).add(symbol);
-                    } else if (inPrivateSection) {
-                        PACKAGE_PRIVATE_SYMBOLS.get(currentPackage).add(symbol);
-                    }
-                }
-            }
+    private static class SectionState {
+        boolean inPublic;
+        boolean inPrivate;
+        String packageName;
 
-            // Track function calls
-            Matcher callMatcher = FUNCTION_CALL.matcher(line);
-            while (callMatcher.find()) {
-                String symbol = callMatcher.group(1);
-                SYMBOL_USAGES.putIfAbsent(symbol, new HashSet<>());
-                SYMBOL_USAGES.get(symbol).add(filename);
-                SYMBOL_CALL_COUNT.put(symbol, SYMBOL_CALL_COUNT.getOrDefault(symbol, 0) + 1);
+        SectionState(boolean inPublic, boolean inPrivate, String packageName) {
+            this.inPublic = inPublic;
+            this.inPrivate = inPrivate;
+            this.packageName = packageName;
+        }
+    }
+
+    private static SectionState updateSectionState(String line, SectionState state) {
+        boolean newInPublic = state.inPublic;
+        boolean newInPrivate = state.inPrivate;
+
+        if (BEGIN.matcher(line).find()) {
+            newInPrivate = true;
+            newInPublic = false;
+        }
+        if (END.matcher(line).find()) {
+            newInPrivate = false;
+            newInPublic = state.packageName != null;
+        }
+        if (END_PACKAGE.matcher(line).find()) {
+            newInPublic = false;
+        }
+
+        return new SectionState(newInPublic, newInPrivate, state.packageName);
+    }
+
+    private static void trackFunctionDefinition(String line, String filename, String currentPackage,
+                                                 boolean inPublicSection, boolean inPrivateSection) {
+        Matcher funcMatcher = FUNCTION_DEF.matcher(line);
+        if (!funcMatcher.find()) {
+            return;
+        }
+
+        String symbol = funcMatcher.group(1);
+        SYMBOL_DEFINITIONS.putIfAbsent(symbol, new HashSet<>());
+        SYMBOL_DEFINITIONS.get(symbol).add(filename);
+
+        if (currentPackage != null) {
+            if (inPublicSection && !inPrivateSection) {
+                PACKAGE_EXPORTS.get(currentPackage).add(symbol);
+            } else if (inPrivateSection) {
+                PACKAGE_PRIVATE_SYMBOLS.get(currentPackage).add(symbol);
             }
+        }
+    }
+
+    private static void trackFunctionCalls(String line, String filename) {
+        Matcher callMatcher = FUNCTION_CALL.matcher(line);
+        while (callMatcher.find()) {
+            String symbol = callMatcher.group(1);
+            SYMBOL_USAGES.putIfAbsent(symbol, new HashSet<>());
+            SYMBOL_USAGES.get(symbol).add(filename);
+            SYMBOL_CALL_COUNT.put(symbol, SYMBOL_CALL_COUNT.getOrDefault(symbol, 0) + 1);
         }
     }
 
@@ -324,35 +370,42 @@ public final class ArchitectureAndDependencyDetector {
      */
     public static void detectMissingPackageImport(SensorContext context, InputFile inputFile, String content) {
         String filename = inputFile.filename();
-        Set<String> imported = new HashSet<>();
+        Set<String> imported = collectImportedPackages(content);
 
-        // Collect all imports
+        Matcher callMatcher = FUNCTION_CALL.matcher(content);
+        while (callMatcher.find()) {
+            String symbol = callMatcher.group(1);
+            if (isSymbolDefinedLocally(symbol, filename)) {
+                continue;
+            }
+            checkForMissingImport(context, inputFile, imported, symbol, callMatcher.start());
+        }
+    }
+
+    private static Set<String> collectImportedPackages(String content) {
+        Set<String> imported = new HashSet<>();
         Matcher needsMatcher = NEEDS.matcher(content);
         while (needsMatcher.find()) {
             imported.add(needsMatcher.group(1));
         }
+        return imported;
+    }
 
-        // Check for usage of symbols not defined locally
-        Matcher callMatcher = FUNCTION_CALL.matcher(content);
-        while (callMatcher.find()) {
-            String symbol = callMatcher.group(1);
+    private static boolean isSymbolDefinedLocally(String symbol, String filename) {
+        Set<String> defs = SYMBOL_DEFINITIONS.get(symbol);
+        return defs != null && defs.contains(filename);
+    }
 
-            // Skip if defined in this file
-            Set<String> defs = SYMBOL_DEFINITIONS.get(symbol);
-            if (defs != null && defs.contains(filename)) {
-                continue;
-            }
-
-            // Check if symbol comes from a package we haven't imported
-            for (Map.Entry<String, Set<String>> entry : PACKAGE_EXPORTS.entrySet()) {
-                if (entry.getValue().contains(symbol)) {
-                    if (!imported.contains(entry.getKey())) {
-                        createIssue(context, inputFile, MathematicaRulesDefinition.MISSING_PACKAGE_IMPORT_KEY,
-                            callMatcher.start(),
-                            "Missing import for package: " + entry.getKey());
-                    }
-                    break;
+    private static void checkForMissingImport(SensorContext context, InputFile inputFile,
+                                               Set<String> imported, String symbol, int position) {
+        for (Map.Entry<String, Set<String>> entry : PACKAGE_EXPORTS.entrySet()) {
+            if (entry.getValue().contains(symbol)) {
+                if (!imported.contains(entry.getKey())) {
+                    createIssue(context, inputFile, MathematicaRulesDefinition.MISSING_PACKAGE_IMPORT_KEY,
+                        position,
+                        "Missing import for package: " + entry.getKey());
                 }
+                break;
             }
         }
     }
@@ -368,36 +421,52 @@ public final class ArchitectureAndDependencyDetector {
 
         String currentPackage = pkgMatcher.group(1);
         Set<String> directDeps = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>());
-        Set<String> transitiveDeps = new HashSet<>();
+        Set<String> transitiveDeps = collectTransitiveDependencies(directDeps);
 
-        // Find transitive dependencies
+        checkTransitiveDependencyUsage(context, inputFile, inputFile.filename(),
+                                        directDeps, transitiveDeps, pkgMatcher.start());
+    }
+
+    private static Set<String> collectTransitiveDependencies(Set<String> directDeps) {
+        Set<String> transitiveDeps = new HashSet<>();
         for (String dep : directDeps) {
             Set<String> depDeps = PACKAGE_DEPENDENCIES.get(dep);
             if (depDeps != null) {
                 transitiveDeps.addAll(depDeps);
             }
         }
+        return transitiveDeps;
+    }
 
-        // Check if we use symbols from transitive dependencies
-        String filename = inputFile.filename();
+    private static void checkTransitiveDependencyUsage(SensorContext context, InputFile inputFile,
+                                                        String filename, Set<String> directDeps,
+                                                        Set<String> transitiveDeps, int position) {
         for (String transitiveDep : transitiveDeps) {
             if (directDeps.contains(transitiveDep)) {
                 continue;
             }
 
-            Set<String> exports = PACKAGE_EXPORTS.get(transitiveDep);
-            if (exports != null) {
-                for (String symbol : exports) {
-                    Set<String> usages = SYMBOL_USAGES.get(symbol);
-                    if (usages != null && usages.contains(filename)) {
-                        createIssue(context, inputFile, MathematicaRulesDefinition.TRANSITIVE_DEPENDENCY_COULD_BE_DIRECT_KEY,
-                            pkgMatcher.start(),
-                            "Add direct dependency on: " + transitiveDep);
-                        break;
-                    }
-                }
+            if (isTransitiveDependencyUsed(transitiveDep, filename)) {
+                createIssue(context, inputFile, MathematicaRulesDefinition.TRANSITIVE_DEPENDENCY_COULD_BE_DIRECT_KEY,
+                    position, "Add direct dependency on: " + transitiveDep);
+                break;
             }
         }
+    }
+
+    private static boolean isTransitiveDependencyUsed(String transitiveDep, String filename) {
+        Set<String> exports = PACKAGE_EXPORTS.get(transitiveDep);
+        if (exports == null) {
+            return false;
+        }
+
+        for (String symbol : exports) {
+            Set<String> usages = SYMBOL_USAGES.get(symbol);
+            if (usages != null && usages.contains(filename)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
@@ -533,36 +602,37 @@ public final class ArchitectureAndDependencyDetector {
         }
 
         String currentPackage = pkgMatcher.group(1);
+        double currentInstability = calculateInstability(currentPackage);
 
-        // Calculate instability: I = Fan-out / (Fan-in + Fan-out)
-        // Stable packages (low I) should not depend on unstable ones (high I)
-        int fanOut = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>()).size();
+        if (currentInstability < 0.3) { // Stable package
+            checkForUnstableDependencies(context, inputFile, currentPackage, pkgMatcher.start());
+        }
+    }
+
+    private static double calculateInstability(String packageName) {
+        int fanOut = PACKAGE_DEPENDENCIES.getOrDefault(packageName, new HashSet<>()).size();
+        int fanIn = countFanIn(packageName);
+        return (fanIn + fanOut == 0) ? 0 : (double) fanOut / (fanIn + fanOut);
+    }
+
+    private static int countFanIn(String packageName) {
         int fanIn = 0;
         for (Set<String> deps : PACKAGE_DEPENDENCIES.values()) {
-            if (deps.contains(currentPackage)) {
+            if (deps.contains(packageName)) {
                 fanIn++;
             }
         }
+        return fanIn;
+    }
 
-        double currentInstability = (fanIn + fanOut == 0) ? 0 : (double) fanOut / (fanIn + fanOut);
-
-        if (currentInstability < 0.3) { // Stable package
-            Set<String> deps = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>());
-            for (String dep : deps) {
-                int depFanOut = PACKAGE_DEPENDENCIES.getOrDefault(dep, new HashSet<>()).size();
-                int depFanIn = 0;
-                for (Set<String> d : PACKAGE_DEPENDENCIES.values()) {
-                    if (d.contains(dep)) {
-                        depFanIn++;
-                    }
-                }
-                double depInstability = (depFanIn + depFanOut == 0) ? 0 : (double) depFanOut / (depFanIn + depFanOut);
-
-                if (depInstability > 0.7) { // Unstable dependency
-                    createIssue(context, inputFile, MathematicaRulesDefinition.UNSTABLE_DEPENDENCY_KEY,
-                        pkgMatcher.start(),
-                        "Stable package depends on unstable: " + dep);
-                }
+    private static void checkForUnstableDependencies(SensorContext context, InputFile inputFile,
+                                                      String currentPackage, int position) {
+        Set<String> deps = PACKAGE_DEPENDENCIES.getOrDefault(currentPackage, new HashSet<>());
+        for (String dep : deps) {
+            double depInstability = calculateInstability(dep);
+            if (depInstability > 0.7) { // Unstable dependency
+                createIssue(context, inputFile, MathematicaRulesDefinition.UNSTABLE_DEPENDENCY_KEY,
+                    position, "Stable package depends on unstable: " + dep);
             }
         }
     }
@@ -1060,7 +1130,7 @@ public final class ArchitectureAndDependencyDetector {
         Set<String> declared = new HashSet<>();
         if (declaredDeps != null) {
             for (String dep : declaredDeps.split(",")) {
-                declared.add(dep.trim().replaceAll("\"", ""));
+                declared.add(dep.trim().replace("\"", ""));
             }
         }
 
@@ -1189,36 +1259,49 @@ public final class ArchitectureAndDependencyDetector {
      * Rule 247: Inconsistent parameter names across overloads
      */
     public static void detectInconsistentParameterNamesAcrossOverloads(SensorContext context, InputFile inputFile, String content) {
-        Map<String, List<String>> functionParams = new HashMap<>();
+        Map<String, List<String>> functionParams = collectFunctionParameters(content);
+        checkParameterConsistency(context, inputFile, functionParams);
+    }
 
+    private static Map<String, List<String>> collectFunctionParameters(String content) {
+        Map<String, List<String>> functionParams = new HashMap<>();
         Matcher funcMatcher = FUNCTION_DEF.matcher(content);
         while (funcMatcher.find()) {
             String funcName = funcMatcher.group(1);
             String params = funcMatcher.group(2);
-
             functionParams.putIfAbsent(funcName, new ArrayList<>());
             functionParams.get(funcName).add(params);
         }
+        return functionParams;
+    }
 
-        // Check for inconsistencies
+    private static void checkParameterConsistency(SensorContext context, InputFile inputFile,
+                                                   Map<String, List<String>> functionParams) {
         for (Map.Entry<String, List<String>> entry : functionParams.entrySet()) {
             if (entry.getValue().size() > 1) {
-                // Multiple overloads - check parameter names
-                Set<String> paramNames = new HashSet<>();
-                for (String params : entry.getValue()) {
-                    Matcher paramMatcher = PARAMETER_NAME.matcher(params);
-                    while (paramMatcher.find()) {
-                        paramNames.add(paramMatcher.group(1));
-                    }
-                }
-
-                if (paramNames.size() > entry.getValue().size()) {
-                    createIssue(context, inputFile, MathematicaRulesDefinition.INCONSISTENT_PARAMETER_NAMES_ACROSS_OVERLOADS_KEY,
-                        0,
-                        "Inconsistent parameter names in overloads of: " + entry.getKey());
-                }
+                checkOverloadParameterNames(context, inputFile, entry);
             }
         }
+    }
+
+    private static void checkOverloadParameterNames(SensorContext context, InputFile inputFile,
+                                                     Map.Entry<String, List<String>> entry) {
+        Set<String> paramNames = extractAllParameterNames(entry.getValue());
+        if (paramNames.size() > entry.getValue().size()) {
+            createIssue(context, inputFile, MathematicaRulesDefinition.INCONSISTENT_PARAMETER_NAMES_ACROSS_OVERLOADS_KEY,
+                0, "Inconsistent parameter names in overloads of: " + entry.getKey());
+        }
+    }
+
+    private static Set<String> extractAllParameterNames(List<String> paramsList) {
+        Set<String> paramNames = new HashSet<>();
+        for (String params : paramsList) {
+            Matcher paramMatcher = PARAMETER_NAME.matcher(params);
+            while (paramMatcher.find()) {
+                paramNames.add(paramMatcher.group(1));
+            }
+        }
+        return paramNames;
     }
 
     /**

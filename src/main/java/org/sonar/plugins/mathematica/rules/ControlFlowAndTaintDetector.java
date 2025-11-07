@@ -363,41 +363,66 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
      */
     public void detectPatternDefinitionShadowed(SensorContext context, InputFile inputFile, String content) {
         try {
-            Map<String, List<String>> functionPatterns = new HashMap<>();
-            Matcher matcher = PATTERN_DEF_ORDER.matcher(content);
-
-            while (matcher.find()) {
-                String funcName = matcher.group(1);
-                String pattern = matcher.group(2);
-
-                functionPatterns.putIfAbsent(funcName, new ArrayList<>());
-                functionPatterns.get(funcName).add(pattern);
-            }
-
-            // Check for general before specific
-            for (Map.Entry<String, List<String>> entry : functionPatterns.entrySet()) {
-                List<String> patterns = entry.getValue();
-                for (int i = 0; i < patterns.size() - 1; i++) {
-                    String current = patterns.get(i);
-                    // If current pattern is general (contains _), check if later patterns are more specific
-                    if (current.contains("_") && !current.contains("?") && !current.contains("/;")) {
-                        for (int j = i + 1; j < patterns.size(); j++) {
-                            String later = patterns.get(j);
-                            if (!later.contains("_") || later.contains("?") || later.contains("/;")) {
-                                // Later pattern is more specific - report
-                                int line = i + 1;  // Approximate
-                                reportIssue(context, inputFile, line,
-                                    MathematicaRulesDefinition.PATTERN_DEFINITION_SHADOWED_KEY,
-                                    String.format("Specific pattern for %s is shadowed by earlier general pattern.", entry.getKey()));
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+            Map<String, List<String>> functionPatterns = collectFunctionPatterns(content);
+            checkForShadowedPatterns(context, inputFile, functionPatterns);
         } catch (Exception e) {
             LOG.debug("Error detecting shadowed pattern definitions in {}", inputFile.filename(), e);
         }
+    }
+
+    private Map<String, List<String>> collectFunctionPatterns(String content) {
+        Map<String, List<String>> functionPatterns = new HashMap<>();
+        Matcher matcher = PATTERN_DEF_ORDER.matcher(content);
+
+        while (matcher.find()) {
+            String funcName = matcher.group(1);
+            String pattern = matcher.group(2);
+
+            functionPatterns.putIfAbsent(funcName, new ArrayList<>());
+            functionPatterns.get(funcName).add(pattern);
+        }
+        return functionPatterns;
+    }
+
+    private void checkForShadowedPatterns(SensorContext context, InputFile inputFile,
+                                           Map<String, List<String>> functionPatterns) {
+        for (Map.Entry<String, List<String>> entry : functionPatterns.entrySet()) {
+            List<String> patterns = entry.getValue();
+            checkPatternListForShadowing(context, inputFile, entry.getKey(), patterns);
+        }
+    }
+
+    private void checkPatternListForShadowing(SensorContext context, InputFile inputFile,
+                                               String funcName, List<String> patterns) {
+        for (int i = 0; i < patterns.size() - 1; i++) {
+            String current = patterns.get(i);
+            if (isGeneralPattern(current)) {
+                checkForSpecificPatternsAfterGeneral(context, inputFile, funcName, patterns, i);
+                break;
+            }
+        }
+    }
+
+    private boolean isGeneralPattern(String pattern) {
+        return pattern.contains("_") && !pattern.contains("?") && !pattern.contains("/;");
+    }
+
+    private void checkForSpecificPatternsAfterGeneral(SensorContext context, InputFile inputFile,
+                                                       String funcName, List<String> patterns, int generalIndex) {
+        for (int j = generalIndex + 1; j < patterns.size(); j++) {
+            String later = patterns.get(j);
+            if (isSpecificPattern(later)) {
+                int line = generalIndex + 1;  // Approximate
+                reportIssue(context, inputFile, line,
+                    MathematicaRulesDefinition.PATTERN_DEFINITION_SHADOWED_KEY,
+                    String.format("Specific pattern for %s is shadowed by earlier general pattern.", funcName));
+                break;
+            }
+        }
+    }
+
+    private boolean isSpecificPattern(String pattern) {
+        return !pattern.contains("_") || pattern.contains("?") || pattern.contains("/;");
     }
 
     /**
@@ -788,36 +813,48 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
         try {
             String[] lines = content.split("\n");
             for (int i = 0; i < lines.length; i++) {
-                String line = lines[i];
-                int depth = 0;
-                Matcher matcher = NESTED_IF.matcher(line);
-                while (matcher.find()) {
-                    depth++;
-                }
-
-                // Check nesting in surrounding lines too
-                if (depth >= 2) {
-                    int contextDepth = depth;
-                    for (int j = Math.max(0, i - 3); j <= Math.min(lines.length - 1, i + 3); j++) {
-                        Matcher contextMatcher = NESTED_IF.matcher(lines[j]);
-                        int count = 0;
-                        while (contextMatcher.find()) {
-                            count++;
-                        }
-                        if (j != i) {
-                            contextDepth += count;
-                        }
-                    }
-
-                    if (contextDepth >= 5) {
-                        reportIssue(context, inputFile, i + 1,
-                            MathematicaRulesDefinition.NESTED_IF_DEPTH_KEY,
-                            String.format("Deeply nested If statements (%d levels) are hard to understand.", contextDepth));
-                    }
-                }
+                checkLineForDeepNesting(context, inputFile, lines, i);
             }
         } catch (Exception e) {
             LOG.debug("Error detecting nested if depth in {}", inputFile.filename(), e);
+        }
+    }
+
+    private void checkLineForDeepNesting(SensorContext context, InputFile inputFile, String[] lines, int lineIndex) {
+        int depth = countIfStatementsInLine(lines[lineIndex]);
+        if (depth >= 2) {
+            int contextDepth = calculateContextDepth(lines, lineIndex, depth);
+            reportDeepNestingIfNeeded(context, inputFile, lineIndex, contextDepth);
+        }
+    }
+
+    private int countIfStatementsInLine(String line) {
+        Matcher matcher = NESTED_IF.matcher(line);
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+        return count;
+    }
+
+    private int calculateContextDepth(String[] lines, int currentLine, int currentDepth) {
+        int contextDepth = currentDepth;
+        int startLine = Math.max(0, currentLine - 3);
+        int endLine = Math.min(lines.length - 1, currentLine + 3);
+
+        for (int j = startLine; j <= endLine; j++) {
+            if (j != currentLine) {
+                contextDepth += countIfStatementsInLine(lines[j]);
+            }
+        }
+        return contextDepth;
+    }
+
+    private void reportDeepNestingIfNeeded(SensorContext context, InputFile inputFile, int lineIndex, int depth) {
+        if (depth >= 5) {
+            reportIssue(context, inputFile, lineIndex + 1,
+                MathematicaRulesDefinition.NESTED_IF_DEPTH_KEY,
+                String.format("Deeply nested If statements (%d levels) are hard to understand.", depth));
         }
     }
 

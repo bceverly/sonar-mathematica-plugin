@@ -220,40 +220,63 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF.matcher(content);
             while (matcher.find()) {
-                String funcName = matcher.group(1);
-                String params = matcher.group(2);
-
-                // Extract parameter names
-                String[] paramNames = params.split(",");
-                for (String param : paramNames) {
-                    param = param.trim();
-                    // Extract pattern name (e.g., "x_" -> "x", "y_Integer" -> "y")
-                    // Note: Cannot use possessive on \w* before _ since \w includes _
-                    Matcher paramMatcher = Pattern.compile("([a-zA-Z]\\w*)_").matcher(param); //NOSONAR - Possessive quantifiers prevent backtracking
-                    if (paramMatcher.find()) {
-                        String paramName = paramMatcher.group(1);
-
-                        // Find function body (simplified: look for content after :=)
-                        int bodyStart = matcher.end();
-                        int bodyEnd = findStatementEnd(content, bodyStart);
-                        if (bodyEnd > bodyStart) {
-                            String body = content.substring(bodyStart, Math.min(bodyEnd, content.length()));
-
-                            // Check if parameter is used in body
-                            if (!body.contains(paramName)) {
-                                int line = calculateLineNumber(content, matcher.start());
-                                reportIssue(context, inputFile, line,
-                                    MathematicaRulesDefinition.UNUSED_FUNCTION_PARAMETER_KEY,
-                                    String.format("Function '%s' has unused parameter '%s'. Consider using blank pattern '_'.",
-                                        funcName, paramName));
-                            }
-                        }
-                    }
-                }
+                checkFunctionForUnusedParameters(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
             LOG.debug("Error detecting unused function parameters in {}", inputFile.filename(), e);
         }
+    }
+
+    private void checkFunctionForUnusedParameters(SensorContext context, InputFile inputFile,
+                                                   String content, Matcher matcher) {
+        String funcName = matcher.group(1);
+        String params = matcher.group(2);
+        String[] paramNames = params.split(",");
+
+        for (String param : paramNames) {
+            checkSingleParameter(context, inputFile, content, funcName, param.trim(), matcher);
+        }
+    }
+
+    private void checkSingleParameter(SensorContext context, InputFile inputFile, String content,
+                                       String funcName, String param, Matcher matcher) {
+        String paramName = extractParameterName(param);
+
+        if (paramName != null) {
+            checkParameterUsageInBody(context, inputFile, content, funcName, paramName, matcher);
+        }
+    }
+
+    private String extractParameterName(String param) {
+        // Extract pattern name (e.g., "x_" -> "x", "y_Integer" -> "y")
+        // Note: Cannot use possessive on \w* before _ since \w includes _
+        Matcher paramMatcher = Pattern.compile("([a-zA-Z]\\w*)_").matcher(param); //NOSONAR - Possessive quantifiers prevent backtracking
+        if (paramMatcher.find()) {
+            return paramMatcher.group(1);
+        }
+        return null;
+    }
+
+    private void checkParameterUsageInBody(SensorContext context, InputFile inputFile, String content,
+                                            String funcName, String paramName, Matcher matcher) {
+        int bodyStart = matcher.end();
+        int bodyEnd = findStatementEnd(content, bodyStart);
+
+        if (bodyEnd > bodyStart) {
+            String body = content.substring(bodyStart, Math.min(bodyEnd, content.length()));
+            if (!body.contains(paramName)) {
+                reportUnusedParameter(context, inputFile, content, funcName, paramName, matcher.start());
+            }
+        }
+    }
+
+    private void reportUnusedParameter(SensorContext context, InputFile inputFile, String content,
+                                        String funcName, String paramName, int position) {
+        int line = calculateLineNumber(content, position);
+        reportIssue(context, inputFile, line,
+            MathematicaRulesDefinition.UNUSED_FUNCTION_PARAMETER_KEY,
+            String.format("Function '%s' has unused parameter '%s'. Consider using blank pattern '_'.",
+                funcName, paramName));
     }
 
     public void detectUnusedModuleVariable(SensorContext context, InputFile inputFile, String content) {

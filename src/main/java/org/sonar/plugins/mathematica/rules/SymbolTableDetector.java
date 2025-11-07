@@ -236,28 +236,36 @@ public final class SymbolTableDetector {
      */
     public static void detectVariableEscapesScope(SensorContext context, InputFile file, SymbolTable table) {
         for (Symbol symbol : table.getAllSymbols()) {
-            if (!symbol.isModuleVariable()) {
-                continue;
-            }
-
-            // Check if symbol is used in a function definition (potential closure)
-            Scope symbolScope = symbol.getScope();
-            for (Scope childScope : symbolScope.getChildren()) {
-                if (childScope.getType() == ScopeType.FUNCTION) {
-                    // Check if symbol is referenced in function
-                    for (SymbolReference ref : symbol.getReferences()) {
-                        if (ref.getLine() >= childScope.getStartLine()
-                            && ref.getLine() <= childScope.getEndLine()) {
-                            createIssue(context, file, "VariableEscapesScope", ref.getLine(),
-                                String.format("Module variable '%s' captured in closure may fail after Module exits",
-                                    symbol.getName())
-                            ).save();
-                            break;
-                        }
-                    }
-                }
+            if (symbol.isModuleVariable()) {
+                checkForClosureEscape(context, file, symbol);
             }
         }
+    }
+
+    private static void checkForClosureEscape(SensorContext context, InputFile file, Symbol symbol) {
+        Scope symbolScope = symbol.getScope();
+        for (Scope childScope : symbolScope.getChildren()) {
+            if (childScope.getType() == ScopeType.FUNCTION) {
+                checkSymbolReferencesInFunction(context, file, symbol, childScope);
+            }
+        }
+    }
+
+    private static void checkSymbolReferencesInFunction(SensorContext context, InputFile file,
+                                                         Symbol symbol, Scope functionScope) {
+        for (SymbolReference ref : symbol.getReferences()) {
+            if (isReferenceInScope(ref, functionScope)) {
+                createIssue(context, file, "VariableEscapesScope", ref.getLine(),
+                    String.format("Module variable '%s' captured in closure may fail after Module exits",
+                        symbol.getName())
+                ).save();
+                break;
+            }
+        }
+    }
+
+    private static boolean isReferenceInScope(SymbolReference ref, Scope scope) {
+        return ref.getLine() >= scope.getStartLine() && ref.getLine() <= scope.getEndLine();
     }
 
     /**
@@ -356,41 +364,59 @@ public final class SymbolTableDetector {
             return;
         }
 
-        // Build dependency graph
+        Map<String, Set<String>> dependencies = buildDependencyGraph(table);
+        detectAndReportCycles(context, file, table, dependencies);
+    }
+
+    private static Map<String, Set<String>> buildDependencyGraph(SymbolTable table) {
         Map<String, Set<String>> dependencies = new java.util.HashMap<>();
 
         for (Symbol symbol : table.getAllSymbols()) {
-            Set<String> deps = new java.util.HashSet<>();
-
-            // For each assignment, find what variables are referenced
-            for (SymbolReference assignment : symbol.getAssignments()) {
-                String contextStr = assignment.getContext();
-                // Simple heuristic: find variable names in assignment context
-                for (Symbol otherSymbol : table.getAllSymbols()) {
-                    if (!otherSymbol.getName().equals(symbol.getName())
-                        && contextStr.contains(otherSymbol.getName())) {
-                        deps.add(otherSymbol.getName());
-                    }
-                }
-            }
-
+            Set<String> deps = findSymbolDependencies(symbol, table);
             if (!deps.isEmpty()) {
                 dependencies.put(symbol.getName(), deps);
             }
         }
 
-        // Detect cycles using DFS
+        return dependencies;
+    }
+
+    private static Set<String> findSymbolDependencies(Symbol symbol, SymbolTable table) {
+        Set<String> deps = new java.util.HashSet<>();
+
+        for (SymbolReference assignment : symbol.getAssignments()) {
+            String contextStr = assignment.getContext();
+            collectReferencedVariables(symbol, table, contextStr, deps);
+        }
+
+        return deps;
+    }
+
+    private static void collectReferencedVariables(Symbol symbol, SymbolTable table, String contextStr, Set<String> deps) {
+        for (Symbol otherSymbol : table.getAllSymbols()) {
+            if (!otherSymbol.getName().equals(symbol.getName()) && contextStr.contains(otherSymbol.getName())) {
+                deps.add(otherSymbol.getName());
+            }
+        }
+    }
+
+    private static void detectAndReportCycles(SensorContext context, InputFile file, SymbolTable table,
+                                               Map<String, Set<String>> dependencies) {
         for (String varName : dependencies.keySet()) {
             Set<String> visited = new java.util.HashSet<>();
             Set<String> recStack = new java.util.HashSet<>();
             if (hasCycle(varName, dependencies, visited, recStack)) {
-                Symbol symbol = table.getSymbolByName(varName);
-                if (symbol != null) {
-                    createIssue(context, file, "CircularVariableDependencies", symbol.getDeclarationLine(),
-                        String.format("Variable '%s' has circular dependency with other variables", varName)
-                    ).save();
-                }
+                reportCircularDependency(context, file, table, varName);
             }
+        }
+    }
+
+    private static void reportCircularDependency(SensorContext context, InputFile file, SymbolTable table, String varName) {
+        Symbol symbol = table.getSymbolByName(varName);
+        if (symbol != null) {
+            createIssue(context, file, "CircularVariableDependencies", symbol.getDeclarationLine(),
+                String.format("Variable '%s' has circular dependency with other variables", varName)
+            ).save();
         }
     }
 
@@ -504,29 +530,43 @@ public final class SymbolTableDetector {
      */
     public static void detectIncorrectClosureCapture(SensorContext context, InputFile file, SymbolTable table) {
         for (Symbol symbol : table.getAllSymbols()) {
-            if (!symbol.isModuleVariable()) {
-                continue;
+            if (symbol.isModuleVariable()) {
+                checkForIncorrectClosure(context, file, symbol);
             }
+        }
+    }
 
-            Scope symbolScope = symbol.getScope();
-            boolean hasLoop = symbolScope.getName() != null
-                              && (symbolScope.getName().contains("Do") || symbolScope.getName().contains("Table"));
+    private static void checkForIncorrectClosure(SensorContext context, InputFile file, Symbol symbol) {
+        Scope symbolScope = symbol.getScope();
+        boolean hasLoop = isLoopScope(symbolScope);
 
-            // Check if used in function definition inside loop
-            for (Scope childScope : symbolScope.getChildren()) {
-                if (childScope.getType() == ScopeType.FUNCTION && hasLoop) {
-                    for (SymbolReference ref : symbol.getReferences()) {
-                        if (ref.getLine() >= childScope.getStartLine()
-                            && ref.getLine() <= childScope.getEndLine()) {
-                            createIssue(context, file, "IncorrectClosureCapture", ref.getLine(),
-                                String.format(
-                                    "Loop variable '%s' captured in closure, will capture final value only. Use With[] to capture current value.",
-                                    symbol.getName())
-                            ).save();
-                            break;
-                        }
-                    }
-                }
+        if (hasLoop) {
+            checkFunctionScopesInLoop(context, file, symbol, symbolScope);
+        }
+    }
+
+    private static boolean isLoopScope(Scope scope) {
+        return scope.getName() != null
+               && (scope.getName().contains("Do") || scope.getName().contains("Table"));
+    }
+
+    private static void checkFunctionScopesInLoop(SensorContext context, InputFile file, Symbol symbol, Scope symbolScope) {
+        for (Scope childScope : symbolScope.getChildren()) {
+            if (childScope.getType() == ScopeType.FUNCTION) {
+                checkSymbolCaptureInFunction(context, file, symbol, childScope);
+            }
+        }
+    }
+
+    private static void checkSymbolCaptureInFunction(SensorContext context, InputFile file, Symbol symbol, Scope childScope) {
+        for (SymbolReference ref : symbol.getReferences()) {
+            if (isReferenceInScope(ref, childScope)) {
+                createIssue(context, file, "IncorrectClosureCapture", ref.getLine(),
+                    String.format(
+                        "Loop variable '%s' captured in closure, will capture final value only. Use With[] to capture current value.",
+                        symbol.getName())
+                ).save();
+                break;
             }
         }
     }

@@ -1581,36 +1581,53 @@ public class CodeSmellDetector extends BaseDetector {
         try {
             Matcher funcMatcher = FUNCTION_PARAMS_PATTERN.matcher(content);
             while (funcMatcher.find()) {
-                String funcName = funcMatcher.group(1);
-                String params = funcMatcher.group(2);
-                // Extract parameter names (handle patterns like x_, y_?NumericQ, etc.)
-                // Note: Cannot use possessive on \w* before _ since \w includes _
-                Pattern paramPattern = Pattern.compile("([a-z]\\w*)_"); //NOSONAR - Possessive quantifiers prevent backtracking
-                Matcher paramMatcher = paramPattern.matcher(params);
-                java.util.Set<String> paramNames = new java.util.HashSet<>();
-                while (paramMatcher.find()) {
-                    paramNames.add(paramMatcher.group(1));
-                }
-
-                if (!paramNames.isEmpty()) {
-                    // Check if ::usage exists and mentions parameters
-                    //NOSONAR - Possessive quantifiers prevent backtracking
-                    Pattern usagePattern = Pattern.compile(Pattern.quote(funcName) + "::usage\\s*+=\\s*+\"([^\"]*)\""); //NOSONAR
-                    Matcher usageMatcher = usagePattern.matcher(content);
-                    if (usageMatcher.find()) {
-                        String usageDoc = usageMatcher.group(1);
-                        for (String param : paramNames) {
-                            if (!usageDoc.contains(param)) {
-                                int lineNumber = calculateLineNumber(content, funcMatcher.start());
-                                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PARAMETER_NOT_DOCUMENTED_KEY,
-                                    String.format("Parameter '%s' of '%s' not documented in ::usage.", param, funcName));
-                            }
-                        }
-                    }
-                }
+                checkFunctionParameterDocumentation(context, inputFile, content, funcMatcher);
             }
         } catch (Exception e) {
             LOG.warn("Skipping parameter documentation detection: {}", inputFile.filename());
+        }
+    }
+
+    private void checkFunctionParameterDocumentation(SensorContext context, InputFile inputFile,
+                                                      String content, Matcher funcMatcher) {
+        String funcName = funcMatcher.group(1);
+        String params = funcMatcher.group(2);
+        java.util.Set<String> paramNames = extractParameterNames(params);
+
+        if (!paramNames.isEmpty()) {
+            checkParametersInUsageDoc(context, inputFile, content, funcName, paramNames, funcMatcher.start());
+        }
+    }
+
+    private java.util.Set<String> extractParameterNames(String params) {
+        Pattern paramPattern = Pattern.compile("([a-z]\\w*)_"); //NOSONAR - Possessive quantifiers prevent backtracking
+        Matcher paramMatcher = paramPattern.matcher(params);
+        java.util.Set<String> paramNames = new java.util.HashSet<>();
+        while (paramMatcher.find()) {
+            paramNames.add(paramMatcher.group(1));
+        }
+        return paramNames;
+    }
+
+    private void checkParametersInUsageDoc(SensorContext context, InputFile inputFile, String content,
+                                            String funcName, java.util.Set<String> paramNames, int position) {
+        Pattern usagePattern = Pattern.compile(Pattern.quote(funcName) + "::usage\\s*+=\\s*+\"([^\"]*)\""); //NOSONAR
+        Matcher usageMatcher = usagePattern.matcher(content);
+        if (usageMatcher.find()) {
+            String usageDoc = usageMatcher.group(1);
+            reportUndocumentedParameters(context, inputFile, content, funcName, paramNames, usageDoc, position);
+        }
+    }
+
+    private void reportUndocumentedParameters(SensorContext context, InputFile inputFile, String content,
+                                               String funcName, java.util.Set<String> paramNames,
+                                               String usageDoc, int position) {
+        for (String param : paramNames) {
+            if (!usageDoc.contains(param)) {
+                int lineNumber = calculateLineNumber(content, position);
+                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PARAMETER_NOT_DOCUMENTED_KEY,
+                    String.format("Parameter '%s' of '%s' not documented in ::usage.", param, funcName));
+            }
         }
     }
 
