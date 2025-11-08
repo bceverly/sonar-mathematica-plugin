@@ -86,7 +86,27 @@ class QuickFixProviderTest {
             Arguments.of("IncorrectSetInScoping", "Module[{x = 5}, body]"),
             Arguments.of("FunctionWithoutReturn", "f[x_] := (y = x + 1;)"),
             Arguments.of("MissingMemoization", "f[x_] := f[x-1] + f[x-2]"),
-            Arguments.of("ZeroDenominator", "x / y")
+            Arguments.of("ZeroDenominator", "x / y"),
+            Arguments.of("IdentityOperation", "x + 0"),
+            Arguments.of("ReverseReverse", "Reverse[Reverse[list]]"),
+            Arguments.of("GlobalContext", "Global`variable"),
+            Arguments.of("StringJoinForTemplates", "a <> b <> c"),
+            Arguments.of("PositionInsteadOfPattern", "Extract[list, Position[list, _Integer]]"),
+            Arguments.of("FlattenTableAntipattern", "Flatten[Table[f[x], {x, n}]]"),
+            Arguments.of("InconsistentRuleTypes", "a -> 1"),
+            Arguments.of("MissingFailedCheck", "data = Import[\"file.txt\"]"),
+            Arguments.of("MissingEmptyListCheck", "First[myList]"),
+            Arguments.of("MissingPatternTest", "f[x_] := Sqrt[x]"),
+            Arguments.of("MissingCompilationTarget", "Compile[{x}, x^2]"),
+            Arguments.of("MachinePrecisionInSymbolic", "Solve[x^2 == 2.0]"),
+            Arguments.of("ComplexBooleanExpression", "If[a && b && c, result]"),
+            Arguments.of("DeleteDuplicatesOnLargeData", "DeleteDuplicates[largeList]"),
+            Arguments.of("TypeMismatch", "\"text\" + 5"),
+            Arguments.of("BlockModuleMisuse", "Block[{x}, x = 5]"),
+            Arguments.of("PatternBlanksMisuse", "Length[args__]"),
+            Arguments.of("MissingHoldAttributes", "myFunc[expr]"),
+            Arguments.of("UnprotectedSymbols", "publicFunc[x_] := x^2"),
+            Arguments.of("EmptyCatchBlock", "Quiet[riskyOperation[]]")
         );
     }
 
@@ -236,204 +256,5 @@ class QuickFixProviderTest {
         }
     }
 
-    @Test
-    void testIdentityOperationFix() {
-        String content = "x + 0";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "IdentityOperation", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testReverseReverseFix() {
-        String content = "Reverse[Reverse[list]]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "ReverseReverse", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testGlobalContextFix() {
-        String content = "Global`variable";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "GlobalContext", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testStringJoinForTemplatesFix() {
-        String content = "a <> b <> c";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "StringJoinForTemplates", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testPositionInsteadOfPatternFix() {
-        String content = "Extract[list, Position[list, _Integer]]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "PositionInsteadOfPattern", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testFlattenTableFix() {
-        String content = "Flatten[Table[f[x], {x, n}]]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "FlattenTableAntipattern", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testInconsistentRuleTypesFix() {
-        String content = "a -> 1";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "InconsistentRuleTypes", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testMissingFailedCheckFix() {
-        String content = "data = Import[\"file.txt\"]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MissingFailedCheck", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testMissingEmptyListCheckFix() {
-        String content = "First[myList]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MissingEmptyListCheck", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testMissingPatternTestFix() {
-        String content = "f[x_] := Sqrt[x]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MissingPatternTest", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testMissingCompilationTargetFix() {
-        String content = "Compile[{x}, x^2]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MissingCompilationTarget", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testMachinePrecisionInSymbolicFix() {
-        String content = "Solve[x^2 == 2.0]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MachinePrecisionInSymbolic", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testComplexBooleanFix() {
-        String content = "If[a && b && c, result]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "ComplexBooleanExpression", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testDeleteDuplicatesOnLargeDataFix() {
-        String content = "DeleteDuplicates[largeList]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "DeleteDuplicatesOnLargeData", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testTypeMismatchFix() {
-        String content = "\"text\" + 5";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "TypeMismatch", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testBlockModuleMisuseFix() {
-        String content = "Block[{x}, x = 5]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "BlockModuleMisuse", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testPatternBlanksMisuseFix() {
-        String content = "Length[args__]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "PatternBlanksMisuse", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testMissingHoldAttributesFix() {
-        String content = "myFunc[expr]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "MissingHoldAttributes", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testUnprotectedSymbolsFix() {
-        String content = "publicFunc[x_] := x^2";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "UnprotectedSymbols", content, 0, content.length(), context)
-        );
-    }
-
-    @Test
-    void testEmptyCatchBlockFix() {
-        String content = "Quiet[riskyOperation[]]";
-        QuickFixProvider.QuickFixContext context = new QuickFixProvider.QuickFixContext();
-
-        assertDoesNotThrow(() ->
-            provider.addQuickFix(issue, inputFile, "EmptyCatchBlock", content, 0, content.length(), context)
-        );
-    }
 }
 

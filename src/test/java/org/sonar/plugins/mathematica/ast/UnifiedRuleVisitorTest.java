@@ -472,13 +472,14 @@ class UnifiedRuleVisitorTest {
 
     @Test
     void testFileUploadValidation() {
-        FunctionCallNode importCall = new FunctionCallNode(
-            "Import",
+        // Test FormFunction which is used for file uploads
+        FunctionCallNode formFunction = new FunctionCallNode(
+            "FormFunction",
             Collections.emptyList(),
-            1, 1, 1, 8
+            1, 1, 1, 14
         );
 
-        assertDoesNotThrow(() -> visitor.visit(importCall));
+        assertDoesNotThrow(() -> visitor.visit(formFunction));
         verify(sensor, atLeastOnce()).queueIssue(any(), eq(1), anyString(), anyString());
     }
 

@@ -2,8 +2,13 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
@@ -42,19 +47,20 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectWrongArgumentTypeMapOnNumber() {
-        String content = "result = Map[f, 5];";
+    @ParameterizedTest
+    @MethodSource("wrongArgumentTypeTestData")
+    void testDetectWrongArgumentType(String content) {
         assertDoesNotThrow(() ->
             detector.detectWrongArgumentType(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectWrongArgumentTypeLengthOnNumber() {
-        String content = "result = Length[42];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongArgumentType(context, inputFile, content)
+    private static Stream<Arguments> wrongArgumentTypeTestData() {
+        return Stream.of(
+            Arguments.of("result = Map[f, 5];"),
+            Arguments.of("result = Length[42];"),
+            Arguments.of("result = First[123];"),
+            Arguments.of("result = Rest[\"string\"];")
         );
     }
 
@@ -98,35 +104,51 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectPatternTypeMismatch() {
-        String content = "f[x_Integer] := x + 1;\nresult = f[\"text\"];";
+    @ParameterizedTest
+    @MethodSource("patternTypeMismatchTestData")
+    void testDetectPatternTypeMismatch(String content) {
         assertDoesNotThrow(() ->
             detector.detectPatternTypeMismatch(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectOptionalTypeInconsistentRealDefault() {
-        String content = "f[x_Integer : 1.5] := x + 1;";
+    private static Stream<Arguments> patternTypeMismatchTestData() {
+        return Stream.of(
+            Arguments.of("f[x_Integer] := x + 1;\nresult = f[\"text\"];"),
+            Arguments.of("f[x_Real] := x + 1.0;\nresult = f[42];"),
+            Arguments.of("f[x_String] := StringLength[x];\nresult = f[123];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("optionalTypeInconsistentTestData")
+    void testDetectOptionalTypeInconsistent(String content) {
         assertDoesNotThrow(() ->
             detector.detectOptionalTypeInconsistent(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectOptionalTypeInconsistentIntegerDefault() {
-        String content = "f[x_Real : 5] := x + 1.0;";
-        assertDoesNotThrow(() ->
-            detector.detectOptionalTypeInconsistent(context, inputFile, content)
+    private static Stream<Arguments> optionalTypeInconsistentTestData() {
+        return Stream.of(
+            Arguments.of("f[x_Integer : 1.5] := x + 1;"),
+            Arguments.of("f[x_Real : 5] := x + 1.0;"),
+            Arguments.of("f[x_Integer : \"default\"] := x + 1;")
         );
     }
 
-    @Test
-    void testDetectReturnTypeInconsistent() {
-        String content = "f[x_] := If[x > 0, 1, \"error\"];";
+    @ParameterizedTest
+    @MethodSource("returnTypeInconsistentTestData")
+    void testDetectReturnTypeInconsistent(String content) {
         assertDoesNotThrow(() ->
             detector.detectReturnTypeInconsistent(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> returnTypeInconsistentTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := If[x > 0, 1, \"error\"];"),
+            Arguments.of("f[x_] := If[x > 0, 1, 2.5];"),
+            Arguments.of("f[x_] := If[x > 0, \"success\", 0];")
         );
     }
 
@@ -420,62 +442,6 @@ class TypeAndDataFlowDetectorTest {
         String content = "a = 1; b = 2; result = a/b;";
         assertDoesNotThrow(() ->
             detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTypeMismatchWithRealType() {
-        String content = "f[x_Real] := x + 1.0;\nresult = f[42];";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTypeMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTypeMismatchWithStringType() {
-        String content = "f[x_String] := StringLength[x];\nresult = f[123];";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTypeMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectReturnTypeInconsistentWithNumbers() {
-        String content = "f[x_] := If[x > 0, 1, 2.5];";
-        assertDoesNotThrow(() ->
-            detector.detectReturnTypeInconsistent(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectReturnTypeInconsistentWithStringAndNumber() {
-        String content = "f[x_] := If[x > 0, \"success\", 0];";
-        assertDoesNotThrow(() ->
-            detector.detectReturnTypeInconsistent(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectWrongArgumentTypeWithFirst() {
-        String content = "result = First[123];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongArgumentType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectWrongArgumentTypeWithRest() {
-        String content = "result = Rest[\"string\"];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongArgumentType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectOptionalTypeInconsistentStringDefault() {
-        String content = "f[x_Integer : \"default\"] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectOptionalTypeInconsistent(context, inputFile, content)
         );
     }
 

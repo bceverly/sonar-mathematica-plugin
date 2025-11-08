@@ -2,8 +2,13 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
@@ -50,11 +55,19 @@ class BugDetectorTest {
         );
     }
 
-    @Test
-    void testDetectInfiniteRecursion() {
-        String content = "f[x_] := f[x];";
+    @ParameterizedTest
+    @MethodSource("infiniteRecursionTestData")
+    void testDetectInfiniteRecursion(String content) {
         assertDoesNotThrow(() ->
             detector.detectInfiniteRecursion(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> infiniteRecursionTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := f[x];"),
+            Arguments.of("f[0] := 0;\nf[x_] := f[x-1] + 1;"),
+            Arguments.of("f[x_Integer] := f[x] + 1;")
         );
     }
 
@@ -199,22 +212,6 @@ class BugDetectorTest {
     }
 
     // Additional tests to push coverage over 80%
-    @Test
-    void testDetectInfiniteRecursionWithBaseCase() {
-        String content = "f[0] := 0;\nf[x_] := f[x-1] + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectInfiniteRecursion(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInfiniteRecursionNoBaseCase() {
-        String content = "f[x_Integer] := f[x] + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectInfiniteRecursion(context, inputFile, content)
-        );
-    }
-
     @Test
     void testDetectUnreachablePatternsWithMultiple() {
         String content = "f[x_] := 1;\nf[y_Real] := 2;\nf[z_Integer] := 3;";

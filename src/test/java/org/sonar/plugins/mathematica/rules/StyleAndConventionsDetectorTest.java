@@ -78,8 +78,8 @@ class StyleAndConventionsDetectorTest {
     @Test
     void testDetectorCanBeInstantiated() {
         // Verify detector can be created without errors
-        StyleAndConventionsDetector detector = new StyleAndConventionsDetector();
-        assertThat(detector).isNotNull();
+        StyleAndConventionsDetector localDetector = new StyleAndConventionsDetector();
+        assertThat(localDetector).isNotNull();
     }
 
     // Complexity Detection Methods

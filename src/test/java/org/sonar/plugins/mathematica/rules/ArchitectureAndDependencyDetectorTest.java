@@ -102,7 +102,7 @@ class ArchitectureAndDependencyDetectorTest {
         when(inputFile.filename()).thenReturn("TestMyPackage.m");
         String content = "BeginPackage[\"TestMyPackage`\"];\nTestFunc[] := AssertTrue[True];\nEndPackage[];";
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
-        assertDoesNotThrow(() -> ArchitectureAndDependencyDetector.clearCaches());
+        assertDoesNotThrow(ArchitectureAndDependencyDetector::clearCaches);
     }
 
     // Dependency & Architecture Rules
@@ -655,7 +655,7 @@ class ArchitectureAndDependencyDetectorTest {
     void testBuildCrossFileDataWithVersionInfo() {
         String content = "BeginPackage[\"MyPackage`\"];\nVersion -> \"1.2.3\";\nFunc[] := 1;\nEndPackage[];";
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
-        assertDoesNotThrow(() -> ArchitectureAndDependencyDetector.clearCaches());
+        assertDoesNotThrow(ArchitectureAndDependencyDetector::clearCaches);
     }
 
     @Test
@@ -663,6 +663,6 @@ class ArchitectureAndDependencyDetectorTest {
         when(inputFile.filename()).thenReturn("Implementation.m");
         String content = "BeginPackage[\"Implementation`\"];\nFunc[] := 1;\nEndPackage[];";
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
-        assertDoesNotThrow(() -> ArchitectureAndDependencyDetector.clearCaches());
+        assertDoesNotThrow(ArchitectureAndDependencyDetector::clearCaches);
     }
 }
