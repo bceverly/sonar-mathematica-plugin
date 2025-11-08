@@ -1,7 +1,10 @@
 # SonarQube Plugin for Wolfram Mathematica
 
 [![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
-[![Quality Gate](https://img.shields.io/badge/Quality%20Gate-Tier%201-brightgreen)]()
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bceverly_sonar-mathematica-plugin&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=bceverly_sonar-mathematica-plugin)
+[![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bceverly_sonar-mathematica-plugin&metric=coverage)](https://sonarcloud.io/summary/new_code?id=bceverly_sonar-mathematica-plugin)
+[![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bceverly_sonar-mathematica-plugin&metric=bugs)](https://sonarcloud.io/summary/new_code?id=bceverly_sonar-mathematica-plugin)
+[![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=bceverly_sonar-mathematica-plugin&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=bceverly_sonar-mathematica-plugin)
 
 A **Tier 1** SonarQube plugin providing comprehensive code quality analysis for Wolfram Mathematica with **529+ rules**, comparable to Java and Python support.
 
