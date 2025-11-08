@@ -12,6 +12,7 @@ import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.rule.RuleKey;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -494,5 +495,386 @@ class PatternAndDataStructureDetectorTest {
 
         // Should handle gracefully without crashing
         verify(context, never()).newIssue();
+    }
+
+    // Additional tests to push coverage over 80%
+    @Test
+    void testDetectOrderDependentPatternsWithMoreSpecific() {
+        String content = "f[x_] := x; f[x_Integer] := x + 1;";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectOrderDependentPatterns(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectPatternRepeatedDifferentTypesWithTypes() {
+        String content = "{x_Integer, x_String}";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectPatternRepeatedDifferentTypes(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectSortWithoutComparisonLess() {
+        String content = "Sort[list, Less]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectSortWithoutComparison(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectNestedPartExtractionMultipleLevels() {
+        String content = "data[[i]][[j]][[k]]";
+        detector.initializeCaches(content);
+        detector.detectNestedPartExtraction(context, inputFile, content);
+        detector.clearCaches();
+
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectMissingKeyCheckWithLookup() {
+        String content = "x = assoc[\"nonexistent\"]";
+        detector.initializeCaches(content);
+        detector.detectMissingKeyCheck(context, inputFile, content);
+        detector.clearCaches();
+
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectAssociationVsListConfusionWithPart() {
+        String content = "assoc = <||>; x = assoc[[2]]";
+        detector.initializeCaches(content);
+        detector.detectAssociationVsListConfusion(context, inputFile, content);
+        detector.clearCaches();
+
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectLengthInLoopConditionWithWhile() {
+        String content = "While[i < Length[bigList], i++]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectLengthInLoopCondition(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectInefficientListConcatenationWithAppend() {
+        String content = "Do[result = Append[result, i], {i, 10}]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectInefficientListConcatenation(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectPartAssignmentToImmutableWithLiteral() {
+        String content = "Range[10][[1]] = 5";
+        detector.initializeCaches(content);
+        detector.detectPartAssignmentToImmutable(context, inputFile, content);
+        detector.clearCaches();
+
+        verify(context, atMost(1)).newIssue();
+    }
+
+    @Test
+    void testDetectBlankSequenceWithoutRestrictionInArithmetic() {
+        String content = "f[x__] := x + 5";
+        detector.initializeCaches(content);
+        detector.detectBlankSequenceWithoutRestriction(context, inputFile, content);
+        detector.clearCaches();
+
+        verify(context, atMost(1)).newIssue();
+    }
+
+    @Test
+    void testDetectPositionVsSelectWithPositionCall() {
+        String content = "Position[list, x]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectPositionVsSelect(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectGroupByWithoutAggregationSimple() {
+        String content = "GroupBy[data, #x &]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectGroupByWithoutAggregation(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectQueryOnNonDatasetWithList() {
+        String content = "list[Select[#x > 5 &]]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectQueryOnNonDataset(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectAssociationUpdatePatternWithAppendTo() {
+        String content = "AppendTo[assoc, \"key\" -> val]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectAssociationUpdatePattern(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectMergeWithoutConflictStrategySimple() {
+        String content = "Merge[{a1, a2}]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectMergeWithoutConflictStrategy(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectAssociateToOnNonSymbolWithLiteral() {
+        String content = "AssociateTo[{}, \"key\" -> val]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectAssociateToOnNonSymbol(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectKeyDropMultipleTimesWithKeyDrop() {
+        String content = "KeyDrop[KeyDrop[assoc, \"a\"], \"b\"]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectKeyDropMultipleTimes(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectLookupWithMissingDefaultSimple() {
+        String content = "Lookup[assoc, \"key\"]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectLookupWithMissingDefault(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectVerbatimPatternMisuseWithVerbatim() {
+        String content = "f[Verbatim[x_]] := x";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectVerbatimPatternMisuse(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectHoldPatternUnnecessaryWithHoldPattern() {
+        String content = "f[HoldPattern[x]] := x + 1";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectHoldPatternUnnecessary(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectAlternativesTooComplexWithManyAlternatives() {
+        String content = "f[x : (1 | 2 | 3 | 4 | 5 | 6 | 7 | 8)] := x";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectAlternativesTooComplex(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectRepeatedPatternAlternativesWithRepeated() {
+        String content = "f[x : (1 | 1 | 2)] := x";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectRepeatedPatternAlternatives(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectLongestShortestWithoutOrderingWithLongest() {
+        String content = "Longest[x__ /; True]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectLongestShortestWithoutOrdering(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectPatternTestWithPureFunctionSimple() {
+        String content = "f[x_?(# > 5 &)] := x";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectPatternTestWithPureFunction(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectMissingPatternDefaultsWithOptional() {
+        String content = "f[x_, y_:1] := x + y";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectMissingPatternDefaults(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectNestedOptionalPatternsDeep() {
+        String content = "f[x_:1, y_:2, z_:3] := x + y + z";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectNestedOptionalPatterns(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectEmptyListIndexingWithEmptyList() {
+        String content = "{}[[1]]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectEmptyListIndexing(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectNegativeIndexWithoutValidationNegative() {
+        String content = "list[[-5]]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectNegativeIndexWithoutValidation(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectUnnecessaryFlattenSimple() {
+        String content = "Flatten[list, 1]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectUnnecessaryFlatten(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectReverseTwiceConsecutive() {
+        String content = "Reverse[Reverse[list]]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectReverseTwice(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectPatternMatchingLargeListsWithLongList() {
+        String content = "Cases[Range[10000], _?EvenQ]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectPatternMatchingLargeLists(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectInefficientKeyLookupMultiple() {
+        String content = "If[KeyExistsQ[assoc, \"key\"], assoc[\"key\"], default]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectInefficientKeyLookup(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectRepeatedPatternAlternativesTrigger() {
+        String content = "f[x : (Integer | String | Integer)] := x";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectRepeatedPatternAlternatives(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectMissingPatternDefaultsTrigger() {
+        String content = "f[x___] := Length[{x}]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectMissingPatternDefaults(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectPatternTestWithPureFunctionInMap() {
+        String content = "Map[Select[list, x_?(# > 5 &)]]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectPatternTestWithPureFunction(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectHoldPatternUnnecessarySimpleBlank() {
+        String content = "Cases[list, HoldPattern[_]]";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectHoldPatternUnnecessary(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectNestedOptionalPatternsDependency() {
+        String content = "f[a_ : 1, b_ : a] := a + b";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectNestedOptionalPatterns(context, inputFile, content)
+        );
+        detector.clearCaches();
+    }
+
+    @Test
+    void testDetectPatternNamingConflictsDifferentTypes() {
+        String content = "f[x_Integer] := x; f[x_String] := x;";
+        detector.initializeCaches(content);
+        assertDoesNotThrow(() ->
+            detector.detectPatternNamingConflicts(context, inputFile, content)
+        );
+        detector.clearCaches();
     }
 }
