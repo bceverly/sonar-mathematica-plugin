@@ -440,7 +440,7 @@ git tag v1.0.0
 git push origin v1.0.0
 
 # Gradle extracts version automatically
-./gradlew build  # Creates sonar-mathematica-plugin-1.0.0.jar
+./gradlew build  # Creates wolfralyze-1.0.0.jar
 ```
 
 **Implementation** (`build.gradle`):

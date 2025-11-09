@@ -6,14 +6,14 @@
   "license": "GPL-3.0",
   "organizationName": "Bryan C. Everly",
   "organizationUrl": "https://github.com/bceverly",
-  "issueTrackerUrl": "https://github.com/bceverly/sonar-mathematica-plugin/issues",
-  "sourcesUrl": "https://github.com/bceverly/sonar-mathematica-plugin",
+  "issueTrackerUrl": "https://github.com/bceverly/wolfralyze/issues",
+  "sourcesUrl": "https://github.com/bceverly/wolfralyze",
   "developers": [
     {
       "name": "Bryan C. Everly",
       "email": "bryan@theeverlys.com"
     }
   ],
-  "homepageUrl": "https://github.com/bceverly/sonar-mathematica-plugin",
+  "homepageUrl": "https://github.com/bceverly/wolfralyze",
   "termsConditionsUrl": "https://www.gnu.org/licenses/gpl-3.0.html"
 }

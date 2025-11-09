@@ -83,7 +83,7 @@ plugins {
 
 cyclonedxBom {
     includeConfigs = ['runtimeClasspath']
-    outputName = "sonar-mathematica-plugin-${project.version}-sbom"
+    outputName = "wolfralyze-${project.version}-sbom"
     outputFormat = 'json'
     includeBomSerialNumber = true
 }
@@ -96,7 +96,7 @@ cyclonedxBom {
 gradle clean build
 
 # Output location
-build/reports/sonar-mathematica-plugin-{version}-sbom.json
+build/reports/wolfralyze-{version}-sbom.json
 ```
 
 ### What's Included
@@ -135,15 +135,15 @@ The SBOM captures all runtime dependencies, including:
     ],
     "component": {
       "group": "org.sonar.plugins",
-      "name": "sonar-mathematica-plugin",
+      "name": "wolfralyze",
       "version": "0.9.8",
-      "purl": "pkg:maven/org.sonar.plugins/sonar-mathematica-plugin@0.9.8",
+      "purl": "pkg:maven/org.sonar.plugins/wolfralyze@0.9.8",
       "type": "library"
     }
   },
   "dependencies": [
     {
-      "ref": "pkg:maven/org.sonar.plugins/sonar-mathematica-plugin@0.9.8",
+      "ref": "pkg:maven/org.sonar.plugins/wolfralyze@0.9.8",
       "dependsOn": []
     }
   ]
@@ -174,14 +174,14 @@ The SBOM captures all runtime dependencies, including:
 ```bash
 # Download with each release
 curl -L -o sbom.json \
-  https://github.com/bceverly/sonar-mathematica-plugin/releases/download/v0.9.8/sonar-mathematica-plugin-0.9.8-sbom.json
+  https://github.com/bceverly/wolfralyze/releases/download/v0.9.8/wolfralyze-0.9.8-sbom.json
 ```
 
 ### 2. Verify Authenticity
 
 ```bash
 # Check SHA256 hash (from release notes)
-shasum -a 256 sonar-mathematica-plugin-0.9.8-sbom.json
+shasum -a 256 wolfralyze-0.9.8-sbom.json
 
 # Compare with hash in release notes
 ```
@@ -207,7 +207,7 @@ cat sbom.json | jq '.components[] | {name: .name, version: .version}'
 curl -X POST "http://dtrack-server/api/v1/bom" \
   -H "X-Api-Key: $API_KEY" \
   -F "project=$PROJECT_UUID" \
-  -F "bom=@sonar-mathematica-plugin-0.9.8-sbom.json"
+  -F "bom=@wolfralyze-0.9.8-sbom.json"
 ```
 
 #### Using OSS Index
@@ -283,14 +283,14 @@ Each release includes SHA256 checksums for both the plugin JAR and SBOM file in 
 
 1. **Download both files**
    ```bash
-   curl -L -O https://github.com/.../sonar-mathematica-plugin-0.9.8.jar
-   curl -L -O https://github.com/.../sonar-mathematica-plugin-0.9.8-sbom.json
+   curl -L -O https://github.com/.../wolfralyze-0.9.8.jar
+   curl -L -O https://github.com/.../wolfralyze-0.9.8-sbom.json
    ```
 
 2. **Check hashes**
    ```bash
-   shasum -a 256 sonar-mathematica-plugin-0.9.8.jar
-   shasum -a 256 sonar-mathematica-plugin-0.9.8-sbom.json
+   shasum -a 256 wolfralyze-0.9.8.jar
+   shasum -a 256 wolfralyze-0.9.8-sbom.json
    ```
 
 3. **Compare with release notes**
@@ -379,7 +379,7 @@ Yes! Build from source and the SBOM will be generated automatically:
 
 ```bash
 gradle clean build
-# SBOM at: build/reports/sonar-mathematica-plugin-*-sbom.json
+# SBOM at: build/reports/wolfralyze-*-sbom.json
 ```
 
 ### What if a vulnerability is found?
@@ -413,9 +413,9 @@ The SBOM includes license information when available. The plugin itself is GPL-3
 ## Related Documentation
 
 - [Installation Guide](Installation.md) - Download and verify plugin
-- [Security](https://github.com/bceverly/sonar-mathematica-plugin/security) - Security policies
+- [Security](https://github.com/bceverly/wolfralyze/security) - Security policies
 - [Contributing](../CONTRIBUTING.md) - Development guidelines
-- [Release Process](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Release-Process) - How releases are made
+- [Release Process](https://github.com/bceverly/wolfralyze/wiki/Release-Process) - How releases are made
 
 ---
 
@@ -424,4 +424,4 @@ The SBOM includes license information when available. The plugin itself is GPL-3
 **Update Frequency**: Every release
 **Verification**: SHA256 checksums in release notes
 
-For questions about SBOMs, please [open an issue](https://github.com/bceverly/sonar-mathematica-plugin/issues).
+For questions about SBOMs, please [open an issue](https://github.com/bceverly/wolfralyze/issues).

@@ -1098,7 +1098,7 @@ sonar.cpd.mathematica.minimumTokens=30
 - **Installation Guide**: [Installation.md](Installation.md)
 - **SonarQube Documentation**: https://docs.sonarqube.org/
 - **SonarScanner Documentation**: https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/
-- **Plugin Repository**: https://github.com/bceverly/sonar-mathematica-plugin
+- **Plugin Repository**: https://github.com/bceverly/wolfralyze
 
 ---
 

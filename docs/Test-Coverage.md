@@ -349,6 +349,6 @@ CoverageUtils`ExportCoverageJSON[mergedCoverage, "coverage/coverage.json"]
 
 ## Support
 
-- **Documentation**: [GitHub Wiki](https://github.com/bceverly/sonar-mathematica-plugin/wiki)
-- **Issues**: [GitHub Issues](https://github.com/bceverly/sonar-mathematica-plugin/issues)
+- **Documentation**: [GitHub Wiki](https://github.com/bceverly/wolfralyze/wiki)
+- **Issues**: [GitHub Issues](https://github.com/bceverly/wolfralyze/issues)
 - **Example Project**: [wolfralyze-test-project](https://github.com/bceverly/wolfralyze-test-project)

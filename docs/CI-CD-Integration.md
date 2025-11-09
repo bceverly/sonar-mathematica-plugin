@@ -57,7 +57,7 @@ docker run -d --name sonarqube \
 ### 3. Install the Mathematica Plugin
 
 **On SonarQube Server:**
-1. Download the latest `sonar-mathematica-plugin-X.X.X.jar`
+1. Download the latest `wolfralyze-X.X.X.jar`
 2. Copy to `$SONARQUBE_HOME/extensions/plugins/`
 3. Restart SonarQube
 4. Verify: **Administration** → **Marketplace** → **Installed**
@@ -1212,7 +1212,7 @@ For more information:
 ## Support
 
 For issues specific to the Mathematica plugin:
-- Check the [plugin repository](https://github.com/yourusername/sonar-mathematica-plugin)
+- Check the [plugin repository](https://github.com/yourusername/wolfralyze)
 - Review the [ROADMAP](../ROADMAP.md) for planned features
 - Submit issues or feature requests
 

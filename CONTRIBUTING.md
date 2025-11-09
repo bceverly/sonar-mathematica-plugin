@@ -40,12 +40,12 @@ Before contributing, make sure you have:
 1. Fork the repository on GitHub
 2. Clone your fork locally:
    ```bash
-   git clone git@github.com:YOUR_USERNAME/sonar-mathematica-plugin.git
-   cd sonar-mathematica-plugin
+   git clone git@github.com:YOUR_USERNAME/wolfralyze.git
+   cd wolfralyze
    ```
 3. Add the upstream repository:
    ```bash
-   git remote add upstream git@github.com:bceverly/sonar-mathematica-plugin.git
+   git remote add upstream git@github.com:bceverly/wolfralyze.git
    ```
 
 ## Development Setup
@@ -142,7 +142,7 @@ make self-scan
 
 The plugin JAR will be created at:
 ```
-build/libs/sonar-mathematica-plugin-VERSION.jar
+build/libs/wolfralyze-VERSION.jar
 ```
 
 ## Running Tests
@@ -497,9 +497,9 @@ We follow [Semantic Versioning](https://semver.org/):
 
 ### Questions?
 
-- **GitHub Discussions**: https://github.com/bceverly/sonar-mathematica-plugin/discussions
-- **GitHub Issues**: https://github.com/bceverly/sonar-mathematica-plugin/issues
-- **Documentation**: https://github.com/bceverly/sonar-mathematica-plugin/wiki
+- **GitHub Discussions**: https://github.com/bceverly/wolfralyze/discussions
+- **GitHub Issues**: https://github.com/bceverly/wolfralyze/issues
+- **Documentation**: https://github.com/bceverly/wolfralyze/wiki
 
 ### Found a Bug?
 

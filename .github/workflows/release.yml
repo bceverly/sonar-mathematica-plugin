@@ -41,14 +41,14 @@ jobs:
       - name: Find JAR file
         id: jar
         run: |
-          JAR_FILE=$(ls build/libs/sonar-mathematica-plugin-*.jar)
+          JAR_FILE=$(ls build/libs/wolfralyze-*.jar)
           echo "file=$JAR_FILE" >> $GITHUB_OUTPUT
           echo "name=$(basename $JAR_FILE)" >> $GITHUB_OUTPUT
 
       - name: Find SBOM file
         id: sbom
         run: |
-          SBOM_FILE=$(ls build/reports/sonar-mathematica-plugin-*-sbom.json)
+          SBOM_FILE=$(ls build/reports/wolfralyze-*-sbom.json)
           echo "file=$SBOM_FILE" >> $GITHUB_OUTPUT
           echo "name=$(basename $SBOM_FILE)" >> $GITHUB_OUTPUT
 
@@ -85,7 +85,7 @@ jobs:
           version=$VERSION
 
           # Download URL for the JAR (GitHub release)
-          downloadUrl=https://github.com/bceverly/sonar-mathematica-plugin/releases/download/$TAG/sonar-mathematica-plugin-$VERSION.jar
+          downloadUrl=https://github.com/bceverly/wolfralyze/releases/download/$TAG/wolfralyze-$VERSION.jar
 
           # Compatible SonarQube versions
           sqVersions=[9.0,LATEST]
@@ -101,10 +101,10 @@ jobs:
           developers=Bryan C. Everly
 
           # Homepage
-          homepageUrl=https://github.com/bceverly/sonar-mathematica-plugin
+          homepageUrl=https://github.com/bceverly/wolfralyze
 
           # Issue tracker
-          issueTrackerUrl=https://github.com/bceverly/sonar-mathematica-plugin/issues
+          issueTrackerUrl=https://github.com/bceverly/wolfralyze/issues
 
           # License
           license=GNU LGPL 3
@@ -144,7 +144,7 @@ jobs:
              cp ${{ steps.jar.outputs.name }} $SONARQUBE_HOME/extensions/plugins/
 
              # Remove old versions (if any)
-             rm -f $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+             rm -f $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
              # (Keep only the new version you just copied)
              ```
 

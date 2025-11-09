@@ -95,7 +95,7 @@ jacocoTestReport {
 
 jar {
     // Set JAR filename to include version
-    archiveFileName = "sonar-mathematica-plugin-${project.version}.jar"
+    archiveFileName = "wolfralyze-${project.version}.jar"
 
     manifest {
         attributes(
@@ -105,7 +105,7 @@ jar {
             'Plugin-Description': 'Code analyzer for Wolfram Mathematica',
             'Plugin-Version': project.version,
             'Plugin-Organization': 'Community',
-            'Plugin-OrganizationUrl': 'https://github.com/bceverly/sonar-mathematica-plugin',
+            'Plugin-OrganizationUrl': 'https://github.com/bceverly/wolfralyze',
             'Plugin-License': 'GPL-3.0',
             'Plugin-ChildFirstClassLoader': 'false',
             'Sonar-Version': '9.9',
@@ -135,7 +135,7 @@ task installPlugin(type: Copy) {
 // CycloneDX SBOM configuration
 cyclonedxBom {
     includeConfigs = ['runtimeClasspath']
-    outputName = "sonar-mathematica-plugin-${project.version}-sbom"
+    outputName = "wolfralyze-${project.version}-sbom"
     outputFormat = 'json'
     includeBomSerialNumber = true
 }
@@ -166,7 +166,7 @@ sonar {
     properties {
         property 'sonar.host.url', System.getenv('SONAR_HOST_URL') ?: 'https://sonarcloud.io'
         property 'sonar.organization', 'bceverly'
-        property 'sonar.projectKey', 'bceverly_sonar-mathematica-plugin'
+        property 'sonar.projectKey', 'bceverly_wolfralyze'
         property 'sonar.projectName', 'SonarQube Mathematica Plugin'
         property 'sonar.projectVersion', version
         property 'sonar.sources', 'src/main/java'
@@ -175,9 +175,9 @@ sonar {
         property 'sonar.java.test.binaries', 'build/classes/java/test'
         property 'sonar.coverage.jacoco.xmlReportPaths', 'build/reports/jacoco/test/jacocoTestReport.xml'
         property 'sonar.sourceEncoding', 'UTF-8'
-        property 'sonar.links.homepage', 'https://github.com/bceverly/sonar-mathematica-plugin'
-        property 'sonar.links.ci', 'https://github.com/bceverly/sonar-mathematica-plugin/actions'
-        property 'sonar.links.scm', 'https://github.com/bceverly/sonar-mathematica-plugin'
-        property 'sonar.links.issue', 'https://github.com/bceverly/sonar-mathematica-plugin/issues'
+        property 'sonar.links.homepage', 'https://github.com/bceverly/wolfralyze'
+        property 'sonar.links.ci', 'https://github.com/bceverly/wolfralyze/actions'
+        property 'sonar.links.scm', 'https://github.com/bceverly/wolfralyze'
+        property 'sonar.links.issue', 'https://github.com/bceverly/wolfralyze/issues'
     }
 }

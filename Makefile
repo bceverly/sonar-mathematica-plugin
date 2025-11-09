@@ -48,10 +48,10 @@ help:
 build:
 	@echo "Building SonarQube Mathematica Plugin..."
 	@# Remove any old plugin JARs from build/libs/ first
-	@if ls build/libs/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
+	@if ls build/libs/wolfralyze-*.jar 1> /dev/null 2>&1; then \
 		echo "Removing old plugin JARs from build/libs/:"; \
-		ls -lh build/libs/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9}'; \
-		rm -f build/libs/sonar-mathematica-plugin-*.jar; \
+		ls -lh build/libs/wolfralyze-*.jar | awk '{print "  " $$9}'; \
+		rm -f build/libs/wolfralyze-*.jar; \
 	fi
 	@./gradlew build
 	@echo ""
@@ -148,10 +148,10 @@ lint:
 clean:
 	@echo "Cleaning build artifacts..."
 	@# Remove all version-numbered JARs FIRST (before gradle clean)
-	@if ls build/libs/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
+	@if ls build/libs/wolfralyze-*.jar 1> /dev/null 2>&1; then \
 		echo "  Removing old JAR files from build/libs/:"; \
-		ls -lh build/libs/sonar-mathematica-plugin-*.jar | awk '{print "    " $$9}'; \
-		rm -f build/libs/sonar-mathematica-plugin-*.jar; \
+		ls -lh build/libs/wolfralyze-*.jar | awk '{print "    " $$9}'; \
+		rm -f build/libs/wolfralyze-*.jar; \
 	fi
 	@# Clean Gradle build artifacts
 	@./gradlew clean
@@ -302,11 +302,11 @@ install: check-sonarqube-home build
 	@echo "=========================================="
 	@echo "Step 2/5: Removing old plugin versions..."
 	@echo "=========================================="
-	@if ls $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
+	@if ls $(SONARQUBE_HOME)/extensions/plugins/wolfralyze-*.jar 1> /dev/null 2>&1; then \
 		echo "Removing:"; \
-		ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9}'; \
-		rm -f $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar; \
-		if ls $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar 1> /dev/null 2>&1; then \
+		ls -lh $(SONARQUBE_HOME)/extensions/plugins/wolfralyze-*.jar | awk '{print "  " $$9}'; \
+		rm -f $(SONARQUBE_HOME)/extensions/plugins/wolfralyze-*.jar; \
+		if ls $(SONARQUBE_HOME)/extensions/plugins/wolfralyze-*.jar 1> /dev/null 2>&1; then \
 			echo ""; \
 			echo "ERROR: Failed to remove old plugin versions!"; \
 			echo "Please check file permissions and try again."; \
@@ -325,7 +325,7 @@ install: check-sonarqube-home build
 	@# Get the current version and copy only that specific JAR (matches build.gradle logic)
 	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//'); \
 	test -n "$$VERSION" || VERSION="0.1.0-SNAPSHOT"; \
-	JAR_FILE="build/libs/sonar-mathematica-plugin-$$VERSION.jar"; \
+	JAR_FILE="build/libs/wolfralyze-$$VERSION.jar"; \
 	if [ ! -f "$$JAR_FILE" ]; then \
 		echo ""; \
 		echo "ERROR: Expected JAR file not found: $$JAR_FILE"; \
@@ -336,7 +336,7 @@ install: check-sonarqube-home build
 	fi; \
 	cp "$$JAR_FILE" $(SONARQUBE_HOME)/extensions/plugins/; \
 	echo "Installed:"; \
-	ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-$$VERSION.jar | awk '{print "  " $$9 " (" $$5 ")"}'
+	ls -lh $(SONARQUBE_HOME)/extensions/plugins/wolfralyze-$$VERSION.jar | awk '{print "  " $$9 " (" $$5 ")"}'
 	@echo ""
 	@# Step 4: Start SonarQube
 	@echo "=========================================="
@@ -436,7 +436,7 @@ install: check-sonarqube-home build
 	done
 	@echo ""
 	@echo "Plugin installed successfully:"; \
-	ls -lh $(SONARQUBE_HOME)/extensions/plugins/sonar-mathematica-plugin-*.jar | awk '{print "  " $$9 " (" $$5 ")"}'; \
+	ls -lh $(SONARQUBE_HOME)/extensions/plugins/wolfralyze-*.jar | awk '{print "  " $$9 " (" $$5 ")"}'; \
 	echo ""; \
 	echo "Web interface: http://localhost:9000"; \
 	echo ""
@@ -486,7 +486,7 @@ self-scan: build
 	@echo ""
 	@# Run the scan
 	@echo "Running sonar-scanner..."
-	@echo "Project: sonar-mathematica-plugin"
+	@echo "Project: wolfralyze"
 	@echo "Server: http://localhost:9000"
 	@echo ""
 	@sonar-scanner -Dsonar.host.url=http://localhost:9000
@@ -496,12 +496,12 @@ self-scan: build
 	@echo "=========================================="
 	@echo ""
 	@echo "View results at:"
-	@echo "  http://localhost:9000/dashboard?id=sonar-mathematica-plugin"
+	@echo "  http://localhost:9000/dashboard?id=wolfralyze"
 	@echo ""
 
 # Update GitHub Wiki with latest documentation
 WIKI_DIR := .wiki-temp
-WIKI_REPO := git@github.com:bceverly/sonar-mathematica-plugin.wiki.git
+WIKI_REPO := git@github.com:bceverly/wolfralyze.wiki.git
 
 update-wiki:
 	@echo "=========================================="
@@ -521,7 +521,7 @@ update-wiki:
 		echo "ERROR: Failed to clone wiki repository"; \
 		echo ""; \
 		echo "Make sure:"; \
-		echo "  1. Wiki is initialized (create first page at https://github.com/bceverly/sonar-mathematica-plugin/wiki)"; \
+		echo "  1. Wiki is initialized (create first page at https://github.com/bceverly/wolfralyze/wiki)"; \
 		echo "  2. SSH key is configured for git@github.com"; \
 		echo "  3. You have write access to the repository"; \
 		echo ""; \
@@ -551,7 +551,7 @@ update-wiki:
 		echo "=========================================="; \
 		echo ""; \
 		echo "View wiki at:"; \
-		echo "  https://github.com/bceverly/sonar-mathematica-plugin/wiki"; \
+		echo "  https://github.com/bceverly/wolfralyze/wiki"; \
 		echo ""; \
 		exit 0; \
 	fi; \
@@ -591,5 +591,5 @@ update-wiki:
 	echo "  $$WIKI_PAGES wiki pages updated"; \
 	echo ""; \
 	echo "View wiki at:"; \
-	echo "  https://github.com/bceverly/sonar-mathematica-plugin/wiki"; \
+	echo "  https://github.com/bceverly/wolfralyze/wiki"; \
 	echo ""

@@ -63,14 +63,14 @@ This is the most common method for installing the plugin.
 ```bash
 # Clone the repository
 cd ~/dev
-git clone https://github.com/bceverly/sonar-mathematica-plugin.git
-cd sonar-mathematica-plugin
+git clone https://github.com/bceverly/wolfralyze.git
+cd wolfralyze
 
 # Build the plugin
 ./gradlew clean build
 
 # The JAR file will be created at:
-# build/libs/sonar-mathematica-plugin-<version>.jar
+# build/libs/wolfralyze-<version>.jar
 ```
 
 **Option B: Download Pre-built Release**
@@ -78,12 +78,12 @@ cd sonar-mathematica-plugin
 ```bash
 # Download the latest release from GitHub
 # (Replace <version> with the latest version number)
-curl -L -o sonar-mathematica-plugin.jar \
-  https://github.com/bceverly/sonar-mathematica-plugin/releases/download/v<version>/sonar-mathematica-plugin-<version>.jar
+curl -L -o wolfralyze.jar \
+  https://github.com/bceverly/wolfralyze/releases/download/v<version>/wolfralyze-<version>.jar
 
 # Download the SBOM (Software Bill of Materials) - optional but recommended
-curl -L -o sonar-mathematica-plugin-sbom.json \
-  https://github.com/bceverly/sonar-mathematica-plugin/releases/download/v<version>/sonar-mathematica-plugin-<version>-sbom.json
+curl -L -o wolfralyze-sbom.json \
+  https://github.com/bceverly/wolfralyze/releases/download/v<version>/wolfralyze-<version>-sbom.json
 ```
 
 **Verify the Download (Recommended)**
@@ -92,11 +92,11 @@ Each release includes SHA256 checksums for security verification:
 
 ```bash
 # Verify the JAR file
-shasum -a 256 sonar-mathematica-plugin.jar
+shasum -a 256 wolfralyze.jar
 # Compare with the hash shown in the release notes
 
 # Verify the SBOM file (if downloaded)
-shasum -a 256 sonar-mathematica-plugin-sbom.json
+shasum -a 256 wolfralyze-sbom.json
 # Compare with the SBOM hash in the release notes
 ```
 
@@ -106,7 +106,7 @@ The SBOM (Software Bill of Materials) provides:
 - Security vulnerability tracking
 - Supply chain transparency
 
-See the [SBOM Documentation](https://github.com/bceverly/sonar-mathematica-plugin/wiki/SBOM) for more details.
+See the [SBOM Documentation](https://github.com/bceverly/wolfralyze/wiki/SBOM) for more details.
 
 #### Step 2: Install the Plugin
 
@@ -117,7 +117,7 @@ See the [SBOM Documentation](https://github.com/bceverly/sonar-mathematica-plugi
 $SONARQUBE_HOME/bin/linux-x86-64/sonar.sh stop
 
 # Copy the plugin JAR to the extensions/plugins directory
-cp build/libs/sonar-mathematica-plugin-*.jar $SONARQUBE_HOME/extensions/plugins/
+cp build/libs/wolfralyze-*.jar $SONARQUBE_HOME/extensions/plugins/
 
 # Verify the file was copied
 ls -lh $SONARQUBE_HOME/extensions/plugins/ | grep mathematica
@@ -133,7 +133,7 @@ $SONARQUBE_HOME/bin/linux-x86-64/sonar.sh start
 $SONARQUBE_HOME/bin/macosx-universal-64/sonar.sh stop
 
 # Copy plugin
-cp build/libs/sonar-mathematica-plugin-*.jar $SONARQUBE_HOME/extensions/plugins/
+cp build/libs/wolfralyze-*.jar $SONARQUBE_HOME/extensions/plugins/
 
 # Start SonarQube
 $SONARQUBE_HOME/bin/macosx-universal-64/sonar.sh start
@@ -146,7 +146,7 @@ REM Stop SonarQube
 %SONARQUBE_HOME%\bin\windows-x86-64\StopSonar.bat
 
 REM Copy plugin
-copy build\libs\sonar-mathematica-plugin-*.jar %SONARQUBE_HOME%\extensions\plugins\
+copy build\libs\wolfralyze-*.jar %SONARQUBE_HOME%\extensions\plugins\
 
 REM Start SonarQube
 %SONARQUBE_HOME%\bin\windows-x86-64\StartSonar.bat
@@ -226,7 +226,7 @@ networks:
 mkdir -p plugins
 
 # Copy or download the plugin JAR
-cp build/libs/sonar-mathematica-plugin-*.jar plugins/
+cp build/libs/wolfralyze-*.jar plugins/
 
 # Start SonarQube
 docker-compose up -d
@@ -243,7 +243,7 @@ docker volume create sonarqube_plugins
 
 # Copy plugin to a temporary container
 docker container create --name temp_plugins -v sonarqube_plugins:/plugins alpine
-docker cp sonar-mathematica-plugin-*.jar temp_plugins:/plugins/
+docker cp wolfralyze-*.jar temp_plugins:/plugins/
 docker rm temp_plugins
 
 # Run SonarQube with the plugin volume
@@ -265,10 +265,10 @@ FROM sonarqube:10-community
 USER root
 
 # Copy plugin JAR
-COPY sonar-mathematica-plugin-*.jar /opt/sonarqube/extensions/plugins/
+COPY wolfralyze-*.jar /opt/sonarqube/extensions/plugins/
 
 # Set ownership
-RUN chown sonarqube:sonarqube /opt/sonarqube/extensions/plugins/sonar-mathematica-plugin-*.jar
+RUN chown sonarqube:sonarqube /opt/sonarqube/extensions/plugins/wolfralyze-*.jar
 
 # Switch back to sonarqube user
 USER sonarqube
@@ -396,7 +396,7 @@ Check the project in SonarQube UI to see analysis results.
 2. **Check file permissions:**
    ```bash
    # Ensure the plugin JAR is readable
-   chmod 644 $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+   chmod 644 $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
    ```
 
 3. **Check SonarQube logs for errors:**
@@ -411,7 +411,7 @@ Check the project in SonarQube UI to see analysis results.
 5. **Remove old plugin versions:**
    ```bash
    # Remove any old versions
-   rm $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-old-version.jar
+   rm $SONARQUBE_HOME/extensions/plugins/wolfralyze-old-version.jar
    ```
 
 ### Issue: "Java version is too old"
@@ -586,7 +586,7 @@ If macOS blocks the plugin JAR:
 
 ```bash
 # Remove quarantine attribute
-xattr -d com.apple.quarantine $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+xattr -d com.apple.quarantine $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
 ```
 
 ### Linux
@@ -600,7 +600,7 @@ If SELinux is enforcing, you may need to adjust contexts:
 getenforce
 
 # Set proper context (if needed)
-chcon -t lib_t $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+chcon -t lib_t $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
 ```
 
 #### Service Manager
@@ -719,8 +719,8 @@ After successful installation:
 ## Additional Resources
 
 - **Official Documentation**: [SonarQube Docs](https://docs.sonarqube.org/)
-- **Plugin Repository**: [GitHub](https://github.com/bceverly/sonar-mathematica-plugin)
-- **Issue Tracker**: [GitHub Issues](https://github.com/bceverly/sonar-mathematica-plugin/issues)
+- **Plugin Repository**: [GitHub](https://github.com/bceverly/wolfralyze)
+- **Issue Tracker**: [GitHub Issues](https://github.com/bceverly/wolfralyze/issues)
 - **Community Support**: [SonarSource Community](https://community.sonarsource.com/)
 
 ---

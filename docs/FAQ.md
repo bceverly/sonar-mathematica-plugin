@@ -106,7 +106,7 @@ No, this is a **community-developed plugin** not affiliated with Wolfram Researc
 5. Restart SonarQube
 
 **Option 2: Manual Installation**
-1. Download the latest `.jar` from [GitHub Releases](https://github.com/bceverly/sonar-mathematica-plugin/releases)
+1. Download the latest `.jar` from [GitHub Releases](https://github.com/bceverly/wolfralyze/releases)
 2. Copy to `$SONARQUBE_HOME/extensions/plugins/`
 3. Remove any old versions (important!)
 4. Restart SonarQube
@@ -114,10 +114,10 @@ No, this is a **community-developed plugin** not affiliated with Wolfram Researc
 
 **Option 3: Build from Source**
 ```bash
-git clone https://github.com/bceverly/sonar-mathematica-plugin.git
-cd sonar-mathematica-plugin
+git clone https://github.com/bceverly/wolfralyze.git
+cd wolfralyze
 ./gradlew build
-cp build/libs/sonar-mathematica-plugin-*.jar $SONARQUBE_HOME/extensions/plugins/
+cp build/libs/wolfralyze-*.jar $SONARQUBE_HOME/extensions/plugins/
 # Restart SonarQube
 ```
 
@@ -126,7 +126,7 @@ cp build/libs/sonar-mathematica-plugin-*.jar $SONARQUBE_HOME/extensions/plugins/
 **Common causes:**
 
 1. **Old plugin version still present**
-   - Solution: Delete ALL `sonar-mathematica-plugin-*.jar` files from `extensions/plugins/`
+   - Solution: Delete ALL `wolfralyze-*.jar` files from `extensions/plugins/`
    - Then copy only the latest version
    - Restart SonarQube
 
@@ -136,7 +136,7 @@ cp build/libs/sonar-mathematica-plugin-*.jar $SONARQUBE_HOME/extensions/plugins/
 
 3. **Plugin file permissions**
    - Solution: Ensure the `.jar` file is readable by SonarQube user
-   - `chmod 644 sonar-mathematica-plugin-*.jar`
+   - `chmod 644 wolfralyze-*.jar`
 
 4. **Java version mismatch**
    - Solution: Plugin requires Java 11+
@@ -161,12 +161,12 @@ No, **SonarCloud does not support custom plugins**. You must use a self-hosted S
 
 2. **Remove old version**
    ```bash
-   rm $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+   rm $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
    ```
 
 3. **Install new version**
    ```bash
-   cp sonar-mathematica-plugin-NEW-VERSION.jar $SONARQUBE_HOME/extensions/plugins/
+   cp wolfralyze-NEW-VERSION.jar $SONARQUBE_HOME/extensions/plugins/
    ```
 
 4. **Start SonarQube**
@@ -1147,7 +1147,7 @@ services:
       - sonarqube_extensions:/opt/sonarqube/extensions
       - sonarqube_logs:/opt/sonarqube/logs
       # Mount plugin
-      - ./sonar-mathematica-plugin.jar:/opt/sonarqube/extensions/plugins/sonar-mathematica-plugin.jar
+      - ./wolfralyze.jar:/opt/sonarqube/extensions/plugins/wolfralyze.jar
 
 volumes:
   sonarqube_data:
@@ -1174,7 +1174,7 @@ docker run --rm \
 
 **Install plugin in running container:**
 ```bash
-docker cp sonar-mathematica-plugin.jar sonarqube:/opt/sonarqube/extensions/plugins/
+docker cp wolfralyze.jar sonarqube:/opt/sonarqube/extensions/plugins/
 docker restart sonarqube
 ```
 
@@ -1221,7 +1221,7 @@ docker restart sonarqube
    - Wait for community feedback
 
 2. **Implement rule:**
-   - Fork repository: `github.com/bceverly/sonar-mathematica-plugin`
+   - Fork repository: `github.com/bceverly/wolfralyze`
    - Create branch: `git checkout -b feature/my-rule`
    - Add rule in `UnifiedRuleVisitor.java` (for O(n) rules)
    - Add rule definition in `MathematicaRulesDefinition.java`
@@ -1446,11 +1446,11 @@ sonar-scanner
 **Community support (Free):**
 
 1. **GitHub Issues:** Report bugs, request features
-   - URL: `github.com/bceverly/sonar-mathematica-plugin/issues`
+   - URL: `github.com/bceverly/wolfralyze/issues`
    - Response time: 1-5 business days
 
 2. **GitHub Discussions:** Ask questions, share ideas
-   - URL: `github.com/bceverly/sonar-mathematica-plugin/discussions`
+   - URL: `github.com/bceverly/wolfralyze/discussions`
    - Community-driven
 
 3. **Documentation:**

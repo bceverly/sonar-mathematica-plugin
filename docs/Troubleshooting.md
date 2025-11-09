@@ -255,33 +255,33 @@ sonar.scm.disabled=false
 ls -la $SONARQUBE_HOME/extensions/plugins/ | grep mathematica
 
 # If you see multiple versions:
-# sonar-mathematica-plugin-0.9.0.jar
-# sonar-mathematica-plugin-1.0.0.jar
+# wolfralyze-0.9.0.jar
+# wolfralyze-1.0.0.jar
 # ↑ This causes conflicts!
 
 # Remove ALL versions:
-rm $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+rm $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
 
 # Install only the latest:
-cp sonar-mathematica-plugin-1.0.0.jar $SONARQUBE_HOME/extensions/plugins/
+cp wolfralyze-1.0.0.jar $SONARQUBE_HOME/extensions/plugins/
 ```
 
 **2. Check file permissions:**
 ```bash
 # Plugin must be readable by SonarQube user
-chmod 644 $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+chmod 644 $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
 
 # Check ownership
-chown sonarqube:sonarqube $SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-*.jar
+chown sonarqube:sonarqube $SONARQUBE_HOME/extensions/plugins/wolfralyze-*.jar
 ```
 
 **3. Verify correct directory:**
 ```bash
 # Correct: extensions/plugins/
-$SONARQUBE_HOME/extensions/plugins/sonar-mathematica-plugin-1.0.0.jar
+$SONARQUBE_HOME/extensions/plugins/wolfralyze-1.0.0.jar
 
 # Wrong: extensions/downloads/ (not loaded from here)
-$SONARQUBE_HOME/extensions/downloads/sonar-mathematica-plugin-1.0.0.jar
+$SONARQUBE_HOME/extensions/downloads/wolfralyze-1.0.0.jar
 ```
 
 **4. Properly restart SonarQube:**
@@ -814,7 +814,7 @@ ComplexFunction[...];  (* Not flagged *)
 **6. Report bugs:**
 ```
 If rule is genuinely wrong:
-# GitHub Issues: github.com/bceverly/sonar-mathematica-plugin/issues
+# GitHub Issues: github.com/bceverly/wolfralyze/issues
 # Include:
 # - Code sample
 # - Why it's a false positive
@@ -1449,7 +1449,7 @@ Quality Profiles → Your Profile → Search rule → Parameters tab
 
 **5. Report bug if rule is wrong:**
 ```
-GitHub Issues: github.com/bceverly/sonar-mathematica-plugin/issues
+GitHub Issues: github.com/bceverly/wolfralyze/issues
 # Title: "Rule XYZ not detecting ..."
 # Include:
 # - Code sample
@@ -1871,10 +1871,10 @@ This troubleshooting guide covers the most common issues when using the SonarQub
    - ARCHITECTURE.md - Technical details
 
 2. **Search existing issues:**
-   - GitHub Issues: github.com/bceverly/sonar-mathematica-plugin/issues
+   - GitHub Issues: github.com/bceverly/wolfralyze/issues
 
 3. **Ask the community:**
-   - GitHub Discussions: github.com/bceverly/sonar-mathematica-plugin/discussions
+   - GitHub Discussions: github.com/bceverly/wolfralyze/discussions
    - SonarQube Community: community.sonarsource.com (tag: mathematica)
 
 4. **Report bugs:**
