@@ -5,6 +5,7 @@ Welcome to the comprehensive documentation for the **SonarQube Plugin for Wolfra
 ## 🎯 Quick Start
 
 - **New Users?** Start with [[Installation]] → [[Configuration]] → Run your first scan
+- **Want a working example?** Check the [Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project) with tests and coverage
 - **Looking for specific rules?** Browse the [[Rule Catalog]]
 - **Security focused?** See [[Security Vulnerabilities]] and [[Security Hotspots]]
 - **Having issues?** Check [[Troubleshooting]] and [[FAQ]]
@@ -14,7 +15,9 @@ Welcome to the comprehensive documentation for the **SonarQube Plugin for Wolfra
 ### Getting Started
 - **[[Installation]]** - Install the plugin in SonarQube (5 min)
 - **[[Configuration]]** - Configure your first Mathematica project (10 min)
+- **[[Test Coverage]]** - Set up test coverage tracking
 - **[[CI-CD Integration]]** - Integrate with Jenkins, GitLab, GitHub Actions
+- **[Test Project Example](https://github.com/bceverly/mathematica-sonarqube-test-project)** - Complete working example
 - **[[SBOM]]** - Software Bill of Materials for security and compliance
 
 ### Understanding Rules
@@ -23,6 +26,7 @@ Welcome to the comprehensive documentation for the **SonarQube Plugin for Wolfra
 - **[[Security Hotspots]]** - 29 rules for security review points
 - **[[Bug Detection]]** - 162 rules for reliability issues
 - **[[Code Smells]]** - 247 rules for maintainability issues
+- **[[Test Coverage]]** - Coverage analysis and metrics
 
 ### Best Practices & Help
 - **[[Best Practices]]** - Writing clean Mathematica code

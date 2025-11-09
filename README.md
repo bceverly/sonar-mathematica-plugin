@@ -36,16 +36,24 @@ sonar-scanner
 
 ## 📊 Test Coverage Integration
 
-The plugin includes **`CoverageUtils.wl`**, a reusable Mathematica package for exporting test coverage data in JSON format compatible with SonarQube.
+The plugin includes **native test coverage support** with automatic line-by-line coverage tracking in SonarQube.
 
 ### Quick Start with Coverage
 
 ```mathematica
-(* In your test runner script *)
+(* 1. Load the coverage utility *)
 Get["CoverageUtils.wl"]
 
-(* After running tests and collecting coverage data *)
+(* 2. Run your tests with coverage tracking *)
+(* ... your test execution code ... *)
+
+(* 3. Export coverage data *)
 CoverageUtils`ExportCoverageJSON[coverageData, "coverage/coverage.json"]
+```
+
+```bash
+# 4. Run SonarQube scan (coverage is imported automatically)
+sonar-scanner
 ```
 
 ### Features
@@ -53,18 +61,21 @@ CoverageUtils`ExportCoverageJSON[coverageData, "coverage/coverage.json"]
 - ✅ **Automatic JSON Export** - Converts Wolfram Association structures to clean JSON
 - ✅ **Data Validation** - Validates coverage data structure before export
 - ✅ **Line-by-Line Coverage** - Includes hit counts for every line of code
+- ✅ **Native SonarQube Integration** - Coverage appears directly in SonarQube UI
 - ✅ **Efficient Format** - Optimized for large codebases
 - ✅ **GPLv3 Licensed** - Free to use in your projects
 
-### Usage Example
+### Complete Working Example
 
-See the [test project](https://github.com/bceverly/mathematica-sonarqube-test-project) for a complete working example including:
-- Test runner with coverage tracking (`RunTests.wl`)
-- Sample Mathematica code with intentional issues
-- Unit tests using `VerificationTest`
-- SonarQube project configuration
+See the **[Mathematica SonarQube Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project)** for a complete working example including:
+- ✅ Test runner with coverage tracking (`RunTests.wl`)
+- ✅ Sample Mathematica code with intentional issues
+- ✅ Unit tests using `VerificationTest`
+- ✅ SonarQube project configuration
+- ✅ Makefile for easy automation
+- ✅ Full documentation and examples
 
-For detailed documentation, see `CoverageUtils.wl` and the test project README.
+**📖 Coverage Documentation**: See the [Test Coverage Guide](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Test-Coverage) on the wiki for detailed instructions.
 
 ---
 
@@ -104,12 +115,14 @@ Covers **9 of 10** OWASP Top 10 2021 categories including injection, broken auth
 - **[Installation](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Installation)** - Install in 5 minutes
 - **[Configuration](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Configuration)** - Set up your first project
 - **[Quick Start](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Home)** - Run your first scan
+- **[Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project)** - Complete working example with tests and coverage
 
 ### Understanding Results
 - **[Rule Catalog](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Rule-Catalog)** - All 529 rules indexed
 - **[Security Vulnerabilities](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Security-Vulnerabilities)** - Critical security issues
 - **[Bug Detection](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Bug-Detection)** - Reliability problems
 - **[Code Smells](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Code-Smells)** - Maintainability issues
+- **[Test Coverage](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Test-Coverage)** - Set up and use test coverage
 
 ### Help & Best Practices
 - **[Best Practices](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Best-Practices)** - Writing clean Mathematica code
