@@ -67,7 +67,7 @@ sonar-scanner
 
 ### Complete Working Example
 
-See the **[Mathematica SonarQube Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project)** for a complete working example including:
+See the **[Wolfralyze Test Project](https://github.com/bceverly/wolfralyze-test-project)** for a complete working example including:
 - ✅ Test runner with coverage tracking (`RunTests.wl`)
 - ✅ Sample Mathematica code with intentional issues
 - ✅ Unit tests using `VerificationTest`
@@ -115,7 +115,7 @@ Covers **9 of 10** OWASP Top 10 2021 categories including injection, broken auth
 - **[Installation](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Installation)** - Install in 5 minutes
 - **[Configuration](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Configuration)** - Set up your first project
 - **[Quick Start](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Home)** - Run your first scan
-- **[Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project)** - Complete working example with tests and coverage
+- **[Test Project](https://github.com/bceverly/wolfralyze-test-project)** - Complete working example with tests and coverage
 
 ### Understanding Results
 - **[Rule Catalog](https://github.com/bceverly/sonar-mathematica-plugin/wiki/Rule-Catalog)** - All 529 rules indexed

@@ -69,12 +69,12 @@ After the scan completes, coverage data appears in:
 
 ## Complete Working Example
 
-See the **[Mathematica SonarQube Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project)** for a complete, ready-to-use example:
+See the **[Wolfralyze Test Project](https://github.com/bceverly/wolfralyze-test-project)** for a complete, ready-to-use example:
 
 ```bash
 # Clone the test project
-git clone https://github.com/bceverly/mathematica-sonarqube-test-project.git
-cd mathematica-sonarqube-test-project
+git clone https://github.com/bceverly/wolfralyze-test-project.git
+cd wolfralyze-test-project
 
 # Run tests (generates coverage.json)
 make test
@@ -345,10 +345,10 @@ CoverageUtils`ExportCoverageJSON[mergedCoverage, "coverage/coverage.json"]
 - [Configuration](Configuration) - Configure your project
 - [Best Practices](Best-Practices) - Write quality Mathematica code
 - [CI/CD Integration](CI-CD-Integration) - Automate with GitHub Actions, GitLab, Jenkins
-- [Test Project](https://github.com/bceverly/mathematica-sonarqube-test-project) - Complete working example
+- [Test Project](https://github.com/bceverly/wolfralyze-test-project) - Complete working example
 
 ## Support
 
 - **Documentation**: [GitHub Wiki](https://github.com/bceverly/sonar-mathematica-plugin/wiki)
 - **Issues**: [GitHub Issues](https://github.com/bceverly/sonar-mathematica-plugin/issues)
-- **Example Project**: [mathematica-sonarqube-test-project](https://github.com/bceverly/mathematica-sonarqube-test-project)
+- **Example Project**: [wolfralyze-test-project](https://github.com/bceverly/wolfralyze-test-project)
