@@ -1,6 +1,5 @@
 package org.sonar.plugins.mathematica.coverage;
 
-import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -85,8 +84,6 @@ public class MathematicaCoverageSensor implements Sensor {
      * Import coverage data from the JSON file and report it to SonarQube.
      */
     private void importCoverageData(SensorContext context, File coverageFile, FileSystem fs) throws IOException {
-        Gson gson = new Gson();
-
         try (FileReader reader = new FileReader(coverageFile)) {
             JsonArray coverageArray = JsonParser.parseReader(reader).getAsJsonArray();
 
@@ -135,16 +132,21 @@ public class MathematicaCoverageSensor implements Sensor {
                     int coveredLines = fileData.get("CoveredLines").getAsInt();
                     int codeLines = fileData.get("CodeLines").getAsInt();
                     double coveragePercent = fileData.get("Coverage").getAsDouble() * 100.0;
-                    LOG.debug("Coverage imported for {}: {}/{} lines ({:.1f}%)",
-                        fileName, coveredLines, codeLines, coveragePercent);
+                    LOG.debug("Coverage imported for {}: {}/{} lines ({}%)",
+                        fileName, coveredLines, codeLines, String.format("%.1f", coveragePercent));
                 }
             }
 
             LOG.info("Coverage import complete: {} files processed, {} files skipped", filesProcessed, filesSkipped);
 
+        } catch (IOException e) {
+            String message = String.format("Failed to read coverage file: %s", coverageFile.getAbsolutePath());
+            LOG.error(message, e);
+            throw new IOException(message, e);
         } catch (Exception e) {
-            LOG.error("Error parsing coverage file {}: {}", coverageFile, e.getMessage(), e);
-            throw e;
+            String message = String.format("Failed to parse coverage data from: %s", coverageFile.getAbsolutePath());
+            LOG.error(message, e);
+            throw new IOException(message, e);
         }
     }
 
