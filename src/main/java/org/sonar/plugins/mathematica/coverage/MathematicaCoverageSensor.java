@@ -140,13 +140,9 @@ public class MathematicaCoverageSensor implements Sensor {
             LOG.info("Coverage import complete: {} files processed, {} files skipped", filesProcessed, filesSkipped);
 
         } catch (IOException e) {
-            String message = String.format("Failed to read coverage file: %s", coverageFile.getAbsolutePath());
-            LOG.error(message, e);
-            throw new IOException(message, e);
+            LOG.error("Failed to read coverage file: {}", coverageFile.getAbsolutePath(), e);
         } catch (Exception e) {
-            String message = String.format("Failed to parse coverage data from: %s", coverageFile.getAbsolutePath());
-            LOG.error(message, e);
-            throw new IOException(message, e);
+            LOG.error("Failed to parse coverage data from: {}", coverageFile.getAbsolutePath(), e);
         }
     }
 
