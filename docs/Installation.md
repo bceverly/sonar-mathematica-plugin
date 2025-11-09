@@ -318,7 +318,7 @@ docker logs -f sonarqube | grep -i mathematica
 **Expected Information:**
 - **Name**: Mathematica
 - **Version**: (e.g., 0.1.0)
-- **License**: GPL-3.0
+- **License**: AGPL-3.0
 - **Organization**: Community
 
 ### Step 3: Check for Mathematica Language
@@ -727,4 +727,4 @@ After successful installation:
 
 **Version**: Compatible with SonarQube 9.9+
 **Last Updated**: November 2025
-**License**: GPL-3.0
+**License**: AGPL-3.0

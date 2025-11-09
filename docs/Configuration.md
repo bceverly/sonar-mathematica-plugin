@@ -1104,4 +1104,4 @@ sonar.cpd.mathematica.minimumTokens=30
 
 **Version**: Compatible with SonarQube 9.9+
 **Last Updated**: November 2025
-**License**: GPL-3.0
+**License**: AGPL-3.0

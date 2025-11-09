@@ -408,7 +408,7 @@ Digital signatures for SBOMs are planned for future releases.
 
 ### What about license compliance?
 
-The SBOM includes license information when available. The plugin itself is GPL-3.0, and the compile-only dependencies (SonarQube API, SLF4J) are LGPL-compatible.
+The SBOM includes license information when available. The plugin itself is AGPL-3.0, and the compile-only dependencies (SonarQube API, SLF4J) are LGPL-compatible.
 
 ## Related Documentation
 

@@ -233,4 +233,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for information on how to contribute to t
 
 ## License
 
-GPL-3.0 - See [LICENSE](LICENSE) for details.
+AGPL-3.0 - See [LICENSE](LICENSE) for details.

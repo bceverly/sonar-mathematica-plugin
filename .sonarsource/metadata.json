@@ -3,7 +3,7 @@
   "key": "mathematica",
   "description": "Code quality and security analysis for Wolfram Mathematica. Provides 529+ rules covering bugs, vulnerabilities, code smells, and best practices.",
   "category": "Languages",
-  "license": "GPL-3.0",
+  "license": "AGPL-3.0",
   "organizationName": "Bryan C. Everly",
   "organizationUrl": "https://github.com/bceverly",
   "issueTrackerUrl": "https://github.com/bceverly/wolfralyze/issues",
@@ -15,5 +15,5 @@
     }
   ],
   "homepageUrl": "https://wolfralyze.org",
-  "termsConditionsUrl": "https://www.gnu.org/licenses/gpl-3.0.html"
+  "termsConditionsUrl": "https://www.gnu.org/licenses/agpl-3.0.html"
 }

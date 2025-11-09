@@ -69,7 +69,7 @@ Currently, the plugin focuses on pure Wolfram Language code. Support for noteboo
 
 ### 5. Is this an official Wolfram product?
 
-No, this is a **community-developed plugin** not affiliated with Wolfram Research. It is open-source (GPL-3.0 license) and maintained by the community. However, it follows Wolfram Language best practices and coding standards.
+No, this is a **community-developed plugin** not affiliated with Wolfram Research. It is open-source (AGPL-3.0 license) and maintained by the community. However, it follows Wolfram Language best practices and coding standards.
 
 ### 6. What are the main benefits of using this plugin?
 
@@ -1312,12 +1312,12 @@ sonar-scanner
 
 **Yes! The plugin is 100% free and open-source:**
 
-- **License:** GPL-3.0 (GNU General Public License v3.0)
+- **License:** AGPL-3.0 (GNU General Public License v3.0)
 - **Cost:** $0 (free forever)
 - **Source code:** Available on GitHub
 - **Commercial use:** Allowed
 - **Modification:** Allowed
-- **Distribution:** Allowed (with same GPL-3.0 license)
+- **Distribution:** Allowed (with same AGPL-3.0 license)
 
 **SonarQube editions:**
 - **Community Edition:** Free (unlimited projects)
@@ -1361,7 +1361,7 @@ sonar-scanner
 
 ### 46. Can I use this in a commercial product?
 
-**Yes!** The GPL-3.0 license allows commercial use with conditions:
+**Yes!** The AGPL-3.0 license allows commercial use with conditions:
 
 **You CAN:**
 - ✅ Use in commercial projects
@@ -1370,7 +1370,7 @@ sonar-scanner
 - ✅ Charge customers for services using the plugin
 
 **You MUST:**
-- ⚠️ Keep GPL-3.0 license if redistributing
+- ⚠️ Keep AGPL-3.0 license if redistributing
 - ⚠️ Provide source code if distributing modified plugin
 - ⚠️ Include license and copyright notices
 
@@ -1381,7 +1381,7 @@ sonar-scanner
 
 **Clarification:**
 - **Analyzing commercial code:** No restrictions (just like using GCC to compile proprietary software)
-- **Modifying and distributing plugin:** Must share modifications under GPL-3.0
+- **Modifying and distributing plugin:** Must share modifications under AGPL-3.0
 
 ### 47. Who maintains the plugin?
 

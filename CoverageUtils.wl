@@ -9,7 +9,7 @@
  *
  * Author: Bryan C. Everly
  * Version: 1.0.0
- * License: GPLv3
+ * License: AGPLv3
  *
  * Usage:
  *   Get["CoverageUtils.wl"]

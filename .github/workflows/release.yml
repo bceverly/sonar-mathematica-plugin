@@ -107,7 +107,7 @@ jobs:
           issueTrackerUrl=https://github.com/bceverly/wolfralyze/issues
 
           # License
-          license=GNU LGPL 3
+          license=AGPL-3.0
 
           # Category
           category=Languages

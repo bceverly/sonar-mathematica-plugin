@@ -1,6 +1,6 @@
 # SonarQube Plugin for Wolfram Mathematica
 
-[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
+[![License: AGPL v3](https://img.shields.io/badge/License-AGPLv3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=bceverly_wolfralyze&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze)
 [![Coverage](https://sonarcloud.io/api/project_badges/measure?project=bceverly_wolfralyze&metric=coverage)](https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze)
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bceverly_wolfralyze&metric=bugs)](https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze)
@@ -63,7 +63,7 @@ sonar-scanner
 - ✅ **Line-by-Line Coverage** - Includes hit counts for every line of code
 - ✅ **Native SonarQube Integration** - Coverage appears directly in SonarQube UI
 - ✅ **Efficient Format** - Optimized for large codebases
-- ✅ **GPLv3 Licensed** - Free to use in your projects
+- ✅ **AGPLv3 Licensed** - Free to use in your projects
 
 ### Complete Working Example
 
@@ -241,7 +241,7 @@ See [Architecture](https://github.com/bceverly/wolfralyze/wiki/Architecture) for
 
 ## 📝 License
 
-GPL-3.0 License - See [LICENSE](LICENSE) for details.
+AGPL-3.0 License - See [LICENSE](LICENSE) for details.
 
 ---
 
