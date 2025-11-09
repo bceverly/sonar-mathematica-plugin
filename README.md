@@ -34,6 +34,40 @@ sonar-scanner
 
 ---
 
+## 📊 Test Coverage Integration
+
+The plugin includes **`CoverageUtils.wl`**, a reusable Mathematica package for exporting test coverage data in JSON format compatible with SonarQube.
+
+### Quick Start with Coverage
+
+```mathematica
+(* In your test runner script *)
+Get["CoverageUtils.wl"]
+
+(* After running tests and collecting coverage data *)
+CoverageUtils`ExportCoverageJSON[coverageData, "coverage/coverage.json"]
+```
+
+### Features
+
+- ✅ **Automatic JSON Export** - Converts Wolfram Association structures to clean JSON
+- ✅ **Data Validation** - Validates coverage data structure before export
+- ✅ **Line-by-Line Coverage** - Includes hit counts for every line of code
+- ✅ **Efficient Format** - Optimized for large codebases
+- ✅ **GPLv3 Licensed** - Free to use in your projects
+
+### Usage Example
+
+See the [test project](https://github.com/bceverly/mathematica-sonarqube-test-project) for a complete working example including:
+- Test runner with coverage tracking (`RunTests.wl`)
+- Sample Mathematica code with intentional issues
+- Unit tests using `VerificationTest`
+- SonarQube project configuration
+
+For detailed documentation, see `CoverageUtils.wl` and the test project README.
+
+---
+
 ## ✨ Features
 
 ### Comprehensive Rule Coverage (529 Rules)

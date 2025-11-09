@@ -1,0 +1,19 @@
+{
+  "name": "Wolfram Mathematica",
+  "key": "mathematica",
+  "description": "Code quality and security analysis for Wolfram Mathematica. Provides 529+ rules covering bugs, vulnerabilities, code smells, and best practices.",
+  "category": "Languages",
+  "license": "GPL-3.0",
+  "organizationName": "Bryan C. Everly",
+  "organizationUrl": "https://github.com/bceverly",
+  "issueTrackerUrl": "https://github.com/bceverly/sonar-mathematica-plugin/issues",
+  "sourcesUrl": "https://github.com/bceverly/sonar-mathematica-plugin",
+  "developers": [
+    {
+      "name": "Bryan C. Everly",
+      "email": "bryan@theeverlys.com"
+    }
+  ],
+  "homepageUrl": "https://github.com/bceverly/sonar-mathematica-plugin",
+  "termsConditionsUrl": "https://www.gnu.org/licenses/gpl-3.0.html"
+}

@@ -64,6 +64,57 @@ jobs:
           HASH=$(sha256sum ${{ steps.sbom.outputs.file }} | cut -d' ' -f1)
           echo "sha256=$HASH" >> $GITHUB_OUTPUT
 
+      - name: Generate SonarSource update-center properties
+        id: marketplace
+        run: |
+          VERSION=${{ steps.version.outputs.version }}
+          TAG=${{ steps.version.outputs.tag }}
+          DATE=$(date -u +"%Y-%m-%d")
+
+          cat > update-center-properties <<EOF
+          # Plugin metadata for SonarQube Marketplace
+          # Auto-generated from git tag: $TAG
+
+          # Display name in marketplace
+          name=Wolfram Mathematica
+
+          # Short description (max 100 chars)
+          description=Code quality and security analysis for Wolfram Mathematica with 529+ rules
+
+          # Version number
+          version=$VERSION
+
+          # Download URL for the JAR (GitHub release)
+          downloadUrl=https://github.com/bceverly/sonar-mathematica-plugin/releases/download/$TAG/sonar-mathematica-plugin-$VERSION.jar
+
+          # Compatible SonarQube versions
+          sqVersions=[9.0,LATEST]
+
+          # Date of this version (format: yyyy-MM-dd)
+          date=$DATE
+
+          # Organization
+          organization=Bryan C. Everly
+          organizationUrl=https://github.com/bceverly
+
+          # Developers
+          developers=Bryan C. Everly
+
+          # Homepage
+          homepageUrl=https://github.com/bceverly/sonar-mathematica-plugin
+
+          # Issue tracker
+          issueTrackerUrl=https://github.com/bceverly/sonar-mathematica-plugin/issues
+
+          # License
+          license=GNU LGPL 3
+
+          # Category
+          category=Languages
+          EOF
+
+          echo "file=update-center-properties" >> $GITHUB_OUTPUT
+
       - name: Create release notes
         id: notes
         run: |
@@ -123,6 +174,7 @@ jobs:
           - **JAR SHA256:** `${{ steps.hash.outputs.sha256 }}`
           - **SBOM File:** `${{ steps.sbom.outputs.name }}`
           - **SBOM SHA256:** `${{ steps.sbomhash.outputs.sha256 }}`
+          - **Marketplace Properties:** `update-center-properties` (for SonarSource marketplace submission)
           - **Build Date:** $(date -u +"%Y-%m-%d %H:%M:%S UTC")
           - **Minimum SonarQube Version:** 9.9
 
@@ -164,6 +216,7 @@ jobs:
           files: |
             ${{ steps.jar.outputs.file }}
             ${{ steps.sbom.outputs.file }}
+            ${{ steps.marketplace.outputs.file }}
           draft: false
           prerelease: false
         env:
