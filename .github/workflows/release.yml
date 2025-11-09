@@ -101,7 +101,7 @@ jobs:
           developers=Bryan C. Everly
 
           # Homepage
-          homepageUrl=https://github.com/bceverly/wolfralyze
+          homepageUrl=https://wolfralyze.org
 
           # Issue tracker
           issueTrackerUrl=https://github.com/bceverly/wolfralyze/issues
