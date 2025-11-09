@@ -119,7 +119,7 @@ jobs:
         id: notes
         run: |
           cat > release_notes.md <<'EOF'
-          ## SonarQube Mathematica Plugin ${{ steps.version.outputs.version }}
+          ## Wolfralyze - SonarQube Mathematica Plugin ${{ steps.version.outputs.version }}
 
           ### Installation Instructions
 
@@ -164,7 +164,7 @@ jobs:
 
           5. **Verify installation:**
              - Navigate to: Administration → Marketplace → Installed
-             - Look for "Mathematica" plugin
+             - Look for "Mathematica" plugin (Wolfralyze)
              - Version should show: ${{ steps.version.outputs.version }}
 
           ### Plugin Details
@@ -199,7 +199,7 @@ jobs:
           sonar.mathematica.file.suffixes=.m,.wl,.wls
           ```
 
-          For more configuration options, see the project documentation.
+          For more configuration options, see the [project documentation](https://wolfralyze.org).
 
           ---
 
