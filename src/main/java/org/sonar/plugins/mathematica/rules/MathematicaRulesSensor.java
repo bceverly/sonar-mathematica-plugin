@@ -225,7 +225,7 @@ public class MathematicaRulesSensor implements Sensor {
 
         @Override
         public void run() {
-            LOG.debug("Issue saver thread started");
+            LOG.info("Issue saver thread started - will save {} issues", queuedIssues.get());
             try {
                 processIssueQueue();
             } catch (InterruptedException e) {
@@ -234,7 +234,7 @@ public class MathematicaRulesSensor implements Sensor {
             } catch (Exception e) {
                 LOG.error("Error in issue saver thread", e);
             }
-            LOG.info("Issue saver thread finished. Saved {}/{} issues", savedIssues.get(), queuedIssues.get());
+            LOG.info("Issue saver thread finished. Saved {}/{} issues (100%)", savedIssues.get(), queuedIssues.get());
         }
 
         private void processIssueQueue() throws InterruptedException {
@@ -289,21 +289,23 @@ public class MathematicaRulesSensor implements Sensor {
         private void logProgressIfNeeded(long saved, long saveDuration) {
             if (saveDuration > 2000) {
                 logSlowSave(saved, saveDuration);
-            } else if (saved % 10000 == 0) {
+            } else if (saved % 50000 == 0) {
                 logPeriodicProgress(saved);
             }
         }
 
         private void logSlowSave(long saved, long saveDuration) {
-            LOG.debug("⚠ SLOW SAVE: Issue #{} took {}ms (queue: {})",
+            LOG.warn("⚠ SLOW SAVE: Issue #{} took {}ms (queue: {})",
                 saved, saveDuration, issueQueue.size());
         }
 
         private void logPeriodicProgress(long saved) {
             long elapsed = System.currentTimeMillis() - lastLogTime;
-            int rate = elapsed > 0 ? (int) (10000000.0 / elapsed) : 0;
-            LOG.debug("Issue saver progress: {}/{} saved ({} issues/sec, queue: {})",
-                saved, queuedIssues.get(), rate, issueQueue.size());
+            int rate = elapsed > 0 ? (int) (50000000.0 / elapsed) : 0;
+            long total = queuedIssues.get();
+            int percent = total > 0 ? (int) ((saved * 100.0) / total) : 0;
+            LOG.info("Issue saver progress: {}/{} saved ({}%, {} issues/sec, {} remaining in queue)",
+                saved, total, percent, rate, issueQueue.size());
             lastLogTime = System.currentTimeMillis();
         }
     }
@@ -312,16 +314,17 @@ public class MathematicaRulesSensor implements Sensor {
      * Stops the background saver thread and waits for queue to drain.
      */
     private void stopIssueSaverThread() {
-        LOG.info("Stopping issue saver thread (queue size: {}, saved: {}/{})",
+        LOG.info("Analysis complete, issue saver will now drain queue: {} issues remaining (saved: {}/{})",
             issueQueue.size(), savedIssues.get(), queuedIssues.get());
         shutdownSaver = true;
 
         try {
             Thread thread = issueSaverThread.get();
             if (thread != null) {
-                // Wait up to 5 minutes for large codebases with many issues
-                // At 5000 issues/sec, this allows ~1.5M issues to be saved
-                thread.join(300000); // Wait up to 5 minutes
+                // Wait up to 10 hours for massive codebases with millions of issues
+                // At 1000 issues/sec, this allows ~36M issues to be saved
+                // This matches the scanner and compute engine timeout configuration
+                thread.join(36000000); // Wait up to 10 hours
                 if (thread.isAlive()) {
                     LOG.warn("Issue saver thread did not finish in time (still {} issues in queue, saved {}/{})",
                         issueQueue.size(), savedIssues.get(), queuedIssues.get());

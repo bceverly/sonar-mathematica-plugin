@@ -42,7 +42,7 @@ public final class CodeSmellRules {
                 "<p>Programmers should not comment out code as it bloats programs and reduces readability.</p>"
                 + "<p>Unused code should be deleted and can be retrieved from source control history if required.</p>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(UNUSED, "clutter");
 
         // Magic Numbers
@@ -61,7 +61,7 @@ public final class CodeSmellRules {
             .setHtmlDescription(
                 "<p>TODO and FIXME comments indicate incomplete or problematic code that needs attention.</p>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags("todo");
 
         // Empty Blocks

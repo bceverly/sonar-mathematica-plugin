@@ -92,10 +92,10 @@ final class PerformanceRulesDefinition {
                 + "<h2>See</h2>"
                 + "<ul><li><a href='https://cwe.mitre.org/data/definitions/1050.html'>CWE-1050</a> - Excessive Platform Resource Consumption</li></ul>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
             .setTags(TAG_PERFORMANCE, "mathematica-specific");
 
-            rule50.setDebtRemediationFunction(rule50.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
+            rule50.setDebtRemediationFunction(rule50.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule51 = repository.createRule(REPEATED_FUNCTION_CALLS_KEY)
             .setName("Expensive function calls should not be repeated")
@@ -132,10 +132,10 @@ final class PerformanceRulesDefinition {
                 + "result = StringJoin[Table[ToString[i], {i, 1000}]]  (* O(n) *)\n"
                 + "</pre>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
             .setTags(TAG_PERFORMANCE);
 
-            rule52.setDebtRemediationFunction(rule52.debtRemediationFunctions().constantPerIssue(TIME_15MIN));
+            rule52.setDebtRemediationFunction(rule52.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule53 = repository.createRule(UNCOMPILED_NUMERICAL_KEY)
             .setName("Numerical loops should use Compile")
@@ -151,10 +151,10 @@ final class PerformanceRulesDefinition {
                 + "result = compiled[]\n"
                 + "</pre>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
             .setTags(TAG_PERFORMANCE, "optimization");
 
-            rule53.setDebtRemediationFunction(rule53.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
+            rule53.setDebtRemediationFunction(rule53.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule54 = repository.createRule(PACKED_ARRAY_BREAKING_KEY)
             .setName("Operations should preserve packed arrays")
@@ -168,10 +168,10 @@ final class PerformanceRulesDefinition {
                 + "<li>Applying non-numerical functions</li>"
                 + "</ul>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
             .setTags(TAG_PERFORMANCE, "arrays");
 
-            rule54.setDebtRemediationFunction(rule54.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
+            rule54.setDebtRemediationFunction(rule54.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         NewRule rule55 = repository.createRule(NESTED_MAP_TABLE_KEY)
             .setName("Nested Map/Table should be refactored")
@@ -188,10 +188,10 @@ final class PerformanceRulesDefinition {
                 + "result = Outer[Times, Range[10], Range[10]]\n"
                 + "</pre>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
             .setTags(TAG_PERFORMANCE, TAG_READABILITY);
 
-            rule55.setDebtRemediationFunction(rule55.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
+            rule55.setDebtRemediationFunction(rule55.debtRemediationFunctions().constantPerIssue(TIME_30MIN));
 
         NewRule rule56 = repository.createRule(LARGE_TEMP_EXPRESSIONS_KEY)
             .setName("Large temporary expressions should be assigned to variables")
@@ -199,10 +199,10 @@ final class PerformanceRulesDefinition {
                 "<p>Large intermediate results (>100MB) that aren't assigned can cause memory issues.</p>"
                 + "<p>Assign large results to variables to make memory usage explicit.</p>"
             )
-            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.HIGH)
             .setTags("memory", TAG_PERFORMANCE);
 
-            rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue(TIME_5MIN));
+            rule56.setDebtRemediationFunction(rule56.debtRemediationFunctions().constantPerIssue(TIME_45MIN));
 
         defineVisualizationAndInputValidationRules(repository);
     }
