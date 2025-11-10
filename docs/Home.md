@@ -10,6 +10,35 @@ Welcome to the comprehensive documentation for the **SonarQube Plugin for Wolfra
 - **Security focused?** See [[Security Vulnerabilities]] and [[Security Hotspots]]
 - **Having issues?** Check [[Troubleshooting]] and [[FAQ]]
 
+## 📸 Screenshots
+
+See Wolfralyze in action! View screenshots showing the plugin analyzing Mathematica code:
+
+### Dashboard & Issues
+![Dashboard Overview](images/screenshots/01-dashboard-overview.png)
+*SonarQube dashboard showing quality metrics for a Mathematica project*
+
+![Issues List](images/screenshots/02-issues-list.png)
+*Comprehensive issue detection with severity indicators*
+
+### Code Analysis
+![Code with Highlighted Issues](images/screenshots/03-code-with-issue.png)
+*Mathematica code with syntax highlighting and inline issue detection*
+
+![Rule Documentation](images/screenshots/04-rule-detail.png)
+*Detailed rule explanations with Mathematica-specific guidance*
+
+### Plugin Configuration
+![Quality Profile](images/screenshots/05-quality-profile.png)
+*529+ rules organized by type: bugs, vulnerabilities, security hotspots, and code smells*
+
+![Plugin Installed](images/screenshots/06-plugin-installed.png)
+*Plugin successfully installed in SonarQube marketplace*
+
+> 💡 **Note:** Screenshots show Wolfralyze analyzing the [Test Project](https://github.com/bceverly/wolfralyze-test-project) which contains intentional code quality issues for demonstration.
+
+For more screenshots and details, see the [Screenshots Guide](images/screenshots/README.md) or visit [wolfralyze.org](https://wolfralyze.org).
+
 ## 📚 Documentation Sections
 
 ### Getting Started

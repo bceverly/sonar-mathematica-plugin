@@ -21,7 +21,21 @@ All documentation is ready for GitHub Wiki publication at `/docs/`:
 | **Troubleshooting.md** | 43 KB | 1,908 | 25 common issues with solutions |
 | **FAQ.md** | 39 KB | 1,515 | 50 frequently asked questions |
 | **CI-CD-Integration.md** | 33 KB | 1,221 | 5 CI/CD platforms (copy-paste ready) |
+| **images/screenshots/** | - | - | Screenshots gallery with guide |
 | **TOTAL** | **309 KB** | **11,205 lines** | **100% complete** |
+
+### Screenshots Gallery
+
+Visual demonstrations of Wolfralyze in action:
+- **[Screenshot Guide](images/screenshots/README.md)** - Complete guide for taking and using screenshots
+- **Dashboard Overview** - SonarQube dashboard with Mathematica analysis
+- **Issues Detection** - Comprehensive issue list with severity indicators
+- **Code Analysis** - Syntax highlighting and inline issue detection
+- **Rule Documentation** - Detailed rule explanations
+- **Quality Profile** - 529+ rules overview
+- **Plugin Installation** - Marketplace integration
+
+📸 **View all screenshots** in [Home.md](Home.md#-screenshots) or at [wolfralyze.org](https://wolfralyze.org)
 
 ---
 
