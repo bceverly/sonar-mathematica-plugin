@@ -21,7 +21,7 @@ class MathematicaRulesDefinitionTest {
         RulesDefinition.Repository repository = context.repository(MathematicaRulesDefinition.REPOSITORY_KEY);
         assertThat(repository).isNotNull();
         assertThat(repository.name()).isNotEmpty();
-        assertThat(repository.language()).isEqualTo("wolfralyze");
+        assertThat(repository.language()).isEqualTo("mathematica");
         assertThat(repository.key()).isEqualTo(MathematicaRulesDefinition.REPOSITORY_KEY);
     }
 

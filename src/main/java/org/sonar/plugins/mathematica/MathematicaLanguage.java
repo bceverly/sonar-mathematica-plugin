@@ -10,7 +10,7 @@ import org.sonar.api.resources.Language;
  */
 public class MathematicaLanguage implements Language {
 
-    public static final String KEY = "wolfralyze";
+    public static final String KEY = "mathematica";
     public static final String NAME = "Mathematica";
 
     // Property key for configurable file suffixes
