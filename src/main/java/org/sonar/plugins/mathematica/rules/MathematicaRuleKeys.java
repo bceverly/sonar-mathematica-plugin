@@ -13,7 +13,7 @@ public final class MathematicaRuleKeys {
     }
 
     // Repository configuration
-    public static final String REPOSITORY_KEY = "mathematica";
+    public static final String REPOSITORY_KEY = "wolfralyze";
     public static final String REPOSITORY_NAME = "SonarAnalyzer";
 
     // Rule keys - Code Smells

@@ -13,7 +13,7 @@ class MathematicaLanguageTest {
     void testLanguageKey() {
         Configuration config = mock(Configuration.class);
         MathematicaLanguage language = new MathematicaLanguage(config);
-        assertThat(language.getKey()).isEqualTo("mathematica");
+        assertThat(language.getKey()).isEqualTo("wolfralyze");
     }
 
     @Test

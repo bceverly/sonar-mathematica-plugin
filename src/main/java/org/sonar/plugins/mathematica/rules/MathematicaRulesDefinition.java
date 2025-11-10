@@ -8,7 +8,7 @@ import org.sonar.plugins.mathematica.MathematicaLanguage;
  */
 public class MathematicaRulesDefinition implements RulesDefinition {
 
-    public static final String REPOSITORY_KEY = "mathematica";
+    public static final String REPOSITORY_KEY = "wolfralyze";
     public static final String REPOSITORY_NAME = "SonarAnalyzer";
 
     // Severity constants
