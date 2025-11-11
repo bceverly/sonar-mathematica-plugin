@@ -748,6 +748,7 @@ public class BugDetector extends BaseDetector {
 
     /**
      * Detect missing matrix dimension checks.
+     * Only analyzes actual code, not string literals.
      */
     public void detectMissingMatrixDimensionCheck(SensorContext context, InputFile inputFile, String content) {
         try {
@@ -755,9 +756,15 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = DOT_OPERATION_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int pos = matcher.start();
+
+                // Skip matches inside string literals (e.g., "data.The OneToOne model")
+                if (isInsideStringLiteral(content, pos)) {
+                    continue;
+                }
+
                 String mat1 = matcher.group(1);
                 String mat2 = matcher.group(2);
-                int pos = matcher.start();
                 String lookback = content.substring(Math.max(0, pos - 200), pos);
                 if (!lookback.contains("Dimensions[" + mat1) && !lookback.contains("MatrixQ[")) {
                     int line = calculateLineNumber(content, pos);

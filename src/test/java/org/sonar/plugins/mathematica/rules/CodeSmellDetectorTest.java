@@ -734,4 +734,102 @@ class CodeSmellDetectorTest {
         CodeSmellDetector newDetector = new CodeSmellDetector();
         assertThat(newDetector).isNotNull();
     }
+
+    // ===== COPYRIGHT DETECTION TESTS =====
+
+    @Test
+    void testDetectMissingCopyrightWithCopyrightNoIssue() {
+        String content = "(* Copyright 2025 John Doe *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectMissingCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingCopyrightWithoutCopyrightReportsIssue() {
+        String content = "(* Just a regular comment *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectMissingCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingCopyrightWithCopyrightSymbolNoIssue() {
+        String content = "(* © 2025 Company Inc *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectMissingCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingCopyrightWithCFormatNoIssue() {
+        String content = "(* (c) 2025 Developer *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectMissingCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOutdatedCopyrightWithCurrentYearNoIssue() {
+        int currentYear = java.time.Year.now().getValue();
+        String content = String.format("(* Copyright %d John Doe *)%n%nf[x_] := x + 1", currentYear);
+
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOutdatedCopyrightWithOldYearReportsIssue() {
+        String content = "(* Copyright 2020 John Doe *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOutdatedCopyrightWithCurrentYearInRangeNoIssue() {
+        int currentYear = java.time.Year.now().getValue();
+        String content = String.format("(* Copyright 2020-%d John Doe *)%n%nf[x_] := x + 1", currentYear);
+
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOutdatedCopyrightWithOldYearInRangeReportsIssue() {
+        String content = "(* Copyright 2018-2022 John Doe *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOutdatedCopyrightNoCopyrightNoIssue() {
+        String content = "(* Just a regular comment *)\n\nf[x_] := x + 1";
+
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOutdatedCopyrightCopyrightBeyondLine20NoIssue() {
+        StringBuilder content = new StringBuilder();
+        for (int i = 0; i < 25; i++) {
+            content.append("(* Line ").append(i).append(" *)\n");
+        }
+        content.append("(* Copyright 2020 John Doe *)\n");
+
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content.toString())
+        ).doesNotThrowAnyException();
+    }
 }

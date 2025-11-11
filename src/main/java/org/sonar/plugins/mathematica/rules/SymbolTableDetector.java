@@ -357,6 +357,9 @@ public final class SymbolTableDetector {
     /**
      * Rule 14: Circular variable dependencies.
      * Variable A depends on B, B depends on C, C depends on A.
+     *
+     * SCOPE-AWARE: Only checks file-level (GLOBAL) variables.
+     * Excludes local variables from Module, Block, With, and function parameters.
      */
     public static void detectCircularVariableDependencies(SensorContext context, InputFile file, SymbolTable table) {
         // Skip large files - O(n²) complexity makes this prohibitively expensive
@@ -372,6 +375,12 @@ public final class SymbolTableDetector {
         Map<String, Set<String>> dependencies = new java.util.HashMap<>();
 
         for (Symbol symbol : table.getAllSymbols()) {
+            // SCOPE-AWARE: Only check file-level (GLOBAL) variables
+            // Exclude local variables from Module, Block, With, and function parameters
+            if (isLocalScopeVariable(symbol)) {
+                continue;
+            }
+
             Set<String> deps = findSymbolDependencies(symbol, table);
             if (!deps.isEmpty()) {
                 dependencies.put(symbol.getName(), deps);
@@ -379,6 +388,26 @@ public final class SymbolTableDetector {
         }
 
         return dependencies;
+    }
+
+    /**
+     * Returns true if this symbol is a local scope variable that should be excluded
+     * from file-level circular dependency analysis.
+     */
+    private static boolean isLocalScopeVariable(Symbol symbol) {
+        // Exclude function parameters
+        if (symbol.isParameter()) {
+            return true;
+        }
+
+        // Exclude Module/Block/With variables
+        if (symbol.isModuleVariable()) {
+            return true;
+        }
+
+        // Exclude any symbol not in GLOBAL scope
+        org.sonar.plugins.mathematica.symboltable.ScopeType scopeType = symbol.getScope().getType();
+        return scopeType != org.sonar.plugins.mathematica.symboltable.ScopeType.GLOBAL;
     }
 
     private static Set<String> findSymbolDependencies(Symbol symbol, SymbolTable table) {
@@ -394,10 +423,33 @@ public final class SymbolTableDetector {
 
     private static void collectReferencedVariables(Symbol symbol, SymbolTable table, String contextStr, Set<String> deps) {
         for (Symbol otherSymbol : table.getAllSymbols()) {
-            if (!otherSymbol.getName().equals(symbol.getName()) && contextStr.contains(otherSymbol.getName())) {
+            // Skip same symbol or local scope variables
+            if (otherSymbol.getName().equals(symbol.getName()) || isLocalScopeVariable(otherSymbol)) {
+                continue;
+            }
+
+            // Use word boundary matching to avoid false positives
+            // e.g., "sf" won't match "StaticFigure" or "transform"
+            if (containsAsWord(contextStr, otherSymbol.getName())) {
                 deps.add(otherSymbol.getName());
             }
         }
+    }
+
+    /**
+     * Checks if the context string contains the target as a complete word, not as a substring.
+     * Uses word boundary matching to avoid false positives.
+     *
+     * Examples:
+     * - containsAsWord("x = y + 1", "y") -> true
+     * - containsAsWord("transform[x]", "sf") -> false
+     * - containsAsWord("StaticFigure", "sf") -> false
+     */
+    private static boolean containsAsWord(String context, String target) {
+        // Use regex word boundary matching: \b
+        // This ensures we match whole words only
+        String pattern = "\\b" + java.util.regex.Pattern.quote(target) + "\\b";
+        return java.util.regex.Pattern.compile(pattern).matcher(context).find();
     }
 
     private static void detectAndReportCycles(SensorContext context, InputFile file, SymbolTable table,
@@ -472,11 +524,20 @@ public final class SymbolTableDetector {
     /**
      * Rule 17: Variable type inconsistency (enhanced).
      * Variable used with inconsistent types (number vs list vs string).
+     *
+     * Enhanced to understand higher-order functions that return lists.
      */
     public static void detectTypeInconsistency(SensorContext context, InputFile file, SymbolTable table) {
         for (Symbol symbol : table.getAllSymbols()) {
             Set<String> suspectedTypes = new java.util.HashSet<>();
 
+            // First, check assignments to understand the initial type
+            String assignmentType = inferTypeFromAssignments(symbol);
+            if (assignmentType != null) {
+                suspectedTypes.add(assignmentType);
+            }
+
+            // Then check how it's used
             for (SymbolReference ref : symbol.getAllReferencesSorted()) {
                 String contextStr = ref.getContext();
 
@@ -497,6 +558,60 @@ public final class SymbolTableDetector {
                 ).save();
             }
         }
+    }
+
+    /**
+     * Infers the type of a variable from its assignment expressions.
+     * Understands higher-order functions that return lists.
+     */
+    private static String inferTypeFromAssignments(Symbol symbol) {
+        for (SymbolReference assignment : symbol.getAssignments()) {
+            String context = assignment.getContext();
+
+            // Check for list-returning functions (higher-order functions)
+            if (returnsListType(context)) {
+                return "list";
+            }
+
+            // Check for string assignment
+            if (context.contains("\"")) {
+                return "string";
+            }
+
+            // Check for numeric literal
+            if (context.matches(".*=\\s*+\\d+.*")) { //NOSONAR
+                return "number";
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Checks if the context contains a function call that returns a list.
+     * Covers common higher-order and list-generating functions.
+     */
+    private static boolean returnsListType(String context) {
+        // List of functions that always return lists
+        String[] listFunctions = {
+            "Map\\[", "Table\\[", "Select\\[", "Cases\\[", "DeleteCases\\[",
+            "Range\\[", "Array\\[", "List\\[", "Join\\[", "Append\\[", "Prepend\\[",
+            "Insert\\[", "Delete\\[", "Take\\[", "Drop\\[", "Partition\\[",
+            "Split\\[", "GatherBy\\[", "SortBy\\[", "Sort\\[", "Reverse\\[",
+            "Flatten\\[", "Union\\[", "Intersection\\[", "Complement\\[",
+            "Transpose\\[", "Dimensions\\[", "Position\\[", "Extract\\[",
+            "MapThread\\[", "MapIndexed\\[", "Scan\\[", "FoldList\\[", "NestList\\[",
+            "Tuples\\[", "Permutations\\[", "Subsets\\[", "IntegerPartitions\\[",
+            "CharacterRange\\[", "Keys\\[", "Values\\[", "Association\\[",
+            "Normal\\[", "Thread\\[", "Outer\\[", "Inner\\["
+        };
+
+        for (String func : listFunctions) {
+            if (context.matches(".*" + func + ".*")) { //NOSONAR
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

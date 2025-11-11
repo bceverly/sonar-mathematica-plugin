@@ -48,13 +48,13 @@ class CodeSmellRulesTest {
         // Execute
         CodeSmellRules.define(repository);
 
-        // Verify createRule was called the expected number of times (33 rules total)
+        // Verify createRule was called the expected number of times (35 rules total)
         // Basic: 8 rules
         // Advanced: 10 rules
         // Performance: 8 rules
-        // Best Practice: 7 rules
-        // Total: 33 rules
-        verify(repository, times(33)).createRule(anyString());
+        // Best Practice: 9 rules (includes 2 copyright rules)
+        // Total: 35 rules
+        verify(repository, times(35)).createRule(anyString());
     }
 
     @Test
@@ -167,8 +167,8 @@ class CodeSmellRulesTest {
 
         CodeSmellRules.define(repository);
 
-        // Verify that setHtmlDescription was called 33 times (once per rule)
-        verify(mockRule, times(33)).setHtmlDescription(anyString());
+        // Verify that setHtmlDescription was called 35 times (once per rule)
+        verify(mockRule, times(35)).setHtmlDescription(anyString());
     }
 
     @Test
@@ -184,8 +184,8 @@ class CodeSmellRulesTest {
 
         CodeSmellRules.define(repository);
 
-        // Verify that setName was called 33 times (once per rule)
-        verify(mockRule, times(33)).setName(anyString());
+        // Verify that setName was called 35 times (once per rule)
+        verify(mockRule, times(35)).setName(anyString());
     }
 
     @Test
@@ -201,8 +201,8 @@ class CodeSmellRulesTest {
 
         CodeSmellRules.define(repository);
 
-        // Verify that addDefaultImpact was called 33 times (once per rule)
-        verify(mockRule, times(33)).addDefaultImpact(
+        // Verify that addDefaultImpact was called 35 times (once per rule)
+        verify(mockRule, times(35)).addDefaultImpact(
             org.mockito.ArgumentMatchers.any(),
             org.mockito.ArgumentMatchers.any()
         );

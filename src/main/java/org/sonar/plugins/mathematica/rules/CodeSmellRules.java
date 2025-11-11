@@ -269,5 +269,24 @@ public final class CodeSmellRules {
             .setHtmlDescription("<p>Functions with conditionals should use explicit Return[] for clarity.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(READABILITY);
+
+        // Copyright & License rules
+        repository.createRule(MathematicaRulesDefinition.MISSING_COPYRIGHT_KEY)
+            .setName("Files should have copyright notice")
+            .setHtmlDescription(
+                "<p>Source files should include a copyright notice near the top of the file.</p>"
+                + "<p>This helps track ownership and licensing information.</p>"
+            )
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(DOCUMENTATION, "legal");
+
+        repository.createRule(MathematicaRulesDefinition.OUTDATED_COPYRIGHT_KEY)
+            .setName("Copyright notice should include current year")
+            .setHtmlDescription(
+                "<p>Copyright notices should include the current year to accurately reflect recent modifications.</p>"
+                + "<p>Update copyright year when making significant changes to the file.</p>"
+            )
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(DOCUMENTATION, "legal");
     }
 }

@@ -129,6 +129,10 @@ public class MathematicaRulesDefinition implements RulesDefinition {
     public static final String DYNAMIC_INJECTION_KEY = "DynamicContentInjection";
     public static final String IMPORT_WITHOUT_FORMAT_KEY = "ImportWithoutFormat";
 
+    // Rule keys - Copyright & License Compliance (2 rules)
+    public static final String MISSING_COPYRIGHT_KEY = "MissingCopyright";
+    public static final String OUTDATED_COPYRIGHT_KEY = "OutdatedCopyright";
+
     // Rule keys - Phase 3: Resource Management (2 rules)
     public static final String UNCLOSED_FILE_HANDLE_KEY = "UnclosedFileHandle";
     public static final String GROWING_DEFINITION_CHAIN_KEY = "GrowingDefinitionChain";

@@ -609,13 +609,32 @@ public class CodeSmellDetector extends BaseDetector {
 
     /**
      * Detect operations that break packed arrays.
+     * Packed arrays are fast uniform-type arrays that get unpacked (slow) when mixing types.
      */
     public void detectPackedArrayBreaking(SensorContext context, InputFile inputFile, String content) {
         try {
-            // Simple heuristic: mixed numeric/symbolic operations
-            if (content.contains("Append") && content.contains("Table") && content.contains("Symbol")) {
-                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY,
-                    "Operations may unpack arrays. Use Developer`PackedArrayQ to verify.");
+            // Pattern 1: Append/Prepend/AppendTo/PrependTo with Symbol[ ] mixed with numeric array
+            Pattern appendSymbolPattern = Pattern.compile(
+                "\\b(Append|Prepend|AppendTo|PrependTo)\\s*\\[\\s*([a-zA-Z]\\w*)\\s*,\\s*Symbol\\s*\\["
+            );
+            Matcher matcher = appendSymbolPattern.matcher(content);
+            while (matcher.find()) {
+                int line = calculateLineNumber(content, matcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY,
+                    String.format("Operation '%s' mixing array with Symbol[] may unpack array. Use Developer`PackedArrayQ to verify.",
+                        matcher.group(1)));
+            }
+
+            // Pattern 2: Join/Flatten with mixed types
+            // Use lookaheads to avoid backtracking while ensuring matchability
+            Pattern mixedJoinPattern = Pattern.compile(
+                "\\b(Join|Flatten)\\s*+\\[\\s*+\\{(?=[^}]*\\d)[^}]+\\}\\s*+,\\s*+\\{(?=[^}]*\\w)[^}]+\\}"
+            );
+            Matcher joinMatcher = mixedJoinPattern.matcher(content);
+            while (joinMatcher.find()) {
+                int line = calculateLineNumber(content, joinMatcher.start());
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY,
+                    "Join/Flatten with mixed numeric and symbolic data may unpack arrays. Use Developer`PackedArrayQ to verify.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping packed array detection due to error in file: {}", inputFile.filename());
@@ -1667,5 +1686,81 @@ public class CodeSmellDetector extends BaseDetector {
         // Check if there's a -> followed by whitespace before this number
         // This catches patterns like "Key -> 1" or "PropertyName -> 42"
         return lookback.matches(".*->\\s*+$");
+    }
+
+    // ===== COPYRIGHT & LICENSE COMPLIANCE METHODS =====
+
+    /**
+     * Detect missing copyright notice in file.
+     * Checks the first 20 lines for copyright/© symbols.
+     */
+    public void detectMissingCopyright(SensorContext context, InputFile inputFile, String content) {
+        try {
+            // Check first 20 lines for copyright notice
+            String[] lines = content.split("\n", 21);
+            int linesToCheck = Math.min(20, lines.length);
+
+            boolean hasCopyright = false;
+            for (int i = 0; i < linesToCheck; i++) {
+                String line = lines[i].toLowerCase();
+                // Look for copyright, ©, or (c) in comments
+                if (line.contains("copyright") || line.contains("©") || line.contains("(c)")) {
+                    hasCopyright = true;
+                    break;
+                }
+            }
+
+            if (!hasCopyright) {
+                reportIssue(context, inputFile, 1, MathematicaRulesDefinition.MISSING_COPYRIGHT_KEY,
+                    "File should include a copyright notice near the top.");
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping copyright detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Detect outdated copyright year.
+     * Checks if copyright includes current year.
+     */
+    public void detectOutdatedCopyright(SensorContext context, InputFile inputFile, String content) {
+        try {
+            String[] lines = content.split("\n", 21);
+            int linesToCheck = Math.min(20, lines.length);
+            int currentYear = java.time.Year.now().getValue();
+
+            Pattern copyrightPattern = Pattern.compile(
+                "(?i)(?:copyright|©|\\(c\\)).*?(\\d{4})(?:\\s*-\\s*(\\d{4}))?"
+            );
+
+            for (int i = 0; i < linesToCheck; i++) {
+                Matcher matcher = copyrightPattern.matcher(lines[i]);
+                if (matcher.find()) {
+                    if (!copyrightIncludesYear(matcher, currentYear)) {
+                        reportIssue(context, inputFile, i + 1,
+                            MathematicaRulesDefinition.OUTDATED_COPYRIGHT_KEY,
+                            String.format("Copyright notice should include current year (%d).", currentYear));
+                    }
+                    break;
+                }
+            }
+        } catch (Exception e) {
+            LOG.warn("Skipping copyright year detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    /**
+     * Check if copyright matcher includes the specified year.
+     */
+    private static boolean copyrightIncludesYear(Matcher matcher, int targetYear) {
+        String startYear = matcher.group(1);
+        String endYear = matcher.group(2);
+
+        if (endYear != null) {
+            // Range format: "2020-2025"
+            return Integer.parseInt(endYear) == targetYear;
+        }
+        // Single year format: "2025"
+        return Integer.parseInt(startYear) == targetYear;
     }
 }

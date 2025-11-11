@@ -892,6 +892,10 @@ public class MathematicaRulesSensor implements Sensor {
         codeSmellDetector.get().detectMissingOptionsPattern(context, inputFile, content);
         codeSmellDetector.get().detectMissingFunctionAttributes(context, inputFile, content);
         codeSmellDetector.get().detectMissingErrorMessages(context, inputFile, content);
+
+        // Copyright & License compliance
+        codeSmellDetector.get().detectMissingCopyright(context, inputFile, content);
+        codeSmellDetector.get().detectOutdatedCopyright(context, inputFile, content);
         codeSmellDetector.get().detectMissingLocalization(context, inputFile, content);
         codeSmellDetector.get().detectMissingTemporaryCleanup(context, inputFile, content);
         codeSmellDetector.get().detectMissingCompilationTarget(context, inputFile, content);
@@ -921,6 +925,15 @@ public class MathematicaRulesSensor implements Sensor {
         codeSmellDetector.get().detectParameterNotDocumented(context, inputFile, content);
         codeSmellDetector.get().detectReturnNotDocumented(context, inputFile, content);
 
+        // Run bug detectors
+        runBugDetectors(context, inputFile, content);
+    }
+
+    /**
+     * Run bug detection rules that provide Quick Fixes.
+     * Extracted from runPatternBasedDetectors to maintain method length under 150 lines.
+     */
+    private void runBugDetectors(SensorContext context, InputFile inputFile, String content) {
         // ===== BUG DETECTOR (42 rules with Quick Fixes) =====
 
         // Assignment and conditional bugs

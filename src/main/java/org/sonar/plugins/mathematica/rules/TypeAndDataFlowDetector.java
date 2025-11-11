@@ -9,6 +9,8 @@ import java.util.Set;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * Detector for Chunk 3 rules (Items 111-150 from ROADMAP_325.md):
@@ -192,7 +194,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectMixedNumericTypes(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect exact (fraction) mixed with approximate (decimal)
-            //NOSONAR - Possessive quantifiers prevent backtracking
+            // Possessive quantifiers prevent backtracking
             Pattern pattern = Pattern.compile("\\d+\\s*+/\\s*+\\d+\\s*+[\\+\\-]\\s*+\\d+\\.\\d+"); //NOSONAR
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
@@ -477,7 +479,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 String varName = matcher.group(1);
 
                 // Check if variable is a list (simple heuristic)
-                //NOSONAR - Possessive quantifiers prevent backtracking
+                // Possessive quantifiers prevent backtracking
                 Pattern listAssign = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+=\\s*+\\{\\{"); //NOSONAR
                 if (listAssign.matcher(content.substring(0, matcher.start())).find()) {
                     int line = calculateLineNumber(content, matcher.start());
@@ -524,6 +526,9 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 definedVars.add(varName);
             }
 
+            // Find all Module/Block/With declaration ranges to exclude from "use" detection
+            List<int[]> declarationRanges = findScopingDeclarationRanges(content);
+
             // Check for uses before assignment
             Pattern usePattern = Pattern.compile("\\b([a-z]\\w*)\\b"); //NOSONAR - Possessive quantifiers prevent backtracking
             Matcher useMatcher = usePattern.matcher(content);
@@ -531,6 +536,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             while (useMatcher.find()) {
                 String varName = useMatcher.group(1);
                 int usePos = useMatcher.start();
+
+                // Skip if this is inside a Module/Block/With declaration list
+                if (isInsideDeclarationList(usePos, declarationRanges)) {
+                    continue;
+                }
 
                 // Check if used before any assignment
                 boolean usedBeforeAssignment = true;
@@ -551,6 +561,43 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         } catch (Exception e) {
             LOG.debug("Error detecting uninitialized variable use in {}", inputFile.filename(), e);
         }
+    }
+
+    /**
+     * Finds all Module/Block/With declaration list ranges: Module[{vars}, ...] → finds position of {vars}
+     * These are NOT variable uses, they are declarations.
+     */
+    private List<int[]> findScopingDeclarationRanges(String content) {
+        List<int[]> ranges = new ArrayList<>();
+
+        // Match Module, Block, or With followed by opening brace
+        Pattern scopePattern = Pattern.compile("(?:Module|Block|With)\\s*\\[\\s*\\{"); //NOSONAR
+        Matcher scopeMatcher = scopePattern.matcher(content);
+
+        while (scopeMatcher.find()) {
+            int openBrace = content.indexOf('{', scopeMatcher.start());
+            if (openBrace != -1) {
+                int closeBrace = findMatchingBracket(content, openBrace);
+                if (closeBrace != -1) {
+                    // This range [openBrace, closeBrace] contains variable declarations, not uses
+                    ranges.add(new int[]{openBrace, closeBrace});
+                }
+            }
+        }
+
+        return ranges;
+    }
+
+    /**
+     * Checks if a position is inside any of the declaration ranges.
+     */
+    private boolean isInsideDeclarationList(int pos, List<int[]> ranges) {
+        for (int[] range : ranges) {
+            if (pos >= range[0] && pos <= range[1]) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public void detectVariableMayBeUninitialized(SensorContext context, InputFile inputFile, String content) {
@@ -623,7 +670,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectVariableAliasingIssue(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect list1 = list2 followed by list2[[i]] = x
-            //NOSONAR - Possessive quantifiers prevent backtracking
+            // Possessive quantifiers prevent backtracking
             Pattern aliasPattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+([a-zA-Z]\\w*)\\s*+;"); //NOSONAR
             Matcher matcher = aliasPattern.matcher(content);
 
@@ -741,7 +788,8 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectMutationInPureFunction(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect mutations (++) inside pure functions (&)
-            Pattern pattern = Pattern.compile("\\(([^\\(\\)]*\\+\\+[^\\(\\)]*)\\s*+\\&"); //NOSONAR - Possessive quantifiers prevent backtracking
+            // Possessive quantifiers prevent backtracking
+            Pattern pattern = Pattern.compile("\\(([^\\(\\)]*\\+\\+[^\\(\\)]*)\\s*+\\&"); //NOSONAR
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
@@ -828,7 +876,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
     public void detectClosureOverMutableVariable(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect Table[Function[... i ...], {i, ...}] - closure captures final i
-            //NOSONAR - Possessive quantifiers prevent backtracking
+            // Possessive quantifiers prevent backtracking
             Pattern pattern = Pattern.compile("Table\\s*+\\[\\s*+Function\\s*+\\[[^\\]]*\\b(\\w+)\\b[^\\]]*\\][^,]*,\\s*+\\{\\s*+\\1\\s*+,"); //NOSONAR
             Matcher matcher = pattern.matcher(content);
 
@@ -901,7 +949,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                         String varName = varEntry.trim().split("\\s*+=")[0].trim(); //NOSONAR
 
                         // Check if variable never modified (no assignments in body)
-                        //NOSONAR - Possessive quantifiers prevent backtracking
+                        // Possessive quantifiers prevent backtracking
                         Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+="); //NOSONAR
                         if (!assignPattern.matcher(body).find()) {
                             int line = calculateLineNumber(content, matcher.start());
@@ -919,9 +967,14 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
     // ===== Helper methods =====
 
+    /**
+     * Finds the matching closing bracket for an opening bracket.
+     * Supports [], (), and {} bracket types.
+     * @return position of closing bracket, or -1 if not found
+     */
     private int findMatchingBracket(String content, int start) {
         if (start >= content.length()) {
-            return content.length();
+            return -1;
         }
 
         char openBracket = content.charAt(start);
@@ -938,7 +991,7 @@ public class TypeAndDataFlowDetector extends BaseDetector {
                 closeBracket = '}';
                 break;
             default:
-                // If not starting at a bracket, find the next bracket
+                // If not starting at a bracket, assume square brackets
                 openBracket = '[';
                 closeBracket = ']';
                 break;
@@ -957,6 +1010,6 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             }
         }
 
-        return content.length();
+        return -1;
     }
 }

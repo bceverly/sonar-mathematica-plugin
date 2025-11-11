@@ -73,8 +73,9 @@ public class UnifiedRuleVisitor implements AstVisitor {
         String funcName = node.getFunctionName();
         calledFunctions.add(funcName);
 
-        // Track call frequency for repeated call detection
-        functionCallCounts.merge(funcName, 1, Integer::sum);
+        // Track call frequency for repeated call detection (with full signature including parameters)
+        String callSignature = getCanonicalCallSignature(node);
+        functionCallCounts.merge(callSignature, 1, Integer::sum);
 
         // Check for specific vulnerability patterns
         checkCommandInjection(node);
@@ -192,6 +193,41 @@ public class UnifiedRuleVisitor implements AstVisitor {
                     FUNCTION_PREFIX + entry.getKey() + "' is called " + entry.getValue() + " times. Consider caching the result.");
             }
         }
+    }
+
+    /**
+     * Creates a canonical signature for a function call including its parameters.
+     * This allows us to detect repeated calls with the SAME parameters, not just same function name.
+     *
+     * Examples:
+     * - Map[f, list1] -> "Map[f, list1]"
+     * - Map[f, list2] -> "Map[f, list2]"  (different from above)
+     * - Solve[x^2==4, x] -> "Solve[x^2==4, x]"
+     */
+    private String getCanonicalCallSignature(FunctionCallNode node) {
+        StringBuilder signature = new StringBuilder();
+        signature.append(node.getFunctionName());
+        signature.append('[');
+
+        boolean first = true;
+        for (AstNode arg : node.getArguments()) {
+            if (!first) {
+                signature.append(", ");
+            }
+            first = false;
+
+            // Use the AST node's string representation
+            // This should capture the structure of the argument
+            String argStr = arg.toString().trim();
+
+            // Normalize whitespace for consistency
+            argStr = argStr.replaceAll("\\s+", " ");
+
+            signature.append(argStr);
+        }
+
+        signature.append(']');
+        return signature.toString();
     }
 
     // ========== Rule Implementation Methods ==========
