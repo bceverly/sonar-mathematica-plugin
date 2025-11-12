@@ -31,41 +31,24 @@ jobs:
 
           echo "📦 Latest version: $VERSION (tag: $LATEST_TAG)"
 
-      - name: Get previous tag for release notes
-        id: prev_tag
-        env:
-          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
-        run: |
-          PREV_TAG=$(git describe --tags --abbrev=0 ${LATEST_TAG}^)
-          echo "prev_tag=$PREV_TAG" >> $GITHUB_OUTPUT
-          echo "📝 Previous tag: $PREV_TAG"
-
-      - name: Generate release notes from commits
+      - name: Load release notes
         id: release_notes
-        env:
-          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
-          PREV_TAG: ${{ steps.prev_tag.outputs.prev_tag }}
-          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          echo "Generating release notes from $PREV_TAG to $LATEST_TAG"
+          if [ ! -f "RELEASE_NOTES.md" ]; then
+            echo "❌ Error: RELEASE_NOTES.md not found!"
+            echo ""
+            echo "Please run 'make release-notes' and commit the file before running this workflow."
+            exit 1
+          fi
 
-          # Get commit messages between tags
-          COMMITS=$(git log ${PREV_TAG}..${LATEST_TAG} --pretty=format:"- %s" --no-merges)
-
-          # Create release notes
-          echo "## Changes in version ${VERSION}" > release_notes.md
-          echo "" >> release_notes.md
-          echo "$COMMITS" >> release_notes.md
-          echo "" >> release_notes.md
-          echo "**Full Changelog**: https://github.com/bceverly/wolfralyze/compare/${PREV_TAG}...${LATEST_TAG}" >> release_notes.md
+          echo "📋 Loading release notes from RELEASE_NOTES.md"
 
           # Save to output
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
-          cat release_notes.md >> $GITHUB_OUTPUT
+          cat RELEASE_NOTES.md >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
 
-          echo "📋 Release notes generated"
-          cat release_notes.md
+          cat RELEASE_NOTES.md
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -266,4 +249,4 @@ EOF
 
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### Release Notes" >> $GITHUB_STEP_SUMMARY
-          cat release_notes.md >> $GITHUB_STEP_SUMMARY
+          cat RELEASE_NOTES.md >> $GITHUB_STEP_SUMMARY

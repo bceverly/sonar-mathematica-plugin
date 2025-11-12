@@ -72,6 +72,25 @@ git push origin v1.0.3
 
 **Tag Naming Convention:** Use semantic versioning with a `v` prefix (e.g., `v1.0.3`, `v2.0.0`)
 
+### Step 1.5: Generate and Commit Release Notes
+
+After creating the tag, generate release notes and commit them:
+
+```bash
+# Generate release notes from git commits
+make release-notes
+
+# Review the generated RELEASE_NOTES.md file
+cat RELEASE_NOTES.md
+
+# Commit it to version control
+git add RELEASE_NOTES.md
+git commit -m "Add release notes for v1.0.3"
+git push origin master
+```
+
+The `make release-notes` target automatically generates release notes by comparing the latest tag with the previous tag.
+
 ### Step 2: Create a GitHub Release
 
 1. Go to your wolfralyze repository on GitHub

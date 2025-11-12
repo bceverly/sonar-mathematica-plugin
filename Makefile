@@ -10,7 +10,7 @@
 #   make clean                     # Clean build artifacts
 #   SONARQUBE_HOME=/path make install  # Install to SonarQube
 
-.PHONY: help build clean install test version check-sonarqube-home lint self-scan update-wiki
+.PHONY: help build clean install test version check-sonarqube-home lint self-scan update-wiki release-notes
 
 # Default target - show help
 help:
@@ -26,9 +26,10 @@ help:
 	@echo "  make lint        - Run code style checks with Checkstyle"
 	@echo "  make clean       - Remove all build artifacts and intermediate files"
 	@echo "  make install     - Stop SonarQube, install plugin, restart, wait for ready"
-	@echo "  make self-scan   - Scan this plugin's Java code with SonarQube"
-	@echo "  make update-wiki - Update GitHub Wiki with latest documentation"
-	@echo "  make version     - Show current version from git tag"
+	@echo "  make self-scan      - Scan this plugin's Java code with SonarQube"
+	@echo "  make update-wiki    - Update GitHub Wiki with latest documentation"
+	@echo "  make release-notes  - Generate RELEASE_NOTES.md from git commits"
+	@echo "  make version        - Show current version from git tag"
 	@echo ""
 	@echo "Environment Variables:"
 	@echo ""
@@ -593,3 +594,17 @@ update-wiki:
 	echo "View wiki at:"; \
 	echo "  https://github.com/bceverly/wolfralyze/wiki"; \
 	echo ""
+
+# Generate release notes from git commits
+release-notes:
+	@echo "Generating release notes..."
+	@LATEST_TAG=$$(git describe --tags --abbrev=0); \
+	PREV_TAG=$$(git describe --tags --abbrev=0 $${LATEST_TAG}^); \
+	VERSION=$${LATEST_TAG#v}; \
+	echo "## Changes in version $${VERSION}" > RELEASE_NOTES.md; \
+	echo "" >> RELEASE_NOTES.md; \
+	git log $${PREV_TAG}..$${LATEST_TAG} --pretty=format:"- %s" --no-merges >> RELEASE_NOTES.md; \
+	echo "" >> RELEASE_NOTES.md; \
+	echo "" >> RELEASE_NOTES.md; \
+	echo "**Full Changelog**: https://github.com/bceverly/wolfralyze/compare/$${PREV_TAG}...$${LATEST_TAG}" >> RELEASE_NOTES.md; \
+	echo "✅ Release notes generated in RELEASE_NOTES.md"
