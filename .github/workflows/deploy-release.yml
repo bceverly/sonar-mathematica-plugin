@@ -179,9 +179,7 @@ jobs:
           TODAY=$(date +%Y-%m-%d)
 
           # Write JSON file
-          cat > metadata/wolfralyze/${VERSION}.json << 'JSON_EOF'
-{
-JSON_EOF
+          echo "{" > metadata/wolfralyze/${VERSION}.json
           echo "  \"version\": \"${VERSION}\"," >> metadata/wolfralyze/${VERSION}.json
           echo "  \"downloadUrl\": \"https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar\"," >> metadata/wolfralyze/${VERSION}.json
           echo "  \"changelogUrl\": \"https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}\"," >> metadata/wolfralyze/${VERSION}.json
