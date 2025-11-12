@@ -595,16 +595,85 @@ update-wiki:
 	echo "  https://github.com/bceverly/wolfralyze/wiki"; \
 	echo ""
 
-# Generate release notes from git commits
+# Generate release notes - updates only the unreleased section if file exists
 release-notes:
-	@echo "Generating release notes..."
-	@LATEST_TAG=$$(git describe --tags --abbrev=0); \
-	PREV_TAG=$$(git describe --tags --abbrev=0 $${LATEST_TAG}^); \
-	VERSION=$${LATEST_TAG#v}; \
-	echo "## Changes in version $${VERSION}" > RELEASE_NOTES.md; \
-	echo "" >> RELEASE_NOTES.md; \
-	git log $${PREV_TAG}..$${LATEST_TAG} --pretty=format:"- %s" --no-merges >> RELEASE_NOTES.md; \
-	echo "" >> RELEASE_NOTES.md; \
-	echo "" >> RELEASE_NOTES.md; \
-	echo "**Full Changelog**: https://github.com/bceverly/wolfralyze/compare/$${PREV_TAG}...$${LATEST_TAG}" >> RELEASE_NOTES.md; \
-	echo "✅ Release notes generated in RELEASE_NOTES.md"
+	@ALL_TAGS=$$(git tag --sort=-version:refname | grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$$'); \
+	LATEST_TAG=$$(echo "$$ALL_TAGS" | head -1); \
+	if [ -z "$$LATEST_TAG" ]; then \
+		echo "⚠️  Warning: No tags found"; \
+		exit 1; \
+	fi; \
+	MAJOR=$$(echo "$$LATEST_TAG" | sed 's/^v//' | cut -d. -f1); \
+	MINOR=$$(echo "$$LATEST_TAG" | sed 's/^v//' | cut -d. -f2); \
+	PATCH=$$(echo "$$LATEST_TAG" | sed 's/^v//' | cut -d. -f3); \
+	NEXT_PATCH=$$((PATCH + 1)); \
+	NEXT_VERSION="$$MAJOR.$$MINOR.$$NEXT_PATCH"; \
+	UNRELEASED_COMMITS=$$(git log $$LATEST_TAG..HEAD --pretty=format:"- %s" --no-merges); \
+	if [ -f "RELEASE_NOTES.md" ]; then \
+		echo "Updating unreleased section for v$$NEXT_VERSION..."; \
+		PRESERVED_CONTENT=$$(awk '/^## Version [0-9]+\.[0-9]+\.[0-9]+$$/{n++; if(n==2){p=1}} p' RELEASE_NOTES.md); \
+		echo "# Release Notes" > RELEASE_NOTES.md; \
+		echo "" >> RELEASE_NOTES.md; \
+		if [ -n "$$UNRELEASED_COMMITS" ]; then \
+			echo "## Version $$NEXT_VERSION" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "$$UNRELEASED_COMMITS" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "**Commits since $$LATEST_TAG**" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "$$PRESERVED_CONTENT" >> RELEASE_NOTES.md; \
+			echo "✅ Updated unreleased section (v$$NEXT_VERSION with $$(echo "$$UNRELEASED_COMMITS" | wc -l | tr -d ' ') commits)"; \
+		else \
+			echo "$$PRESERVED_CONTENT" >> RELEASE_NOTES.md; \
+			echo "✓ No unreleased commits since $$LATEST_TAG"; \
+		fi; \
+	else \
+		echo "Creating new RELEASE_NOTES.md..."; \
+		echo "# Release Notes" > RELEASE_NOTES.md; \
+		echo "" >> RELEASE_NOTES.md; \
+		if [ -n "$$UNRELEASED_COMMITS" ]; then \
+			echo "## Version $$NEXT_VERSION" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "$$UNRELEASED_COMMITS" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			echo "**Commits since $$LATEST_TAG**" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+		fi; \
+		FILTERED_TAGS=""; \
+		for TAG in $$ALL_TAGS; do \
+			if [ "$$TAG" = "v1.0.0" ]; then \
+				FILTERED_TAGS="$$FILTERED_TAGS $$TAG"; \
+				break; \
+			fi; \
+			FILTERED_TAGS="$$FILTERED_TAGS $$TAG"; \
+		done; \
+		if [ -z "$$FILTERED_TAGS" ]; then \
+			echo "⚠️  Warning: No tags found starting from v1.0.0"; \
+			exit 1; \
+		fi; \
+		COUNT=0; \
+		for TAG in $$FILTERED_TAGS; do \
+			VERSION=$${TAG#v}; \
+			if [ $$COUNT -gt 0 ] || [ -n "$$UNRELEASED_COMMITS" ]; then \
+				echo "" >> RELEASE_NOTES.md; \
+			fi; \
+			echo "## Version $$VERSION" >> RELEASE_NOTES.md; \
+			echo "" >> RELEASE_NOTES.md; \
+			NEXT_TAG=$$(echo "$$FILTERED_TAGS" | tr ' ' '\n' | grep -A1 "^$$TAG$$" | tail -1); \
+			if [ "$$NEXT_TAG" != "$$TAG" ] && [ -n "$$NEXT_TAG" ]; then \
+				git log $${NEXT_TAG}..$${TAG} --pretty=format:"- %s" --no-merges >> RELEASE_NOTES.md; \
+				echo "" >> RELEASE_NOTES.md; \
+				echo "" >> RELEASE_NOTES.md; \
+				echo "**Full Changelog**: https://github.com/bceverly/wolfralyze/compare/$${NEXT_TAG}...$${TAG}" >> RELEASE_NOTES.md; \
+			else \
+				git log $$TAG --pretty=format:"- %s" --no-merges >> RELEASE_NOTES.md; \
+				echo "" >> RELEASE_NOTES.md; \
+				echo "" >> RELEASE_NOTES.md; \
+				echo "**Initial Release**" >> RELEASE_NOTES.md; \
+			fi; \
+			COUNT=$$((COUNT + 1)); \
+		done; \
+		echo "✅ Created RELEASE_NOTES.md with $$COUNT version(s)"; \
+	fi

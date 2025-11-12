@@ -74,10 +74,10 @@ git push origin v1.0.3
 
 ### Step 1.5: Generate and Commit Release Notes
 
-After creating the tag, generate release notes and commit them:
+After creating the tag, regenerate the comprehensive release notes file and commit it:
 
 ```bash
-# Generate release notes from git commits
+# Generate comprehensive release notes (all versions from v1.0.0 onwards)
 make release-notes
 
 # Review the generated RELEASE_NOTES.md file
@@ -85,11 +85,17 @@ cat RELEASE_NOTES.md
 
 # Commit it to version control
 git add RELEASE_NOTES.md
-git commit -m "Add release notes for v1.0.3"
+git commit -m "Update release notes for v1.0.3"
 git push origin master
 ```
 
-The `make release-notes` target automatically generates release notes by comparing the latest tag with the previous tag.
+The `make release-notes` target automatically generates a comprehensive RELEASE_NOTES.md file containing:
+- All versions from v1.0.0 onwards
+- Newest version at the top
+- Commits for each version
+- Full changelog links between versions
+
+**Note:** You need to run this after every new tag to keep RELEASE_NOTES.md up to date.
 
 ### Step 2: Create a GitHub Release
 
