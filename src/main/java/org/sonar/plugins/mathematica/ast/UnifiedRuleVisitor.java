@@ -73,9 +73,8 @@ public class UnifiedRuleVisitor implements AstVisitor {
         String funcName = node.getFunctionName();
         calledFunctions.add(funcName);
 
-        // Track call frequency for repeated call detection (with full signature including parameters)
-        String callSignature = getCanonicalCallSignature(node);
-        functionCallCounts.merge(callSignature, 1, Integer::sum);
+        // Track call frequency for repeated call detection
+        functionCallCounts.merge(funcName, 1, Integer::sum);
 
         // Check for specific vulnerability patterns
         checkCommandInjection(node);
@@ -187,50 +186,91 @@ public class UnifiedRuleVisitor implements AstVisitor {
         }
 
         // Check for repeated function calls
+        // Exclude property accessors and lightweight built-in functions
         for (Map.Entry<String, Integer> entry : functionCallCounts.entrySet()) {
-            if (entry.getValue() > 3) {
+            if (entry.getValue() > 3 && !isPropertyAccessorOrLightweight(entry.getKey())) {
                 reportIssue(1, MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY,
                     FUNCTION_PREFIX + entry.getKey() + "' is called " + entry.getValue() + " times. Consider caching the result.");
             }
         }
     }
 
+    // ========== Rule Implementation Methods ==========
+
     /**
-     * Creates a canonical signature for a function call including its parameters.
-     * This allows us to detect repeated calls with the SAME parameters, not just same function name.
+     * Checks if a function name represents a built-in Mathematica function
+     * that should be excluded from repeated call warnings.
      *
-     * Examples:
-     * - Map[f, list1] -> "Map[f, list1]"
-     * - Map[f, list2] -> "Map[f, list2]"  (different from above)
-     * - Solve[x^2==4, x] -> "Solve[x^2==4, x]"
+     * This includes ALL common built-ins:
+     * - Control flow (If, Which, Switch, Do, While, For)
+     * - Functional programming (Map, Apply, Scan, Fold, Thread)
+     * - Scoping constructs (Module, Block, With, Function)
+     * - Common operations (Table, Range, Join, Append, List)
+     * - Type checking and property access
+     *
+     * Only flag TRULY expensive computational functions like Solve, Integrate, etc.
      */
-    private String getCanonicalCallSignature(FunctionCallNode node) {
-        StringBuilder signature = new StringBuilder();
-        signature.append(node.getFunctionName());
-        signature.append('[');
-
-        boolean first = true;
-        for (AstNode arg : node.getArguments()) {
-            if (!first) {
-                signature.append(", ");
-            }
-            first = false;
-
-            // Use the AST node's string representation
-            // This should capture the structure of the argument
-            String argStr = arg.toString().trim();
-
-            // Normalize whitespace for consistency
-            argStr = argStr.replaceAll("\\s+", " ");
-
-            signature.append(argStr);
+    private boolean isPropertyAccessorOrLightweight(String funcName) {
+        // Property accessors (object-oriented patterns)
+        if (funcName.startsWith("$")) {
+            return true; // $This, $Self, $Context, etc.
         }
 
-        signature.append(']');
-        return signature.toString();
-    }
+        // ALL common Mathematica built-in functions
+        // These are fundamental language features, not expensive computations
+        Set<String> builtinFunctions = Set.of(
+            // Control flow
+            "If", "Which", "Switch", "Do", "While", "For", "Return", "Break", "Continue",
 
-    // ========== Rule Implementation Methods ==========
+            // Functional programming
+            "Map", "MapAt", "MapIndexed", "MapThread", "Apply", "Scan", "Fold", "FoldList",
+            "Nest", "NestList", "NestWhile", "FixedPoint", "FixedPointList",
+
+            // Scoping
+            "Module", "Block", "With", "Function", "DynamicModule",
+
+            // List operations
+            "Table", "Range", "Array", "List", "Join", "Append", "Prepend", "AppendTo", "PrependTo",
+            "Insert", "Delete", "Take", "Drop", "Part", "Extract", "Select", "Cases", "DeleteCases",
+            "Flatten", "Partition", "Split", "Riffle", "Thread", "Transpose", "Reverse",
+
+            // List queries
+            "Length", "First", "Last", "Rest", "Most", "MemberQ", "FreeQ", "Count",
+            "Position", "FirstPosition",
+
+            // Type checking
+            "Head", "AtomQ", "ListQ", "NumberQ", "IntegerQ", "RealQ", "StringQ", "SymbolQ",
+            "VectorQ", "MatrixQ", "ArrayQ",
+
+            // Association/property access
+            "Key", "Lookup", "Keys", "Values", "KeyExistsQ", "Association",
+
+            // String operations
+            "StringJoin", "StringLength", "StringTake", "StringDrop", "ToString",
+
+            // Basic math (cheap operations)
+            "Plus", "Times", "Subtract", "Divide", "Power", "Mod",
+            "Min", "Max", "Abs", "Sign", "Round", "Floor", "Ceiling",
+
+            // Comparison
+            "Equal", "Unequal", "Less", "Greater", "LessEqual", "GreaterEqual",
+            "SameQ", "UnsameQ", "MatchQ",
+
+            // Logic
+            "And", "Or", "Not", "Xor", "Nand", "Nor",
+
+            // Constants
+            "True", "False", "Null", "None", "All", "Automatic", "Identity",
+
+            // Pattern matching
+            "Replace", "ReplaceAll", "ReplaceRepeated", "Rule", "RuleDelayed",
+
+            // Set operations
+            "Union", "Intersection", "Complement", "Subsets", "Tuples"
+        );
+
+        return builtinFunctions.contains(funcName);
+    }
 
     private void checkFunctionNaming(FunctionDefNode node, String funcName) {
         if (!Character.isUpperCase(funcName.charAt(0))) {

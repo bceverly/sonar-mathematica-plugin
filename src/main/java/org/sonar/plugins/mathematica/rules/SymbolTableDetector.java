@@ -46,13 +46,71 @@ public final class SymbolTableDetector {
     /**
      * Rule 2: Variable assigned but never read.
      * Detects dead stores - assignments whose values are never used.
+     *
+     * NOTE: Excludes side-effect assignments (e.g., Clump definitions, package declarations)
+     * where the assignment itself is the meaningful action, not preparing a value for later use.
      */
     public static void detectAssignedButNeverRead(SensorContext context, InputFile file, SymbolTable table) {
-        for (Symbol symbol : table.getAssignedButNeverReadSymbols()) {
-            createIssue(context, file, "AssignedButNeverRead", symbol.getDeclarationLine(),
-                String.format("Variable '%s' is assigned but its value is never read", symbol.getName())
-            ).save();
+        try {
+            String content = file.contents();
+            String[] lines = content.split("\n");
+
+            for (Symbol symbol : table.getAssignedButNeverReadSymbols()) {
+                int lineNum = symbol.getDeclarationLine();
+
+                // Get the actual assignment line (1-indexed to 0-indexed)
+                if (lineNum > 0 && lineNum <= lines.length) {
+                    String line = lines[lineNum - 1];
+
+                    // Skip side-effect assignments (template/class-like definitions)
+                    if (isSideEffectAssignment(line, symbol.getName())) {
+                        continue;
+                    }
+                }
+
+                createIssue(context, file, "AssignedButNeverRead", lineNum,
+                    String.format("Variable '%s' is assigned but its value is never read", symbol.getName())
+                ).save();
+            }
+        } catch (Exception e) {
+            // If we can't read the file, skip this check
         }
+    }
+
+    /**
+     * Checks if an assignment is a side-effect assignment (registration/declaration)
+     * where the assignment itself is meaningful, not preparing a value for later use.
+     *
+     * Examples:
+     * - MyTemplate = Clump[{...}]        -> Template registration
+     * - MyPackage = DeclarePackage[...]  -> Package declaration
+     * - MyClass = DefineClass[...]       -> Class definition
+     */
+    private static boolean isSideEffectAssignment(String line, String varName) {
+        // Remove leading whitespace for pattern matching
+        String trimmed = line.trim();
+
+        // Pattern: VarName = SideEffectFunction[...]
+        // Common side-effect functions that register/declare rather than compute
+        String[] sideEffectFunctions = {
+            "Clump",           // Template/object system
+            "DeclarePackage",  // Package declaration
+            "DefineClass",     // Class definition
+            "RegisterComponent", // Component registration
+            "DefineModule",    // Module definition
+            "CreateTemplate",  // Template creation
+            "DeclareType"      // Type declaration
+        };
+
+        // Check if line matches: varName = SideEffectFunction[
+        for (String func : sideEffectFunctions) {
+            String pattern = varName + "\\s*=\\s*" + func + "\\s*\\[";
+            if (trimmed.matches(".*" + pattern + ".*")) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

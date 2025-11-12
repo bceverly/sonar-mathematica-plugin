@@ -51,15 +51,64 @@ public final class SymbolTableBuilder {
         "\\b(\\w+)\\b"
     );
 
-    // Mathematica built-in functions (don't treat as variables)
+    // Mathematica built-in functions (don't treat as variables or user functions)
+    // Comprehensive list to prevent false positives from treating built-ins as user code
     private static final Set<String> BUILTINS = new HashSet<>(Arrays.asList(
-        "Module", "Block", "With", "If", "Which", "Switch", "While", "Do", "For",
-        "Table", "Map", "Apply", "Print", "Plot", "Return", "List", "Null",
-        "True", "False", "And", "Or", "Not", "Length", "Part", "First", "Last",
-        "Rest", "Most", "Append", "Prepend", "Join", "Select", "Cases", "Count",
-        "Position", "Sort", "Union", "Intersection", "Complement", "Range",
-        "Sin", "Cos", "Tan", "Exp", "Log", "Sqrt", "Abs", "Max", "Min", "Total",
-        "Mean", "Integrate", "D", "Sum", "Product", "Solve", "NSolve", "FindRoot"
+        // Control flow
+        "If", "Which", "Switch", "Do", "While", "For", "Return", "Break", "Continue",
+
+        // Functional programming
+        "Map", "MapAt", "MapIndexed", "MapThread", "Apply", "Scan", "Fold", "FoldList",
+        "Nest", "NestList", "NestWhile", "FixedPoint", "FixedPointList",
+
+        // Scoping
+        "Module", "Block", "With", "Function", "DynamicModule",
+
+        // List operations
+        "Table", "Range", "Array", "List", "Join", "Append", "Prepend", "AppendTo", "PrependTo",
+        "Insert", "Delete", "Take", "Drop", "Part", "Extract", "Select", "Cases", "DeleteCases",
+        "Flatten", "Partition", "Split", "Riffle", "Thread", "Transpose", "Reverse",
+
+        // List queries
+        "Length", "First", "Last", "Rest", "Most", "MemberQ", "FreeQ", "Count",
+        "Position", "FirstPosition",
+
+        // Type checking
+        "Head", "AtomQ", "ListQ", "NumberQ", "IntegerQ", "RealQ", "StringQ", "SymbolQ",
+        "VectorQ", "MatrixQ", "ArrayQ",
+
+        // Association/property access
+        "Key", "Lookup", "Keys", "Values", "KeyExistsQ", "Association",
+
+        // String operations
+        "StringJoin", "StringLength", "StringTake", "StringDrop", "ToString",
+
+        // Basic math (cheap operations)
+        "Plus", "Times", "Subtract", "Divide", "Power", "Mod",
+        "Min", "Max", "Abs", "Sign", "Round", "Floor", "Ceiling",
+
+        // Comparison
+        "Equal", "Unequal", "Less", "Greater", "LessEqual", "GreaterEqual",
+        "SameQ", "UnsameQ", "MatchQ",
+
+        // Logic
+        "And", "Or", "Not", "Xor", "Nand", "Nor",
+
+        // Constants
+        "True", "False", "Null", "None", "All", "Automatic", "Identity",
+
+        // Pattern matching
+        "Replace", "ReplaceAll", "ReplaceRepeated", "Rule", "RuleDelayed",
+
+        // Set operations
+        "Union", "Intersection", "Complement", "Subsets", "Tuples",
+
+        // Common math functions
+        "Sin", "Cos", "Tan", "Exp", "Log", "Sqrt", "Total",
+        "Mean", "Integrate", "D", "Sum", "Product", "Solve", "NSolve", "FindRoot",
+
+        // Graphics and output
+        "Print", "Plot", "ListPlot", "Show", "Graphics"
     ));
 
     /**
@@ -141,6 +190,12 @@ public final class SymbolTableBuilder {
             Matcher funcMatcher = FUNCTION_DEF_PATTERN.matcher(line);
             if (funcMatcher.find()) {
                 String funcName = funcMatcher.group(1);
+
+                // Skip built-in functions - they are not user-defined functions
+                if (BUILTINS.contains(funcName)) {
+                    continue;
+                }
+
                 String params = funcMatcher.group(2);
                 int startLine = lineNumber;
                 int endLine = lineNumber; // Single-line function for now
