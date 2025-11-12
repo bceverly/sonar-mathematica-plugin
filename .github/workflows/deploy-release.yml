@@ -109,15 +109,13 @@ jobs:
           sed -i "s/publicVersions=\(.*\)/publicVersions=\1,$VERSION/" $PROPS_FILE
 
           # Add version-specific properties
-          cat >> $PROPS_FILE << EOF
-
-$VERSION.description=Bug fixes and improvements
-$VERSION.sqs=[2025.1,LATEST]
-$VERSION.sqcb=[24.12,LATEST]
-$VERSION.downloadUrl=https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar
-$VERSION.changelogUrl=https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}
-$VERSION.date=${TODAY}
-EOF
+          echo "" >> $PROPS_FILE
+          echo "$VERSION.description=Bug fixes and improvements" >> $PROPS_FILE
+          echo "$VERSION.sqs=[2025.1,LATEST]" >> $PROPS_FILE
+          echo "$VERSION.sqcb=[24.12,LATEST]" >> $PROPS_FILE
+          echo "$VERSION.downloadUrl=https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar" >> $PROPS_FILE
+          echo "$VERSION.changelogUrl=https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}" >> $PROPS_FILE
+          echo "$VERSION.date=${TODAY}" >> $PROPS_FILE
 
           echo "✅ Updated wolfralyze.properties"
           echo "📄 Changes:"
@@ -173,15 +171,18 @@ ${{ steps.release_notes.outputs.release_notes }}
 
           # Create metadata file for the new version
           mkdir -p metadata/wolfralyze
-          cat > metadata/wolfralyze/${VERSION}.json << EOF
+          TODAY=$(date +%Y-%m-%d)
+
+          # Write JSON file
+          cat > metadata/wolfralyze/${VERSION}.json << 'JSON_EOF'
 {
-  "version": "${VERSION}",
-  "downloadUrl": "https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar",
-  "changelogUrl": "https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}",
-  "compatibleSQVersions": ["2025.1", "LATEST"],
-  "date": "$(date +%Y-%m-%d)"
-}
-EOF
+JSON_EOF
+          echo "  \"version\": \"${VERSION}\"," >> metadata/wolfralyze/${VERSION}.json
+          echo "  \"downloadUrl\": \"https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar\"," >> metadata/wolfralyze/${VERSION}.json
+          echo "  \"changelogUrl\": \"https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}\"," >> metadata/wolfralyze/${VERSION}.json
+          echo "  \"compatibleSQVersions\": [\"2025.1\", \"LATEST\"]," >> metadata/wolfralyze/${VERSION}.json
+          echo "  \"date\": \"${TODAY}\"" >> metadata/wolfralyze/${VERSION}.json
+          echo "}" >> metadata/wolfralyze/${VERSION}.json
 
           echo "✅ Created metadata file"
           cat metadata/wolfralyze/${VERSION}.json
