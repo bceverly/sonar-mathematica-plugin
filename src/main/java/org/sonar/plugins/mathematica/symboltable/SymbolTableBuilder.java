@@ -5,7 +5,9 @@ import org.sonar.api.batch.fs.InputFile;
 import java.util.ArrayDeque;
 import java.util.Arrays;
 import java.util.Deque;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -210,63 +212,106 @@ public final class SymbolTableBuilder {
 
     /**
      * Tracks variable assignments and references.
+     * OPTIMIZED: Single-pass algorithm with caching to avoid O(n²) behavior.
      */
     private static void trackVariables(SymbolTable table, String[] lines) {
+        // Pre-allocate symbol lookup cache (reused across lines)
+        Map<String, Symbol> symbolCache = new HashMap<>(256);
+        Set<Integer> assignmentPositions = new HashSet<>(32);
+
         for (int i = 0; i < lines.length; i++) {
             String line = lines[i];
             int lineNumber = i + 1;
+
+            // Skip empty lines early (avoid scope lookup)
+            if (line.isEmpty() || line.length() < 3) {
+                continue;
+            }
+
+            // PERFORMANCE: Skip pathologically long lines (typically JSON/data, not code)
+            // Lines >10K characters cause O(n²) regex behavior with thousands of matches
+            if (line.length() > 10000) {
+                continue;
+            }
+
+            // Cache trimmed line (used multiple times)
+            String trimmedLine = line.trim();
+
+            // Skip comment-only lines
+            if (trimmedLine.startsWith("(*") || trimmedLine.startsWith("//")) {
+                continue;
+            }
+
+            // Get scope once per line
             Scope scope = table.getGlobalScope().getScopeAtLine(lineNumber);
             if (scope == null) {
                 scope = table.getGlobalScope();
             }
 
-            // Track assignments
+            // Clear per-line caches
+            symbolCache.clear();
+            assignmentPositions.clear();
+
+            // PASS 1: Track assignments and record their positions
             Matcher assignmentMatcher = ASSIGNMENT_PATTERN.matcher(line);
             while (assignmentMatcher.find()) {
                 String varName = assignmentMatcher.group(1);
                 if (!BUILTINS.contains(varName)) {
-                    Symbol symbol = scope.resolveSymbol(varName);
+                    // Cache symbol lookup
+                    Symbol symbol = symbolCache.get(varName);
                     if (symbol == null) {
-                        // Create implicit global variable
-                        symbol = new Symbol(varName, lineNumber, table.getGlobalScope(), false, false);
-                        table.getGlobalScope().addSymbol(symbol);
-                        table.addSymbol(symbol);
+                        symbol = scope.resolveSymbol(varName);
+                        if (symbol == null) {
+                            // Create implicit global variable
+                            symbol = new Symbol(varName, lineNumber, table.getGlobalScope(), false, false);
+                            table.getGlobalScope().addSymbol(symbol);
+                            table.addSymbol(symbol);
+                        }
+                        symbolCache.put(varName, symbol);
                     }
+
                     symbol.addAssignment(new SymbolReference(
                         lineNumber,
                         assignmentMatcher.start(1),
                         ReferenceType.WRITE,
-                        line.trim()
+                        trimmedLine
                     ));
+
+                    // Record assignment position to skip in reference tracking
+                    assignmentPositions.add(assignmentMatcher.start(1));
                 }
             }
 
-            // Track references (reads)
-            trackReferences(line, lineNumber, scope);
-        }
-    }
+            // PASS 2: Track references (reads), skipping assignment positions
+            Matcher refMatcher = VARIABLE_REFERENCE.matcher(line);
+            while (refMatcher.find()) {
+                int pos = refMatcher.start(1);
 
-    /**
-     * Tracks variable references in a line.
-     * PERFORMANCE: Uses O(1) HashSet check instead of O(n) stream search.
-     */
-    private static void trackReferences(String line, int lineNumber, Scope scope) {
-        // Remove assignments to avoid double-counting
-        String lineNoAssignments = line.replaceAll("\\w+\\s*+=", ""); //NOSONAR
+                // Skip if this position was an assignment target
+                if (assignmentPositions.contains(pos)) {
+                    continue;
+                }
 
-        Matcher refMatcher = VARIABLE_REFERENCE.matcher(lineNoAssignments);
-        while (refMatcher.find()) {
-            String varName = refMatcher.group(1);
-            if (!BUILTINS.contains(varName) && !Character.isDigit(varName.charAt(0))) {
-                Symbol symbol = scope.resolveSymbol(varName);
+                String varName = refMatcher.group(1);
+                if (BUILTINS.contains(varName) || Character.isDigit(varName.charAt(0))) {
+                    continue;
+                }
+
+                // Use cached symbol lookup
+                Symbol symbol = symbolCache.get(varName);
+                if (symbol == null) {
+                    symbol = scope.resolveSymbol(varName);
+                    if (symbol != null) {
+                        symbolCache.put(varName, symbol);
+                    }
+                }
+
                 if (symbol != null) {
-                    // PERFORMANCE FIX: O(1) HashSet check instead of O(n) stream().anyMatch()
-                    // This was causing O(n²) behavior as symbols accumulated references
                     symbol.addReferenceIfNew(new SymbolReference(
                         lineNumber,
-                        refMatcher.start(1),
+                        pos,
                         ReferenceType.READ,
-                        line.trim()
+                        trimmedLine
                     ));
                 }
             }

@@ -16,19 +16,19 @@ Complete reference for all static analysis rules in the SonarMathematica plugin.
 
 ## Overview
 
-The SonarMathematica plugin (v1.0.0) provides comprehensive static analysis 
-for Wolfram Language / Mathematica code. This catalog documents all **465** rules 
+The SonarMathematica plugin (v1.0.0) provides comprehensive static analysis
+for Wolfram Language / Mathematica code. This catalog documents all **463** rules
 implemented by the plugin, organized by issue type and severity.
 
 ## Rule Statistics
 
 | Category | Count |
 |----------|-------|
-| **Total Rules** | **465** |
+| **Total Rules** | **463** |
 | Security Vulnerabilities | 27 |
 | Security Hotspots | 29 |
 | Bugs | 162 |
-| Code Smells | 247 |
+| Code Smells | 245 |
 
 ### Severity Distribution
 

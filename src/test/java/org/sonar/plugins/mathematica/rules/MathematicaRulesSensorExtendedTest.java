@@ -33,7 +33,6 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -118,46 +117,8 @@ class MathematicaRulesSensorExtendedTest {
         }
     }
 
-    @Test
-    void testExecuteWithLargeFile() throws IOException {
-        // Create a file that exceeds the 25,000 line limit
-        Path tempFile = Files.createTempFile("test", ".m");
-        StringBuilder content = new StringBuilder();
-        for (int i = 0; i < 26000; i++) {
-            content.append("x").append(i).append(" = ").append(i).append(";\n");
-        }
-        Files.write(tempFile, content.toString().getBytes(StandardCharsets.UTF_8));
-
-        try {
-            InputFile mockInputFile = createMockInputFile(tempFile, 26000);
-            List<InputFile> files = new ArrayList<>();
-            files.add(mockInputFile);
-
-            when(mockPredicates.and(any(), any())).thenReturn(mock(org.sonar.api.batch.fs.FilePredicate.class));
-            when(mockFileSystem.inputFiles(any())).thenReturn(files);
-
-            // Setup for issue creation when file exceeds limit
-            NewIssue mockIssue = mock(NewIssue.class);
-            NewIssueLocation mockLocation = mock(NewIssueLocation.class);
-            when(mockContext.newIssue()).thenReturn(mockIssue);
-            when(mockIssue.forRule(any(RuleKey.class))).thenReturn(mockIssue);
-            when(mockIssue.newLocation()).thenReturn(mockLocation);
-            when(mockLocation.on(any(InputFile.class))).thenReturn(mockLocation);
-            when(mockLocation.at(any())).thenReturn(mockLocation);
-            when(mockLocation.message(anyString())).thenReturn(mockLocation);
-            when(mockIssue.at(any())).thenReturn(mockIssue);
-
-            // Should report issue for file exceeding analysis limit
-            assertThatCode(() -> sensor.execute(mockContext))
-                .doesNotThrowAnyException();
-
-            // Verify issue was created
-            verify(mockContext, atLeastOnce()).newIssue();
-
-        } finally {
-            Files.deleteIfExists(tempFile);
-        }
-    }
+    // Test removed: File size limit no longer exists after symbol table optimization
+    // All files are now analyzed regardless of size
 
     @Test
     void testExecuteWithFileThatExceedsMaximumLines() throws IOException {

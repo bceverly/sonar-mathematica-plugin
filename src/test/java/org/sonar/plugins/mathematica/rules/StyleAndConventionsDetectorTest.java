@@ -342,13 +342,8 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectCommaSpacing() {
-        String content = "f[a,b,c]";
-        assertDoesNotThrow(() ->
-            detector.detectCommaSpacing(context, inputFile, content)
-        );
-    }
+    // REMOVED: testDetectCommaSpacing() and testDetectOperatorSpacing() tests
+    // The corresponding rules have been permanently removed from the codebase
 
     @Test
     void testDetectBracketSpacing() {

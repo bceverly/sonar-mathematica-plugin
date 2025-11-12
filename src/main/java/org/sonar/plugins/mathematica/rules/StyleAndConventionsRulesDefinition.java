@@ -78,21 +78,28 @@ public final class StyleAndConventionsRulesDefinition {
             .setTags(TAG_STYLE, TAG_FORMATTING)
             .setStatus(RuleStatus.READY);
 
+        // PERMANENTLY REMOVED: These two style rules (OPERATOR_SPACING and COMMA_SPACING)
+        // generated 1.6M+ issues (50% of all issues) and caused significant performance overhead.
+        // The detection methods have been completely removed from StyleAndConventionsDetector.
+        // Rule definitions kept below with DEPRECATED status for historical tracking only.
         repository.createRule(MathematicaRulesDefinition.OPERATOR_SPACING_KEY)
-            .setName("Operators should be surrounded by spaces")
-            .setHtmlDescription("<p>Operators without surrounding spaces are harder to read.</p>"
-                + "<p>Example: <code>x=5</code> → <code>x = 5</code></p>")
+            .setName("[Removed] Operators should be surrounded by spaces")
+            .setHtmlDescription("<p><strong>This rule has been permanently removed due to performance considerations.</strong></p>"
+                + "<p>The rule generated over 800,000 issues and caused significant analysis overhead.</p>"
+                + "<p>Historical note: Checked that operators have surrounding spaces (e.g., <code>x = 5</code> instead of <code>x=5</code>)</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_STYLE, TAG_FORMATTING, TAG_READABILITY)
-            .setStatus(RuleStatus.READY);
+            .setStatus(RuleStatus.DEPRECATED);
 
         repository.createRule(MathematicaRulesDefinition.COMMA_SPACING_KEY)
-            .setName("Commas should be followed by a space")
-            .setHtmlDescription("<p>Commas should have a space after them for readability.</p>"
-                + "<p>Example: <code>f[a,b,c]</code> → <code>f[a, b, c]</code></p>")
+            .setName("[Removed] Commas should be followed by a space")
+            .setHtmlDescription("<p><strong>This rule has been permanently removed due to performance considerations.</strong></p>"
+                + "<p>The rule generated over 800,000 issues and caused significant analysis overhead.</p>"
+                + "<p>Historical note: Checked that commas have space after them "
+                + "(e.g., <code>f[a, b, c]</code> instead of <code>f[a,b,c]</code>)</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_STYLE, TAG_FORMATTING)
-            .setStatus(RuleStatus.READY);
+            .setStatus(RuleStatus.DEPRECATED);
 
         repository.createRule(MathematicaRulesDefinition.BRACKET_SPACING_KEY)
             .setName("Opening brackets should not be preceded by whitespace")

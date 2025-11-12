@@ -22,8 +22,7 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
 
     private static final Pattern TRAILING_WHITESPACE_PATTERN = Pattern.compile("[ \\t]+$", Pattern.MULTILINE); //NOSONAR
-    private static final Pattern OPERATOR_NO_SPACE_PATTERN = Pattern.compile("(?<![=<>!])([+\\-*/%=])(?![=])"); //NOSONAR
-    private static final Pattern COMMA_NO_SPACE_PATTERN = Pattern.compile(",(?!\\s)"); //NOSONAR - Possessive quantifiers prevent backtracking
+    // REMOVED: OPERATOR_NO_SPACE_PATTERN and COMMA_NO_SPACE_PATTERN - rules permanently removed
     private static final Pattern BRACKET_SPACE_PATTERN = Pattern.compile("\\w\\s+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern MULTIPLE_SEMICOLON_PATTERN = Pattern.compile(";;+"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern EXCESSIVE_PARENS_PATTERN = Pattern.compile("\\(\\(\\([^)]*\\)\\)\\)"); //NOSONAR
@@ -232,60 +231,9 @@ public class StyleAndConventionsDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect operators without proper spacing like "x=5" instead of "x = 5".
-     */
-    public void detectOperatorSpacing(SensorContext context, InputFile inputFile, String content) {
-        try {
-            // Remove comments and strings to avoid false positives
-            List<int[]> commentRanges = analyzeComments(content);
-
-            Matcher matcher = OPERATOR_NO_SPACE_PATTERN.matcher(content);
-            while (matcher.find()) {
-                int pos = matcher.start();
-
-                // Skip if in comment or string
-                if (isInsideComment(pos, commentRanges) || isInsideStringLiteral(content, pos)) {
-                    continue;
-                }
-
-                // Check if there's no space around operator
-                boolean noSpaceBefore = pos > 0 && !Character.isWhitespace(content.charAt(pos - 1));
-                boolean noSpaceAfter = pos < content.length() - 1 && !Character.isWhitespace(content.charAt(pos + 1));
-
-                if (noSpaceBefore || noSpaceAfter) {
-                    int lineNumber = calculateLineNumber(content, pos);
-                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.OPERATOR_SPACING_KEY,
-                        "Operator should have space on both sides for readability.");
-                }
-            }
-        } catch (Exception e) {
-            LOG.warn("Skipping operator spacing detection: {}", inputFile.filename());
-        }
-    }
-
-    /**
-     * Detect commas without space after like "f[a,b]" instead of "f[a, b]".
-     */
-    public void detectCommaSpacing(SensorContext context, InputFile inputFile, String content) {
-        try {
-            Matcher matcher = COMMA_NO_SPACE_PATTERN.matcher(content);
-            while (matcher.find()) {
-                int pos = matcher.start();
-
-                // Skip if in string
-                if (isInsideStringLiteral(content, pos)) {
-                    continue;
-                }
-
-                int lineNumber = calculateLineNumber(content, pos);
-                reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.COMMA_SPACING_KEY,
-                    "Comma should be followed by a space. Use 'f[a, b]' instead of 'f[a,b]'.");
-            }
-        } catch (Exception e) {
-            LOG.warn("Skipping comma spacing detection: {}", inputFile.filename());
-        }
-    }
+    // REMOVED: detectOperatorSpacing() and detectCommaSpacing() methods
+    // These two rules generated 1.6M+ issues (50% of all issues) and caused significant
+    // performance overhead. The rules have been permanently removed from the codebase.
 
     /**
      * Detect space before opening bracket like "f [x]" instead of "f[x]".

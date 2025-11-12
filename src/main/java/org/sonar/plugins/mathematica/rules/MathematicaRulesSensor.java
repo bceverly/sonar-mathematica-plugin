@@ -99,6 +99,8 @@ public class MathematicaRulesSensor implements Sensor {
     private volatile boolean shutdownSaver = false;
     private final java.util.concurrent.atomic.AtomicLong queuedIssues = new java.util.concurrent.atomic.AtomicLong(0);
     private final java.util.concurrent.atomic.AtomicLong savedIssues = new java.util.concurrent.atomic.AtomicLong(0);
+    private final java.util.concurrent.ConcurrentHashMap<String, java.util.concurrent.atomic.AtomicLong> ruleIssueCounts =
+        new java.util.concurrent.ConcurrentHashMap<>();
 
     // Thread-local detector instances for parallel processing
     private final ThreadLocal<CodeSmellDetector> codeSmellDetector = ThreadLocal.withInitial(() -> {
@@ -179,6 +181,7 @@ public class MathematicaRulesSensor implements Sensor {
         try {
             issueQueue.put(new IssueData(inputFile, line, ruleKey, message));
             queuedIssues.incrementAndGet();
+            ruleIssueCounts.computeIfAbsent(ruleKey, k -> new java.util.concurrent.atomic.AtomicLong()).incrementAndGet();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             LOG.error("Interrupted while queueing issue", e);
@@ -194,6 +197,7 @@ public class MathematicaRulesSensor implements Sensor {
         try {
             issueQueue.put(new IssueData(inputFile, line, ruleKey, message, quickFixData));
             queuedIssues.incrementAndGet();
+            ruleIssueCounts.computeIfAbsent(ruleKey, k -> new java.util.concurrent.atomic.AtomicLong()).incrementAndGet();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             LOG.error("Interrupted while queueing issue with fix", e);
@@ -339,6 +343,56 @@ public class MathematicaRulesSensor implements Sensor {
         }
     }
 
+    /**
+     * Logs statistics showing which rules generated the most issues (Pareto analysis).
+     */
+    private void logRuleStatistics() {
+        if (ruleIssueCounts.isEmpty()) {
+            LOG.info("No issues detected");
+            return;
+        }
+
+        // Convert to list and sort by count descending
+        java.util.List<java.util.Map.Entry<String, java.util.concurrent.atomic.AtomicLong>> sortedRules =
+            new java.util.ArrayList<>(ruleIssueCounts.entrySet());
+        sortedRules.sort((e1, e2) -> Long.compare(e2.getValue().get(), e1.getValue().get()));
+
+        // Calculate total
+        long total = sortedRules.stream().mapToLong(e -> e.getValue().get()).sum();
+
+        LOG.info("====================================================================================================");
+        LOG.info("RULE STATISTICS - Top 20 Rules by Issue Count (Total: {} issues)", total);
+        LOG.info("====================================================================================================");
+        LOG.info(String.format("%-50s %10s %8s %12s", "Rule Key", "Count", "Percent", "Cumulative"));
+        LOG.info("----------------------------------------------------------------------------------------------------");
+
+        long cumulative = 0;
+        int rank = 0;
+        for (java.util.Map.Entry<String, java.util.concurrent.atomic.AtomicLong> entry : sortedRules) {
+            if (rank >= 20) {
+                break;
+            }
+            long count = entry.getValue().get();
+            double percent = (count * 100.0) / total;
+            cumulative += count;
+            double cumulativePercent = (cumulative * 100.0) / total;
+
+            LOG.info(String.format("%-50s %,10d %7.1f%% %11.1f%%",
+                entry.getKey(), count, percent, cumulativePercent));
+            rank++;
+        }
+
+        LOG.info("====================================================================================================");
+
+        // Show Pareto summary
+        if (sortedRules.size() >= 5) {
+            long top5Count = sortedRules.subList(0, Math.min(5, sortedRules.size()))
+                .stream().mapToLong(e -> e.getValue().get()).sum();
+            double top5Percent = (top5Count * 100.0) / total;
+            LOG.info("Top 5 rules account for {}/{} issues ({} of total)",
+                top5Count, total, String.format("%.1f%%", top5Percent));
+        }
+    }
 
     /**
      * Clean up all ThreadLocal variables to prevent memory leaks in thread pool.
@@ -392,7 +446,7 @@ public class MathematicaRulesSensor implements Sensor {
 
         fileList.stream().forEach(inputFile -> {
             try {
-                if (inputFile.lines() < 3 || inputFile.lines() > 35000) {
+                if (inputFile.lines() < 3 || inputFile.lines() > 5000) {
                     return;
                 }
                 String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
@@ -455,6 +509,9 @@ public class MathematicaRulesSensor implements Sensor {
         ArchitectureAndDependencyDetector.clearCaches();
         SymbolTableManager.clear();
 
+        // Log rule statistics before stopping saver thread
+        logRuleStatistics();
+
         // Stop issue saver thread and wait for queue to drain
         stopIssueSaverThread();
 
@@ -472,41 +529,18 @@ public class MathematicaRulesSensor implements Sensor {
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         long fileStartTime = System.currentTimeMillis();
 
+        // Log file start with path and line count for debugging performance issues
+        LOG.info("START: {} ({} lines)", inputFile.toString(), inputFile.lines());
+
         try {
             // Skip very small files quickly (likely empty or trivial)
             if (inputFile.lines() < 3) {
+                LOG.info("SKIP: {} (too small - {} lines)", inputFile.toString(), inputFile.lines());
                 return;
             }
 
             // Always check file length first
             detectLongFile(context, inputFile);
-
-            // PERFORMANCE: Skip extremely large files to prevent hangs
-            // Based on analysis: files >25,000 lines can cause pathological SymbolTable performance
-            final int maxLines = 25000;
-            int fileLines = inputFile.lines();
-            if (fileLines > maxLines) {
-                if (LOG.isWarnEnabled()) {
-                    LOG.warn("SKIP: File {} has {} lines (exceeds limit of {}), skipping analysis to prevent timeout",
-                        inputFile.filename(), fileLines, maxLines);
-                }
-
-                // Report INFO issue to make this visible in SonarQube UI
-                NewIssue issue = context.newIssue()
-                    .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY,
-                                       MathematicaRulesDefinition.FILE_EXCEEDS_ANALYSIS_LIMIT_KEY));
-
-                NewIssueLocation location = issue.newLocation()
-                    .on(inputFile)
-                    .at(inputFile.selectLine(1))
-                    .message(String.format("File exceeds analysis limit (%d lines > %d limit). Analysis skipped to prevent timeout.",
-                                         inputFile.lines(), maxLines));
-
-                issue.at(location);
-                issue.save();
-
-                return;
-            }
 
             String content = new String(Files.readAllBytes(Paths.get(inputFile.uri())), StandardCharsets.UTF_8);
 
@@ -732,8 +766,7 @@ public class MathematicaRulesSensor implements Sensor {
         styleAndConventionsDetector.get().detectTrailingWhitespace(context, inputFile, content);
         styleAndConventionsDetector.get().detectMultipleBlankLines(context, inputFile, content);
         styleAndConventionsDetector.get().detectMissingBlankLineAfterFunction(context, inputFile, content);
-        styleAndConventionsDetector.get().detectOperatorSpacing(context, inputFile, content);
-        styleAndConventionsDetector.get().detectCommaSpacing(context, inputFile, content);
+        // REMOVED: detectOperatorSpacing and detectCommaSpacing - rules permanently removed to reduce 1.6M+ issues
         styleAndConventionsDetector.get().detectBracketSpacing(context, inputFile, content);
         styleAndConventionsDetector.get().detectSemicolonStyle(context, inputFile, content);
         styleAndConventionsDetector.get().detectFileEndsWithoutNewline(context, inputFile, content);
@@ -1076,6 +1109,9 @@ public class MathematicaRulesSensor implements Sensor {
 
             // === FINAL TIMING SUMMARY ===
             long totalFileTime = System.currentTimeMillis() - fileStartTime;
+
+            // Log completion of every file for debugging performance issues
+            LOG.info("DONE: {} ({}ms)", inputFile.toString(), totalFileTime);
 
             // Only log very slow files (>2 seconds) with detailed breakdown (debug mode only)
             if (totalFileTime > 2000 && LOG.isDebugEnabled()) {
