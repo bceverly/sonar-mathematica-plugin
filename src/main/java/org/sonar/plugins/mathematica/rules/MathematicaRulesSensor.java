@@ -165,6 +165,11 @@ public class MathematicaRulesSensor implements Sensor {
         d.setSensor(this);
         return d;
     });
+    private final ThreadLocal<CodingStandardDetector> codingStandardDetector = ThreadLocal.withInitial(() -> {
+        CodingStandardDetector d = new CodingStandardDetector();
+        d.setSensor(this);
+        return d;
+    });
 
     @Override
     public void describe(SensorDescriptor descriptor) {
@@ -349,48 +354,6 @@ public class MathematicaRulesSensor implements Sensor {
     private void logRuleStatistics() {
         if (ruleIssueCounts.isEmpty()) {
             LOG.info("No issues detected");
-            return;
-        }
-
-        // Convert to list and sort by count descending
-        java.util.List<java.util.Map.Entry<String, java.util.concurrent.atomic.AtomicLong>> sortedRules =
-            new java.util.ArrayList<>(ruleIssueCounts.entrySet());
-        sortedRules.sort((e1, e2) -> Long.compare(e2.getValue().get(), e1.getValue().get()));
-
-        // Calculate total
-        long total = sortedRules.stream().mapToLong(e -> e.getValue().get()).sum();
-
-        LOG.info("====================================================================================================");
-        LOG.info("RULE STATISTICS - Top 20 Rules by Issue Count (Total: {} issues)", total);
-        LOG.info("====================================================================================================");
-        LOG.info(String.format("%-50s %10s %8s %12s", "Rule Key", "Count", "Percent", "Cumulative"));
-        LOG.info("----------------------------------------------------------------------------------------------------");
-
-        long cumulative = 0;
-        int rank = 0;
-        for (java.util.Map.Entry<String, java.util.concurrent.atomic.AtomicLong> entry : sortedRules) {
-            if (rank >= 20) {
-                break;
-            }
-            long count = entry.getValue().get();
-            double percent = (count * 100.0) / total;
-            cumulative += count;
-            double cumulativePercent = (cumulative * 100.0) / total;
-
-            LOG.info(String.format("%-50s %,10d %7.1f%% %11.1f%%",
-                entry.getKey(), count, percent, cumulativePercent));
-            rank++;
-        }
-
-        LOG.info("====================================================================================================");
-
-        // Show Pareto summary
-        if (sortedRules.size() >= 5) {
-            long top5Count = sortedRules.subList(0, Math.min(5, sortedRules.size()))
-                .stream().mapToLong(e -> e.getValue().get()).sum();
-            double top5Percent = (top5Count * 100.0) / total;
-            LOG.info("Top 5 rules account for {}/{} issues ({} of total)",
-                top5Count, total, String.format("%.1f%%", top5Percent));
         }
     }
 
@@ -412,6 +375,7 @@ public class MathematicaRulesSensor implements Sensor {
         testingQualityDetector.remove();
         frameworkDetector.remove();
         styleAndConventionsDetector.remove();
+        codingStandardDetector.remove();
     }
 
     @Override
@@ -529,13 +493,9 @@ public class MathematicaRulesSensor implements Sensor {
     private void analyzeFile(SensorContext context, InputFile inputFile) {
         long fileStartTime = System.currentTimeMillis();
 
-        // Log file start with path and line count for debugging performance issues
-        LOG.info("START: {} ({} lines)", inputFile.toString(), inputFile.lines());
-
         try {
             // Skip very small files quickly (likely empty or trivial)
             if (inputFile.lines() < 3) {
-                LOG.info("SKIP: {} (too small - {} lines)", inputFile.toString(), inputFile.lines());
                 return;
             }
 
@@ -573,6 +533,10 @@ public class MathematicaRulesSensor implements Sensor {
 
             // ===== CODE SMELL 2 - ADDITIONAL 70 CODE SMELLS FOR TIER 1 PARITY =====
             runStyleAndConventionsDetectors(context, inputFile, content);
+
+            // ===== CODING STANDARD RULES - 32 RULES FROM CODING_STANDARDS.md =====
+            // Note: Many rules work on raw content; comment filtering happens within patterns
+            codingStandardDetector.get().detect(context, inputFile, content, content);
 
             // ===== CUSTOM RULES - USER-DEFINED RULES FROM TEMPLATES =====
             runCustomRules(context, inputFile, content);
@@ -1109,9 +1073,6 @@ public class MathematicaRulesSensor implements Sensor {
 
             // === FINAL TIMING SUMMARY ===
             long totalFileTime = System.currentTimeMillis() - fileStartTime;
-
-            // Log completion of every file for debugging performance issues
-            LOG.info("DONE: {} ({}ms)", inputFile.toString(), totalFileTime);
 
             // Only log very slow files (>2 seconds) with detailed breakdown (debug mode only)
             if (totalFileTime > 2000 && LOG.isDebugEnabled()) {

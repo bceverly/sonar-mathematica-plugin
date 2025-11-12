@@ -16,19 +16,19 @@ Complete reference for all static analysis rules in the SonarMathematica plugin.
 
 ## Overview
 
-The SonarMathematica plugin (v1.0.0) provides comprehensive static analysis
-for Wolfram Language / Mathematica code. This catalog documents all **463** rules
+The SonarMathematica plugin (v1.0.0+) provides comprehensive static analysis
+for Wolfram Language / Mathematica code. This catalog documents all **559** rules
 implemented by the plugin, organized by issue type and severity.
 
 ## Rule Statistics
 
 | Category | Count |
 |----------|-------|
-| **Total Rules** | **463** |
-| Security Vulnerabilities | 27 |
-| Security Hotspots | 29 |
-| Bugs | 162 |
-| Code Smells | 245 |
+| **Total Rules** | **559** |
+| Security Vulnerabilities | 30 |
+| Security Hotspots | 25 |
+| Bugs | 200 |
+| Code Smells | 304 |
 
 ### Severity Distribution
 
@@ -340,7 +340,7 @@ Rules are organized into Quality Profiles:
 
 ## Code Smells
 
-**247 rules** that identify maintainability issues and technical debt.
+**304 rules** that identify maintainability issues, coding standard violations, and technical debt.
 
 ### HIGH Severity (1 rules)
 
@@ -603,6 +603,56 @@ Rules are organized into Quality Profiles:
 | `VARIABLE_SHADOWING_KEY` | Variable shadows outer scope variable | confusing, naming |
 | `TEMP_VARIABLE_NOT_TEMP_KEY` | Variables named 'temp' or 'tmp' used multiple times | naming, readability |
 | `VERIFICATION_TEST_NO_DESCRIPTION_KEY` | VerificationTest should have descriptive TestID | documentation, tests, verification-test |
+
+### Coding Standards (21 rules)
+
+Based on best practices from the Emerald Cloud Lab (ECL) Style Guide, adapted for general Mathematica code. *(Note: 21 of 32 proposed rules have been implemented)*
+
+#### Syntax and Whitespace (10 rules)
+
+| Rule Key | Name | Severity | Tags |
+|----------|------|----------|------|
+| `BRACKET_SPACING_BEFORE_KEY` | Opening brackets should not be preceded by whitespace | LOW | style, whitespace |
+| `VARIABLE_ASSIGNMENT_IN_MODULE_DEF_KEY` | Variables should not be assigned in Module definition | MEDIUM | best-practice, module |
+| `EXPLICIT_AND_OR_FOR_COMPLEX_BOOLEAN_KEY` | Complex boolean expressions should use explicit And[...] or Or[...] | MEDIUM | readability, boolean |
+| `MAP_NOT_SHORTHAND_MULTILINE_KEY` | Multi-line statements should use Map[...] instead of /@ | LOW | readability, style |
+| `ERROR_MESSAGE_WITH_SET_KEY` | Error messages should be defined with = not := | MEDIUM | best-practice, error-handling |
+| `CONDITIONAL_FUNCTION_DEFINITION_KEY` | Functions should not use /; in definition | MEDIUM | best-practice, conditional |
+| `DEREFERENCING_SYNTAX_KEY` | Should not use dereferencing syntax | MEDIUM | best-practice, readability |
+| `EMPTY_LINE_BETWEEN_CODE_KEY` | Code sections should have empty lines between them | LOW | readability, style |
+| `NON_LINEAR_EVALUATION_KEY` | Non-linear evaluation structures should be used sparingly | LOW | readability, complexity |
+| `LIST_MODIFICATION_IN_PLACE_KEY` | Lists should not be modified in place | MEDIUM | best-practice, immutability |
+
+#### Local Variables (2 rules)
+
+| Rule Key | Name | Severity | Tags |
+|----------|------|----------|------|
+| `VARIABLE_FULL_WORDS_KEY` | Variable names should use full words, not abbreviations | MEDIUM | naming, readability |
+| `VARIABLE_NAME_THREE_WORDS_KEY` | Variable names should not exceed three words | LOW | naming, readability |
+
+#### Function Structure (5 rules)
+
+| Rule Key | Name | Severity | Tags |
+|----------|------|----------|------|
+| `CUSTOM_ASSOCIATIONS_AS_INPUTS_KEY` | Functions should not use custom associations/lists of rules as parameters | MEDIUM | best-practice, interface |
+| `GLOBAL_VARIABLE_DOLLAR_PREFIX_KEY` | Global variables should start with $ prefix | MEDIUM | naming, globals |
+| `FUNCTION_NAME_THREE_WORDS_KEY` | Function names should not exceed three words | LOW | naming, readability |
+| `FUNCTION_NAME_LITTER_WORDS_KEY` | Function names should avoid litter words (Do, Make, Get, And) | LOW | naming, clarity |
+| `PURE_FUNCTION_SHORT_OPERATIONS_KEY` | Pure functions should be used for short (<1 line) operations only | MEDIUM | best-practice, readability |
+
+#### Code Organization (1 rule)
+
+| Rule Key | Name | Severity | Tags |
+|----------|------|----------|------|
+| `TIME_CONSTRAINED_USAGE_KEY` | TimeConstrained can kill WSTP programs, avoid unless necessary | CRITICAL | reliability, wstp |
+
+#### Patterns (3 rules)
+
+| Rule Key | Name | Severity | Tags |
+|----------|------|----------|------|
+| `PATTERN_NAME_ENDS_WITH_P_KEY` | Pattern definitions should end with uppercase P | MEDIUM | naming, patterns |
+| `PATTERN_TEST_NAME_ENDS_WITH_Q_KEY` | Pattern test functions should end with uppercase Q | MEDIUM | naming, patterns |
+| `ENUMERATED_PATTERN_SYMBOLS_KEY` | Enumerated patterns should use symbols, not strings | MEDIUM | patterns, best-practice |
 
 ---
 

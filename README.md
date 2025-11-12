@@ -6,7 +6,7 @@
 [![Bugs](https://sonarcloud.io/api/project_badges/measure?project=bceverly_wolfralyze&metric=bugs)](https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze)
 [![Vulnerabilities](https://sonarcloud.io/api/project_badges/measure?project=bceverly_wolfralyze&metric=vulnerabilities)](https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze)
 
-A **Tier 1** SonarQube plugin providing comprehensive code quality analysis for Wolfram Mathematica with **529+ rules**, comparable to Java and Python support.
+A **Tier 1** SonarQube plugin providing comprehensive code quality analysis for Wolfram Mathematica with **559 rules**, comparable to Java and Python support.
 
 ---
 
@@ -81,15 +81,14 @@ See the **[Wolfralyze Test Project](https://github.com/bceverly/wolfralyze-test-
 
 ## ✨ Features
 
-### Comprehensive Rule Coverage (529 Rules)
+### Comprehensive Rule Coverage (559 Rules)
 
 | Category | Rules | Description |
 |----------|-------|-------------|
-| **Security Vulnerabilities** | 27 | SQL injection, XSS, command injection, hardcoded credentials |
-| **Security Hotspots** | 29 | Weak cryptography, authentication issues, certificate validation |
-| **Bugs** | 162 | Null safety, resource leaks, type mismatches, infinite loops |
-| **Code Smells** | 247 | Performance issues, complexity, readability, best practices |
-| **Performance** | 35 | AppendTo in loops (1000× speedup!), string concatenation, patterns |
+| **Security Vulnerabilities** | 30 | SQL injection, XSS, command injection, hardcoded credentials |
+| **Security Hotspots** | 25 | Weak cryptography, authentication issues, certificate validation |
+| **Bugs** | 200 | Null safety, resource leaks, type mismatches, infinite loops |
+| **Code Smells** | 304 | Performance, complexity, readability, coding standards, best practices |
 
 ### Advanced Analysis
 
@@ -118,7 +117,7 @@ Covers **9 of 10** OWASP Top 10 2021 categories including injection, broken auth
 - **[Test Project](https://github.com/bceverly/wolfralyze-test-project)** - Complete working example with tests and coverage
 
 ### Understanding Results
-- **[Rule Catalog](https://github.com/bceverly/wolfralyze/wiki/Rule-Catalog)** - All 529 rules indexed
+- **[Rule Catalog](https://github.com/bceverly/wolfralyze/wiki/Rule-Catalog)** - All 559 rules indexed
 - **[Security Vulnerabilities](https://github.com/bceverly/wolfralyze/wiki/Security-Vulnerabilities)** - Critical security issues
 - **[Bug Detection](https://github.com/bceverly/wolfralyze/wiki/Bug-Detection)** - Reliability problems
 - **[Code Smells](https://github.com/bceverly/wolfralyze/wiki/Code-Smells)** - Maintainability issues
@@ -152,8 +151,8 @@ Covers **9 of 10** OWASP Top 10 2021 categories including injection, broken auth
 - **Memory leak detection** - Prevent growing definition chains
 
 ### Quality
-- **162 bug rules** catch runtime errors before they happen
-- **247 code smell rules** improve maintainability
+- **200 bug rules** catch runtime errors before they happen
+- **304 code smell rules** improve maintainability and coding standards
 - **Complexity metrics** highlight code that needs refactoring
 - **Duplicate detection** finds copy-paste code
 
@@ -171,7 +170,7 @@ This plugin provides **best-in-class** Mathematica support, comparable to major 
 
 | Feature | Java | Python | Mathematica |
 |---------|------|--------|-------------|
-| Rules | 733 | 410 | **529** ✅ |
+| Rules | 733 | 410 | **559** ✅ |
 | AST Parser | ✅ | ✅ | ✅ |
 | Symbol Table | ✅ | ✅ | ✅ |
 | Type System | ✅ | ✅ | ✅ |
@@ -255,7 +254,7 @@ AGPL-3.0 License - See [LICENSE](LICENSE) for details.
 
 ## 📈 Statistics
 
-- **Total Rules**: 529
+- **Total Rules**: 559
 - **Lines of Code**: 50,000+
 - **Test Coverage**: Comprehensive detector tests
 - **Performance**: Optimized for 12,000+ file codebases

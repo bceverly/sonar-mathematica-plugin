@@ -20,6 +20,8 @@ public final class StyleAndConventionsRulesDefinition {
     private static final String TAG_BEST_PRACTICE = "best-practice";
     private static final String TAG_FORMATTING = "formatting";
     private static final String TAG_READABILITY = "readability";
+    private static final String TAG_NAMING = "naming";
+    private static final String TAG_PATTERNS = "patterns";
 
     private static final String CONFUSING = "confusing";
 
@@ -28,7 +30,7 @@ public final class StyleAndConventionsRulesDefinition {
     }
 
     /**
-     * Register all 70 additional code smell rules.
+     * Register all 70 additional code smell rules plus 32 ECL-style rules.
      */
     public static void defineRules(NewRepository repository) {
         defineStyleAndFormattingRules(repository);      // 15 rules
@@ -36,6 +38,7 @@ public final class StyleAndConventionsRulesDefinition {
         defineComplexityRules(repository);              // 10 rules
         defineMaintainabilityRules(repository);         // 15 rules
         defineBestPracticesRules(repository);           // 15 rules
+        defineECLStyleRules(repository);                // 32 new rules from CODING_STANDARDS.md
     }
 
     // ===== STYLE AND FORMATTING (15 rules) =====
@@ -525,6 +528,314 @@ public final class StyleAndConventionsRulesDefinition {
             .setHtmlDescription("<p>Using symbols or integers as Association keys is less clear than strings.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_BEST_PRACTICE, TAG_CONVENTION)
+            .setStatus(RuleStatus.READY);
+    }
+
+    // ===== ECL-STYLE RULES FROM CODING_STANDARDS.md (32 rules) =====
+
+    private static void defineECLStyleRules(NewRepository repository) {
+        defineECLSyntaxRules(repository);        // 18 rules
+        defineECLVariableRules(repository);      // 2 rules
+        defineECLFunctionRules(repository);      // 6 rules
+        defineECLOrganizationRules(repository);  // 2 CRITICAL rules
+        defineECLPatternRules(repository);       // 4 rules
+    }
+
+    private static void defineECLSyntaxRules(NewRepository repository) {
+        // Syntax and Whitespace (18 rules)
+
+        repository.createRule(MathematicaRuleKeys.BRACKET_SPACING_BEFORE_KEY)
+            .setName("Opening brackets should not be preceded by whitespace")
+            .setHtmlDescription("<p>Opening brackets should not have whitespace before them.</p>"
+                + "<p><strong>Non-compliant:</strong> <code>function [x]</code></p>"
+                + "<p><strong>Compliant:</strong> <code>function[x]</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_STYLE, TAG_FORMATTING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.EGYPTIAN_BRACKETS_WITH_TABS_KEY)
+            .setName("Use Egyptian-style bracketing with tabs (not spaces)")
+            .setHtmlDescription(
+                "<p>Consistent bracketing style improves readability. "
+                + "Use Egyptian style (opening brace on same line) with tab indentation.</p>"
+                + "<p><strong>Compliant:</strong></p>"
+                + "<pre>Module[{x},\n\tx = 1;\n\tx + 2\n]</pre>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_STYLE, TAG_FORMATTING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.VARIABLE_ASSIGNMENT_IN_MODULE_DEF_KEY)
+            .setName("Variables must not be assigned in Module definition")
+            .setHtmlDescription("<p>Variables should be declared in Module but assigned in the body.</p>"
+                + "<p><strong>Non-compliant:</strong> <code>Module[{x = 1}, ...]</code></p>"
+                + "<p><strong>Compliant:</strong> <code>Module[{x}, x = 1; ...]</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_BEST_PRACTICE)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.EXPLICIT_AND_OR_FOR_COMPLEX_BOOLEAN_KEY)
+            .setName("Use explicit And[...] and Or[...] for complex boolean logic")
+            .setHtmlDescription(
+                "<p>For complex boolean expressions spanning multiple lines, "
+                + "use explicit And[...] and Or[...] instead of && and ||.</p>"
+                + "<p>This improves readability for complex conditions.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_READABILITY, TAG_CONVENTION)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.MAP_NOT_SHORTHAND_MULTILINE_KEY)
+            .setName("Use Map[...] not /@ for multi-line statements")
+            .setHtmlDescription("<p>For multi-line Map operations, use the explicit Map[...] form instead of /@.</p>"
+                + "<p><strong>Non-compliant:</strong> Multi-line /@ expressions</p>"
+                + "<p><strong>Compliant:</strong> <code>Map[function, list]</code> for multi-line</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_READABILITY, TAG_CONVENTION)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.ERROR_MESSAGE_WITH_SET_KEY)
+            .setName("Error messages must be defined with = not :=")
+            .setHtmlDescription("<p>Message definitions should use immediate assignment (=) not delayed assignment (:=).</p>"
+                + "<p><strong>Compliant:</strong> <code>func::error = \"Error message\";</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_BEST_PRACTICE)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.MODULE_FOR_LOCAL_VARIABLES_KEY)
+            .setName("Must use Module to protect local variable space")
+            .setHtmlDescription("<p>Use Module, Block, or With to scope local variables and avoid polluting the global namespace.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_BEST_PRACTICE, "scoping")
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.CONDITIONAL_FUNCTION_DEFINITION_KEY)
+            .setName("Never use conditional function definitions (/; syntax)")
+            .setHtmlDescription("<p>Avoid using /; (Condition) in function definitions as it can be unclear.</p>"
+                + "<p>Use If or Which inside the function body instead.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_READABILITY)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.DEREFERENCING_SYNTAX_KEY)
+            .setName("Must not use dereferencing syntax in code")
+            .setHtmlDescription("<p>Avoid dereferencing syntax like <code>$PersonID[Name]</code>.</p>"
+                + "<p>Use explicit Download or Lookup instead.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.EMPTY_LINE_BETWEEN_CODE_KEY)
+            .setName("Should have at least one empty line between code sections")
+            .setHtmlDescription("<p>Separate logical sections of code with empty lines for better readability.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_STYLE, TAG_READABILITY)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.EGYPTIAN_BRACKETS_IF_KEY)
+            .setName("If statements should use Egyptian brackets")
+            .setHtmlDescription("<p>For consistency, If statements should use Egyptian-style bracketing (opening bracket on same line).</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_STYLE, TAG_FORMATTING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.SWITCH_WHICH_SEPARATE_LINES_KEY)
+            .setName("Switch/Which conditions and returns should be on separate lines")
+            .setHtmlDescription("<p>For non-trivial logic, put each Switch/Which condition and result on separate lines.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_READABILITY, TAG_FORMATTING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.EGYPTIAN_BRACKETS_MAP_KEY)
+            .setName("Should use Egyptian-style bracketing for explicit Map[...]")
+            .setHtmlDescription("<p>When using explicit Map[...], use Egyptian-style bracketing for consistency.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_STYLE, TAG_FORMATTING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.VARIABLE_NAME_LENGTH_KEY)
+            .setName("Local variable names should be 3 words or less")
+            .setHtmlDescription("<p>Keep variable names concise - 3 words or fewer in camelCase.</p>"
+                + "<p><strong>Example:</strong> <code>userProfile</code> instead of <code>currentActiveUserProfileData</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_CONVENTION, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.LIST_MODIFICATION_IN_PLACE_KEY)
+            .setName("Code should not modify lists in place (use immutable patterns)")
+            .setHtmlDescription("<p>Prefer immutable functional patterns over in-place list modification.</p>"
+                + "<p>Use Append, Prepend, Insert instead of AppendTo, PrependTo.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_BEST_PRACTICE, "functional")
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.SHORTHAND_SYNTAX_READABLE_KEY)
+            .setName("Should use shorthand syntax when readable")
+            .setHtmlDescription("<p>Use shorthand syntax (/@ for Map, <| |> for Association) when it improves readability.</p>"
+                + "<p>For simple, single-line operations, shorthand is preferred.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_CONVENTION, TAG_READABILITY)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.NON_LINEAR_EVALUATION_KEY)
+            .setName("Avoid non-linear evaluation structures without justification")
+            .setHtmlDescription(
+                "<p>Composition, Folding, and other non-linear evaluation structures "
+                + "can be hard to understand.</p>"
+                + "<p>Use them only when they significantly improve code clarity.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_READABILITY, TAG_COMPLEXITY)
+            .setStatus(RuleStatus.READY);
+    }
+
+    private static void defineECLVariableRules(NewRepository repository) {
+        // Local Variables (2 rules)
+
+        repository.createRule(MathematicaRuleKeys.VARIABLE_FULL_WORDS_KEY)
+            .setName("Local variables must use full words (no abbreviations)")
+            .setHtmlDescription(
+                "<p>Variable names should use complete words, not abbreviations "
+                + "(except standard ones like 'ops' and 'qual').</p>"
+                + "<p><strong>Non-compliant:</strong> <code>usrNm</code>, <code>cnt</code></p>"
+                + "<p><strong>Compliant:</strong> <code>userName</code>, <code>count</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_CONVENTION, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.VARIABLE_NAME_THREE_WORDS_KEY)
+            .setName("Variable names should be three words or less")
+            .setHtmlDescription(
+                "<p>Keep variable names concise and focused - three words or fewer.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_CONVENTION, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+    }
+
+    private static void defineECLFunctionRules(NewRepository repository) {
+        // Function Structure (6 rules)
+
+        repository.createRule(MathematicaRuleKeys.PRIVATE_FUNCTION_PACKAGE_SCOPE_KEY)
+            .setName("Private functions must only be used within their defining package")
+            .setHtmlDescription(
+                "<p>Functions with lowercase names (private) should only be called "
+                + "within the same package.</p>"
+                + "<p>Cross-package usage indicates the function should be public (uppercase) "
+                + "or needs refactoring.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, "encapsulation")
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.CUSTOM_ASSOCIATIONS_AS_INPUTS_KEY)
+            .setName("Functions must not use custom associations/lists of rules as inputs/outputs")
+            .setHtmlDescription(
+                "<p>Avoid using custom Association structures or lists of rules "
+                + "as function parameters.</p>"
+                + "<p>Use explicit parameters or proper data structures instead.</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_BEST_PRACTICE, "api-design")
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.GLOBAL_VARIABLE_DOLLAR_PREFIX_KEY)
+            .setName("Global variables must start with $ symbol and be unchanging")
+            .setHtmlDescription("<p>Global variables should use $ prefix and be constants.</p>"
+                + "<p><strong>Example:</strong> <code>$MaxIterations = 1000</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_NAMING, "global")
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.FUNCTION_NAME_THREE_WORDS_KEY)
+            .setName("Function names should be 3 words or less")
+            .setHtmlDescription(
+                "<p>Keep function names concise - three words or fewer in PascalCase.</p>"
+                + "<p><strong>Example:</strong> <code>GetUserData</code> instead of "
+                + "<code>GetCurrentActiveUserProfileData</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_CONVENTION, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.FUNCTION_NAME_LITTER_WORDS_KEY)
+            .setName("Function names should avoid litter words")
+            .setHtmlDescription(
+                "<p>Avoid meaningless words like 'Do', 'Make', 'Get', 'And' in function names.</p>"
+                + "<p><strong>Example:</strong> Use <code>CalculateTotal</code> instead of "
+                + "<code>DoTotalCalculation</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_CONVENTION, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.PURE_FUNCTION_SHORT_OPERATIONS_KEY)
+            .setName("Pure functions should be used for short (<1 line) operations")
+            .setHtmlDescription(
+                "<p>Use pure functions (#1, #2, etc.) only for simple, single-line operations.</p>"
+                + "<p>For longer operations, use named functions with Function[{x, y}, ...].</p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
+            .setTags(TAG_READABILITY, TAG_CONVENTION)
+            .setStatus(RuleStatus.READY);
+    }
+
+    private static void defineECLOrganizationRules(NewRepository repository) {
+        // Code Organization (2 CRITICAL rules)
+
+        repository.createRule(MathematicaRuleKeys.TIME_CONSTRAINED_USAGE_KEY)
+            .setName("Must not use TimeConstrained unless absolutely necessary")
+            .setHtmlDescription(
+                "<p><strong>CRITICAL:</strong> TimeConstrained can kill WSTP (WebServices) "
+                + "programs.</p>"
+                + "<p>Only use when absolutely necessary and with extreme caution in production "
+                + "code.</p>")
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
+            .setTags("critical", "reliability", "wstp")
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.PATTERN_LOADING_ORDER_KEY)
+            .setName("Pattern functions must be loaded ahead of function definitions")
+            .setHtmlDescription(
+                "<p><strong>CRITICAL:</strong> Pattern definitions must be loaded before "
+                + "functions that use them.</p>"
+                + "<p>Otherwise, the patterns won't be available at function definition time.</p>")
+            .addDefaultImpact(SoftwareQuality.RELIABILITY, Severity.HIGH)
+            .setTags("critical", TAG_PATTERNS, "initialization")
+            .setStatus(RuleStatus.READY);
+    }
+
+    private static void defineECLPatternRules(NewRepository repository) {
+        // Patterns (4 rules)
+
+        repository.createRule(MathematicaRuleKeys.PATTERN_NAME_ENDS_WITH_P_KEY)
+            .setName("Pattern definition names must end in uppercase P")
+            .setHtmlDescription("<p>Pattern definitions should end with uppercase 'P' by convention.</p>"
+                + "<p><strong>Example:</strong> <code>UserP = _String | _Integer</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_PATTERNS, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.PATTERN_TEST_NAME_ENDS_WITH_Q_KEY)
+            .setName("Pattern test function names must end in uppercase Q")
+            .setHtmlDescription(
+                "<p>Pattern test functions (predicates) should end with uppercase 'Q' "
+                + "by convention.</p>"
+                + "<p><strong>Example:</strong> <code>ValidUserQ[x_] := StringQ[x] "
+                + "&& StringLength[x] > 0</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_PATTERNS, TAG_NAMING)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.ENUMERATED_PATTERN_SYMBOLS_KEY)
+            .setName("Enumerated type patterns must use symbols, not strings")
+            .setHtmlDescription(
+                "<p>For enumerated types in patterns, use symbols instead of strings.</p>"
+                + "<p><strong>Example:</strong> <code>ColorP = Red | Green | Blue</code> not "
+                + "<code>\"Red\" | \"Green\" | \"Blue\"</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_PATTERNS)
+            .setStatus(RuleStatus.READY);
+
+        repository.createRule(MathematicaRuleKeys.PATTERN_GENERATING_FUNCTION_ENDS_WITH_P_KEY)
+            .setName("Pattern-generating functions must end in uppercase P")
+            .setHtmlDescription(
+                "<p>Functions that generate patterns should also end with 'P'.</p>"
+                + "<p><strong>Example:</strong> <code>RangeP[min_, max_] := "
+                + "_?((# >= min && # <= max)&)</code></p>")
+            .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.MEDIUM)
+            .setTags(TAG_CONVENTION, TAG_PATTERNS, TAG_NAMING)
             .setStatus(RuleStatus.READY);
     }
 }

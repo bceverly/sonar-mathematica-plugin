@@ -215,107 +215,153 @@ public final class SymbolTableBuilder {
      * OPTIMIZED: Single-pass algorithm with caching to avoid O(n²) behavior.
      */
     private static void trackVariables(SymbolTable table, String[] lines) {
-        // Pre-allocate symbol lookup cache (reused across lines)
         Map<String, Symbol> symbolCache = new HashMap<>(256);
         Set<Integer> assignmentPositions = new HashSet<>(32);
 
         for (int i = 0; i < lines.length; i++) {
-            String line = lines[i];
-            int lineNumber = i + 1;
+            processLineForVariables(table, lines[i], i + 1, symbolCache, assignmentPositions);
+        }
+    }
 
-            // Skip empty lines early (avoid scope lookup)
-            if (line.isEmpty() || line.length() < 3) {
-                continue;
-            }
+    /**
+     * Process a single line for variable tracking.
+     */
+    private static void processLineForVariables(SymbolTable table, String line, int lineNumber,
+                                                Map<String, Symbol> cache, Set<Integer> positions) {
+        if (shouldSkipLineForTracking(line)) {
+            return;
+        }
 
-            // PERFORMANCE: Skip pathologically long lines (typically JSON/data, not code)
-            // Lines >10K characters cause O(n²) regex behavior with thousands of matches
-            if (line.length() > 10000) {
-                continue;
-            }
+        String trimmedLine = line.trim();
+        Scope scope = resolveScope(table, lineNumber);
+        cache.clear();
+        positions.clear();
 
-            // Cache trimmed line (used multiple times)
-            String trimmedLine = line.trim();
+        trackAssignmentsOnLine(table, line, lineNumber, trimmedLine, scope, cache, positions);
+        trackReferencesOnLine(line, lineNumber, trimmedLine, scope, cache, positions);
+    }
 
-            // Skip comment-only lines
-            if (trimmedLine.startsWith("(*") || trimmedLine.startsWith("//")) {
-                continue;
-            }
+    /**
+     * Check if line should be skipped for variable tracking.
+     */
+    private static boolean shouldSkipLineForTracking(String line) {
+        if (line.isEmpty() || line.length() < 3 || line.length() > 10000) {
+            return true;
+        }
+        String trimmed = line.trim();
+        return trimmed.startsWith("(*") || trimmed.startsWith("//");
+    }
 
-            // Get scope once per line
-            Scope scope = table.getGlobalScope().getScopeAtLine(lineNumber);
-            if (scope == null) {
-                scope = table.getGlobalScope();
-            }
+    /**
+     * Resolve scope for a line, defaulting to global.
+     */
+    private static Scope resolveScope(SymbolTable table, int lineNumber) {
+        Scope scope = table.getGlobalScope().getScopeAtLine(lineNumber);
+        return scope != null ? scope : table.getGlobalScope();
+    }
 
-            // Clear per-line caches
-            symbolCache.clear();
-            assignmentPositions.clear();
+    /**
+     * Track assignments on a line.
+     */
+    private static void trackAssignmentsOnLine(SymbolTable table, String line, int lineNumber,
+                                               String trimmedLine, Scope scope,
+                                               Map<String, Symbol> cache, Set<Integer> positions) {
+        Matcher matcher = ASSIGNMENT_PATTERN.matcher(line);
+        while (matcher.find()) {
+            processAssignment(table, matcher, lineNumber, trimmedLine, scope, cache, positions);
+        }
+    }
 
-            // PASS 1: Track assignments and record their positions
-            Matcher assignmentMatcher = ASSIGNMENT_PATTERN.matcher(line);
-            while (assignmentMatcher.find()) {
-                String varName = assignmentMatcher.group(1);
-                if (!BUILTINS.contains(varName)) {
-                    // Cache symbol lookup
-                    Symbol symbol = symbolCache.get(varName);
-                    if (symbol == null) {
-                        symbol = scope.resolveSymbol(varName);
-                        if (symbol == null) {
-                            // Create implicit global variable
-                            symbol = new Symbol(varName, lineNumber, table.getGlobalScope(), false, false);
-                            table.getGlobalScope().addSymbol(symbol);
-                            table.addSymbol(symbol);
-                        }
-                        symbolCache.put(varName, symbol);
-                    }
+    /**
+     * Process a single assignment match.
+     */
+    private static void processAssignment(SymbolTable table, Matcher matcher, int lineNumber,
+                                          String trimmedLine, Scope scope,
+                                          Map<String, Symbol> cache, Set<Integer> positions) {
+        String varName = matcher.group(1);
+        if (BUILTINS.contains(varName)) {
+            return;
+        }
 
-                    symbol.addAssignment(new SymbolReference(
-                        lineNumber,
-                        assignmentMatcher.start(1),
-                        ReferenceType.WRITE,
-                        trimmedLine
-                    ));
+        Symbol symbol = getOrCreateSymbolForAssignment(table, varName, lineNumber, scope, cache);
+        symbol.addAssignment(new SymbolReference(lineNumber, matcher.start(1), ReferenceType.WRITE, trimmedLine));
+        positions.add(matcher.start(1));
+    }
 
-                    // Record assignment position to skip in reference tracking
-                    assignmentPositions.add(assignmentMatcher.start(1));
-                }
-            }
+    /**
+     * Get or create symbol for assignment.
+     */
+    private static Symbol getOrCreateSymbolForAssignment(SymbolTable table, String varName,
+                                                         int lineNumber, Scope scope,
+                                                         Map<String, Symbol> cache) {
+        Symbol symbol = cache.get(varName);
+        if (symbol != null) {
+            return symbol;
+        }
 
-            // PASS 2: Track references (reads), skipping assignment positions
-            Matcher refMatcher = VARIABLE_REFERENCE.matcher(line);
-            while (refMatcher.find()) {
-                int pos = refMatcher.start(1);
+        symbol = scope.resolveSymbol(varName);
+        if (symbol == null) {
+            symbol = new Symbol(varName, lineNumber, table.getGlobalScope(), false, false);
+            table.getGlobalScope().addSymbol(symbol);
+            table.addSymbol(symbol);
+        }
+        cache.put(varName, symbol);
+        return symbol;
+    }
 
-                // Skip if this position was an assignment target
-                if (assignmentPositions.contains(pos)) {
-                    continue;
-                }
+    /**
+     * Track references on a line.
+     */
+    private static void trackReferencesOnLine(String line, int lineNumber, String trimmedLine,
+                                              Scope scope, Map<String, Symbol> cache,
+                                              Set<Integer> positions) {
+        Matcher matcher = VARIABLE_REFERENCE.matcher(line);
+        while (matcher.find()) {
+            processReference(matcher, lineNumber, trimmedLine, scope, cache, positions);
+        }
+    }
 
-                String varName = refMatcher.group(1);
-                if (BUILTINS.contains(varName) || Character.isDigit(varName.charAt(0))) {
-                    continue;
-                }
+    /**
+     * Process a single reference match.
+     */
+    private static void processReference(Matcher matcher, int lineNumber, String trimmedLine,
+                                         Scope scope, Map<String, Symbol> cache,
+                                         Set<Integer> positions) {
+        int pos = matcher.start(1);
+        if (positions.contains(pos)) {
+            return;
+        }
 
-                // Use cached symbol lookup
-                Symbol symbol = symbolCache.get(varName);
-                if (symbol == null) {
-                    symbol = scope.resolveSymbol(varName);
-                    if (symbol != null) {
-                        symbolCache.put(varName, symbol);
-                    }
-                }
+        String varName = matcher.group(1);
+        if (shouldSkipReference(varName)) {
+            return;
+        }
 
-                if (symbol != null) {
-                    symbol.addReferenceIfNew(new SymbolReference(
-                        lineNumber,
-                        pos,
-                        ReferenceType.READ,
-                        trimmedLine
-                    ));
-                }
+        Symbol symbol = resolveSymbolForReference(varName, scope, cache);
+        if (symbol != null) {
+            symbol.addReferenceIfNew(new SymbolReference(lineNumber, pos, ReferenceType.READ, trimmedLine));
+        }
+    }
+
+    /**
+     * Check if reference should be skipped.
+     */
+    private static boolean shouldSkipReference(String varName) {
+        return BUILTINS.contains(varName) || Character.isDigit(varName.charAt(0));
+    }
+
+    /**
+     * Resolve symbol for reference using cache.
+     */
+    private static Symbol resolveSymbolForReference(String varName, Scope scope, Map<String, Symbol> cache) {
+        Symbol symbol = cache.get(varName);
+        if (symbol == null) {
+            symbol = scope.resolveSymbol(varName);
+            if (symbol != null) {
+                cache.put(varName, symbol);
             }
         }
+        return symbol;
     }
 
     /**
