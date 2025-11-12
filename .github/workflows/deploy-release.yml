@@ -50,18 +50,13 @@ jobs:
           # Get commit messages between tags
           COMMITS=$(git log ${PREV_TAG}..${LATEST_TAG} --pretty=format:"- %s" --no-merges)
 
-          # Create release notes using heredoc
-          cat > release_notes.md << 'RELEASE_NOTES_EOF'
-## Changes in version ${{ steps.version.outputs.version }}
-
-RELEASE_NOTES_EOF
-
+          # Create release notes
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "## Changes in version ${VERSION}" > release_notes.md
+          echo "" >> release_notes.md
           echo "$COMMITS" >> release_notes.md
-
-          cat >> release_notes.md << RELEASE_NOTES_EOF2
-
-**Full Changelog**: https://github.com/bceverly/wolfralyze/compare/${PREV_TAG}...${LATEST_TAG}
-RELEASE_NOTES_EOF2
+          echo "" >> release_notes.md
+          echo "**Full Changelog**: https://github.com/bceverly/wolfralyze/compare/${PREV_TAG}...${LATEST_TAG}" >> release_notes.md
 
           # Save to output
           echo "release_notes<<EOF" >> $GITHUB_OUTPUT
