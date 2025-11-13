@@ -7,7 +7,6 @@ import org.sonar.api.batch.sensor.SensorContext;
 
 /**
  * Detector for Coding Standard rules (32 rules).
- * Based on CODING_STANDARDS.md from ECL Style Guide.
  *
  * These rules cover:
  * - Syntax and Whitespace (18 rules)

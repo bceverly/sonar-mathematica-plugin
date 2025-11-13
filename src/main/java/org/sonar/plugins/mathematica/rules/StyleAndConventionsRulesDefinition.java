@@ -30,7 +30,7 @@ public final class StyleAndConventionsRulesDefinition {
     }
 
     /**
-     * Register all 70 additional code smell rules plus 32 ECL-style rules.
+     * Register all 70 additional code smell rules plus 32 coding standard rules.
      */
     public static void defineRules(NewRepository repository) {
         defineStyleAndFormattingRules(repository);      // 15 rules
@@ -38,7 +38,7 @@ public final class StyleAndConventionsRulesDefinition {
         defineComplexityRules(repository);              // 10 rules
         defineMaintainabilityRules(repository);         // 15 rules
         defineBestPracticesRules(repository);           // 15 rules
-        defineECLStyleRules(repository);                // 32 new rules from CODING_STANDARDS.md
+        defineCodingStandardRules(repository);          // 32 coding standard rules
     }
 
     // ===== STYLE AND FORMATTING (15 rules) =====
@@ -531,17 +531,17 @@ public final class StyleAndConventionsRulesDefinition {
             .setStatus(RuleStatus.READY);
     }
 
-    // ===== ECL-STYLE RULES FROM CODING_STANDARDS.md (32 rules) =====
+    // ===== CODING STANDARD RULES (32 rules) =====
 
-    private static void defineECLStyleRules(NewRepository repository) {
-        defineECLSyntaxRules(repository);        // 18 rules
-        defineECLVariableRules(repository);      // 2 rules
-        defineECLFunctionRules(repository);      // 6 rules
-        defineECLOrganizationRules(repository);  // 2 CRITICAL rules
-        defineECLPatternRules(repository);       // 4 rules
+    private static void defineCodingStandardRules(NewRepository repository) {
+        defineCodingStandardSyntaxRules(repository);        // 18 rules
+        defineCodingStandardVariableRules(repository);      // 2 rules
+        defineCodingStandardFunctionRules(repository);      // 6 rules
+        defineCodingStandardOrganizationRules(repository);  // 2 CRITICAL rules
+        defineCodingStandardPatternRules(repository);       // 4 rules
     }
 
-    private static void defineECLSyntaxRules(NewRepository repository) {
+    private static void defineCodingStandardSyntaxRules(NewRepository repository) {
         // Syntax and Whitespace (18 rules)
 
         repository.createRule(MathematicaRuleKeys.BRACKET_SPACING_BEFORE_KEY)
@@ -686,7 +686,7 @@ public final class StyleAndConventionsRulesDefinition {
             .setStatus(RuleStatus.READY);
     }
 
-    private static void defineECLVariableRules(NewRepository repository) {
+    private static void defineCodingStandardVariableRules(NewRepository repository) {
         // Local Variables (2 rules)
 
         repository.createRule(MathematicaRuleKeys.VARIABLE_FULL_WORDS_KEY)
@@ -709,7 +709,7 @@ public final class StyleAndConventionsRulesDefinition {
             .setStatus(RuleStatus.READY);
     }
 
-    private static void defineECLFunctionRules(NewRepository repository) {
+    private static void defineCodingStandardFunctionRules(NewRepository repository) {
         // Function Structure (6 rules)
 
         repository.createRule(MathematicaRuleKeys.PRIVATE_FUNCTION_PACKAGE_SCOPE_KEY)
@@ -771,7 +771,7 @@ public final class StyleAndConventionsRulesDefinition {
             .setStatus(RuleStatus.READY);
     }
 
-    private static void defineECLOrganizationRules(NewRepository repository) {
+    private static void defineCodingStandardOrganizationRules(NewRepository repository) {
         // Code Organization (2 CRITICAL rules)
 
         repository.createRule(MathematicaRuleKeys.TIME_CONSTRAINED_USAGE_KEY)
@@ -796,7 +796,7 @@ public final class StyleAndConventionsRulesDefinition {
             .setStatus(RuleStatus.READY);
     }
 
-    private static void defineECLPatternRules(NewRepository repository) {
+    private static void defineCodingStandardPatternRules(NewRepository repository) {
         // Patterns (4 rules)
 
         repository.createRule(MathematicaRuleKeys.PATTERN_NAME_ENDS_WITH_P_KEY)

@@ -491,9 +491,9 @@ public final class MathematicaRuleKeys {
     public static final String INCORRECT_CLOSURE_CAPTURE_KEY = "IncorrectClosureCapture";
     public static final String SCOPE_LEAK_THROUGH_DYNAMIC_EVALUATION_KEY = "ScopeLeakThroughDynamicEvaluation";
 
-    // ===== NEW RULES FROM CODING_STANDARDS.md (32 rules) =====
+    // ===== CODING STANDARD RULES (32 rules) =====
 
-    // ECL-Style: Syntax and Whitespace (18 rules)
+    // Coding Standards: Syntax and Whitespace (18 rules)
     public static final String BRACKET_SPACING_BEFORE_KEY = "BracketSpacingBefore";
     public static final String EGYPTIAN_BRACKETS_WITH_TABS_KEY = "EgyptianBracketsWithTabs";
     public static final String VARIABLE_ASSIGNMENT_IN_MODULE_DEF_KEY = "VariableAssignmentInModuleDef";
@@ -512,11 +512,11 @@ public final class MathematicaRuleKeys {
     public static final String SHORTHAND_SYNTAX_READABLE_KEY = "ShorthandSyntaxReadable";
     public static final String NON_LINEAR_EVALUATION_KEY = "NonLinearEvaluation";
 
-    // ECL-Style: Local Variables (2 rules)
+    // Coding Standards: Local Variables (2 rules)
     public static final String VARIABLE_FULL_WORDS_KEY = "VariableFullWords";
     public static final String VARIABLE_NAME_THREE_WORDS_KEY = "VariableNameThreeWords";
 
-    // ECL-Style: Function Structure (6 rules)
+    // Coding Standards: Function Structure (6 rules)
     public static final String PRIVATE_FUNCTION_PACKAGE_SCOPE_KEY = "PrivateFunctionPackageScope";
     public static final String CUSTOM_ASSOCIATIONS_AS_INPUTS_KEY = "CustomAssociationsAsInputs";
     public static final String GLOBAL_VARIABLE_DOLLAR_PREFIX_KEY = "GlobalVariableDollarPrefix";
@@ -524,11 +524,11 @@ public final class MathematicaRuleKeys {
     public static final String FUNCTION_NAME_LITTER_WORDS_KEY = "FunctionNameLitterWords";
     public static final String PURE_FUNCTION_SHORT_OPERATIONS_KEY = "PureFunctionShortOperations";
 
-    // ECL-Style: Code Organization (2 CRITICAL rules)
+    // Coding Standards: Code Organization (2 CRITICAL rules)
     public static final String TIME_CONSTRAINED_USAGE_KEY = "TimeConstrainedUsage";
     public static final String PATTERN_LOADING_ORDER_KEY = "PatternLoadingOrder";
 
-    // ECL-Style: Patterns (4 rules)
+    // Coding Standards: Patterns (4 rules)
     public static final String PATTERN_NAME_ENDS_WITH_P_KEY = "PatternNameEndsWithP";
     public static final String PATTERN_TEST_NAME_ENDS_WITH_Q_KEY = "PatternTestNameEndsWithQ";
     public static final String ENUMERATED_PATTERN_SYMBOLS_KEY = "EnumeratedPatternSymbols";

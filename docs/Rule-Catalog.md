@@ -606,7 +606,7 @@ Rules are organized into Quality Profiles:
 
 ### Coding Standards (21 rules)
 
-Based on best practices from the Emerald Cloud Lab (ECL) Style Guide, adapted for general Mathematica code. *(Note: 21 of 32 proposed rules have been implemented)*
+Based on best practices from the Emerald Cloud Lab Style Guide, adapted for general Mathematica code. *(Note: 21 of 32 proposed rules have been implemented)*
 
 #### Syntax and Whitespace (10 rules)
 

@@ -534,7 +534,7 @@ public class MathematicaRulesSensor implements Sensor {
             // ===== CODE SMELL 2 - ADDITIONAL 70 CODE SMELLS FOR TIER 1 PARITY =====
             runStyleAndConventionsDetectors(context, inputFile, content);
 
-            // ===== CODING STANDARD RULES - 32 RULES FROM CODING_STANDARDS.md =====
+            // ===== CODING STANDARD RULES - 32 RULES =====
             // Note: Many rules work on raw content; comment filtering happens within patterns
             codingStandardDetector.get().detect(context, inputFile, content, content);
 
