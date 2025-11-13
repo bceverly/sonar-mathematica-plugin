@@ -93,7 +93,7 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern RETURN_TYPE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+(\\{|<\\|)"); //NOSONAR
     //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern GLOBAL_MODIFY_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[[^\\]]*\\]\\s*+:=[^;]*:?+="); //NOSONAR
-    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("\\bManipulate\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern GLOBAL_CONTEXT_PATTERN = Pattern.compile("Global`[a-zA-Z]\\w*+"); //NOSONAR
     private static final Pattern PART_ACCESS_PATTERN = Pattern.compile("([a-zA-Z]\\w*+)\\[\\[(\\d++)\\]\\]"); //NOSONAR
     private static final Pattern REPEATED_PART_PATTERN = Pattern.compile(//NOSONAR
@@ -112,18 +112,13 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern ZERO_TABLE_PATTERN = Pattern.compile("Table\\s*+\\[\\s*+0\\s*+,\\s*+\\{[^,]+,\\s*+(\\d++)"); //NOSONAR
     private static final Pattern DOUBLE_TRANSPOSE_PATTERN = Pattern.compile("Transpose\\s*+\\[[^\\[]*Transpose\\s*+\\["); //NOSONAR
     private static final Pattern TOEXPRESSION_LOOP_PATTERN = Pattern.compile("(?:Do|Table|While)\\s*+\\[[^\\[]*ToExpression\\s*+\\["); //NOSONAR
-    private static final Pattern COMPILE_PATTERN = Pattern.compile("Compile\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern COMPILE_PATTERN = Pattern.compile("\\bCompile\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     // Additional patterns for original rules (optimized - pre-compiled for performance)
-    private static final Pattern SIMPLE_CHECK_PATTERN = Pattern.compile("Check\\s*+\\[[^,]+,\\s*+(?:\\$Failed|Null|None)\\s*+\\]"); //NOSONAR
-    private static final Pattern QUIET_PATTERN = Pattern.compile("Quiet\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern SIMPLE_CHECK_PATTERN = Pattern.compile("\\bCheck\\s*+\\[[^,]+,\\s*+(?:\\$Failed|Null|None)\\s*+\\]"); //NOSONAR
+    private static final Pattern QUIET_PATTERN = Pattern.compile("\\bQuiet\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern IF_PATTERN = Pattern.compile("If\\s*+\\[([^\\[]+),\\s*+([^,]+),\\s*+([^\\]]+)\\]"); //NOSONAR
     private static final Pattern FUNCTION_WITH_IF_PATTERN = Pattern.compile(
         "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+(?:Module|Block)?+\\s*+\\[[^\\]]*If\\[");
-
-
-    /**
-     * Detect magic numbers in code.
-     */
     public void detectMagicNumbers(SensorContext context, InputFile inputFile, String content, List<int[]> commentRanges) {
         try {
             Matcher numberMatcher = NUMBER_PATTERN.matcher(content);
@@ -147,13 +142,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect empty blocks.
-     */
     public void detectEmptyBlocks(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = EMPTY_BLOCK_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_BLOCK_KEY,
                     "Remove this empty block.", matcher.start(), matcher.end());
@@ -163,13 +160,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect functions that are too long.
-     */
     public void detectLongFunctions(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
                 int startLine = calculateLineNumber(content, matcher.start());
 
@@ -189,13 +188,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect empty catch blocks (Quiet with no error handling).
-     */
     public void detectEmptyCatchBlocks(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = SIMPLE_CHECK_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
                     "Empty error handling - consider logging or handling the error.", matcher.start(), matcher.end());
@@ -203,6 +204,11 @@ public class CodeSmellDetector extends BaseDetector {
 
             matcher = QUIET_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_CATCH_KEY,
                     "Quiet[] suppresses errors - consider explicit error handling.", matcher.start(), matcher.end());
@@ -212,13 +218,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect debug code.
-     */
     public void detectDebugCode(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = DEBUG_CODE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.DEBUG_CODE_KEY,
                     "Remove debug code before committing.", matcher.start(), matcher.end());
@@ -294,15 +302,17 @@ public class CodeSmellDetector extends BaseDetector {
         return 1; // Default to line 1 if not found
     }
 
-    /**
-     * Detect duplicate function definitions.
-     */
     public void detectDuplicateFunctions(SensorContext context, InputFile inputFile, String content) {
         try {
             Map<String, List<Integer>> functionDefs = new java.util.HashMap<>();
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String signature = matcher.group(0).trim();
                 int line = calculateLineNumber(content, matcher.start());
 
@@ -322,13 +332,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect functions with too many parameters.
-     */
     public void detectTooManyParameters(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String params = matcher.group(2);
                 int paramCount = params.isEmpty() ? 0 : params.split(",").length;
 
@@ -343,9 +355,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect deeply nested control structures.
-     */
     public void detectDeeplyNested(SensorContext context, InputFile inputFile, String content) {
         try {
             String[] lines = content.split("\n");
@@ -374,13 +383,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing documentation in complex functions.
-     */
     public void detectMissingDocumentation(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
                 int startPos = matcher.start();
 
@@ -406,9 +417,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect inconsistent naming conventions.
-     */
     public void detectInconsistentNaming(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
@@ -416,6 +424,11 @@ public class CodeSmellDetector extends BaseDetector {
             Set<String> underscoreNames = new HashSet<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String name = matcher.group(1);
                 if (name.contains("_")) {
                     underscoreNames.add(name);
@@ -433,14 +446,16 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect identical branches in If/Which statements.
-     */
     public void detectIdenticalBranches(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = IF_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String trueBranch = matcher.group(2).trim();
                 String falseBranch = matcher.group(3).trim();
 
@@ -455,9 +470,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect overly complex expressions.
-     */
     public void detectExpressionTooComplex(SensorContext context, InputFile inputFile, String content, List<int[]> commentRanges) {
         try {
             String[] lines = content.split("\n");
@@ -493,13 +505,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect use of deprecated functions.
-     */
     public void detectDeprecatedFunctions(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = DEPRECATED_FUNCTIONS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.DEPRECATED_FUNCTION_KEY,
                     "Use of deprecated $RecursionLimit - use $IterationLimit instead.", matcher.start(), matcher.end());
@@ -509,13 +523,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect empty statements (double semicolons).
-     */
     public void detectEmptyStatement(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = DOUBLE_SEMICOLON_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EMPTY_STATEMENT_KEY,
                     "Remove empty statement.", matcher.start(), matcher.end());
@@ -527,13 +543,15 @@ public class CodeSmellDetector extends BaseDetector {
 
     // ===== PERFORMANCE RULES =====
 
-    /**
-     * Detect AppendTo in loops (O(n²) performance).
-     */
     public void detectAppendInLoop(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = APPEND_IN_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.APPEND_IN_LOOP_KEY,
                     "AppendTo in loop creates O(n²) performance. Use Table, Reap/Sow, or pre-allocate.", matcher.start(), matcher.end());
@@ -543,15 +561,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect repeated expensive function calls.
-     */
     public void detectRepeatedFunctionCalls(SensorContext context, InputFile inputFile, String content) {
         try {
             Map<String, Integer> callCounts = new java.util.HashMap<>();
             Matcher matcher = FUNCTION_CALL_EXTRACTION_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String call = matcher.group(0).trim();
                 callCounts.put(call, callCounts.getOrDefault(call, 0) + 1);
             }
@@ -568,13 +588,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect string concatenation in loops.
-     */
     public void detectStringConcatInLoop(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = STRING_CONCAT_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.STRING_CONCAT_IN_LOOP_KEY,
                     "String concatenation in loops is O(n²). Use StringJoin or Table.", matcher.start(), matcher.end());
@@ -584,13 +606,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect uncompiled numerical code.
-     */
     public void detectUncompiledNumerical(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = NUMERICAL_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 // Check if Compile is nearby
                 int start = Math.max(0, matcher.start() - 200);
                 int end = Math.min(content.length(), matcher.end() + 200);
@@ -619,6 +643,11 @@ public class CodeSmellDetector extends BaseDetector {
             );
             Matcher matcher = appendSymbolPattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line, MathematicaRulesDefinition.PACKED_ARRAY_BREAKING_KEY,
                     String.format("Operation '%s' mixing array with Symbol[] may unpack array. Use Developer`PackedArrayQ to verify.",
@@ -641,13 +670,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect nested Map/Table that could be optimized.
-     */
     public void detectNestedMapTable(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = NESTED_MAP_TABLE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.NESTED_MAP_TABLE_KEY,
                     "Nested Map/Table can often be replaced with Outer or single vectorized operation.", matcher.start(), matcher.end());
@@ -657,9 +688,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect large temporary expressions that should be assigned.
-     */
     public void detectLargeTempExpressions(SensorContext context, InputFile inputFile, String content) {
         try {
             // Heuristic: very long expressions without assignment
@@ -676,13 +704,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect plotting functions in loops.
-     */
     public void detectPlotInLoop(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = PLOT_IN_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.PLOT_IN_LOOP_KEY,
                     "Plotting in loops is very slow. Collect data first, then plot once.", matcher.start(), matcher.end());
@@ -694,13 +724,15 @@ public class CodeSmellDetector extends BaseDetector {
 
     // ===== BEST PRACTICES RULES =====
 
-    /**
-     * Detect generic variable names.
-     */
     public void detectGenericVariableNames(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = GENERIC_VARIABLE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.GENERIC_VARIABLE_NAMES_KEY,
                     "Use meaningful variable names instead of generic names like 'temp', 'data', etc.", matcher.start(), matcher.end());
@@ -710,13 +742,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect public functions without usage messages.
-     */
     public void detectMissingUsageMessage(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = PUBLIC_FUNCTION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
 
                 // Check if ::usage exists for this function
@@ -731,13 +765,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect functions with many optional parameters that should use OptionsPattern.
-     */
     public void detectMissingOptionsPattern(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = MANY_OPTIONAL_PARAMS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 if (!matcher.group(0).contains("OptionsPattern")) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPTIONS_PATTERN_KEY,
@@ -749,13 +785,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect functions with side effects that have unclear names.
-     */
     public void detectSideEffectsNaming(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = GLOBAL_ASSIGNMENT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
 
                 // Check if name indicates side effects
@@ -772,13 +810,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect complex boolean expressions.
-     */
     public void detectComplexBoolean(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = COMPLEX_BOOLEAN_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.COMPLEX_BOOLEAN_KEY,
                     "Boolean expression with 5+ operators should be broken into named conditions.", matcher.start(), matcher.end());
@@ -788,9 +828,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect unprotected public symbols.
-     */
     public void detectUnprotectedSymbols(SensorContext context, InputFile inputFile, String content) {
         try {
             // OPTIMIZED: Use contains pre-check
@@ -798,6 +835,11 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = PUBLIC_FUNCTION_PATTERN.matcher(content);
                 int publicFunctionCount = 0;
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     publicFunctionCount++;
                 }
 
@@ -811,9 +853,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect complex functions without explicit Return statements.
-     */
     public void detectMissingReturn(SensorContext context, InputFile inputFile, String content) {
         try {
             // OPTIMIZED: Use contains pre-check
@@ -821,6 +860,11 @@ public class CodeSmellDetector extends BaseDetector {
                 Matcher matcher = FUNCTION_WITH_IF_PATTERN.matcher(content);
 
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     String functionBody = content.substring(matcher.start(),
                         Math.min(matcher.start() + 500, content.length()));
 
@@ -838,15 +882,17 @@ public class CodeSmellDetector extends BaseDetector {
 
     // ===== PHASE 4: NEW CODE SMELL DETECTORS (18 + 10 performance = 28 methods) =====
 
-    /**
-     * Detect overly complex pattern definitions.
-     */
     public void detectOvercomplexPatterns(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect patterns with more than 5 alternatives (|)
             Matcher matcher = OVERCOMPLEX_PATTERN_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 String patternDef = matcher.group(2);
                 int alternativeCount = patternDef.split("\\|").length;
@@ -858,15 +904,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect inconsistent use of Rule (->) and RuleDelayed (:>).
-     */
     public void detectInconsistentRuleTypes(SensorContext context, InputFile inputFile, String content) {
         try {
             // Look for {} or <||> containing mixed -> and :>
             Matcher matcher = MIXED_RULE_TYPES_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.INCONSISTENT_RULE_TYPES_KEY,
                     "Mixing Rule (->) and RuleDelayed (:>) in same list is confusing.", matcher.start(), matcher.end());
@@ -876,9 +924,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing function attributes.
-     */
     public void detectMissingFunctionAttributes(SensorContext context, InputFile inputFile, String content) {
         try {
             // Check if there are public functions but no SetAttributes calls
@@ -898,9 +943,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing documentation for complex pattern-based functions.
-     */
     public void detectMissingDownValuesDoc(SensorContext context, InputFile inputFile, String content) {
         try {
             // Count functions with multiple definitions (same name appearing multiple times with patterns)
@@ -909,6 +951,11 @@ public class CodeSmellDetector extends BaseDetector {
                 Map<String, Integer> funcCounts = new java.util.HashMap<>();
 
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     String funcName = matcher.group(1);
                     funcCounts.put(funcName, funcCounts.getOrDefault(funcName, 0) + 1);
                 }
@@ -926,15 +973,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect functions accepting any input without pattern tests.
-     */
     public void detectMissingPatternTestValidation(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find functions with generic patterns (x_) but no pattern test (?...Q)
             Matcher matcher = PATTERN_TEST_FUNC_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String params = matcher.group(2);
                 // Check if parameters have pattern tests
                 if (!params.contains("?") && !params.contains("_Integer") && !params.contains("_Real")
@@ -950,15 +999,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect excessive use of pure functions (#, #2, #3).
-     */
     public void detectExcessivePureFunctions(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find pure functions with #1, #2, #3 and complex expressions
             Matcher matcher = PURE_FUNC_COMPLEX_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EXCESSIVE_PURE_FUNCTIONS_KEY,
                     "Complex pure function with multiple # slots should use Function[{x, y, z}, ...] for clarity.", matcher.start(), matcher.end());
@@ -968,15 +1019,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing operator precedence clarity.
-     */
     public void detectMissingOperatorPrecedence(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find expressions with mixed /@, @@, //@ without parentheses
             Matcher matcher = OPERATOR_PRECEDENCE_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_OPERATOR_PRECEDENCE_KEY,
                     "Complex operator expression should use parentheses for clarity.", matcher.start(), matcher.end());
@@ -986,9 +1039,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect hardcoded file paths.
-     */
     public void detectHardcodedFilePaths(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find absolute paths
@@ -1010,9 +1060,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect inconsistent return types (heuristic-based).
-     */
     public void detectInconsistentReturnTypes(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find functions with same name but different return patterns
@@ -1020,6 +1067,11 @@ public class CodeSmellDetector extends BaseDetector {
             Map<String, Set<String>> funcReturns = new java.util.HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 String returnType = matcher.group(2).equals("{") ? "List" : "Association";
                 funcReturns.computeIfAbsent(funcName, k -> new HashSet<>()).add(returnType);
@@ -1037,9 +1089,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing error messages.
-     */
     public void detectMissingErrorMessages(SensorContext context, InputFile inputFile, String content) {
         try {
             if (!content.contains("::") || !content.contains("Message[")) {
@@ -1055,15 +1104,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect global state modification without naming convention.
-     */
     public void detectGlobalStateModification(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find functions that assign to variables outside their parameters but don't end with !
             Matcher matcher = GLOBAL_MODIFY_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 if (!funcName.endsWith("!") && !funcName.contains("Set") && !funcName.contains("Update")) {
                     String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 50, content.length()));
@@ -1080,14 +1131,16 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing localization in dynamic interfaces.
-     */
     public void detectMissingLocalization(SensorContext context, InputFile inputFile, String content) {
         try {
             if (content.contains("Manipulate[") && !content.contains("LocalizeVariables")) {
                 Matcher matcher = MANIPULATE_PATTERN.matcher(content);
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_LOCALIZATION_KEY,
                         "Manipulate should consider using LocalizeVariables to prevent variable leakage.", matcher.start(), matcher.end());
@@ -1098,14 +1151,16 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect explicit Global` context usage.
-     */
     public void detectExplicitGlobalContext(SensorContext context, InputFile inputFile, String content) {
         try {
             if (content.contains("Global`")) {
                 Matcher matcher = GLOBAL_CONTEXT_PATTERN.matcher(content);
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EXPLICIT_GLOBAL_CONTEXT_KEY,
                         "Using Global` explicitly is a code smell indicating namespace confusion.", matcher.start(), matcher.end());
@@ -1116,9 +1171,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing temporary file cleanup.
-     */
     public void detectMissingTemporaryCleanup(SensorContext context, InputFile inputFile, String content) {
         try {
             if ((content.contains("CreateFile[") || content.contains("CreateDirectory["))
@@ -1131,9 +1183,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect nested lists where Association would be clearer.
-     */
     public void detectNestedListsInsteadAssociation(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find repeated indexed access patterns like data[[1]], data[[5]], data[[7]]
@@ -1141,6 +1190,11 @@ public class CodeSmellDetector extends BaseDetector {
             Map<String, Set<Integer>> indexAccess = new java.util.HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int index = Integer.parseInt(matcher.group(2));
                 indexAccess.computeIfAbsent(varName, k -> new HashSet<>()).add(index);
@@ -1158,15 +1212,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect repeated Part extractions.
-     */
     public void detectRepeatedPartExtraction(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find multiple consecutive [[n]] accesses
             Matcher matcher = REPEATED_PART_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 if (matcher.group(1).equals(matcher.group(2)) && matcher.group(2).equals(matcher.group(3))) {
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.REPEATED_PART_EXTRACTION_KEY,
@@ -1178,15 +1234,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing memoization (simple heuristic).
-     */
     public void detectMissingMemoization(SensorContext context, InputFile inputFile, String content) {
         try {
             // Look for recursive functions without memoization pattern f[x_] := f[x] = ...
             Matcher matcher = RECURSIVE_FUNC_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String snippet = content.substring(matcher.start(), Math.min(matcher.end() + 100, content.length()));
                 if (!snippet.matches(".*:=.*=.*")) {  //NOSONAR Check for memoization pattern
                     int line = calculateLineNumber(content, matcher.start());
@@ -1202,15 +1260,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect StringJoin used for templates.
-     */
     public void detectStringJoinForTemplates(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find multiple <> operations in one expression
             Matcher matcher = STRINGJOIN_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.STRINGJOIN_FOR_TEMPLATES_KEY,
                     "Multiple StringJoin operations should use StringTemplate for readability.", matcher.start(), matcher.end());
@@ -1222,15 +1282,17 @@ public class CodeSmellDetector extends BaseDetector {
 
     // ===== PERFORMANCE DETECTION METHODS (10 methods) =====
 
-    /**
-     * Detect linear search when lookup table would be better.
-     */
     public void detectLinearSearchInsteadLookup(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Select[list, #[[...]] == ... &] patterns
             Matcher matcher = SELECT_LINEAR_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.LINEAR_SEARCH_INSTEAD_LOOKUP_KEY,
                     "Use Association or Dispatch for O(1) lookup instead of Select (O(n) linear search).", matcher.start(), matcher.end());
@@ -1240,15 +1302,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect repeated expensive calculations in loops.
-     */
     public void detectRepeatedCalculations(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Do/Table/While with function calls that don't depend on loop variable
             Matcher matcher = REPEATED_CALC_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcCall = matcher.group(1);
                 String loopVar = matcher.group(2);
                 // Check if function call doesn't contain loop variable
@@ -1263,15 +1327,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect Position used instead of pattern matching.
-     */
     public void detectPositionInsteadPattern(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Position followed by Extract/Part
             if (content.contains("Position[") && (content.contains("Extract[") || content.contains("Part["))) {
                 Matcher matcher = POSITION_PATTERN.matcher(content);
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.POSITION_INSTEAD_PATTERN_KEY,
                         "Consider using Cases or Select with pattern matching instead of Position + Extract.", matcher.start(), matcher.end());
@@ -1282,14 +1348,16 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect Flatten[Table[...]] antipattern.
-     */
     public void detectFlattenTableAntipattern(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FLATTEN_TABLE_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.FLATTEN_TABLE_ANTIPATTERN_KEY,
                     "Use Catenate, Join, or vectorization instead of Flatten[Table[...]].", matcher.start(), matcher.end());
@@ -1299,15 +1367,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing parallelization opportunities.
-     */
     public void detectMissingParallelization(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find large Table operations without Parallel
             if (!content.contains("Parallel")) {
                 Matcher matcher = LARGE_TABLE_PATTERN.matcher(content);
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_PARALLELIZATION_KEY,
                         "Large independent iterations should use ParallelTable or ParallelMap.", matcher.start(), matcher.end());
@@ -1318,15 +1388,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing SparseArray usage.
-     */
     public void detectMissingSparseArray(SensorContext context, InputFile inputFile, String content) {
         try {
             // Heuristic: large array initialization with mostly zeros
             Matcher matcher = ZERO_TABLE_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int size = Integer.parseInt(matcher.group(1));
                 if (size > 100) {
                     int line = calculateLineNumber(content, matcher.start());
@@ -1339,15 +1411,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect unnecessary Transpose operations.
-     */
     public void detectUnnecessaryTranspose(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find Transpose[...Transpose[...]]
             Matcher matcher = DOUBLE_TRANSPOSE_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.UNNECESSARY_TRANSPOSE_KEY,
                     "Repeated Transpose operations detected - work consistently row-wise or column-wise.", matcher.start(), matcher.end());
@@ -1357,9 +1431,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect DeleteDuplicates on large data.
-     */
     public void detectDeleteDuplicatesOnLargeData(SensorContext context, InputFile inputFile, String content) {
         try {
             if (content.contains("DeleteDuplicates[")) {
@@ -1371,15 +1442,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect repeated string parsing.
-     */
     public void detectRepeatedStringParsing(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find ToExpression in loops
             Matcher matcher = TOEXPRESSION_LOOP_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.REPEATED_STRING_PARSING_KEY,
                     "Parsing the same string repeatedly in loop - cache the result.", matcher.start(), matcher.end());
@@ -1389,14 +1462,16 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect missing CompilationTarget in Compile.
-     */
     public void detectMissingCompilationTarget(SensorContext context, InputFile inputFile, String content) {
         try {
             if (content.contains("Compile[") && !content.contains("CompilationTarget")) {
                 Matcher matcher = COMPILE_PATTERN.matcher(content);
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     int line = calculateLineNumber(content, matcher.start());
                     reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.MISSING_COMPILATION_TARGET_KEY,
                         "Compile should use CompilationTarget->\"C\" for 10-100x speedup.", matcher.start(), matcher.end());
@@ -1411,8 +1486,6 @@ public class CodeSmellDetector extends BaseDetector {
     // TIER 1 GAP CLOSURE - COMMENT QUALITY (10 rules)
     // ==========================================================================
 
-
-
     private static final Pattern TODO_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*TODO[^\\*]*\\*\\)"); //NOSONAR
     private static final Pattern FIXME_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*FIXME[^\\*]*\\*\\)"); //NOSONAR
     private static final Pattern HACK_COMMENT_PATTERN = Pattern.compile("\\(\\*[^\\*]*(?:HACK|XXX|FIXME)[^\\*]*\\*\\)"); //NOSONAR
@@ -1421,13 +1494,15 @@ public class CodeSmellDetector extends BaseDetector {
     private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage"); //NOSONAR
     private static final Pattern FUNCTION_PARAMS_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]*)\\]\\s*+:="); //NOSONAR
 
-    /**
-     * Detect task tracking comments that should be addressed.
-     */
     public void detectTodoTracking(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = TODO_COMMENT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TODO_TRACKING_KEY,
                     "TODO comment found. Track in issue tracker and add reference.");
@@ -1437,14 +1512,16 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect fix-me style comments that should be tracked.
-     */
     @SuppressWarnings("java:S1135") // This method detects FIXMEs, not a FIXME itself
     public void detectFixmeTracking(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = FIXME_COMMENT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.FIXME_TRACKING_KEY,
                     "FIXME comment found. Create bug ticket and fix or document workaround.");
@@ -1454,13 +1531,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect HACK/XXX comments indicating code smell.
-     */
     public void detectHackComment(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = HACK_COMMENT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HACK_COMMENT_KEY,
                     "HACK/XXX comment indicates code smell. Refactor or document why necessary.");
@@ -1470,13 +1549,15 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect commented-out code blocks.
-     */
     public void detectCommentedOutCode(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = COMMENTED_CODE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String comment = matcher.group();
                 // Heuristic: contains code-like syntax
                 if ((comment.matches(".*[a-zA-Z]\\w*\\s*+:?=.*") || comment.matches(".*\\w+\\s*+\\[.*\\].*")) //NOSONAR
@@ -1502,6 +1583,11 @@ public class CodeSmellDetector extends BaseDetector {
             Pattern largeCommentPattern = Pattern.compile("\\(\\*(?>[^\\*]+|\\*(?!\\)))*+\\*\\)"); //NOSONAR
             Matcher matcher = largeCommentPattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String comment = matcher.group();
                 // Check if comment is large enough (approximately 500+ chars or 20+ lines)
                 if (comment.length() >= 500) {
@@ -1518,9 +1604,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect public APIs without ::usage documentation.
-     */
     public void detectApiMissingDocumentation(SensorContext context, InputFile inputFile, String content) {
         try {
             // Find public functions
@@ -1549,15 +1632,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect documentation that is too short.
-     */
     public void detectDocumentationTooShort(SensorContext context, InputFile inputFile, String content) {
         try {
             //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*)\""); //NOSONAR
             Matcher matcher = usagePattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 String doc = matcher.group(2);
                 if (doc.length() < 20) {
@@ -1571,15 +1656,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect outdated documentation (contains "old", "deprecated", "obsolete").
-     */
     public void detectDocumentationOutdated(SensorContext context, InputFile inputFile, String content) {
         try {
             //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*)\""); //NOSONAR
             Matcher matcher = usagePattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 String doc = matcher.group(2).toLowerCase();
                 if (doc.contains("old") || doc.contains("deprecated") || doc.contains("obsolete") || doc.contains("outdated")) {
@@ -1593,9 +1680,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect parameters not documented in ::usage.
-     */
     public void detectParameterNotDocumented(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher funcMatcher = FUNCTION_PARAMS_PATTERN.matcher(content);
@@ -1650,15 +1734,17 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Detect return value not documented in ::usage.
-     */
     public void detectReturnNotDocumented(SensorContext context, InputFile inputFile, String content) {
         try {
             //NOSONAR - Possessive quantifiers prevent backtracking
             Pattern usagePattern = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+=\\s*+\"([^\"]*)\""); //NOSONAR
             Matcher matcher = usagePattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 String doc = matcher.group(2).toLowerCase();
                 // Check if documentation mentions return value
@@ -1749,9 +1835,6 @@ public class CodeSmellDetector extends BaseDetector {
         }
     }
 
-    /**
-     * Check if copyright matcher includes the specified year.
-     */
     private static boolean copyrightIncludesYear(Matcher matcher, int targetYear) {
         String startYear = matcher.group(1);
         String endYear = matcher.group(2);

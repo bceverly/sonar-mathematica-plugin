@@ -357,4 +357,490 @@ class CustomRuleDetectorTest {
         // Should not propagate exception
         verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
     }
+
+    // ===== COMPREHENSIVE ADDITIONAL TESTS =====
+
+    @Test
+    void testPatternMatchRuleInComment() {
+        String content = "(* AppendTo[list, x] *)\ny = 5;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Use Join instead");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testPatternMatchRuleInStringLiteral() {
+        String content = "x = \"AppendTo[list, x]\";";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Use Join instead");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testPatternMatchRuleWithEmptyMessage() {
+        String content = "AppendTo[list, x]";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(inputFile, 1, "test-rule",
+                "Code matches forbidden pattern");
+    }
+
+    @Test
+    void testPatternMatchRuleWithComplexRegex() {
+        String content = "Module[{x}, x = 5];\nModule[{y, z}, y + z];";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("Module\\s*\\[\\s*\\{[^}]+\\}");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Module found");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(2)).queueIssue(eq(inputFile), anyInt(), eq("test-rule"), eq("Module found"));
+    }
+
+    @Test
+    void testPatternMatchRuleWithNullPattern() {
+        String content = "x = 5;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn(null);
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testFunctionNamePatternRuleInComment() {
+        String content = "(* legacyFunc[x_] := x *)\ny = 5;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Legacy function");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testFunctionNamePatternRuleInStringLiteral() {
+        String content = "x = \"legacyFunc[x_] := x\";";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Legacy function");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testFunctionNamePatternRuleDefaultMessage() {
+        String content = "legacyFunc[x_] := x;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn(null);
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"),
+                contains("Function name matches forbidden pattern"));
+    }
+
+    @Test
+    void testFunctionNamePatternRuleWithEmptyMessage() {
+        String content = "legacyFunc[x_] := x;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"),
+                contains("Function name matches forbidden pattern"));
+    }
+
+    @Test
+    void testFunctionNamePatternRuleWithInvalidRegex() {
+        String content = "legacyFunc[x_] := x;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("[invalid(regex");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testFunctionNamePatternRuleWithNullPattern() {
+        String content = "legacyFunc[x_] := x;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn(null);
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testForbiddenApiRuleInComment() {
+        String content = "(* Get[\"file.m\"] *)\ny = 5;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Security risk");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testForbiddenApiRuleInStringLiteral() {
+        String content = "x = \"Get[file]\";";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Security risk");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testForbiddenApiRuleWithEmptyReason() {
+        String content = "Get[file]";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("api-rule"),
+                contains("This API should not be used"));
+    }
+
+    @Test
+    void testForbiddenApiRuleWithNullApiName() {
+        String content = "Get[file]";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn(null);
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Reason");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testForbiddenApiRulePartialMatch() {
+        String content = "x = MyGet[file];";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Security risk");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testForbiddenApiRuleWithSpecialCharacters() {
+        String content = "x = Import[file];";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Import");
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Use custom import");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("api-rule"), anyString());
+    }
+
+    @Test
+    void testMultipleRulesWithSameContent() {
+        String content = "AppendTo[list, 1];\nlegacyFunc[x_] := x;\nGet[file];";
+
+        ActiveRule rule1 = mock(ActiveRule.class);
+        RuleKey key1 = mock(RuleKey.class);
+        when(rule1.ruleKey()).thenReturn(key1);
+        when(key1.rule()).thenReturn("rule1");
+        when(rule1.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(rule1.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
+        when(rule1.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Pattern match");
+
+        ActiveRule rule2 = mock(ActiveRule.class);
+        RuleKey key2 = mock(RuleKey.class);
+        when(rule2.ruleKey()).thenReturn(key2);
+        when(key2.rule()).thenReturn("rule2");
+        when(rule2.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(rule2.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
+        when(rule2.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Function pattern");
+
+        ActiveRule rule3 = mock(ActiveRule.class);
+        RuleKey key3 = mock(RuleKey.class);
+        when(rule3.ruleKey()).thenReturn(key3);
+        when(key3.rule()).thenReturn("rule3");
+        when(rule3.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(rule3.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
+        when(rule3.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("API forbidden");
+
+        Collection<ActiveRule> rules = new ArrayList<>();
+        rules.add(rule1);
+        rules.add(rule2);
+        rules.add(rule3);
+
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("rule1"), anyString());
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(2), eq("rule2"), anyString());
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(3), eq("rule3"), anyString());
+    }
+
+    @Test
+    void testRuleWithExceptionInTemplateKey() {
+        String content = "x = 5;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(activeRule.templateRuleKey()).thenThrow(new RuntimeException("Template exception"));
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        // Should handle exception gracefully
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testPatternMatchRuleOnMultipleLines() {
+        String content = "x = AppendTo[list, 1];\ny = AppendTo[list, 2];\nz = AppendTo[list, 3];";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Use Join");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(3)).queueIssue(eq(inputFile), anyInt(), eq("test-rule"), eq("Use Join"));
+    }
+
+    @Test
+    void testFunctionNamePatternRuleWithDelayedAssignment() {
+        String content = "testFunc[x_] := Module[{}, x + 1]";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("test.*");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Test function");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"), contains("Test function"));
+    }
+
+    @Test
+    void testForbiddenApiRuleMatchingWholeWord() {
+        String content = "GetValue[x]; MyGet[y];";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("api-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Forbidden");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        // Should not match GetValue or MyGet, only exact "Get"
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testEmptyContent() {
+        String content = "";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testContentWithOnlyComments() {
+        String content = "(* This is a comment *)\n(* Another comment *)";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("comment");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Found comment");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        // Should not match inside comments
+        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    }
+
+    @Test
+    void testPatternMatchRuleWithCaseInsensitivePattern() {
+        String content = "appendto[list, x]; APPENDTO[list, y];";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("test-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("(?i)appendto");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Found appendto");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(2)).queueIssue(eq(inputFile), anyInt(), eq("test-rule"), eq("Found appendto"));
+    }
+
+    @Test
+    void testFunctionNamePatternRuleWithComplexPattern() {
+        String content = "oldFunc1[x_] := x; oldFunc2[y_] := y; newFunc[z_] := z;";
+
+        when(activeRule.ruleKey()).thenReturn(ruleKey);
+        when(ruleKey.rule()).thenReturn("func-rule");
+        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("old.*\\d+");
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Old function");
+
+        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, atLeast(1)).queueIssue(eq(inputFile), anyInt(), eq("func-rule"), contains("Old function"));
+    }
+
+    @Test
+    void testAllRuleTypesExecutedOnce() {
+        String content = "pattern; func[x_] := x; Api[call];";
+
+        ActiveRule patternRule = mock(ActiveRule.class);
+        RuleKey patternKey = mock(RuleKey.class);
+        when(patternRule.ruleKey()).thenReturn(patternKey);
+        when(patternKey.rule()).thenReturn("pattern-rule");
+        when(patternRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
+        when(patternRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("pattern");
+        when(patternRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Pattern found");
+
+        ActiveRule funcRule = mock(ActiveRule.class);
+        RuleKey funcKey = mock(RuleKey.class);
+        when(funcRule.ruleKey()).thenReturn(funcKey);
+        when(funcKey.rule()).thenReturn("func-rule");
+        when(funcRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
+        when(funcRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("func");
+        when(funcRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Function found");
+
+        ActiveRule apiRule = mock(ActiveRule.class);
+        RuleKey apiKey = mock(RuleKey.class);
+        when(apiRule.ruleKey()).thenReturn(apiKey);
+        when(apiKey.rule()).thenReturn("api-rule");
+        when(apiRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
+        when(apiRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Api");
+        when(apiRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("API forbidden");
+
+        Collection<ActiveRule> rules = new ArrayList<>();
+        rules.add(patternRule);
+        rules.add(funcRule);
+        rules.add(apiRule);
+
+        detector.executeCustomRules(context, inputFile, content, rules);
+
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("pattern-rule"), anyString());
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"), anyString());
+        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("api-rule"), anyString());
+    }
 }

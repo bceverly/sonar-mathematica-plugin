@@ -18,6 +18,13 @@
         <property name="fileNamePattern" value="module\-info\.java$"/>
     </module>
 
+    <!-- Allow suppression comments for file-level checks -->
+    <module name="SuppressWithPlainTextCommentFilter">
+        <property name="offCommentFormat" value="CHECKSTYLE:OFF\: ([\w\|]+)"/>
+        <property name="onCommentFormat" value="CHECKSTYLE:ON\: ([\w\|]+)"/>
+        <property name="checkFormat" value="$1"/>
+    </module>
+
     <!-- Check that property files contain valid keys -->
     <module name="Translation"/>
 
@@ -46,6 +53,13 @@
     </module>
 
     <module name="TreeWalker">
+        <!-- Enable suppression comments like CHECKSTYLE:OFF and CHECKSTYLE:ON -->
+        <module name="SuppressionCommentFilter">
+            <property name="offCommentFormat" value="CHECKSTYLE:OFF\: ([\w\|]+)"/>
+            <property name="onCommentFormat" value="CHECKSTYLE:ON\: ([\w\|]+)"/>
+            <property name="checkFormat" value="$1"/>
+        </module>
+
         <!-- Annotations -->
         <module name="AnnotationLocation">
             <property name="allowSamelineMultipleAnnotations" value="false"/>

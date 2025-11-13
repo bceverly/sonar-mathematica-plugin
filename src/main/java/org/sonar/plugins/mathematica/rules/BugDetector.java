@@ -21,6 +21,12 @@ public class BugDetector extends BaseDetector {
     private static final String CHECK = "Check[";
     private static final String CLOSE = "Close[";
 
+    // Mathematical constants that can never be zero (safe divisors)
+    private static final java.util.Set<String> NONZERO_CONSTANTS = new java.util.HashSet<>(java.util.Arrays.asList(
+        "Pi", "E", "GoldenRatio", "Degree", "EulerGamma", "Catalan",
+        "Khinchin", "Glaisher", "I", "Infinity"
+    ));
+
     // ===== PATTERNS FOR BUG DETECTION =====
 
     //NOSONAR - Possessive quantifiers prevent backtracking  // Not //= or /=
@@ -112,28 +118,108 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip URLs (http://, https://)
-                boolean isUrl = position > 0 && content.charAt(position - 1) == ':'
-                    && position + 1 < content.length() && content.charAt(position + 1) == '/';
+                if (shouldSkipDivisionCheck(content, position)) {
+                    continue;
+                }
 
-                if (!isUrl && !isInsideStringLiteral(content, position) && !isInsideComment(content, position)) {
-                    // Check if there's validation
-                    int lineStart = content.lastIndexOf('\n', position) + 1;
-                    int lineEnd = content.indexOf('\n', position);
-                    if (lineEnd == -1) {
-                        lineEnd = content.length();
-                    }
-                    String line = content.substring(lineStart, lineEnd);
-
-                    if (!line.contains(CHECK) && !line.contains("!= 0") && !line.contains("> 0")) {
-                        int lineNumber = calculateLineNumber(content, position);
-                        reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY,
-                            "Ensure the divisor cannot be zero before performing division.", matcher.start(), matcher.end());
-                    }
+                String divisor = extractDivisor(content, position + 1);
+                if (!isSafeDivisor(divisor) && !hasZeroCheck(content, position)) {
+                    int lineNumber = calculateLineNumber(content, position);
+                    reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.DIVISION_BY_ZERO_KEY,
+                        "Ensure the divisor cannot be zero before performing division.", matcher.start(), matcher.end());
                 }
             }
         } catch (Exception e) {
             LOG.warn("Skipping division by zero detection due to error in file: {}", inputFile.filename());
+        }
+    }
+
+    private boolean shouldSkipDivisionCheck(String content, int position) {
+        // Skip URLs (http://, https://)
+        boolean isUrl = position > 0 && content.charAt(position - 1) == ':'
+            && position + 1 < content.length() && content.charAt(position + 1) == '/';
+
+        return isUrl || isInsideStringLiteral(content, position) || isInsideComment(content, position);
+    }
+
+    private boolean hasZeroCheck(String content, int position) {
+        int lineStart = content.lastIndexOf('\n', position) + 1;
+        int lineEnd = content.indexOf('\n', position);
+        if (lineEnd == -1) {
+            lineEnd = content.length();
+        }
+        String line = content.substring(lineStart, lineEnd);
+
+        return line.contains(CHECK) || line.contains("!= 0") || line.contains("> 0");
+    }
+
+    /**
+     * Extract the divisor from content starting at the given position.
+     * Returns the identifier or number immediately following the division operator.
+     */
+    private String extractDivisor(String content, int startPos) {
+        if (startPos >= content.length()) {
+            return "";
+        }
+
+        // Skip whitespace
+        int pos = startPos;
+        while (pos < content.length() && Character.isWhitespace(content.charAt(pos))) {
+            pos++;
+        }
+
+        if (pos >= content.length()) {
+            return "";
+        }
+
+        // Extract identifier or number
+        StringBuilder divisor = new StringBuilder();
+        char c = content.charAt(pos);
+
+        // Check if it starts with a valid identifier character or digit
+        if (Character.isJavaIdentifierStart(c) || Character.isDigit(c)) {
+            divisor.append(c);
+            pos++;
+
+            // Continue extracting identifier characters
+            while (pos < content.length()) {
+                c = content.charAt(pos);
+                if (Character.isJavaIdentifierPart(c) || Character.isDigit(c)) {
+                    divisor.append(c);
+                    pos++;
+                } else {
+                    break;
+                }
+            }
+        }
+
+        return divisor.toString();
+    }
+
+    /**
+     * Check if a divisor is safe (can never be zero).
+     * Returns true for:
+     * - Mathematical constants (Pi, E, etc.)
+     * - Literal numbers that aren't zero (2, 3.14, -5, etc.)
+     */
+    private boolean isSafeDivisor(String divisor) {
+        if (divisor.isEmpty()) {
+            return false;
+        }
+
+        // Check if it's a known mathematical constant
+        if (NONZERO_CONSTANTS.contains(divisor)) {
+            return true;
+        }
+
+        // Check if it's a non-zero literal number
+        try {
+            double value = Double.parseDouble(divisor);
+            // It's a number - check if it's not zero
+            return value != 0.0;
+        } catch (NumberFormatException e) {
+            // Not a number, so we can't guarantee it's non-zero
+            return false;
         }
     }
 
@@ -321,8 +407,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -344,8 +430,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -439,8 +525,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -466,18 +552,11 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                if (shouldSkipInfiniteLoopCheck(content, position, matcher)) {
                     continue;
                 }
 
-                int bodyStart = matcher.end();
-                int bodyEnd = content.indexOf("]", bodyStart);
-                if (bodyEnd == -1) {
-                    continue;
-                }
-
-                String body = content.substring(bodyStart, bodyEnd);
+                String body = content.substring(matcher.end(), content.indexOf("]", matcher.end()));
                 if (!body.contains("Break") && !body.contains("Return")) {
                     int lineNumber = calculateLineNumber(content, position);
                     reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.INFINITE_LOOP_KEY,
@@ -489,6 +568,15 @@ public class BugDetector extends BaseDetector {
         }
     }
 
+    private boolean shouldSkipInfiniteLoopCheck(String content, int position, Matcher matcher) {
+        if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+            return true;
+        }
+
+        int bodyEnd = content.indexOf("]", matcher.end());
+        return bodyEnd == -1;
+    }
+
     /**
      * Detect potential mismatched matrix dimensions.
      */
@@ -498,8 +586,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -537,8 +625,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -562,8 +650,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -585,8 +673,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -610,8 +698,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -648,8 +736,8 @@ public class BugDetector extends BaseDetector {
         while (matcher.find()) {
             int position = matcher.start();
 
-            // Skip matches inside comments
-            if (isInsideComment(content, position)) {
+            // Skip matches inside comments or string literals
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                 continue;
             }
 
@@ -691,8 +779,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -721,8 +809,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int position = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, position)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
                     continue;
                 }
 
@@ -750,8 +838,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int pos = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, pos)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, pos) || isInsideStringLiteral(content, pos)) {
                     continue;
                 }
 
@@ -822,8 +910,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int pos = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, pos)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, pos) || isInsideStringLiteral(content, pos)) {
                     continue;
                 }
 
@@ -854,13 +942,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int pos = matcher.start();
 
-                // Skip matches inside string literals (e.g., "data.The OneToOne model")
-                if (isInsideStringLiteral(content, pos)) {
-                    continue;
-                }
-
-                // Skip matches inside comments (e.g., "demo_shared.c")
-                if (isInsideComment(content, pos)) {
+                // Skip matches inside string literals or comments
+                if (isInsideStringLiteral(content, pos) || isInsideComment(content, pos)) {
                     continue;
                 }
 
@@ -923,8 +1006,8 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 int pos = matcher.start();
 
-                // Skip matches inside comments
-                if (isInsideComment(content, pos)) {
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, pos) || isInsideStringLiteral(content, pos)) {
                     continue;
                 }
 
@@ -1097,20 +1180,20 @@ public class BugDetector extends BaseDetector {
 
 
     private static final Pattern STREAM_PATTERN = Pattern.compile(
-        "(?:OpenRead|OpenWrite|OpenAppend|OutputStream|InputStream)\\s*+\\["
+        "\\b(?:OpenRead|OpenWrite|OpenAppend|OutputStream|InputStream)\\s*+\\["
     );
     private static final Pattern FILE_HANDLE_PATTERN = Pattern.compile(
-        "(?:OpenRead|OpenWrite|OpenAppend|File)\\s*+\\["
+        "\\b(?:OpenRead|OpenWrite|OpenAppend|File)\\s*+\\["
     );
-    private static final Pattern CLOSE_PATTERN = Pattern.compile("Close\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern CHECK_PATTERN = Pattern.compile("Check\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern CLOSE_PATTERN = Pattern.compile("\\bClose\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern CHECK_PATTERN = Pattern.compile("\\bCheck\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern STREAM_VAR_PATTERN = Pattern.compile(
-        "([a-zA-Z]\\w*+)\\s*+=\\s*+(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\["
+        "([a-zA-Z]\\w*+)\\s*+=\\s*+\\b(?:OpenRead|OpenWrite|OpenAppend)\\s*+\\["
     );
     private static final Pattern NOTEBOOK_PUT_PATTERN = Pattern.compile(//NOSONAR
         "(?:Table|Range|Array)\\s*+\\[[^\\]]*(?:Table|Range|Array).*NotebookWrite"
     );
-    private static final Pattern CLEAR_PATTERN = Pattern.compile("Clear\\s*+\\[|ClearAll\\s*+\\[|Remove\\s*+\\["); //NOSONAR
+    private static final Pattern CLEAR_PATTERN = Pattern.compile("\\b(?:Clear|ClearAll|Remove)\\s*+\\["); //NOSONAR
 
     /**
      * Detect streams that are not closed.
@@ -1120,11 +1203,18 @@ public class BugDetector extends BaseDetector {
             Matcher streamMatcher = STREAM_PATTERN.matcher(content);
             while (streamMatcher.find()) {
                 int streamPos = streamMatcher.start();
+
+                // Skip if stream open is inside a comment or string literal
+                if (isInsideComment(content, streamPos) || isInsideStringLiteral(content, streamPos)) {
+                    continue;
+                }
+
                 // Look for Close within reasonable range
                 String contextWindow = content.substring(streamPos,
                     Math.min(content.length(), streamPos + 1000));
 
-                if (!contextWindow.contains(CLOSE)) {
+                // Use CLOSE_PATTERN to properly detect Close with word boundary (not substrings like "CellClose")
+                if (!CLOSE_PATTERN.matcher(contextWindow).find()) {
                     int lineNumber = calculateLineNumber(content, streamPos);
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.STREAM_NOT_CLOSED_KEY,
                         "Stream opened but not closed. Use Close[] to prevent resource leak.");
@@ -1143,12 +1233,20 @@ public class BugDetector extends BaseDetector {
             Matcher handleMatcher = FILE_HANDLE_PATTERN.matcher(content);
             int openCount = 0;
             while (handleMatcher.find()) {
+                int position = handleMatcher.start();
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 openCount++;
             }
 
             Matcher closeMatcher = CLOSE_PATTERN.matcher(content);
             int closeCount = 0;
             while (closeMatcher.find()) {
+                int position = closeMatcher.start();
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 closeCount++;
             }
 
@@ -1173,14 +1271,21 @@ public class BugDetector extends BaseDetector {
                 int streamPos = streamMatcher.start();
                 String varName = streamMatcher.group(1);
 
+                // Skip if stream variable assignment is inside a comment or string literal
+                if (isInsideComment(content, streamPos) || isInsideStringLiteral(content, streamPos)) {
+                    continue;
+                }
+
                 // Look back for Check[
                 String lookback = content.substring(Math.max(0, streamPos - 100), streamPos);
-                if (!lookback.contains(CHECK)) {
+                if (!CHECK_PATTERN.matcher(lookback).find()) {
                     // Look forward for Close without Check protection
                     String lookahead = content.substring(streamPos,
                         Math.min(content.length(), streamPos + 500));
 
-                    if (!lookahead.contains(CHECK) && lookahead.contains(CLOSE + varName)) {
+                    // Use patterns instead of contains() to avoid matching substrings like "CellClose"
+                    Pattern closeVarPattern = Pattern.compile("\\bClose\\s*+\\[\\s*+" + Pattern.quote(varName));
+                    if (!CHECK_PATTERN.matcher(lookahead).find() && closeVarPattern.matcher(lookahead).find()) {
                         int lineNumber = calculateLineNumber(content, streamPos);
                         reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CLOSE_IN_FINALLY_MISSING_KEY,
                             String.format("Stream '%s' should use Check[] or Catch[] to ensure Close on error.", varName));

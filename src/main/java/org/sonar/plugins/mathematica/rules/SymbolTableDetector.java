@@ -480,6 +480,11 @@ public final class SymbolTableDetector {
     }
 
     private static void collectReferencedVariables(Symbol symbol, SymbolTable table, String contextStr, Set<String> deps) {
+        // Remove string literals and comments from context to avoid false positives
+        // Example: webmQ = pacletName == "webMathematica"
+        // Should not treat "webMathematica" as a variable reference
+        String cleanedContext = removeStringsAndComments(contextStr);
+
         for (Symbol otherSymbol : table.getAllSymbols()) {
             // Skip same symbol or local scope variables
             if (otherSymbol.getName().equals(symbol.getName()) || isLocalScopeVariable(otherSymbol)) {
@@ -488,9 +493,116 @@ public final class SymbolTableDetector {
 
             // Use word boundary matching to avoid false positives
             // e.g., "sf" won't match "StaticFigure" or "transform"
-            if (containsAsWord(contextStr, otherSymbol.getName())) {
+            if (containsAsWord(cleanedContext, otherSymbol.getName())) {
                 deps.add(otherSymbol.getName());
             }
+        }
+    }
+
+    /**
+     * Removes string literals and comments from context to avoid false positives.
+     * Replaces strings with spaces to preserve word boundaries.
+     */
+    private static String removeStringsAndComments(String context) {
+        StringBuilder result = new StringBuilder(context);
+        removeStringLiterals(result);
+        String withoutStrings = result.toString();
+        return removeComments(withoutStrings);
+    }
+
+    /**
+     * Removes string literals from the content, replacing them with spaces.
+     */
+    private static void removeStringLiterals(StringBuilder result) {
+        boolean insideString = false;
+        boolean escaped = false;
+
+        for (int i = 0; i < result.length(); i++) {
+            char c = result.charAt(i);
+
+            if (escaped) {
+                replaceCharIfInsideString(result, i, insideString);
+                escaped = false;
+                continue;
+            }
+
+            if (c == '\\') {
+                escaped = true;
+                replaceCharIfInsideString(result, i, insideString);
+            } else if (c == '"') {
+                result.setCharAt(i, ' ');
+                insideString = !insideString;
+            } else if (insideString) {
+                result.setCharAt(i, ' ');
+            }
+        }
+    }
+
+    /**
+     * Replaces a character with a space if inside a string literal.
+     */
+    private static void replaceCharIfInsideString(StringBuilder result, int index, boolean insideString) {
+        if (insideString) {
+            result.setCharAt(index, ' ');
+        }
+    }
+
+    /**
+     * Removes Mathematica comments (* ... *) from the content.
+     */
+    private static String removeComments(String withoutStrings) {
+        StringBuilder result = new StringBuilder(withoutStrings);
+        int commentDepth = 0;
+        int i = 0;
+
+        while (i < result.length() - 1) {
+            if (isCommentStart(result, i)) {
+                commentDepth++;
+                replaceCommentDelimiter(result, i);
+                i += 2;
+            } else if (isCommentEnd(result, i)) {
+                if (commentDepth > 0) {
+                    commentDepth--;
+                }
+                replaceCommentDelimiter(result, i);
+                i += 2;
+            } else {
+                replaceCharIfInsideComment(result, i, commentDepth);
+                i++;
+            }
+        }
+
+        return result.toString();
+    }
+
+    /**
+     * Checks if position is at the start of a comment.
+     */
+    private static boolean isCommentStart(StringBuilder result, int i) {
+        return result.charAt(i) == '(' && result.charAt(i + 1) == '*';
+    }
+
+    /**
+     * Checks if position is at the end of a comment.
+     */
+    private static boolean isCommentEnd(StringBuilder result, int i) {
+        return result.charAt(i) == '*' && result.charAt(i + 1) == ')';
+    }
+
+    /**
+     * Replaces comment delimiter characters with spaces.
+     */
+    private static void replaceCommentDelimiter(StringBuilder result, int i) {
+        result.setCharAt(i, ' ');
+        result.setCharAt(i + 1, ' ');
+    }
+
+    /**
+     * Replaces a character with a space if inside a comment.
+     */
+    private static void replaceCharIfInsideComment(StringBuilder result, int i, int commentDepth) {
+        if (commentDepth > 0) {
+            result.setCharAt(i, ' ');
         }
     }
 

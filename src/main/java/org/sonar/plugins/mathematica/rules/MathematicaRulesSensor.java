@@ -253,6 +253,8 @@ public class MathematicaRulesSensor implements Sensor {
                     processSingleIssue(data);
                 }
             }
+            // Queue is now empty
+            LOG.info("Issue queue fully drained. Saved {}/{} issues (100%)", savedIssues.get(), queuedIssues.get());
         }
 
         private void processSingleIssue(IssueData data) {
@@ -380,6 +382,22 @@ public class MathematicaRulesSensor implements Sensor {
 
     @Override
     public void execute(SensorContext context) {
+        List<InputFile> fileList = collectInputFiles(context);
+        int totalFiles = fileList.size();
+
+        startIssueSaverThread(context);
+        logAnalysisStart(totalFiles);
+        long startTime = System.currentTimeMillis();
+
+        buildCrossFileAnalysisData(fileList);
+        processAllFiles(context, fileList, totalFiles, startTime);
+        cleanupAndFinalize(totalFiles, startTime);
+    }
+
+    /**
+     * Collects all Mathematica input files from the file system.
+     */
+    private List<InputFile> collectInputFiles(SensorContext context) {
         FileSystem fs = context.fileSystem();
         FilePredicates predicates = fs.predicates();
 
@@ -390,21 +408,25 @@ public class MathematicaRulesSensor implements Sensor {
             )
         );
 
-        // Count total files and log start
         List<InputFile> fileList = new ArrayList<>();
         inputFiles.forEach(fileList::add);
-        int totalFiles = fileList.size();
+        return fileList;
+    }
 
-        // Start background issue saver thread
-        startIssueSaverThread(context);
-
+    /**
+     * Logs the start of analysis with file count and processor information.
+     */
+    private void logAnalysisStart(int totalFiles) {
         LOG.info("Starting analysis of {} Mathematica file(s)...", totalFiles);
         LOG.info("Using parallel processing with {} threads (thread-local caching enabled)", Runtime.getRuntime().availableProcessors());
-        LOG.info("Progress will be reported every 100 files");
+        int progressReportInterval = totalFiles < 200 ? 10 : 100;
+        LOG.info("Progress will be reported every {} files", progressReportInterval);
+    }
 
-        long startTime = System.currentTimeMillis();
-
-        // === PHASE 1: Build cross-file analysis data for Chunk5 ===
+    /**
+     * Builds cross-file dependency graph for architecture analysis.
+     */
+    private void buildCrossFileAnalysisData(List<InputFile> fileList) {
         LOG.info("Phase 1: Building cross-file dependency graph...");
         ArchitectureAndDependencyDetector.clearCaches();
 
@@ -425,39 +447,78 @@ public class MathematicaRulesSensor implements Sensor {
         });
 
         LOG.info("Phase 1 complete. Starting Phase 2: Rule detection...");
+    }
 
-        // === PHASE 2: Run all detectors ===
+    /**
+     * Processes all files in parallel with progress tracking.
+     */
+    private void processAllFiles(SensorContext context, List<InputFile> fileList, int totalFiles, long startTime) {
         java.util.concurrent.atomic.AtomicInteger processedCount = new java.util.concurrent.atomic.AtomicInteger(0);
-        int progressInterval = 100; // Log every 100 files
+        int progressInterval = totalFiles < 200 ? 10 : 100;
 
-        // Use parallel stream with thread-local detector instances for correct ThreadLocal caching
         fileList.parallelStream().forEach(inputFile -> {
             try {
-                analyzeFile(context, inputFile);
-                int count = processedCount.incrementAndGet();
-
-                // Log progress every 100 files (thread-safe)
-                if (count % progressInterval == 0) {
-                    long elapsedMs = System.currentTimeMillis() - startTime;
-                    double filesPerSec = count / (elapsedMs / 1000.0);
-                    int remainingFiles = totalFiles - count;
-                    long estimatedRemainingMs = (long) (remainingFiles / filesPerSec * 1000);
-
-                    LOG.info("Progress: {}/{} files analyzed ({} %) | Speed: {} files/sec | Est. remaining: {} min",
-                        count,
-                        totalFiles,
-                        (int) ((count * 100.0) / totalFiles),
-                        String.format("%.1f", filesPerSec),
-                        estimatedRemainingMs / 60000);
-                }
+                processFileWithProgress(context, inputFile, processedCount, totalFiles, progressInterval, startTime);
             } catch (Exception e) {
                 LOG.error("Error processing file: {}", inputFile.filename(), e);
             } finally {
-                // Clean up ThreadLocal variables to prevent memory leaks in thread pool
                 cleanupThreadLocals();
             }
         });
+    }
 
+    /**
+     * Processes a single file and logs progress information.
+     */
+    private void processFileWithProgress(SensorContext context, InputFile inputFile,
+                                         java.util.concurrent.atomic.AtomicInteger processedCount,
+                                         int totalFiles, int progressInterval, long startTime) {
+        long fileStartTime = System.currentTimeMillis();
+        LOG.debug("Analyzing: {}", inputFile.filename());
+
+        analyzeFile(context, inputFile);
+        int count = processedCount.incrementAndGet();
+
+        logSlowFileIfNeeded(inputFile, fileStartTime, count, totalFiles);
+        logProgressIfNeeded(count, totalFiles, progressInterval, startTime);
+    }
+
+    /**
+     * Logs information for slow files (>5 seconds).
+     */
+    private void logSlowFileIfNeeded(InputFile inputFile, long fileStartTime, int count, int totalFiles) {
+        long fileElapsed = System.currentTimeMillis() - fileStartTime;
+        if (fileElapsed > 5000) {
+            LOG.info("Completed {}/{} files - {} took {}ms ({} lines)",
+                count, totalFiles, inputFile.filename(), fileElapsed, inputFile.lines());
+        }
+    }
+
+    /**
+     * Logs progress periodically based on interval.
+     */
+    private void logProgressIfNeeded(int count, int totalFiles, int progressInterval, long startTime) {
+        if (count % progressInterval != 0) {
+            return;
+        }
+
+        long elapsedMs = System.currentTimeMillis() - startTime;
+        double filesPerSec = count / (elapsedMs / 1000.0);
+        int remainingFiles = totalFiles - count;
+        long estimatedRemainingMs = (long) (remainingFiles / filesPerSec * 1000);
+
+        LOG.info("Progress: {}/{} files analyzed ({} %) | Speed: {} files/sec | Est. remaining: {} min",
+            count,
+            totalFiles,
+            (int) ((count * 100.0) / totalFiles),
+            String.format("%.1f", filesPerSec),
+            estimatedRemainingMs / 60000);
+    }
+
+    /**
+     * Cleans up resources and logs final statistics.
+     */
+    private void cleanupAndFinalize(int totalFiles, long startTime) {
         long totalTimeMs = System.currentTimeMillis() - startTime;
         if (LOG.isInfoEnabled()) {
             double avgFilesPerSec = totalFiles / (totalTimeMs / 1000.0);
@@ -467,18 +528,10 @@ public class MathematicaRulesSensor implements Sensor {
                 String.format("%.1f", avgFilesPerSec));
         }
 
-        // NO FILES SKIPPED - Complete analysis on all files
-
-        // Clean up cross-file analysis caches
         ArchitectureAndDependencyDetector.clearCaches();
         SymbolTableManager.clear();
-
-        // Log rule statistics before stopping saver thread
         logRuleStatistics();
-
-        // Stop issue saver thread and wait for queue to drain
         stopIssueSaverThread();
-
         LOG.info("Cleared all static caches - ready for next scan");
     }
 

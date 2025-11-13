@@ -18,22 +18,22 @@ public class FrameworkDetector extends BaseDetector {
     // ===== TIER 1 GAP CLOSURE - FRAMEWORK DETECTION (18 rules) =====
 
     // Notebook patterns
-    private static final Pattern CELL_PATTERN = Pattern.compile("Cell\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern SECTION_PATTERN = Pattern.compile("(?:Section|Subsection|Title|Subtitle)\\["); //NOSONAR
-    private static final Pattern INIT_CELL_PATTERN = Pattern.compile("InitializationCell\\s*+->\\s*+True"); //NOSONAR
+    private static final Pattern CELL_PATTERN = Pattern.compile("\\bCell\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern SECTION_PATTERN = Pattern.compile("\\b(?:Section|Subsection|Title|Subtitle)\\["); //NOSONAR
+    private static final Pattern INIT_CELL_PATTERN = Pattern.compile("\\bInitializationCell\\s*+->\\s*+True"); //NOSONAR
 
     // Manipulate/Dynamic patterns
-    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("Manipulate\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern DYNAMIC_PATTERN = Pattern.compile("Dynamic\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern MANIPULATE_PATTERN = Pattern.compile("\\bManipulate\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern DYNAMIC_PATTERN = Pattern.compile("\\bDynamic\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern MANIPULATE_CONTROLS_PATTERN = Pattern.compile("\\{\\s*+\\w+\\s*+,"); //NOSONAR
     private static final Pattern HEAVY_COMPUTE_PATTERN = Pattern.compile(
         "(?:Integrate|DSolve|NDSolve|NIntegrate|FindRoot|Solve)\\s*+\\["
     );
 
     // Package patterns
-    private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("BeginPackage\\s*+\\["); //NOSONAR
-    private static final Pattern BEGIN_PATTERN = Pattern.compile("Begin\\s*+\\[\\s*+\"`Private`\"\\s*+\\]"); //NOSONAR
-    private static final Pattern END_PACKAGE_PATTERN = Pattern.compile("EndPackage\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern BEGIN_PACKAGE_PATTERN = Pattern.compile("\\bBeginPackage\\s*+\\["); //NOSONAR
+    private static final Pattern BEGIN_PATTERN = Pattern.compile("\\bBegin\\s*+\\[\\s*+\"`Private`\"\\s*+\\]"); //NOSONAR
+    private static final Pattern END_PACKAGE_PATTERN = Pattern.compile("\\bEndPackage\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern USAGE_MESSAGE_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)::usage\\s*+="); //NOSONAR
     private static final Pattern PUBLIC_FUNCTION_PATTERN = Pattern.compile("([A-Z][a-zA-Z0-9]*)\\s*+\\[[^\\]]*\\]\\s*+:="); //NOSONAR
     private static final Pattern NEEDS_PATTERN = Pattern.compile("(?:Needs|Get)\\s*+\\[\\s*+\"([^\"]+)\""); //NOSONAR
@@ -57,32 +57,23 @@ public class FrameworkDetector extends BaseDetector {
      */
     public void detectNotebookCellSize(SensorContext context, InputFile inputFile, String content) {
         try {
-            // Simple heuristic: check file structure suggests notebook
-            if (!content.contains(CELL) && !content.contains(NOTEBOOK)) {
+            if (!isNotebookFile(content)) {
                 return;
             }
 
             Matcher matcher = CELL_PATTERN.matcher(content);
             while (matcher.find()) {
-                int cellStart = matcher.start();
-                // Find matching closing bracket
-                int depth = 1;
-                int pos = matcher.end();
-                while (pos < content.length() && depth > 0) {
-                    char c = content.charAt(pos);
-                    if (c == '[') {
-                        depth++;
-                    } else if (c == ']') {
-                        depth--;
-                    }
-                    pos++;
+                int position = matcher.start();
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
                 }
 
-                String cellContent = content.substring(cellStart, Math.min(pos, content.length()));
+                int cellEnd = findMatchingBracket(content, matcher.end());
+                String cellContent = content.substring(matcher.start(), cellEnd);
                 int cellLines = cellContent.split("\n").length;
 
                 if (cellLines > 50) {
-                    int lineNumber = calculateLineNumber(content, cellStart);
+                    int lineNumber = calculateLineNumber(content, matcher.start());
                     reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.NOTEBOOK_CELL_SIZE_KEY,
                         String.format("Notebook cell is %d lines (max 50). Break into smaller cells.", cellLines));
                 }
@@ -90,6 +81,25 @@ public class FrameworkDetector extends BaseDetector {
         } catch (Exception e) {
             LOG.warn("Skipping notebook cell size detection: {}", inputFile.filename());
         }
+    }
+
+    private boolean isNotebookFile(String content) {
+        return content.contains(CELL) || content.contains(NOTEBOOK);
+    }
+
+    private int findMatchingBracket(String content, int startPos) {
+        int depth = 1;
+        int pos = startPos;
+        while (pos < content.length() && depth > 0) {
+            char c = content.charAt(pos);
+            if (c == '[') {
+                depth++;
+            } else if (c == ']') {
+                depth--;
+            }
+            pos++;
+        }
+        return Math.min(pos, content.length());
     }
 
     /**
@@ -152,6 +162,11 @@ public class FrameworkDetector extends BaseDetector {
         try {
             Matcher matcher = INIT_CELL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 // Check context for heavy computations or side effects
                 String contextWindow = content.substring(Math.max(0, matcher.start() - 200),
                     Math.min(content.length(), matcher.end() + 200));
@@ -247,6 +262,11 @@ public class FrameworkDetector extends BaseDetector {
         try {
             Matcher matcher = MANIPULATE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int manipulateStart = matcher.start();
                 String manipulateBody = content.substring(manipulateStart,
                     Math.min(manipulateStart + 1000, content.length()));
@@ -358,6 +378,11 @@ public class FrameworkDetector extends BaseDetector {
             Matcher matcher = NEEDS_PATTERN.matcher(content);
             java.util.List<String> dependencies = new java.util.ArrayList<>();
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 dependencies.add(matcher.group(1));
             }
 
@@ -381,6 +406,11 @@ public class FrameworkDetector extends BaseDetector {
         try {
             Matcher matcher = PARALLEL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int parallelStart = matcher.start();
                 String parallelBody = content.substring(parallelStart,
                     Math.min(parallelStart + 200, content.length()));
@@ -409,6 +439,11 @@ public class FrameworkDetector extends BaseDetector {
 
             Matcher matcher = PARALLEL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int parallelStart = matcher.start();
                 String parallelBody = content.substring(parallelStart,
                     Math.min(parallelStart + 300, content.length()));
@@ -450,6 +485,11 @@ public class FrameworkDetector extends BaseDetector {
         try {
             Matcher matcher = API_FUNCTION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int apiStart = matcher.start();
                 String apiBody = content.substring(apiStart,
                     Math.min(apiStart + 300, content.length()));
@@ -472,6 +512,11 @@ public class FrameworkDetector extends BaseDetector {
         try {
             Matcher matcher = PERMISSIONS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CLOUD_PERMISSIONS_TOO_OPEN_KEY,
                     "Cloud permissions set to 'Public'. Use least privilege principle.");

@@ -52,6 +52,11 @@ public class SecurityHotspotDetector extends BaseDetector {
             Matcher matcher = FILE_IMPORT_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 String match = matcher.group();
 
@@ -77,6 +82,11 @@ public class SecurityHotspotDetector extends BaseDetector {
             Matcher matcher = API_CALL_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.EXTERNAL_API_SAFEGUARDS_KEY,
                     "Review: Ensure this API call has timeout, error handling, and rate limiting.");
@@ -94,6 +104,11 @@ public class SecurityHotspotDetector extends BaseDetector {
             Matcher matcher = KEY_GENERATION_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 String match = matcher.group();
 
@@ -118,6 +133,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = NETWORK_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.NETWORK_OPERATIONS_KEY,
                     "Review: Network operation should use TLS, have timeout, and proper error handling.");
@@ -134,6 +154,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = FILE_DELETE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.FILE_SYSTEM_MODIFICATIONS_KEY,
                     "Review: File system modification should validate paths and log operations.");
@@ -150,6 +175,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = ENVIRONMENT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.ENVIRONMENT_VARIABLE_KEY,
                     "Review: Environment variable may contain secrets. Ensure not logged or exposed.");
@@ -166,6 +196,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = IMPORT_NO_FORMAT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 // Check if it's truly without format (no second argument)
                 String match = matcher.group();
                 if (!match.contains(",")) {
@@ -250,6 +285,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = AUTH_FUNCTIONS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 String contextWindow = content.substring(Math.max(0, matcher.start() - 50),
                     Math.min(content.length(), matcher.end() + 200));
@@ -286,6 +326,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = SESSION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.INSECURE_SESSION_KEY,
                     "Review: Session management implementation. Ensure secure session tokens and expiration.");
@@ -302,6 +347,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = DEFAULT_CRED_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 if (content.substring(Math.max(0, matcher.start() - 20), matcher.start())
                     .matches(".*(?:password|pwd|passwd|credential)\\s*+=\\s*+$")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -321,6 +371,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = PASSWORD_VAR_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PASSWORD_PLAIN_TEXT_KEY,
                     "Review: Password stored in plain text. Use secure storage and hashing.");
@@ -337,6 +392,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = RANDOM_SECURITY_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.WEAK_SESSION_TOKEN_KEY,
                     "Review: Weak random generation for security token. Use cryptographically secure methods.");
@@ -368,6 +428,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = WEAK_HASH_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.WEAK_HASHING_KEY,
                     "Review: Weak hashing algorithm (MD5/SHA1). Use SHA-256 or SHA3-256.");
@@ -384,6 +449,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = RANDOM_SECURITY_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.INSECURE_RANDOM_HOTSPOT_KEY,
                     "Review: Insecure random for security. RandomInteger is not cryptographically secure.");
@@ -400,6 +470,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = CRYPTO_KEY_HARDCODED_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HARDCODED_CRYPTO_KEY_KEY,
                     "Review: Hardcoded cryptographic key. Store keys securely, not in code.");
@@ -416,6 +491,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = ECB_MODE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.WEAK_CIPHER_MODE_KEY,
                     "Review: ECB cipher mode is insecure. Use CBC, GCM, or CTR modes.");
@@ -432,6 +512,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = SMALL_KEY_SIZE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.INSUFFICIENT_KEY_SIZE_KEY,
                     "Review: Insufficient key size (<2048 bits). Use at least 2048 bits for RSA.");
@@ -448,6 +533,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = SSL_PROTOCOL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.WEAK_SSL_PROTOCOL_KEY,
                     "Review: Weak SSL/TLS protocol. Use TLS 1.2 or 1.3.");
@@ -464,6 +554,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = CERT_VALIDATION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CERTIFICATE_VALIDATION_DISABLED_KEY,
                     "Review: Certificate validation disabled. This defeats the purpose of SSL/TLS.");
@@ -480,6 +575,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = HTTP_URL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HTTP_WITHOUT_TLS_KEY,
                     "Review: HTTP connection without TLS. Use HTTPS to protect data in transit.");
@@ -496,6 +596,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = CORS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CORS_PERMISSIVE_KEY,
                     "Review: Permissive CORS policy (*). Restrict to specific origins.");
@@ -512,6 +617,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = REDIRECT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.OPEN_REDIRECT_KEY,
                     "Review: Open redirect based on user input. Validate redirect targets.");
@@ -543,6 +653,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = WEBSOCKET_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.INSECURE_WEBSOCKET_KEY,
                     "Review: Insecure WebSocket (ws://). Use wss:// for encrypted connections.");
@@ -574,6 +689,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = LOG_SENSITIVE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.SENSITIVE_DATA_LOG_KEY,
                     "Review: Sensitive data (password/token) in logs. Remove before logging.");
@@ -590,6 +710,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = PII_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PII_EXPOSURE_KEY,
                     "Review: PII handling. Ensure encryption, access controls, and compliance.");
@@ -606,6 +731,11 @@ public class SecurityHotspotDetector extends BaseDetector {
         try {
             Matcher matcher = CLEARTEXT_PROTOCOL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.CLEAR_TEXT_PROTOCOL_KEY,
                     "Review: Clear-text protocol (FTP/Telnet/LDAP). Use encrypted alternatives.");

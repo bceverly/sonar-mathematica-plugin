@@ -180,7 +180,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     }
 
     public static void detectCheckPatternDoesntHandleAllCases(SensorContext ctx, InputFile file, String content) {
-        Pattern check = Pattern.compile("Check\\s*+\\[[^,]+,[^,]+\\](?!\\s*,)"); //NOSONAR - Possessive quantifiers prevent backtracking
+        Pattern check = Pattern.compile("\\bCheck\\s*+\\[[^,]+,[^,]+\\](?!\\s*,)"); //NOSONAR - Possessive quantifiers prevent backtracking
         if (check.matcher(content).find()) {
             Matcher m = check.matcher(content);
             while (m.find()) {

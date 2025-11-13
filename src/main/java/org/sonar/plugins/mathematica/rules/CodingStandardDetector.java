@@ -146,7 +146,12 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectBracketSpacingBefore(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = BRACKET_SPACING_BEFORE_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            // Skip matches inside comments or string literals
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.BRACKET_SPACING_BEFORE_KEY,
                 "Remove whitespace before opening bracket");
         }
@@ -155,7 +160,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectVariableAssignmentInModuleDef(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = MODULE_ASSIGNMENT_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             String varName = matcher.group(1);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.VARIABLE_ASSIGNMENT_IN_MODULE_DEF_KEY,
                 VARIABLE_PREFIX + varName + "' should be assigned in Module body, not in definition");
@@ -165,7 +174,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectComplexBooleanShorthand(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = COMPLEX_BOOLEAN_SHORTHAND_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.EXPLICIT_AND_OR_FOR_COMPLEX_BOOLEAN_KEY,
                 "Use explicit And[...] or Or[...] for complex multi-line boolean expressions");
         }
@@ -174,7 +187,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectMultilineMapShorthand(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = MULTILINE_MAP_SHORTHAND_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.MAP_NOT_SHORTHAND_MULTILINE_KEY,
                 "Use Map[...] instead of /@ for multi-line statements");
         }
@@ -183,7 +200,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectErrorMessageDelayed(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = ERROR_MESSAGE_DELAYED_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             String funcName = matcher.group(1);
             String msgName = matcher.group(2);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.ERROR_MESSAGE_WITH_SET_KEY,
@@ -194,7 +215,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectConditionalFunctionDef(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = CONDITIONAL_FUNCTION_DEF_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             String funcName = matcher.group(1);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.CONDITIONAL_FUNCTION_DEFINITION_KEY,
                 FUNCTION_PREFIX + funcName + "' should not use /; in definition. Use If or Which in body instead");
@@ -204,7 +229,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectDereferencingSyntax(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = DEREFERENCING_SYNTAX_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.DEREFERENCING_SYNTAX_KEY,
                 "Do not use dereferencing syntax. Use explicit Download or Lookup instead");
         }
@@ -232,7 +261,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectNonLinearEvaluation(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = COMPOSITION_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.NON_LINEAR_EVALUATION_KEY,
                 "Non-linear evaluation structures should be used sparingly for clarity");
         }
@@ -241,7 +274,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectInPlaceModification(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = IN_PLACE_MODIFICATION_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.LIST_MODIFICATION_IN_PLACE_KEY,
                 "Avoid in-place list modification. Use immutable patterns instead");
         }
@@ -254,10 +291,14 @@ public class CodingStandardDetector extends BaseDetector {
         Pattern varPattern = Pattern.compile("\\b([a-z]\\w*)\\s*=(?!=)");
         Matcher matcher = varPattern.matcher(content);
         while (matcher.find()) {
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
             String varName = matcher.group(1);
             // Check if it looks abbreviated (short consonant clusters, single letters, etc.)
             if (looksAbbreviated(varName)) {
-                int line = getLineNumber(content, matcher.start());
+                int line = getLineNumber(content, position);
                 reportIssue(context, inputFile, line, MathematicaRuleKeys.VARIABLE_FULL_WORDS_KEY,
                     VARIABLE_PREFIX + varName + "' appears abbreviated. Use full words");
             }
@@ -278,7 +319,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectLongVariableNames(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = LONG_VARIABLE_NAME_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             String varName = matcher.group();
             reportIssue(context, inputFile, line, MathematicaRuleKeys.VARIABLE_NAME_THREE_WORDS_KEY,
                 VARIABLE_PREFIX + varName + "' has more than 3 words. Keep names concise");
@@ -290,7 +335,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectCustomAssociationParams(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = CUSTOM_ASSOCIATION_PARAM_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             String funcName = matcher.group(1);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.CUSTOM_ASSOCIATIONS_AS_INPUTS_KEY,
                 FUNCTION_PREFIX + funcName + "' should not use custom associations/lists of rules as parameters");
@@ -300,10 +349,14 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectGlobalNoDollar(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = GLOBAL_NO_DOLLAR_PATTERN.matcher(content);
         while (matcher.find()) {
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
             String varName = matcher.group(1);
             // Check if it looks like a global constant (not a function definition)
             if (!UPPERCASE_CLUSTER_PATTERN.matcher(varName).find() && !content.contains(varName + "[")) {
-                int line = getLineNumber(content, matcher.start());
+                int line = getLineNumber(content, position);
                 reportIssue(context, inputFile, line, MathematicaRuleKeys.GLOBAL_VARIABLE_DOLLAR_PREFIX_KEY,
                     "Global variable '" + varName + "' should start with $ prefix");
             }
@@ -313,7 +366,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectLongFunctionNames(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = LONG_FUNCTION_NAME_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             String funcName = matcher.group(1);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.FUNCTION_NAME_THREE_WORDS_KEY,
                 FUNCTION_PREFIX + funcName + "' has more than 3 words. Keep names concise");
@@ -323,7 +380,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectLitterWords(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = LITTER_WORDS_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.FUNCTION_NAME_LITTER_WORDS_KEY,
                 "Function name contains litter words (Do, Make, Get, And). Use more meaningful names");
         }
@@ -332,7 +393,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectLongPureFunctions(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = LONG_PURE_FUNCTION_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.PURE_FUNCTION_SHORT_OPERATIONS_KEY,
                 "Pure functions should be used for short (<1 line) operations only");
         }
@@ -343,7 +408,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectTimeConstrained(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = TIME_CONSTRAINED_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.TIME_CONSTRAINED_USAGE_KEY,
                 "CRITICAL: TimeConstrained can kill WSTP programs. Avoid unless absolutely necessary");
         }
@@ -354,10 +423,14 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectPatternNoPSuffix(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = PATTERN_NO_P_SUFFIX_PATTERN.matcher(content);
         while (matcher.find()) {
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
             String patternName = matcher.group(1);
             // Only flag if it looks like a pattern definition
             if (patternName.length() > 2 && !patternName.endsWith("P")) {
-                int line = getLineNumber(content, matcher.start());
+                int line = getLineNumber(content, position);
                 reportIssue(context, inputFile, line, MathematicaRuleKeys.PATTERN_NAME_ENDS_WITH_P_KEY,
                     "Pattern '" + patternName + "' should end with uppercase P");
             }
@@ -367,9 +440,13 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectPatternTestNoQSuffix(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = PATTERN_TEST_NO_Q_SUFFIX_PATTERN.matcher(content);
         while (matcher.find()) {
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
             String funcName = matcher.group(1);
             if (!funcName.endsWith("Q")) {
-                int line = getLineNumber(content, matcher.start());
+                int line = getLineNumber(content, position);
                 reportIssue(context, inputFile, line, MathematicaRuleKeys.PATTERN_TEST_NAME_ENDS_WITH_Q_KEY,
                     "Pattern test function '" + funcName + "' should end with uppercase Q");
             }
@@ -379,7 +456,11 @@ public class CodingStandardDetector extends BaseDetector {
     private void detectEnumeratedStringPattern(SensorContext context, InputFile inputFile, String content) {
         Matcher matcher = ENUMERATED_STRING_PATTERN.matcher(content);
         while (matcher.find()) {
-            int line = getLineNumber(content, matcher.start());
+            int position = matcher.start();
+            if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                continue;
+            }
+            int line = getLineNumber(content, position);
             reportIssue(context, inputFile, line, MathematicaRuleKeys.ENUMERATED_PATTERN_SYMBOLS_KEY,
                 "Enumerated type patterns should use symbols, not strings");
         }

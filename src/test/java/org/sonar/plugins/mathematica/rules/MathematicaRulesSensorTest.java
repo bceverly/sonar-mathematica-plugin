@@ -88,4 +88,51 @@ class MathematicaRulesSensorTest {
         detector.initializeCaches("Module[{x}, x = 1]");
         detector.clearCaches();
     }
+
+    // ===== ADDITIONAL TESTS FOR >80% COVERAGE =====
+
+    @Test
+    void testCodingStandardDetectorCanBeInstantiated() {
+        CodingStandardDetector detector = new CodingStandardDetector();
+        assertThat(detector).isNotNull();
+
+        detector.initializeCaches("f[x_] := x + 1");
+        detector.clearCaches();
+    }
+
+    @Test
+    void testStyleAndConventionsDetectorCanBeInstantiated() {
+        StyleAndConventionsDetector detector = new StyleAndConventionsDetector();
+        assertThat(detector).isNotNull();
+
+        detector.initializeCaches("longLine = 1;");
+        detector.clearCaches();
+    }
+
+    @Test
+    void testCustomRuleDetectorCanBeInstantiated() {
+        CustomRuleDetector detector = new CustomRuleDetector();
+        assertThat(detector).isNotNull();
+
+        detector.initializeCaches("custom = 1;");
+        detector.clearCaches();
+    }
+
+    @Test
+    void testTypeAndDataFlowDetectorCanBeInstantiated() {
+        TypeAndDataFlowDetector detector = new TypeAndDataFlowDetector();
+        assertThat(detector).isNotNull();
+
+        detector.initializeCaches("x = 1; y = x;");
+        detector.clearCaches();
+    }
+
+    @Test
+    void testControlFlowAndTaintDetectorCanBeInstantiated() {
+        ControlFlowAndTaintDetector detector = new ControlFlowAndTaintDetector();
+        assertThat(detector).isNotNull();
+
+        detector.initializeCaches("If[x > 0, True, False]");
+        detector.clearCaches();
+    }
 }

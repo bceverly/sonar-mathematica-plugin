@@ -244,16 +244,62 @@ public abstract class BaseDetector {
 
     /**
      * Checks if a position is inside a string literal.
+     * Properly handles multi-line strings by scanning from the beginning of content.
+     * Uses both forward scanning and context checking for robustness.
      */
     protected boolean isInsideStringLiteral(String content, int position) {
-        int quoteCount = 0;
+        if (position >= content.length()) {
+            return false;
+        }
+
+        // First, do a quick context check: if there's a quote before this position
+        // on the same line and no closing quote between the quote and position,
+        // we're likely inside a string
         int lineStart = content.lastIndexOf('\n', position) + 1;
-        for (int i = lineStart; i < position; i++) {
-            if (content.charAt(i) == '"' && i > 0 && content.charAt(i - 1) != '\\') {
+        String linePrefix = content.substring(lineStart, position);
+
+        // Count unescaped quotes in the line up to this position
+        int quoteCount = 0;
+        boolean escaped = false;
+        for (int i = 0; i < linePrefix.length(); i++) {
+            char c = linePrefix.charAt(i);
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
                 quoteCount++;
             }
         }
-        return quoteCount % 2 == 1;
+
+        // If we have an odd number of quotes before this position on this line,
+        // we're inside a string
+        if (quoteCount % 2 == 1) {
+            return true;
+        }
+
+        // For multi-line strings, do full scan from beginning
+        boolean insideString = false;
+        escaped = false;
+
+        for (int i = 0; i < position; i++) {
+            char c = content.charAt(i);
+
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+
+            if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                insideString = !insideString;
+            }
+        }
+
+        return insideString;
     }
 
     /**
@@ -376,15 +422,20 @@ public abstract class BaseDetector {
      */
     protected boolean isInsideComment(String content, int position) {
         int depth = 0;
-        for (int i = 0; i < position; i++) {
+        int i = 0;
+        while (i < position) {
             if (i < content.length() - 1) {
                 if (content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
                     depth++;
-                    i++; // Skip the '*'
+                    i += 2; // Skip both '(' and '*'
                 } else if (content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
                     depth--;
-                    i++; // Skip the ')'
+                    i += 2; // Skip both '*' and ')'
+                } else {
+                    i++;
                 }
+            } else {
+                i++;
             }
         }
         return depth > 0;

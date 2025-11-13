@@ -93,6 +93,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = STRING_ARITHMETIC.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.NUMERIC_OPERATION_ON_STRING_KEY,
@@ -107,6 +112,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = STRING_FUNCTION_ON_NUMBER.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String function = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -156,6 +166,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             // Detect functions with inconsistent return types (simplified heuristic)
             Matcher matcher = FUNCTION_RETURN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 String body = matcher.group(3);
 
@@ -181,6 +196,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Pattern pattern = Pattern.compile("\"[^\"]+\"\\s*+(<|>|<=|>=)\\s*+\\d+"); //NOSONAR - Possessive quantifiers prevent backtracking
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.COMPARISON_INCOMPATIBLE_TYPES_KEY,
@@ -198,6 +218,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Pattern pattern = Pattern.compile("\\d+\\s*+/\\s*+\\d+\\s*+[\\+\\-]\\s*+\\d+\\.\\d+"); //NOSONAR
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.MIXED_NUMERIC_TYPES_KEY,
@@ -212,12 +237,9 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = INTEGER_DIVISION.matcher(content);
             while (matcher.find()) {
-                // Check if in numeric context (simplified)
-                int contextStart = Math.max(0, matcher.start() - 50);
-                String beforeContext = content.substring(contextStart, matcher.start());
-
-                if (beforeContext.contains("N[") || beforeContext.contains("//N")) {
-                    // Already being converted, OK
+                int position = matcher.start();
+                // Skip matches inside comments, string literals, or numeric contexts (combined check)
+                if (shouldSkipIntegerDivisionMatch(content, position, matcher.start())) {
                     continue;
                 }
 
@@ -231,12 +253,34 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         }
     }
 
+    /**
+     * Helper method to determine if an integer division match should be skipped.
+     */
+    private boolean shouldSkipIntegerDivisionMatch(String content, int position, int matchStart) {
+        // Skip matches inside comments or string literals
+        if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+            return true;
+        }
+
+        // Check if in numeric context (simplified)
+        int contextStart = Math.max(0, matchStart - 50);
+        String beforeContext = content.substring(contextStart, matchStart);
+
+        // Already being converted, OK to skip
+        return beforeContext.contains("N[") || beforeContext.contains("//N");
+    }
+
     public void detectListFunctionOnAssociation(SensorContext context, InputFile inputFile, String content) {
         try {
             // Detect Append on association-like structure
             Pattern pattern = Pattern.compile("\\bAppend\\s*+\\[\\s*+<\\|"); //NOSONAR - Possessive quantifiers prevent backtracking
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.LIST_FUNCTION_ON_ASSOCIATION_KEY,
@@ -315,6 +359,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Pattern pattern = Pattern.compile("_Integer\\s*+:\\s*+\\d+\\.\\d+"); //NOSONAR - Possessive quantifiers prevent backtracking
             Matcher matcher = pattern.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.OPTIONAL_TYPE_INCONSISTENT_KEY,
@@ -347,6 +396,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int assignPos = matcher.end();
 
@@ -369,6 +423,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = TO_EXPRESSION.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String arg = matcher.group(1);
 
                 // Check if there's no StringQ or validation nearby
@@ -392,6 +451,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = TO_STRING.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String stringArg = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -407,6 +471,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = PLOT_ARITHMETIC.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String graphicsFunc = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -425,6 +494,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
 
                 // Check if variable was assigned earlier
@@ -446,6 +520,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = IMAGE_OPERATION.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String operation = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -461,6 +540,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = AUDIO_OPERATION.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String operation = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -476,6 +560,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = DATASET_OPERATION.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
 
                 // Check if variable is a list (simple heuristic)
@@ -498,6 +587,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = GRAPH_OPERATION.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String operation = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -637,6 +731,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Map<String, Integer> assignments = new HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int pos = matcher.start();
 
@@ -675,6 +774,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Matcher matcher = aliasPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String var1 = matcher.group(1);
                 String var2 = matcher.group(2);
                 int aliasPos = matcher.end();
@@ -698,6 +802,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = DO_LOOP.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String iteratorName = matcher.group(2);
                 String loopBody = matcher.group(1);
 
@@ -720,6 +829,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = DO_LOOP.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String iteratorName = matcher.group(2);
                 int loopEnd = findMatchingBracket(content, matcher.end());
 
@@ -741,6 +855,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = UNSET_CLEAR.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String command = matcher.group(1);
                 String varName = matcher.group(2);
                 int unsetPos = matcher.end();
@@ -765,6 +884,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
             Matcher matcher = VARIABLE_ASSIGNMENT.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 String value = matcher.group(2).trim();
 
@@ -793,6 +917,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 Matcher mutMatcher = PURE_FUNCTION_MUTATION.matcher(matcher.group(1));
                 if (mutMatcher.find()) {
                     String varName = mutMatcher.group(1);
@@ -816,6 +945,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
 
             Set<String> globalVars = new HashSet<>();
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 globalVars.add(matcher.group(1));
             }
 
@@ -847,6 +981,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             // Detect Module[{x}, x] - returning uninitialized local
             Matcher matcher = MODULE_BLOCK_WITH.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String scopeType = matcher.group(1);
                 String vars = matcher.group(2);
                 int bodyStart = matcher.end();
@@ -881,6 +1020,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -896,6 +1040,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = ASSIGNMENT_IN_IF.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
@@ -916,6 +1065,11 @@ public class TypeAndDataFlowDetector extends BaseDetector {
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 String varName = matcher.group(2);
                 int line = calculateLineNumber(content, matcher.start());
@@ -932,36 +1086,70 @@ public class TypeAndDataFlowDetector extends BaseDetector {
         try {
             Matcher matcher = MODULE_BLOCK_WITH.matcher(content);
             while (matcher.find()) {
-                String scopeType = matcher.group(1);
-                if (!"Module".equals(scopeType)) {
-                    continue; // Only check Module
-                }
-
-                String vars = matcher.group(2);
-                int bodyStart = matcher.end();
-                int bodyEnd = findMatchingBracket(content, bodyStart);
-
-                if (bodyEnd > bodyStart) {
-                    String body = content.substring(bodyStart, bodyEnd);
-
-                    String[] varList = vars.split(",");
-                    for (String varEntry : varList) {
-                        String varName = varEntry.trim().split("\\s*+=")[0].trim(); //NOSONAR
-
-                        // Check if variable never modified (no assignments in body)
-                        // Possessive quantifiers prevent backtracking
-                        Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+="); //NOSONAR
-                        if (!assignPattern.matcher(body).find()) {
-                            int line = calculateLineNumber(content, matcher.start());
-                            reportIssue(context, inputFile, line,
-                                MathematicaRulesDefinition.VARIABLE_NEVER_MODIFIED_KEY,
-                                String.format("Module variable '%s' never modified - use With instead.", varName));
-                        }
-                    }
-                }
+                processModuleForNeverModifiedVars(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
             LOG.debug("Error detecting variables never modified in {}", inputFile.filename(), e);
+        }
+    }
+
+    /**
+     * Processes a single Module match to check for never-modified variables.
+     */
+    private void processModuleForNeverModifiedVars(SensorContext context, InputFile inputFile, String content, Matcher matcher) {
+        int position = matcher.start();
+        // Combined skip check: comments, string literals, or non-Module scopes
+        if (shouldSkipModuleMatch(content, position, matcher.group(1))) {
+            return;
+        }
+
+        String vars = matcher.group(2);
+        int bodyStart = matcher.end();
+        int bodyEnd = findMatchingBracket(content, bodyStart);
+
+        if (bodyEnd > bodyStart) {
+            checkModuleVariablesForModification(context, inputFile, content, matcher, vars, bodyStart, bodyEnd);
+        }
+    }
+
+    /**
+     * Helper method to determine if a Module match should be skipped.
+     */
+    private boolean shouldSkipModuleMatch(String content, int position, String scopeType) {
+        // Skip matches inside comments or string literals
+        if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+            return true;
+        }
+
+        // Only check Module, skip Block and With
+        return !"Module".equals(scopeType);
+    }
+
+    /**
+     * Checks each variable in a Module to see if it's never modified.
+     */
+    private void checkModuleVariablesForModification(SensorContext context, InputFile inputFile, String content,
+                                                      Matcher matcher, String vars, int bodyStart, int bodyEnd) {
+        String body = content.substring(bodyStart, bodyEnd);
+        String[] varList = vars.split(",");
+
+        for (String varEntry : varList) {
+            String varName = varEntry.trim().split("\\s*+=")[0].trim(); //NOSONAR
+            checkSingleVariableForModification(context, inputFile, content, matcher, varName, body);
+        }
+    }
+
+    /**
+     * Checks if a single variable is ever modified in the Module body.
+     */
+    private void checkSingleVariableForModification(SensorContext context, InputFile inputFile, String content,
+                                                     Matcher matcher, String varName, String body) {
+        Pattern assignPattern = Pattern.compile("\\b" + Pattern.quote(varName) + "\\s*+="); //NOSONAR
+        if (!assignPattern.matcher(body).find()) {
+            int line = calculateLineNumber(content, matcher.start());
+            reportIssue(context, inputFile, line,
+                MathematicaRulesDefinition.VARIABLE_NEVER_MODIFIED_KEY,
+                String.format("Module variable '%s' never modified - use With instead.", varName));
         }
     }
 

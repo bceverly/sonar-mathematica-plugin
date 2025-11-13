@@ -41,17 +41,17 @@ public final class ArchitectureAndDependencyDetector {
     // ========================================
 
     // Package declarations and imports
-    private static final Pattern BEGIN_PACKAGE = Pattern.compile("BeginPackage\\s*+\\[\\s*+\"([^\"]+)\"\\s*+(?:,\\s*+\\{([^}]*)\\})?+\\s*+\\]"); //NOSONAR
-    private static final Pattern END_PACKAGE = Pattern.compile("EndPackage\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern NEEDS = Pattern.compile("Needs\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]"); //NOSONAR
+    private static final Pattern BEGIN_PACKAGE = Pattern.compile("\\bBeginPackage\\s*+\\[\\s*+\"([^\"]+)\"\\s*+(?:,\\s*+\\{([^}]*)\\})?+\\s*+\\]"); //NOSONAR
+    private static final Pattern END_PACKAGE = Pattern.compile("\\bEndPackage\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern NEEDS = Pattern.compile("\\bNeeds\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]"); //NOSONAR
 
     // Symbol definitions
     private static final Pattern FUNCTION_DEF = Pattern.compile("([A-Z][a-zA-Z0-9]*+)\\s*+\\[([^\\]]*+)\\]\\s*+:="); //NOSONAR
     private static final Pattern USAGE_MSG = Pattern.compile("([A-Z][a-zA-Z0-9]*+)::usage\\s*+="); //NOSONAR
 
     // Context and scoping
-    private static final Pattern BEGIN = Pattern.compile("Begin\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]"); //NOSONAR
-    private static final Pattern END = Pattern.compile("End\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern BEGIN = Pattern.compile("\\bBegin\\s*+\\[\\s*+\"([^\"]+)\"\\s*+\\]"); //NOSONAR
+    private static final Pattern END = Pattern.compile("\\bEnd\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern CONTEXT_SYMBOL = Pattern.compile("`([A-Z][a-zA-Z0-9]*+)(?:`|\\s|\\[)"); //NOSONAR
 
     // Function calls

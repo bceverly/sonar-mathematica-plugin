@@ -164,6 +164,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = TRAILING_WHITESPACE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.TRAILING_WHITESPACE_KEY,
                     "Line has trailing whitespace. Remove trailing spaces/tabs.");
@@ -213,6 +218,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             }
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
 
                 // Check if next line is blank
@@ -242,6 +252,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = BRACKET_SPACE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.BRACKET_SPACING_KEY,
                     "No space before opening bracket. Use 'f[x]' not 'f [x]'.");
@@ -258,6 +273,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = MULTIPLE_SEMICOLON_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.SEMICOLON_STYLE_KEY,
                     "Multiple consecutive semicolons detected. Use single semicolon or separate statements.");
@@ -290,6 +310,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = listPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 checkListAlignment(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
@@ -348,6 +373,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = EXCESSIVE_PARENS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.PARENTHESES_UNNECESSARY_KEY,
                     "Excessive parentheses detected. Remove unnecessary parentheses for clarity.");
@@ -367,6 +397,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             int newLine = 0;
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int pos = matcher.start();
 
                 // Check if opening brace is on same line as previous content
@@ -397,6 +432,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = STRING_LITERAL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String literal = matcher.group();
                 if (literal.length() > 102) { // Account for quotes
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -450,6 +490,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
                 if (functionName.length() < 3 && !functionName.matches("[fgh]")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -469,6 +514,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
                 if (functionName.length() > 50) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -489,6 +539,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = VARIABLE_ASSIGN_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 if (varName.length() == 1 && !varName.matches("[ijk]")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -508,6 +563,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = BOOLEAN_VAR_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 if (!varName.matches("^(is|has|can|should|will)[A-Z].*")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -527,6 +587,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = CONSTANT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String constName = matcher.group(1);
                 // Allow some exceptions for Mathematica symbols
                 if ((!constName.equals(constName.toUpperCase()) || constName.contains("_"))
@@ -548,6 +613,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = PACKAGE_NAME_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String packageName = matcher.group(1);
                 String[] parts = packageName.split("`");
                 for (String part : parts) {
@@ -573,6 +643,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = acronymPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String word = matcher.group(1);
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.ACRONYM_STYLE_KEY,
@@ -590,6 +665,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = BUILTIN_NAMES.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.VARIABLE_NAME_MATCHES_BUILTIN_KEY,
@@ -607,6 +687,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_PARAMS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String functionName = matcher.group(1);
                 String params = matcher.group(2);
 
@@ -645,6 +730,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = NUMBER_IN_NAME_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String name = matcher.group();
                 // Allow common patterns like x1, y2 for coordinates
                 if (!name.matches("^[xyz]\\d$")) {
@@ -665,6 +755,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = HUNGARIAN_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String name = matcher.group();
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HUNGARIAN_NOTATION_KEY,
@@ -686,6 +781,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
             Set<String> reported = new HashSet<>();
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String abbrev = matcher.group();
                 if (!reported.contains(abbrev) && abbrev.length() < 5) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -706,6 +806,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = GENERIC_NAMES.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.GENERIC_NAME_KEY,
                     "Generic variable name. Use specific, descriptive names.");
@@ -722,6 +827,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = NEGATED_BOOL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String name = matcher.group();
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.NEGATED_BOOLEAN_NAME_KEY,
@@ -741,6 +851,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_PARAMS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String params = matcher.group(2);
                 int paramCount = params.split(",").length;
 
@@ -861,6 +976,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             int functionCount = 0;
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 functionCount++;
             }
 
@@ -887,6 +1007,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Set<String> publicFunctions = new HashSet<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 publicFunctions.add(matcher.group(1));
             }
 
@@ -930,6 +1055,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = SWITCH_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int switchStart = matcher.start();
                 int switchEnd = switchStart + 2000; // Look ahead
                 if (switchEnd > content.length()) {
@@ -965,6 +1095,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 Matcher matcher = BOOLEAN_OP_PATTERN.matcher(line);
                 int opCount = 0;
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     opCount++;
                 }
 
@@ -993,6 +1128,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 Matcher matcher = CHAIN_OP_PATTERN.matcher(line);
                 int chainCount = 0;
                 while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                     chainCount++;
                 }
 
@@ -1017,6 +1157,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = STRING_LITERAL_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String literal = matcher.group();
                 if (literal.length() > 5) { // Ignore very short strings
                     stringOccurrences.computeIfAbsent(literal, k -> new ArrayList<>()).add(matcher.start());
@@ -1044,6 +1189,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = STRING_LITERAL_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String literal = matcher.group();
                 stringCounts.put(literal, stringCounts.getOrDefault(literal, 0) + 1);
             }
@@ -1067,6 +1217,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = PATH_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HARDCODED_PATH_KEY,
                     "Hardcoded file path. Use configuration or relative paths.");
@@ -1083,6 +1238,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = URL_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.HARDCODED_URL_KEY,
                     "Hardcoded URL. Use configuration for environment-specific URLs.");
@@ -1099,6 +1259,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = IF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int ifStart = matcher.start();
                 int ifEnd = Math.min(ifStart + 200, content.length());
                 String condition = content.substring(ifStart, ifEnd);
@@ -1124,6 +1289,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = ifElsePattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String trueBranch = matcher.group(2).trim();
                 String falseBranch = matcher.group(3).trim();
 
@@ -1182,36 +1352,58 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
-                int functionStart = matcher.start();
-                int functionEnd = functionStart;
-
-                // Find function end (approximate)
-                int depth = 0;
-                for (int i = functionStart; i < content.length(); i++) {
-                    char c = content.charAt(i);
-                    if (c == '[') {
-                        depth++;
-                    } else if (c == ']') {
-                        depth--;
-                        if (depth == 0) {
-                            functionEnd = i;
-                            break;
-                        }
-                    }
-                }
-
-                String functionBody = content.substring(functionStart, Math.min(functionEnd + 1, content.length()));
-                int functionLines = functionBody.split("\n").length;
-
-                if (functionLines > 100) {
-                    int lineNumber = calculateLineNumber(content, functionStart);
-                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.GOD_FUNCTION_KEY,
-                        String.format("Function is %d lines (max 100). Break into smaller functions.", functionLines));
-                }
+                processFunctionForGodPattern(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
             LOG.warn("Skipping god function detection: {}", inputFile.filename());
         }
+    }
+
+    /**
+     * Processes a single function match to check if it's a god function.
+     */
+    private void processFunctionForGodPattern(SensorContext context, InputFile inputFile, String content, Matcher matcher) {
+        int position = matcher.start();
+        if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+            return;
+        }
+
+        int functionStart = matcher.start();
+        int functionEnd = findFunctionEnd(content, functionStart);
+        int functionLines = countFunctionLines(content, functionStart, functionEnd);
+
+        if (functionLines > 100) {
+            int lineNumber = calculateLineNumber(content, functionStart);
+            reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.GOD_FUNCTION_KEY,
+                String.format("Function is %d lines (max 100). Break into smaller functions.", functionLines));
+        }
+    }
+
+    /**
+     * Finds the end position of a function by matching brackets.
+     */
+    private int findFunctionEnd(String content, int functionStart) {
+        int depth = 0;
+        for (int i = functionStart; i < content.length(); i++) {
+            char c = content.charAt(i);
+            if (c == '[') {
+                depth++;
+            } else if (c == ']') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+        return functionStart;
+    }
+
+    /**
+     * Counts the number of lines in a function body.
+     */
+    private int countFunctionLines(String content, int functionStart, int functionEnd) {
+        String functionBody = content.substring(functionStart, Math.min(functionEnd + 1, content.length()));
+        return functionBody.split("\n").length;
     }
 
     /**
@@ -1222,6 +1414,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             // Simple heuristic: function calls other module functions heavily
             Matcher matcher = FUNCTION_DEF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int functionStart = matcher.start();
                 int functionEnd = Math.min(functionStart + 500, content.length());
                 String functionBody = content.substring(functionStart, functionEnd);
@@ -1247,6 +1444,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_PARAMS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String params = matcher.group(2);
                 String[] paramList = params.split(",");
 
@@ -1278,6 +1480,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Set<String> reported = new HashSet<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 if (!reported.contains(varName)) {
                     // Check if it's not a local variable
@@ -1307,6 +1514,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = sideEffectPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String match = matcher.group();
                 if (!match.contains(":=") && !match.contains("->")) {
                     int lineNumber = calculateLineNumber(content, matcher.start());
@@ -1326,6 +1538,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = PATTERN_MATCH_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int matchStart = matcher.start();
                 int matchEnd = Math.min(matchStart + 300, content.length());
                 String matchBody = content.substring(matchStart, matchEnd);
@@ -1348,6 +1565,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = OPTION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int optionStart = matcher.start();
                 int optionEnd = Math.min(optionStart + 100, content.length());
                 String optionContext = content.substring(optionStart, optionEnd);
@@ -1370,6 +1592,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = UNCLEAR_OPTION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.OPTION_NAME_UNCLEAR_KEY,
                     "Unclear option name. Use specific, descriptive option names.");
@@ -1411,6 +1638,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = BOOL_COMPARE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.BOOLEAN_COMPARISON_KEY,
                     "Comparing boolean to True/False. Use 'x' instead of 'x == True'.");
@@ -1427,6 +1659,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = NEGATED_COMPARE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.NEGATED_BOOLEAN_COMPARISON_KEY,
                     "Negated comparison. Use '!=' instead of '!(x == y)'.");
@@ -1443,6 +1680,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = REDUNDANT_IF_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.REDUNDANT_CONDITIONAL_KEY,
                     "Redundant conditional. Use 'cond' instead of 'If[cond, True, False]'.");
@@ -1461,6 +1703,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
             Matcher matcher = emptyCatchPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.EMPTY_CATCH_BLOCK_KEY,
                     "Empty Catch block. Add error handling or remove Catch.");
@@ -1537,6 +1784,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = REAL_EQUALITY_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int lineNumber = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.EQUALITY_CHECK_ON_REALS_KEY,
                     "Equality check on real numbers. Use approximate comparison with tolerance.");
@@ -1570,6 +1822,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = GRAPHICS_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int graphicsStart = matcher.start();
                 int graphicsEnd = Math.min(graphicsStart + 500, content.length());
                 String graphicsBody = content.substring(graphicsStart, graphicsEnd);
@@ -1593,6 +1850,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = PLOT_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int plotStart = matcher.start();
                 int plotEnd = Math.min(plotStart + 300, content.length());
                 String plotBody = content.substring(plotStart, plotEnd);
@@ -1615,6 +1877,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = DATASET_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int datasetStart = matcher.start();
                 int datasetEnd = Math.min(datasetStart + 200, content.length());
                 String datasetBody = content.substring(datasetStart, datasetEnd);
@@ -1637,6 +1904,11 @@ public class StyleAndConventionsDetector extends BaseDetector {
         try {
             Matcher matcher = ASSOCIATION_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int assocStart = matcher.start();
                 int assocEnd = Math.min(assocStart + 200, content.length());
                 String assocBody = content.substring(assocStart, assocEnd);

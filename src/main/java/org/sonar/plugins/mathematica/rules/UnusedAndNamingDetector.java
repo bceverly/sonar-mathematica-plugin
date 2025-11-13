@@ -220,6 +220,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 checkFunctionForUnusedParameters(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
@@ -283,6 +288,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = MODULE_VARS.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String vars = matcher.group(1);
                 int moduleStart = matcher.end();
 
@@ -316,6 +326,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = WITH_VARS.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String vars = matcher.group(1);
                 int withStart = matcher.end();
 
@@ -349,6 +364,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = NEEDS_IMPORT.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String packageName = matcher.group(1);
                 // Extract package context (e.g., "MyPackage`" -> "MyPackage")
                 String packageContext = packageName.replace("`", "");
@@ -383,6 +403,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String params = matcher.group(2);
 
                 // Extract named patterns
@@ -418,6 +443,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = OPTIONAL_PARAM.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String paramName = matcher.group(1);
 
                 // Find the function context
@@ -444,6 +474,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = RETURN_STATEMENT.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int returnEnd = findMatchingBracket(content, matcher.end());
 
                 // Check if there's code after the Return in the same scope
@@ -474,6 +509,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = ABORT_THROW.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String statement = matcher.group(1);
                 int statementEnd = findMatchingBracket(content, matcher.end());
 
@@ -509,6 +549,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Map<String, Integer> lastAssignment = new HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int line = calculateLineNumber(content, matcher.start());
 
@@ -534,6 +579,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Map<String, Integer> functionLines = new HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
                 // Only check public functions (starting with uppercase)
                 if (Character.isUpperCase(funcName.charAt(0))) {
@@ -576,6 +626,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             String lastVarName = null;
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 int currentPos = matcher.start();
 
@@ -603,39 +658,76 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = DO_LOOP_ITERATOR.matcher(content);
             while (matcher.find()) {
-                String iteratorName = matcher.group(2);
-                int loopStart = matcher.start();
-
-                // Find loop body
-                int bodyStart = content.indexOf(",", matcher.end());
-                if (bodyStart > 0) {
-                    bodyStart = content.indexOf("{", bodyStart);
-                    if (bodyStart > 0) {
-                        int bodyEnd = findMatchingBracket(content, bodyStart + 1);
-                        String loopBody = content.substring(matcher.start(), Math.min(bodyEnd, content.length()));
-
-                        // Count occurrences of iterator (should be at least 2: declaration + use)
-                        int occurrences = 0;
-                        int index = loopBody.indexOf(iteratorName);
-                        while (index >= 0) {
-                            occurrences++;
-                            index = loopBody.indexOf(iteratorName, index + 1);
-                        }
-
-                        // If iterator appears only once (in declaration), it's unused
-                        if (occurrences == 1) {
-                            int line = calculateLineNumber(content, loopStart);
-                            reportIssue(context, inputFile, line,
-                                MathematicaRulesDefinition.LOOP_VARIABLE_UNUSED_KEY,
-                                String.format("Loop iterator '%s' is never used in loop body. Use Do[..., n] form instead.",
-                                    iteratorName));
-                        }
-                    }
-                }
+                processLoopForUnusedIterator(context, inputFile, content, matcher);
             }
         } catch (Exception e) {
             LOG.debug("Error detecting unused loop variables in {}", inputFile.filename(), e);
         }
+    }
+
+    /**
+     * Processes a single loop match to check for unused iterator.
+     */
+    private void processLoopForUnusedIterator(SensorContext context, InputFile inputFile, String content, Matcher matcher) {
+        int position = matcher.start();
+        if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+            return;
+        }
+
+        String iteratorName = matcher.group(2);
+        int loopStart = matcher.start();
+        String loopBody = extractLoopBody(content, matcher);
+
+        if (loopBody != null) {
+            checkIteratorUsage(context, inputFile, content, iteratorName, loopStart, loopBody);
+        }
+    }
+
+    /**
+     * Extracts the loop body from the content.
+     */
+    private String extractLoopBody(String content, Matcher matcher) {
+        int bodyStart = content.indexOf(",", matcher.end());
+        if (bodyStart <= 0) {
+            return null;
+        }
+
+        bodyStart = content.indexOf("{", bodyStart);
+        if (bodyStart <= 0) {
+            return null;
+        }
+
+        int bodyEnd = findMatchingBracket(content, bodyStart + 1);
+        return content.substring(matcher.start(), Math.min(bodyEnd, content.length()));
+    }
+
+    /**
+     * Checks if the iterator is used in the loop body.
+     */
+    private void checkIteratorUsage(SensorContext context, InputFile inputFile, String content,
+                                    String iteratorName, int loopStart, String loopBody) {
+        int occurrences = countIteratorOccurrences(loopBody, iteratorName);
+
+        if (occurrences == 1) {
+            int line = calculateLineNumber(content, loopStart);
+            reportIssue(context, inputFile, line,
+                MathematicaRulesDefinition.LOOP_VARIABLE_UNUSED_KEY,
+                String.format("Loop iterator '%s' is never used in loop body. Use Do[..., n] form instead.",
+                    iteratorName));
+        }
+    }
+
+    /**
+     * Counts occurrences of iterator in the loop body.
+     */
+    private int countIteratorOccurrences(String loopBody, String iteratorName) {
+        int occurrences = 0;
+        int index = loopBody.indexOf(iteratorName);
+        while (index >= 0) {
+            occurrences++;
+            index = loopBody.indexOf(iteratorName, index + 1);
+        }
+        return occurrences;
     }
 
     public void detectCatchWithoutThrow(SensorContext context, InputFile inputFile, String content) {
@@ -666,6 +758,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = IF_FALSE.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line,
                     MathematicaRulesDefinition.CONDITION_ALWAYS_FALSE_KEY,
@@ -715,6 +812,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_DEF.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String params = matcher.group(2);
 
                 // Extract parameter names
@@ -781,6 +883,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Map<String, Integer> functionDefinitions = new HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String funcName = matcher.group(1);
 
                 if (functionDefinitions.containsKey(funcName)) {
@@ -831,6 +938,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = SYMBOL_NAME.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String symbolName = matcher.group(1);
                 if (symbolName.length() > 50) {
                     int line = calculateLineNumber(content, matcher.start());
@@ -851,6 +963,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Set<String> conventions = new HashSet<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String symbolName = matcher.group(1);
 
                 if (CAMEL_CASE.matcher(symbolName).matches()) {
@@ -877,6 +994,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = MODULE_VARS.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String vars = matcher.group(1);
                 String[] varList = vars.split(",");
 
@@ -901,6 +1023,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Map<String, Set<String>> symbolContexts = new HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String context1 = matcher.group(1);
                 String symbol = matcher.group(2);
 
@@ -943,6 +1070,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = PRIVATE_CONTEXT.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String packageName = matcher.group(1);
                 String symbolName = matcher.group(2);
                 int line = calculateLineNumber(content, matcher.start());
@@ -1046,6 +1178,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
             Map<String, Integer> tempVarCount = new HashMap<>();
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String varName = matcher.group(1);
                 tempVarCount.put(varName, tempVarCount.getOrDefault(varName, 0) + 1);
             }
@@ -1186,6 +1323,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = NEEDS_IMPORT.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String packageName = matcher.group(1);
                 // In a real implementation, would check if package exists on filesystem
                 // For now, just flag suspicious patterns
@@ -1232,6 +1374,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
         try {
             Matcher matcher = GET_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String filename = matcher.group(1);
                 // Check if filename is relative (no directory separators or FileNameJoin)
                 if (!filename.contains("/") && !filename.contains("\\") && !content.contains("FileNameJoin")) {
@@ -1254,6 +1401,11 @@ public class UnusedAndNamingDetector extends BaseDetector {
 
             Matcher matcher = NEEDS_IMPORT.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 String packageName = matcher.group(1);
                 if (packageName.contains(baseName)) {
                     int line = calculateLineNumber(content, matcher.start());

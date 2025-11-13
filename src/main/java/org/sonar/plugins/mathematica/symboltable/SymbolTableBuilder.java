@@ -268,6 +268,11 @@ public final class SymbolTableBuilder {
                                                Map<String, Symbol> cache, Set<Integer> positions) {
         Matcher matcher = ASSIGNMENT_PATTERN.matcher(line);
         while (matcher.find()) {
+            int position = matcher.start();
+            // Skip matches inside comments or string literals
+            if (isInsideComment(line, position) || isInsideStringLiteral(line, position)) {
+                continue;
+            }
             processAssignment(table, matcher, lineNumber, trimmedLine, scope, cache, positions);
         }
     }
@@ -317,6 +322,11 @@ public final class SymbolTableBuilder {
                                               Set<Integer> positions) {
         Matcher matcher = VARIABLE_REFERENCE.matcher(line);
         while (matcher.find()) {
+            int position = matcher.start();
+            // Skip matches inside comments or string literals
+            if (isInsideComment(line, position) || isInsideStringLiteral(line, position)) {
+                continue;
+            }
             processReference(matcher, lineNumber, trimmedLine, scope, cache, positions);
         }
     }
@@ -428,6 +438,91 @@ public final class SymbolTableBuilder {
 
         // If not found, assume rest of file
         return lines.length;
+    }
+
+    /**
+     * Checks if a position is inside a string literal.
+     * Properly handles multi-line strings by scanning from the beginning of content.
+     * Uses both forward scanning and context checking for robustness.
+     */
+    private static boolean isInsideStringLiteral(String content, int position) {
+        if (position >= content.length()) {
+            return false;
+        }
+
+        // First, do a quick context check: if there's a quote before this position
+        // on the same line and no closing quote between the quote and position,
+        // we're likely inside a string
+        int lineStart = content.lastIndexOf('\n', position) + 1;
+        String linePrefix = content.substring(lineStart, position);
+
+        // Count unescaped quotes in the line up to this position
+        int quoteCount = 0;
+        boolean escaped = false;
+        for (int i = 0; i < linePrefix.length(); i++) {
+            char c = linePrefix.charAt(i);
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+            if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                quoteCount++;
+            }
+        }
+
+        // If we have an odd number of quotes before this position on this line,
+        // we're inside a string
+        if (quoteCount % 2 == 1) {
+            return true;
+        }
+
+        // For multi-line strings, do full scan from beginning
+        boolean insideString = false;
+        escaped = false;
+
+        for (int i = 0; i < position; i++) {
+            char c = content.charAt(i);
+
+            if (escaped) {
+                escaped = false;
+                continue;
+            }
+
+            if (c == '\\') {
+                escaped = true;
+            } else if (c == '"') {
+                insideString = !insideString;
+            }
+        }
+
+        return insideString;
+    }
+
+    /**
+     * Checks if a position is inside a Mathematica comment (* ... *).
+     * Handles nested comments properly.
+     */
+    private static boolean isInsideComment(String content, int position) {
+        int depth = 0;
+        int i = 0;
+        while (i < position) {
+            if (i < content.length() - 1) {
+                if (content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
+                    depth++;
+                    i += 2; // Skip both '(' and '*'
+                } else if (content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                    depth--;
+                    i += 2; // Skip both '*' and ')'
+                } else {
+                    i++;
+                }
+            } else {
+                i++;
+            }
+        }
+        return depth > 0;
     }
 
     /**

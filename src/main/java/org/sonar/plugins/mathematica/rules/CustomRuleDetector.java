@@ -92,6 +92,11 @@ public class CustomRuleDetector extends BaseDetector {
             Matcher matcher = pattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 reportIssue(context, inputFile, line, activeRule.ruleKey().rule(), message);
             }
@@ -126,6 +131,11 @@ public class CustomRuleDetector extends BaseDetector {
             Matcher matcher = functionDefPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 String functionName = matcher.group(1);
                 String detailedMessage = message + ": " + functionName;
@@ -161,6 +171,11 @@ public class CustomRuleDetector extends BaseDetector {
             Matcher matcher = apiPattern.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+                // Skip matches inside comments or string literals
+                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                    continue;
+                }
                 int line = calculateLineNumber(content, matcher.start());
                 String message = "Forbidden API '" + apiName + "': " + reason;
                 reportIssue(context, inputFile, line, activeRule.ruleKey().rule(), message);
