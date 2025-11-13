@@ -116,7 +116,7 @@ public class BugDetector extends BaseDetector {
                 boolean isUrl = position > 0 && content.charAt(position - 1) == ':'
                     && position + 1 < content.length() && content.charAt(position + 1) == '/';
 
-                if (!isUrl && !isInsideStringLiteral(content, position)) {
+                if (!isUrl && !isInsideStringLiteral(content, position) && !isInsideComment(content, position)) {
                     // Check if there's validation
                     int lineStart = content.lastIndexOf('\n', position) + 1;
                     int lineEnd = content.indexOf('\n', position);
@@ -319,7 +319,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = FLOAT_EQUALITY_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.FLOATING_POINT_EQUALITY_KEY,
                     "Floating point numbers should not be compared with == or ===. Use tolerance-based comparison.", matcher.start(), matcher.end());
             }
@@ -335,7 +342,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_END_SEMICOLON_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.FUNCTION_WITHOUT_RETURN_KEY,
                     "Function body ends with semicolon and returns Null. Remove semicolon to return value.", matcher.start(), matcher.end());
             }
@@ -423,11 +437,18 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = OFF_BY_ONE_PATTERN.matcher(content);
 
             while (matcher.find()) {
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
                 String range = matcher.group(1);
                 String message = "0".equals(range)
                     ? "Loop starts at 0 but Mathematica lists are 1-indexed."
                     : "Loop goes beyond Length, causing out-of-bounds access.";
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber,
                     MathematicaRulesDefinition.OFF_BY_ONE_KEY, message, matcher.start(), matcher.end());
             }
@@ -443,6 +464,13 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = WHILE_TRUE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
                 int bodyStart = matcher.end();
                 int bodyEnd = content.indexOf("]", bodyStart);
                 if (bodyEnd == -1) {
@@ -451,7 +479,7 @@ public class BugDetector extends BaseDetector {
 
                 String body = content.substring(bodyStart, bodyEnd);
                 if (!body.contains("Break") && !body.contains("Return")) {
-                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    int lineNumber = calculateLineNumber(content, position);
                     reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.INFINITE_LOOP_KEY,
                         "While[True] without Break or Return creates infinite loop.", matcher.start(), matcher.end());
                 }
@@ -468,7 +496,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = MATRIX_OPERATION_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.MISMATCHED_DIMENSIONS_KEY,
                     "Review: Matrix operation requires rectangular array. Verify dimensions match.", matcher.start(), matcher.end());
             }
@@ -500,7 +535,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = TRIPLE_UNDERSCORE_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.SUSPICIOUS_PATTERN_KEY,
                     "Pattern uses ___ which matches zero or more arguments. Consider __ (one or more) instead.", matcher.start(), matcher.end());
             }
@@ -518,7 +560,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = FUNCTION_WITHOUT_TEST_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.MISSING_PATTERN_TEST_KEY,
                     "Numeric function should use pattern test (e.g., x_?NumericQ) to prevent symbolic evaluation.", matcher.start(), matcher.end());
             }
@@ -534,8 +583,15 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = DOUBLE_UNDERSCORE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
                 String varName = matcher.group(1);
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.PATTERN_BLANKS_MISUSE_KEY,
                     String.format(
                         "Using __ creates sequence, not list. Use Length[{%s}] or %s_List.", varName, varName), matcher.start(), matcher.end());
@@ -552,7 +608,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = SET_FUNCTION_DEFINITION_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber,
                     MathematicaRulesDefinition.SET_DELAYED_CONFUSION_KEY,
                     "Function definition uses = instead of :=. RHS evaluates once, not each call. Use := for functions.",
@@ -583,8 +646,15 @@ public class BugDetector extends BaseDetector {
     private void checkBuiltinShadow(SensorContext context, InputFile inputFile, String content, Pattern pattern) {
         Matcher matcher = pattern.matcher(content);
         while (matcher.find()) {
+            int position = matcher.start();
+
+            // Skip matches inside comments
+            if (isInsideComment(content, position)) {
+                continue;
+            }
+
             String symbolName = matcher.group(1);
-            int lineNumber = calculateLineNumber(content, matcher.start());
+            int lineNumber = calculateLineNumber(content, position);
             reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.SYMBOL_NAME_COLLISION_KEY,
                 String.format(
                     "Symbol '%s' shadows Mathematica built-in function. Use different name.", symbolName), matcher.start(), matcher.end());
@@ -619,13 +689,20 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = OPEN_FILE_PATTERN.matcher(content);
             while (matcher.find()) {
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
                 // Check if Close[] is present nearby
-                int start = Math.max(0, matcher.start() - 100);
+                int start = Math.max(0, position - 100);
                 int end = Math.min(content.length(), matcher.end() + 500);
                 String contextWindow = content.substring(start, end);
 
                 if (!contextWindow.contains(CLOSE)) {
-                    int lineNumber = calculateLineNumber(content, matcher.start());
+                    int lineNumber = calculateLineNumber(content, position);
                     reportIssueWithFix(context, inputFile, lineNumber, MathematicaRulesDefinition.UNCLOSED_FILE_HANDLE_KEY,
                         "File opened but Close[] not found. Ensure file handle is closed to prevent resource leak.", matcher.start(), matcher.end());
                 }
@@ -642,7 +719,14 @@ public class BugDetector extends BaseDetector {
         try {
             Matcher matcher = DEFINITION_IN_LOOP_PATTERN.matcher(content);
             while (matcher.find()) {
-                int lineNumber = calculateLineNumber(content, matcher.start());
+                int position = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, position)) {
+                    continue;
+                }
+
+                int lineNumber = calculateLineNumber(content, position);
                 reportIssueWithFix(context, inputFile, lineNumber,
                     MathematicaRulesDefinition.GROWING_DEFINITION_CHAIN_KEY,
                     "Function redefined in loop creates growing definition chain (memory leak). Clear definitions or restructure.",
@@ -664,8 +748,14 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = FIRST_LAST_PATTERN.matcher(content);
 
             while (matcher.find()) {
-                String varName = matcher.group(1);
                 int pos = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, pos)) {
+                    continue;
+                }
+
+                String varName = matcher.group(1);
                 // Look back for Length check
                 String lookback = content.substring(Math.max(0, pos - 200), pos);
                 if (!lookback.contains("Length[" + varName + "]") && !lookback.contains("!= {}") && !lookback.contains("=!= {}")) {
@@ -730,8 +820,14 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = DIVISION_VARIABLES_PATTERN.matcher(content);
 
             while (matcher.find()) {
-                String denominator = matcher.group(2);
                 int pos = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, pos)) {
+                    continue;
+                }
+
+                String denominator = matcher.group(2);
                 // Look back for zero check
                 String lookback = content.substring(Math.max(0, pos - 150), pos);
                 if (!lookback.contains(denominator + " != 0") && !lookback.contains(denominator + " > 0")) {
@@ -760,6 +856,11 @@ public class BugDetector extends BaseDetector {
 
                 // Skip matches inside string literals (e.g., "data.The OneToOne model")
                 if (isInsideStringLiteral(content, pos)) {
+                    continue;
+                }
+
+                // Skip matches inside comments (e.g., "demo_shared.c")
+                if (isInsideComment(content, pos)) {
                     continue;
                 }
 
@@ -820,7 +921,14 @@ public class BugDetector extends BaseDetector {
             Matcher matcher = HOLD_ATTR_PATTERN.matcher(content);
 
             while (matcher.find()) {
-                int line = calculateLineNumber(content, matcher.start());
+                int pos = matcher.start();
+
+                // Skip matches inside comments
+                if (isInsideComment(content, pos)) {
+                    continue;
+                }
+
+                int line = calculateLineNumber(content, pos);
                 reportIssueWithFix(context, inputFile, line, MathematicaRulesDefinition.EVALUATION_ORDER_ASSUMPTION_KEY,
                     "Side effects in list construction have undefined evaluation order.", matcher.start(), matcher.end());
             }

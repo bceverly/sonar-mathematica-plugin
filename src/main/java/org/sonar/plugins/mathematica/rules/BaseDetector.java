@@ -369,4 +369,24 @@ public abstract class BaseDetector {
         }
         return false;
     }
+
+    /**
+     * Checks if a position is inside a Mathematica comment (* ... *).
+     * Handles nested comments properly.
+     */
+    protected boolean isInsideComment(String content, int position) {
+        int depth = 0;
+        for (int i = 0; i < position; i++) {
+            if (i < content.length() - 1) {
+                if (content.charAt(i) == '(' && content.charAt(i + 1) == '*') {
+                    depth++;
+                    i++; // Skip the '*'
+                } else if (content.charAt(i) == '*' && content.charAt(i + 1) == ')') {
+                    depth--;
+                    i++; // Skip the ')'
+                }
+            }
+        }
+        return depth > 0;
+    }
 }
