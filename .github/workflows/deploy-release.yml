@@ -90,11 +90,10 @@ jobs:
 
       # Step 1: Update sonar-update-center-properties
       - name: Clone sonar-update-center-properties
-        env:
-          GIT_TERMINAL_PROMPT: 0
-        run: |
-          git clone https://github.com/SonarSource/sonar-update-center-properties.git
-          echo "✅ Cloned sonar-update-center-properties"
+        uses: actions/checkout@v4
+        with:
+          repository: SonarSource/sonar-update-center-properties
+          path: sonar-update-center-properties
 
       - name: Update wolfralyze.properties
         env:
@@ -165,11 +164,10 @@ jobs:
 
       # Step 2: Update sonarqube-community-branch-plugin-builds
       - name: Clone sonarqube-community-branch-plugin-builds
-        env:
-          GIT_TERMINAL_PROMPT: 0
-        run: |
-          git clone https://github.com/SonarSource/sonarqube-community-branch-plugin-builds.git
-          echo "✅ Cloned sonarqube-community-branch-plugin-builds"
+        uses: actions/checkout@v4
+        with:
+          repository: SonarSource/sonarqube-community-branch-plugin-builds
+          path: sonarqube-community-branch-plugin-builds
 
       - name: Update build metadata
         env:
