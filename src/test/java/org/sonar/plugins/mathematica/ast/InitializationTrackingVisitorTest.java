@@ -817,10 +817,8 @@ class InitializationTrackingVisitorTest {
     @Test
     void testModuleUninitializedVariableAssignedInBody() {
         // This is the exact scenario from the user's false positive:
-        // Module[{subdirsPatt},
-        //     subdirsPatt = Alternatives @@ (...);
-        // ]
-        // subdirsPatt is declared but not initialized, then assigned as first statement in body.
+        // subdirsPatt is declared but not initialized in Module[{subdirsPatt}, ...],
+        // then assigned as first statement in body.
         // This should NOT be flagged as used-before-assigned.
 
         // Module declaration list with uninitialized variable
