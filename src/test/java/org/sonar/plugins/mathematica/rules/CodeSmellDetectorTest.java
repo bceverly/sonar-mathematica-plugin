@@ -147,33 +147,6 @@ class CodeSmellDetectorTest {
         ).doesNotThrowAnyException();
     }
 
-                    @Test
-    void testDetectMissingCompilationTarget() {
-        String content = "f = Compile[{{x, _Real}}, x^2]";
-
-        assertThatCode(() ->
-            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingCompilationTargetWithComplexFunction() {
-        String content = "compiled = Compile[{{x, _Real}, {y, _Real}}, x * y + Sin[x]]";
-
-        assertThatCode(() ->
-            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingCompilationTargetMultiple() {
-        String content = "f1 = Compile[{{a}}, a^2]; f2 = Compile[{{b}}, b+1]";
-
-        assertThatCode(() ->
-            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
     // ===== COMMENT QUALITY TESTS =====
 
                                                         @Test
@@ -220,39 +193,6 @@ class CodeSmellDetectorTest {
     }
 
     // ===== COPYRIGHT DETECTION TESTS =====
-
-                    @Test
-    void testDetectOutdatedCopyrightWithCurrentYearNoIssue() {
-        int currentYear = java.time.Year.now().getValue();
-        String content = String.format("(* Copyright %d John Doe *)%n%nf[x_] := x + 1", currentYear);
-
-        assertThatCode(() ->
-            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-        @Test
-    void testDetectOutdatedCopyrightWithCurrentYearInRangeNoIssue() {
-        int currentYear = java.time.Year.now().getValue();
-        String content = String.format("(* Copyright 2020-%d John Doe *)%n%nf[x_] := x + 1", currentYear);
-
-        assertThatCode(() ->
-            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-            @Test
-    void testDetectOutdatedCopyrightCopyrightBeyondLine20NoIssue() {
-        StringBuilder content = new StringBuilder();
-        for (int i = 0; i < 25; i++) {
-            content.append("(* Line ").append(i).append(" *)\n");
-        }
-        content.append("(* Copyright 2020 John Doe *)\n");
-
-        assertThatCode(() ->
-            detector.detectOutdatedCopyright(mockContext, mockInputFile, content.toString())
-        ).doesNotThrowAnyException();
-    }
 
     // ===== ADDITIONAL COMPREHENSIVE TESTS FOR 80%+ COVERAGE =====
 
@@ -301,22 +241,6 @@ class CodeSmellDetectorTest {
         }
         assertThatCode(() ->
             detector.detectLargeTempExpressions(mockContext, mockInputFile, longLine.toString())
-        ).doesNotThrowAnyException();
-    }
-
-                                                                                                                        @Test
-    void testDetectMissingCompilationTargetWithTarget() {
-        String content = "f = Compile[{{x, _Real}}, x^2, CompilationTarget -> \"C\"]";
-        assertThatCode(() ->
-            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingCompilationTargetNoCompile() {
-        String content = "f[x_] := x^2";
-        assertThatCode(() ->
-            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
     }
 
@@ -1422,6 +1346,1158 @@ class CodeSmellDetectorTest {
             Arguments.of("f[x_, y_] := x + 1; (* y is unused *)"),
             Arguments.of("Some content without the function")
         );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingCompilationTargetData")
+    void testDetectMissingCompilationTargetParameterized(String content) {
+        assertThatCode(() ->
+            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    private static Stream<Arguments> detectMissingCompilationTargetData() {
+        return Stream.of(
+            Arguments.of("f = Compile[{{x, _Real}}, x^2]"),
+            Arguments.of("compiled = Compile[{{x, _Real}, {y, _Real}}, x * y + Sin[x]]"),
+            Arguments.of("f1 = Compile[{{a}}, a^2]; f2 = Compile[{{b}}, b+1]"),
+            Arguments.of("f = Compile[{{x, _Real}}, x^2, CompilationTarget -> \"C\"]"),
+            Arguments.of("f[x_] := x^2")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectOutdatedCopyrightData")
+    void testDetectOutdatedCopyrightParameterized(String content) {
+        assertThatCode(() ->
+            detector.detectOutdatedCopyright(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    private static Stream<Arguments> detectOutdatedCopyrightData() {
+        int currentYear = java.time.Year.now().getValue();
+        return Stream.of(
+            Arguments.of(String.format("(* Copyright %d John Doe *)%n%nf[x_] := x + 1", currentYear)),
+            Arguments.of(String.format("(* Copyright 2020-%d John Doe *)%n%nf[x_] := x + 1", currentYear)),
+            Arguments.of(createCopyrightBeyondLine20())
+        );
+    }
+
+    private static String createCopyrightBeyondLine20() {
+        StringBuilder content = new StringBuilder();
+        for (int i = 0; i < 25; i++) {
+            content.append("(* Line ").append(i).append(" *)\n");
+        }
+        content.append("(* Copyright 2020 John Doe *)\n");
+        return content.toString();
+    }
+
+    // ===== TESTS FOR UNCOVERED LINES (PATTERNS IN COMMENTS/STRINGS) =====
+
+    @Test
+    void testDetectEmptyBlocksInComment() {
+        String content = "(* Module[{}, ] *)";
+        assertThatCode(() ->
+            detector.detectEmptyBlocks(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectEmptyBlocksInString() {
+        String content = "msg = \"Module[{}, ]\";";
+        assertThatCode(() ->
+            detector.detectEmptyBlocks(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLongFunctionsInComment() {
+        String content = "(* func[x_] := x + 1 *)";
+        assertThatCode(() ->
+            detector.detectLongFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLongFunctionsInString() {
+        String content = "code = \"func[x_] := x + 1\";";
+        assertThatCode(() ->
+            detector.detectLongFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectEmptyCatchBlocksInComment() {
+        String content = "(* Check[expr] *) (* Quiet[expr] *)";
+        assertThatCode(() ->
+            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectEmptyCatchBlocksInString() {
+        String content = "code = \"Check[expr]\"; code2 = \"Quiet[expr]\";";
+        assertThatCode(() ->
+            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDebugCodeInComment() {
+        String content = "(* Print[x]; Echo[y]; *)";
+        assertThatCode(() ->
+            detector.detectDebugCode(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDebugCodeInString() {
+        String content = "msg = \"Print[x]; Echo[y];\";";
+        assertThatCode(() ->
+            detector.detectDebugCode(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDeeplyNestedInComment() {
+        String content = "(* If[a, If[b, If[c, If[d, If[e, x]]]]] *)";
+        assertThatCode(() ->
+            detector.detectDeeplyNested(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDeeplyNestedInString() {
+        String content = "code = \"If[a, If[b, If[c, If[d, If[e, x]]]]]\";";
+        assertThatCode(() ->
+            detector.detectDeeplyNested(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectTooManyParametersInComment() {
+        String content = "(* func[a_, b_, c_, d_, e_, f_] := a + b *)";
+        assertThatCode(() ->
+            detector.detectTooManyParameters(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectTooManyParametersInString() {
+        String content = "code = \"func[a_, b_, c_, d_, e_, f_] := a + b\";";
+        assertThatCode(() ->
+            detector.detectTooManyParameters(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDuplicateFunctionsInComment() {
+        String content = "(* x = 1; x = 1; *)";
+        assertThatCode(() ->
+            detector.detectDuplicateFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDuplicateFunctionsInString() {
+        String content = "code = \"x = 1; x = 1;\";";
+        assertThatCode(() ->
+            detector.detectDuplicateFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentNamingInComment() {
+        String content = "(* myVar = 1; my_other_var = 2; *)";
+        assertThatCode(() ->
+            detector.detectInconsistentNaming(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentNamingInString() {
+        String content = "code = \"myVar = 1; my_other_var = 2;\";";
+        assertThatCode(() ->
+            detector.detectInconsistentNaming(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDeprecatedFunctionsInComment() {
+        String content = "(* $RecursionLimit = 100; *)";
+        assertThatCode(() ->
+            detector.detectDeprecatedFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDeprecatedFunctionsInString() {
+        String content = "code = \"$RecursionLimit = 100;\";";
+        assertThatCode(() ->
+            detector.detectDeprecatedFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    // ===== ADDITIONAL TESTS FOR MISSING BRANCH COVERAGE =====
+
+    @Test
+    void testDetectMagicNumbersInComment() {
+        List<int[]> commentRanges = new ArrayList<>();
+        String content = "(* result = 42 + 3.14159 *)";
+        assertThatCode(() ->
+            detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMagicNumbersInString() {
+        List<int[]> commentRanges = new ArrayList<>();
+        String content = "msg = \"value = 42\";";
+        assertThatCode(() ->
+            detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingDocumentationInComment() {
+        String content = "(* ComplexFunc[x_, y_, z_] := Module[{},\n"
+            + String.join("\n", java.util.Collections.nCopies(25, "  step;")) + "\n] *)";
+        assertThatCode(() ->
+            detector.detectMissingDocumentation(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingDocumentationInString() {
+        String content = "code = \"ComplexFunc[x_] := Module[{}]\";";
+        assertThatCode(() ->
+            detector.detectMissingDocumentation(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectIdenticalBranchesInComment() {
+        String content = "(* If[condition, result, result] *)";
+        assertThatCode(() ->
+            detector.detectIdenticalBranches(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectIdenticalBranchesInString() {
+        String content = "code = \"If[condition, result, result]\";";
+        assertThatCode(() ->
+            detector.detectIdenticalBranches(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectIdenticalBranchesWithFalseResult() {
+        String content = "If[a > 0, doSomething[], doSomethingElse[]]";
+        assertThatCode(() ->
+            detector.detectIdenticalBranches(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectEmptyStatementInComment() {
+        String content = "(* x = 1;; y = 2; *)";
+        assertThatCode(() ->
+            detector.detectEmptyStatement(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectEmptyStatementInString() {
+        String content = "code = \"x = 1;; y = 2;\";";
+        assertThatCode(() ->
+            detector.detectEmptyStatement(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectAppendInLoopInComment() {
+        String content = "(* Do[result = AppendTo[result, i], {i, 100}] *)";
+        assertThatCode(() ->
+            detector.detectAppendInLoop(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectAppendInLoopInString() {
+        String content = "code = \"Do[result = AppendTo[result, i], {i, 100}]\";";
+        assertThatCode(() ->
+            detector.detectAppendInLoop(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedFunctionCallsInComment() {
+        String content = "(* x = Solve[eq]; y = Solve[eq]; z = Solve[eq]; *)";
+        assertThatCode(() ->
+            detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedFunctionCallsInString() {
+        String content = "code = \"x = Solve[eq]; y = Solve[eq]; z = Solve[eq];\";";
+        assertThatCode(() ->
+            detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedFunctionCallsThreeOrMore() {
+        String content = "a = Calculate[data]; b = Calculate[data]; c = Calculate[data]; d = Calculate[data];";
+        assertThatCode(() ->
+            detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectStringConcatInLoopInComment() {
+        String content = "(* Do[str = str <> \"text\", {i, 100}] *)";
+        assertThatCode(() ->
+            detector.detectStringConcatInLoop(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectStringConcatInLoopInString() {
+        String content = "code = \"Do[str = str <> text, {i, 100}]\";";
+        assertThatCode(() ->
+            detector.detectStringConcatInLoop(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUncompiledNumericalInComment() {
+        String content = "(* Do[sum += i * 2.0, {i, 10000}] *)";
+        assertThatCode(() ->
+            detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUncompiledNumericalInString() {
+        String content = "code = \"Do[sum += i * 2.0, {i, 10000}]\";";
+        assertThatCode(() ->
+            detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUncompiledNumericalWithNumericalFunctions() {
+        String content = "Do[result = Sin[i] + Cos[i] + Exp[i], {i, 1000}]";
+        assertThatCode(() ->
+            detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPackedArrayBreakingInComment() {
+        String content = "(* AppendTo[data, Symbol[\"tag\"]] *)";
+        assertThatCode(() ->
+            detector.detectPackedArrayBreaking(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPackedArrayBreakingInString() {
+        String content = "code = \"AppendTo[data, Symbol[tag]]\";";
+        assertThatCode(() ->
+            detector.detectPackedArrayBreaking(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectNestedMapTableInComment() {
+        String content = "(* Map[f, Table[g[#], {i, 10}] &, data] *)";
+        assertThatCode(() ->
+            detector.detectNestedMapTable(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectNestedMapTableInString() {
+        String content = "code = \"Map[f, Table[g[i], {i, 10}], data]\";";
+        assertThatCode(() ->
+            detector.detectNestedMapTable(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPlotInLoopInComment() {
+        String content = "(* Do[Plot[f[x, i], {x, 0, 10}], {i, 10}] *)";
+        assertThatCode(() ->
+            detector.detectPlotInLoop(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPlotInLoopInString() {
+        String content = "code = \"Do[Plot[f[x], {x, 0, 10}], {i, 10}]\";";
+        assertThatCode(() ->
+            detector.detectPlotInLoop(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectGenericVariableNamesInComment() {
+        String content = "(* temp = data; result = val; *)";
+        assertThatCode(() ->
+            detector.detectGenericVariableNames(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectGenericVariableNamesInString() {
+        String content = "code = \"temp = data; result = val;\";";
+        assertThatCode(() ->
+            detector.detectGenericVariableNames(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingUsageMessageInComment() {
+        String content = "(* PublicFunction[x_] := x + 1 *)";
+        assertThatCode(() ->
+            detector.detectMissingUsageMessage(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingUsageMessageInString() {
+        String content = "code = \"PublicFunction[x_] := x\";";
+        assertThatCode(() ->
+            detector.detectMissingUsageMessage(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingUsageMessageWithUsage() {
+        String content = "MyFunc::usage = \"MyFunc[x] does something\";\nMyFunc[x_] := x + 1";
+        assertThatCode(() ->
+            detector.detectMissingUsageMessage(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingOptionsPatternInComment() {
+        String content = "(* f[x_, opt1_: 1, opt2_: 2, opt3_: 3, opt4_: 4] := x *)";
+        assertThatCode(() ->
+            detector.detectMissingOptionsPattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingOptionsPatternInString() {
+        String content = "code = \"f[x_, opt1_: 1, opt2_: 2, opt3_: 3] := x\";";
+        assertThatCode(() ->
+            detector.detectMissingOptionsPattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectSideEffectsNamingInComment() {
+        String content = "(* ProcessData[x_] := (globalVar = x; x) *)";
+        assertThatCode(() ->
+            detector.detectSideEffectsNaming(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectSideEffectsNamingInString() {
+        String content = "code = \"ProcessData[x_] := (globalVar = x; x)\";";
+        assertThatCode(() ->
+            detector.detectSideEffectsNaming(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectSideEffectsNamingMatchingPattern() {
+        String content = "UpdateState![x_] := (state = x; x)";
+        assertThatCode(() ->
+            detector.detectSideEffectsNaming(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectComplexBooleanInComment() {
+        String content = "(* If[a && b && c || d && e, result] *)";
+        assertThatCode(() ->
+            detector.detectComplexBoolean(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectComplexBooleanInString() {
+        String content = "code = \"If[a && b && c || d, result]\";";
+        assertThatCode(() ->
+            detector.detectComplexBoolean(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUnprotectedSymbolsWithProtection() {
+        String content = "PublicApi1[x_] := x\nPublicApi2[y_] := y\nProtect[PublicApi1, PublicApi2]";
+        assertThatCode(() ->
+            detector.detectUnprotectedSymbols(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUnprotectedSymbolsMultiplePublic() {
+        String content = "Func1[x_] := x\nFunc2[x_] := x\nFunc3[x_] := x";
+        assertThatCode(() ->
+            detector.detectUnprotectedSymbols(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingReturnInComment() {
+        String content = "(* ComplexFunc[x_] := Module[{}, If[x > 0, x]] *)";
+        assertThatCode(() ->
+            detector.detectMissingReturn(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingReturnInString() {
+        String content = "code = \"ComplexFunc[x_] := Module[{}, If[x > 0, x]]\";";
+        assertThatCode(() ->
+            detector.detectMissingReturn(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingReturnMultipleBranches() {
+        String content = "BigFunc[x_] := Module[{}, If[x > 0, Print[x]; x, If[x < 0, -x]]]";
+        assertThatCode(() ->
+            detector.detectMissingReturn(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOvercomplexPatternsInComment() {
+        String content = "(* f[x_ | y_ | z_ | a_ | b_] := x *)";
+        assertThatCode(() ->
+            detector.detectOvercomplexPatterns(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectOvercomplexPatternsInString() {
+        String content = "code = \"f[x_ | y_ | z_ | a_ | b_] := x\";";
+        assertThatCode(() ->
+            detector.detectOvercomplexPatterns(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentRuleTypesInComment() {
+        String content = "(* {a -> 1, b :> 2, c -> 3} *)";
+        assertThatCode(() ->
+            detector.detectInconsistentRuleTypes(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentRuleTypesInString() {
+        String content = "code = \"{a -> 1, b :> 2}\";";
+        assertThatCode(() ->
+            detector.detectInconsistentRuleTypes(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingFunctionAttributesMultiple() {
+        String content = "Func1[x_] := x\nFunc2[x_] := x\nFunc3[x_] := x";
+        assertThatCode(() ->
+            detector.detectMissingFunctionAttributes(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingDownValuesDocInComment() {
+        String content = "(* F[x_Integer] := x\nF[x_Real] := x\nF[x_String] := x *)";
+        assertThatCode(() ->
+            detector.detectMissingDownValuesDoc(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingDownValuesDocInString() {
+        String content = "code = \"F[x_Integer] := x; F[x_Real] := x;\";";
+        assertThatCode(() ->
+            detector.detectMissingDownValuesDoc(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingDownValuesDocWithUsage() {
+        String content = "F::usage = \"F processes input\";\nF[x_Integer] := x\nF[x_Real] := x\nF[x_String] := x";
+        assertThatCode(() ->
+            detector.detectMissingDownValuesDoc(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingPatternTestValidationInComment() {
+        String content = "(* ProcessInput[data_] := Length[data] *)";
+        assertThatCode(() ->
+            detector.detectMissingPatternTestValidation(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingPatternTestValidationInString() {
+        String content = "code = \"ProcessInput[data_] := Length[data]\";";
+        assertThatCode(() ->
+            detector.detectMissingPatternTestValidation(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectExcessivePureFunctionsInComment() {
+        String content = "(* Map[#1 + #2 * #3 &, data] *)";
+        assertThatCode(() ->
+            detector.detectExcessivePureFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectExcessivePureFunctionsInString() {
+        String content = "code = \"Map[#1 + #2 * #3 &, data]\";";
+        assertThatCode(() ->
+            detector.detectExcessivePureFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingOperatorPrecedenceInComment() {
+        String content = "(* result = f /@ g @@ h //@ data *)";
+        assertThatCode(() ->
+            detector.detectMissingOperatorPrecedence(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingOperatorPrecedenceInString() {
+        String content = "code = \"result = f /@ g @@ h\";";
+        assertThatCode(() ->
+            detector.detectMissingOperatorPrecedence(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentReturnTypesInComment() {
+        String content = "(* F[x_] := {x}\nF[y_] := <|y|> *)";
+        assertThatCode(() ->
+            detector.detectInconsistentReturnTypes(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectInconsistentReturnTypesInString() {
+        String content = "code = \"F[x_] := {x}; F[y_] := <|y|>;\";";
+        assertThatCode(() ->
+            detector.detectInconsistentReturnTypes(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingErrorMessagesWithMessage() {
+        String content = "PublicFunc[x_] := (Message[PublicFunc::error]; x)\nPublicFunc::error = \"Error occurred\"";
+        assertThatCode(() ->
+            detector.detectMissingErrorMessages(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectGlobalStateModificationInComment() {
+        String content = "(* ProcessData[x_] := (Global`var = x) *)";
+        assertThatCode(() ->
+            detector.detectGlobalStateModification(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectGlobalStateModificationInString() {
+        String content = "code = \"ProcessData[x_] := (Global`var = x)\";";
+        assertThatCode(() ->
+            detector.detectGlobalStateModification(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectGlobalStateModificationMultiplePatterns() {
+        String content = "Func![x_] := (state = x; x)";
+        assertThatCode(() ->
+            detector.detectGlobalStateModification(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingLocalizationInComment() {
+        String content = "(* Manipulate[x + y, {x, 0, 10}] *)";
+        assertThatCode(() ->
+            detector.detectMissingLocalization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingLocalizationInString() {
+        String content = "code = \"Manipulate[x + y, {x, 0, 10}]\";";
+        assertThatCode(() ->
+            detector.detectMissingLocalization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingLocalizationDynamicModule() {
+        String content = "DynamicModule[{x = 0}, Slider[Dynamic[x]]]";
+        assertThatCode(() ->
+            detector.detectMissingLocalization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectNestedListsInsteadAssociationInComment() {
+        String content = "(* data[[1]]; data[[2]]; data[[3]]; data[[5]] *)";
+        assertThatCode(() ->
+            detector.detectNestedListsInsteadAssociation(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectNestedListsInsteadAssociationInString() {
+        String content = "code = \"data[[1]]; data[[2]]; data[[3]];\";";
+        assertThatCode(() ->
+            detector.detectNestedListsInsteadAssociation(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedPartExtractionInComment() {
+        String content = "(* x[[1]]; x[[2]]; x[[3]] *)";
+        assertThatCode(() ->
+            detector.detectRepeatedPartExtraction(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedPartExtractionInString() {
+        String content = "code = \"x[[1]]; x[[2]]; x[[3]];\";";
+        assertThatCode(() ->
+            detector.detectRepeatedPartExtraction(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedPartExtractionMultiple() {
+        String content = "a = x[[1]]; b = x[[2]]; c = x[[3]]; d = x[[4]];";
+        assertThatCode(() ->
+            detector.detectRepeatedPartExtraction(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingMemoizationWithMemoization() {
+        String content = "fib[0] = 0; fib[1] = 1; fib[n_] := fib[n] = fib[n-1] + fib[n-2]";
+        assertThatCode(() ->
+            detector.detectMissingMemoization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectStringJoinForTemplatesInComment() {
+        String content = "(* msg = \"Hello\" <> name <> \" from \" <> place <> \"!\" *)";
+        assertThatCode(() ->
+            detector.detectStringJoinForTemplates(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectStringJoinForTemplatesInString() {
+        String content = "code = \"msg = hello <> name <> place\";";
+        assertThatCode(() ->
+            detector.detectStringJoinForTemplates(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLinearSearchInsteadLookupInComment() {
+        String content = "(* Select[data, #[[\"key\"]] == value &] *)";
+        assertThatCode(() ->
+            detector.detectLinearSearchInsteadLookup(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLinearSearchInsteadLookupInString() {
+        String content = "code = \"Select[data, #[[key]] == value &]\";";
+        assertThatCode(() ->
+            detector.detectLinearSearchInsteadLookup(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedCalculationsInComment() {
+        String content = "(* Do[result = ExpensiveFunc[] + i, {i, 100}] *)";
+        assertThatCode(() ->
+            detector.detectRepeatedCalculations(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedCalculationsInString() {
+        String content = "code = \"Do[result = ExpensiveFunc[] + i, {i, 100}]\";";
+        assertThatCode(() ->
+            detector.detectRepeatedCalculations(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedCalculationsWithBrackets() {
+        String content = "Do[val = [ExpensiveOp[]] + i, {i, 1000}]";
+        assertThatCode(() ->
+            detector.detectRepeatedCalculations(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPositionInsteadPatternInComment() {
+        String content = "(* pos = Position[data, pattern]; Extract[data, pos] *)";
+        assertThatCode(() ->
+            detector.detectPositionInsteadPattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPositionInsteadPatternInString() {
+        String content = "code = \"pos = Position[data, pattern]; Extract[data, pos]\";";
+        assertThatCode(() ->
+            detector.detectPositionInsteadPattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectPositionInsteadPatternWithExtractAndCases() {
+        String content = "p = Position[list, x]; e = Extract[list, p]; c = Cases[list, x]";
+        assertThatCode(() ->
+            detector.detectPositionInsteadPattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectFlattenTableAntipatternInComment() {
+        String content = "(* result = Flatten[Table[f[i], {i, 100}]] *)";
+        assertThatCode(() ->
+            detector.detectFlattenTableAntipattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectFlattenTableAntipatternInString() {
+        String content = "code = \"result = Flatten[Table[f[i], {i, 100}]]\";";
+        assertThatCode(() ->
+            detector.detectFlattenTableAntipattern(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingParallelizationInComment() {
+        String content = "(* Table[expensiveFunc[i], {i, 10000}] *)";
+        assertThatCode(() ->
+            detector.detectMissingParallelization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingParallelizationInString() {
+        String content = "code = \"Table[expensiveFunc[i], {i, 10000}]\";";
+        assertThatCode(() ->
+            detector.detectMissingParallelization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingParallelizationWithNumericalFunctions() {
+        String content = "Table[Sin[x] + Cos[y] + Exp[z], {x, 0, 100}, {y, 0, 100}, {z, 0, 100}]";
+        assertThatCode(() ->
+            detector.detectMissingParallelization(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUnnecessaryTransposeInComment() {
+        String content = "(* result = Transpose[Transpose[matrix]] *)";
+        assertThatCode(() ->
+            detector.detectUnnecessaryTranspose(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectUnnecessaryTransposeInString() {
+        String content = "code = \"result = Transpose[Transpose[matrix]]\";";
+        assertThatCode(() ->
+            detector.detectUnnecessaryTranspose(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedStringParsingInComment() {
+        String content = "(* Do[val = ToExpression[str], {i, 100}] *)";
+        assertThatCode(() ->
+            detector.detectRepeatedStringParsing(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectRepeatedStringParsingInString() {
+        String content = "code = \"Do[val = ToExpression[str], {i, 100}]\";";
+        assertThatCode(() ->
+            detector.detectRepeatedStringParsing(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingCompilationTargetInComment() {
+        String content = "(* f = Compile[{{x, _Real}}, x^2] *)";
+        assertThatCode(() ->
+            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingCompilationTargetInString() {
+        String content = "code = \"f = Compile[{{x, _Real}}, x^2]\";";
+        assertThatCode(() ->
+            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectMissingCompilationTargetWithMathematicalFunctions() {
+        String content = "f = Compile[{{x}}, Sin[x] + Cos[x] + Exp[x]]";
+        assertThatCode(() ->
+            detector.detectMissingCompilationTarget(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectTodoTrackingInComment() {
+        String content = "(* some code *) (* TODO: implement feature *)";
+        assertThatCode(() ->
+            detector.detectTodoTracking(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectTodoTrackingInString() {
+        String content = "msg = \"TODO: fix this\";";
+        assertThatCode(() ->
+            detector.detectTodoTracking(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectFixmeTrackingInComment() {
+        String content = "(* some code *) (* FIXME: broken *)";
+        assertThatCode(() ->
+            detector.detectFixmeTracking(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectFixmeTrackingInString() {
+        String content = "note = \"FIXME: repair this\";";
+        assertThatCode(() ->
+            detector.detectFixmeTracking(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectHackCommentInComment() {
+        String content = "(* code here *) (* HACK: workaround *)";
+        assertThatCode(() ->
+            detector.detectHackComment(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectHackCommentInString() {
+        String content = "comment = \"HACK: temporary fix\";";
+        assertThatCode(() ->
+            detector.detectHackComment(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectCommentedOutCodeInComment() {
+        String content = "(* (*  f[x_] := x + 1 *) *)";
+        assertThatCode(() ->
+            detector.detectCommentedOutCode(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectCommentedOutCodeInString() {
+        String content = "msg = \"(* f[x_] := x *)\";";
+        assertThatCode(() ->
+            detector.detectCommentedOutCode(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectCommentedOutCodeNaturalLanguage() {
+        String content = "(* This is a natural language explanation of the algorithm that we are implementing here *)";
+        assertThatCode(() ->
+            detector.detectCommentedOutCode(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLargeCommentedBlockInComment() {
+        String content = "(* outer comment (* inner long comment with many lines\n"
+            + String.join("\n", java.util.Collections.nCopies(25, "line")) + " *) *)";
+        assertThatCode(() ->
+            detector.detectLargeCommentedBlock(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLargeCommentedBlockInString() {
+        String content = "note = \"(*\n" + String.join("\n", java.util.Collections.nCopies(25, "line")) + "*)\";";
+        assertThatCode(() ->
+            detector.detectLargeCommentedBlock(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectLargeCommentedBlockLongMultiLine() {
+        StringBuilder longComment = new StringBuilder("(*\n");
+        for (int i = 0; i < 30; i++) {
+            longComment.append("Line ").append(i).append(" of the comment\n");
+        }
+        longComment.append("*)");
+        assertThatCode(() ->
+            detector.detectLargeCommentedBlock(mockContext, mockInputFile, longComment.toString())
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDocumentationTooShortInComment() {
+        String content = "(* MyFunc::usage = \"Short\" *)";
+        assertThatCode(() ->
+            detector.detectDocumentationTooShort(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDocumentationTooShortInString() {
+        String content = "code = \"MyFunc::usage = Short\";";
+        assertThatCode(() ->
+            detector.detectDocumentationTooShort(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDocumentationOutdatedInComment() {
+        String content = "(* OldFunc::usage = \"This is deprecated and obsolete\" *)";
+        assertThatCode(() ->
+            detector.detectDocumentationOutdated(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDocumentationOutdatedInString() {
+        String content = "doc = \"OldFunc::usage = This is deprecated\";";
+        assertThatCode(() ->
+            detector.detectDocumentationOutdated(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectDocumentationOutdatedMultipleKeywords() {
+        String content = "MyFunc::usage = \"This is deprecated, obsolete, and outdated\"";
+        assertThatCode(() ->
+            detector.detectDocumentationOutdated(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectParameterNotDocumentedInComment() {
+        String content = "(* MyFunc::usage = \"MyFunc does something\"\nMyFunc[param1_, param2_] := param1 *)";
+        assertThatCode(() ->
+            detector.detectParameterNotDocumented(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectParameterNotDocumentedInString() {
+        String content = "code = \"MyFunc::usage = something; MyFunc[param1_] := param1\";";
+        assertThatCode(() ->
+            detector.detectParameterNotDocumented(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectParameterNotDocumentedWithDocumentation() {
+        String content = "MyFunc::usage = \"MyFunc[param1, param2] does something\"\nMyFunc[param1_, param2_] := param1 + param2";
+        assertThatCode(() ->
+            detector.detectParameterNotDocumented(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectReturnNotDocumentedInComment() {
+        String content = "(* MyFunc::usage = \"MyFunc processes data\" *)";
+        assertThatCode(() ->
+            detector.detectReturnNotDocumented(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectReturnNotDocumentedInString() {
+        String content = "doc = \"MyFunc::usage = MyFunc processes data\";";
+        assertThatCode(() ->
+            detector.detectReturnNotDocumented(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDetectReturnNotDocumentedWithReturnKeywords() {
+        String content = "MyFunc::usage = \"MyFunc returns the result\"";
+        assertThatCode(() ->
+            detector.detectReturnNotDocumented(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testDuplicateFunctionsMultipleMatches() {
+        String content = "func1[x_] := x\nfunc2[x_] := x\nfunc1[y_] := y";
+        assertThatCode(() ->
+            detector.detectDuplicateFunctions(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testTooManyParametersBoundaryCase() {
+        String content = "f[a_, b_, c_, d_, e_] := a + b + c + d + e";
+        assertThatCode(() ->
+            detector.detectTooManyParameters(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
+    }
+
+    @Test
+    void testTooManyParametersExceedThreshold() {
+        String content = "complexFunc[a_, b_, c_, d_, e_, f_, g_] := a";
+        assertThatCode(() ->
+            detector.detectTooManyParameters(mockContext, mockInputFile, content)
+        ).doesNotThrowAnyException();
     }
 
 }

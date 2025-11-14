@@ -41,14 +41,6 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-            @Test
-    void testDetectBuiltinNameInLocalScope() {
-        String content = "Module[{List = {1, 2, 3}}, List[[1]]]";
-        assertDoesNotThrow(() ->
-            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
-        );
-    }
-
                                 // ===== UNDEFINED SYMBOL DETECTION TESTS (10 rules) =====
 
         @Test
@@ -171,14 +163,6 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-            @Test
-    void testDetectBuiltinNameInLocalScopeNonBuiltin() {
-        String content = "Module[{myList = {1, 2, 3}}, myList[[1]]]";
-        assertDoesNotThrow(() ->
-            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
-        );
-    }
-
                                                                 @Test
     void testComplexMixedScenarios() {
         String content = "BeginPackage[\"TestPkg`\"];\n"
@@ -200,14 +184,6 @@ class UnusedAndNamingDetectorTest {
     }
 
                             // ===== ADDITIONAL NEGATIVE CASE TESTS =====
-
-                                                        @Test
-    void testDetectBuiltinNameInLocalScopeInComment() {
-        String content = "(* Module[{List = {1, 2, 3}}, List[[1]]] *)";
-        assertDoesNotThrow(() ->
-            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
-        );
-    }
 
                         // ===== EDGE CASE TESTS =====
 
@@ -1035,6 +1011,617 @@ class UnusedAndNamingDetectorTest {
             Arguments.of("result = length[{1, 2, 3}];"),
             Arguments.of("result = Length[{1, 2, 3}];"),
             Arguments.of("length[list];\\nfirst[list];\\ntable[i, {i, 10}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectBuiltinNameInLocalScopeData")
+    void testDetectBuiltinNameInLocalScopeParameterized(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectBuiltinNameInLocalScopeData() {
+        return Stream.of(
+            Arguments.of("Module[{List = {1, 2, 3}}, List[[1]]]"),
+            Arguments.of("Module[{myList = {1, 2, 3}}, myList[[1]]]"),
+            Arguments.of("(* Module[{List = {1, 2, 3}}, List[[1]]] *)")
+        );
+    }
+
+    // Additional tests for comment/string literal branches and edge cases
+
+    // ===== UNUSED CODE DETECTION TESTS =====
+
+    @Test
+    void testDetectUnusedPrivateFunctionInComment() {
+        String content = "(* privateFunc[x_] := x + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedPrivateFunction(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedPrivateFunctionCallCountCheck() {
+        String content = "BeginPackage[\"Test`\"]; Begin[\"`Private`\"]; myFunc[x_] := x + 1; myFunc[5]; End[]; EndPackage[];";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedPrivateFunction(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedFunctionParameterInComment() {
+        String content = "(* f[x_, y_] := x + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedFunctionParameter(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedFunctionParameterInString() {
+        String content = "code = \"f[x_, y_] := x + 1\";";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedFunctionParameter(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedFunctionParameterBodyCheck() {
+        String content = "f[x_, y_] := x + 1;";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedFunctionParameter(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedModuleVariableInComment() {
+        String content = "(* Module[{x, y}, x + 1] *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedModuleVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedModuleVariableInString() {
+        String content = "code = \"Module[{x, y}, x + 1]\";";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedModuleVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedModuleVariableUnusedVar() {
+        String content = "Module[{x, y}, x + 1]";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedModuleVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedWithVariableInComment() {
+        String content = "(* With[{x = 5, y = 10}, x + 1] *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedWithVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedWithVariableInString() {
+        String content = "code = \"With[{x = 5, y = 10}, x + 1]\";";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedWithVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedImportInComment() {
+        String content = "(* Needs[\"Package`\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedImportInString() {
+        String content = "code = \"Needs[\\\"Package`\\\"]\";";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedImportZeroUsageCount() {
+        String content = "Needs[\"UnusedPackage`\"]";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedPatternNameWithNamedPatterns() {
+        String content = "f[x : _Integer, y : _Real] := x + y";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedPatternName(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedOptionalParameterInComment() {
+        String content = "(* f[x_, y : 10] := x + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedOptionalParameter(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedOptionalParameterInString() {
+        String content = "code = \"f[x_, y : 10] := x + 1\";";
+        assertDoesNotThrow(() ->
+            detector.detectUnusedOptionalParameter(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectDeadCodeAfterReturnInComment() {
+        String content = "(* f[x_] := (Return[x]; y = 5) *)";
+        assertDoesNotThrow(() ->
+            detector.detectDeadCodeAfterReturn(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectDeadCodeAfterReturnInString() {
+        String content = "code = \"f[x_] := (Return[x]; y = 5)\";";
+        assertDoesNotThrow(() ->
+            detector.detectDeadCodeAfterReturn(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectDeadCodeAfterReturnWithNextStatement() {
+        String content = "f[x_] := (Return[x]; y = 5)";
+        assertDoesNotThrow(() ->
+            detector.detectDeadCodeAfterReturn(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnreachableAfterAbortThrowInComment() {
+        String content = "(* f[x_] := (Abort[]; y = 5) *)";
+        assertDoesNotThrow(() ->
+            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnreachableAfterAbortThrowInString() {
+        String content = "code = \"f[x_] := (Throw[err]; y = 5)\";";
+        assertDoesNotThrow(() ->
+            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnreachableAfterAbortThrowWithNextStatement() {
+        String content = "f[x_] := (Abort[]; y = 5)";
+        assertDoesNotThrow(() ->
+            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectAssignmentNeverReadMultipleAssignments() {
+        String content = "x = 1; x = 2; x = 3; Print[x]";
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentNeverRead(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectAssignmentNeverReadInComment() {
+        String content = "(* x = 5 *)";
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentNeverRead(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectFunctionDefinedButNeverCalledInComment() {
+        String content = "(* myFunc[x_] := x + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectFunctionDefinedButNeverCalledInString() {
+        String content = "code = \"myFunc[x_] := x + 1\";";
+        assertDoesNotThrow(() ->
+            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectFunctionDefinedButNeverCalledWithCallCount() {
+        String content = "myFunc[x_] := x + 1; myFunc[5]";
+        assertDoesNotThrow(() ->
+            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectRedefinedWithoutUseInComment() {
+        String content = "(* x = 1; x = 2 *)";
+        assertDoesNotThrow(() ->
+            detector.detectRedefinedWithoutUse(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectRedefinedWithoutUseInString() {
+        String content = "code = \"x = 1; x = 2\";";
+        assertDoesNotThrow(() ->
+            detector.detectRedefinedWithoutUse(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectLoopVariableUnusedProcessing() {
+        String content = "Do[Print[5], {i, 10}]";
+        assertDoesNotThrow(() ->
+            detector.detectLoopVariableUnused(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCatchWithoutThrowInComment() {
+        String content = "(* Check[expr, {}] *)";
+        assertDoesNotThrow(() ->
+            detector.detectCatchWithoutThrow(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCatchWithoutThrowNoCatch() {
+        String content = "f[x_] := x + 1";
+        assertDoesNotThrow(() ->
+            detector.detectCatchWithoutThrow(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectConditionAlwaysFalseInComment() {
+        String content = "(* If[False, x, y] *)";
+        assertDoesNotThrow(() ->
+            detector.detectConditionAlwaysFalse(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectConditionAlwaysFalseInString() {
+        String content = "code = \"If[False, x, y]\";";
+        assertDoesNotThrow(() ->
+            detector.detectConditionAlwaysFalse(context, inputFile, content)
+        );
+    }
+
+    // ===== SHADOWING & NAMING TESTS =====
+
+    @Test
+    void testDetectLocalShadowsGlobalWithGlobalAssignment() {
+        String content = "x = 10; Module[{x = 5}, x + 1]";
+        assertDoesNotThrow(() ->
+            detector.detectLocalShadowsGlobal(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParameterShadowsBuiltinInComment() {
+        String content = "(* f[List_] := Length[List] *)";
+        assertDoesNotThrow(() ->
+            detector.detectParameterShadowsBuiltin(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParameterShadowsBuiltinInString() {
+        String content = "code = \"f[List_] := Length[List]\";";
+        assertDoesNotThrow(() ->
+            detector.detectParameterShadowsBuiltin(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParameterShadowsBuiltinWithParams() {
+        String content = "f[List_, Table_] := List + Table";
+        assertDoesNotThrow(() ->
+            detector.detectParameterShadowsBuiltin(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectLocalShadowsParameterWithParams() {
+        String content = "f[x_] := Module[{x = 5}, x + 1]";
+        assertDoesNotThrow(() ->
+            detector.detectLocalShadowsParameter(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMultipleDefinitionsSameSymbolInComment() {
+        String content = "(* f[x_] := x + 1; f[y_] := y + 2 *)";
+        assertDoesNotThrow(() ->
+            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMultipleDefinitionsSameSymbolInString() {
+        String content = "code = \"f[x_] := x + 1; f[y_] := y + 2\";";
+        assertDoesNotThrow(() ->
+            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMultipleDefinitionsSameSymbolDuplicateFunctions() {
+        String content = "f[x_] := x + 1; f[y_] := y + 2;";
+        assertDoesNotThrow(() ->
+            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectSymbolNameTooShortSingleLetterVar() {
+        String content = "a = 1; b = 2; c = 3;";
+        assertDoesNotThrow(() ->
+            detector.detectSymbolNameTooShort(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectSymbolNameTooLongInComment() {
+        String content = "(* " + "v".repeat(55) + " = 5 *)";
+        assertDoesNotThrow(() ->
+            detector.detectSymbolNameTooLong(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectSymbolNameTooLongInString() {
+        String content = "code = \"" + "v".repeat(55) + " = 5\";";
+        assertDoesNotThrow(() ->
+            detector.detectSymbolNameTooLong(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectSymbolNameTooLongExceedsThreshold() {
+        String content = "v".repeat(55) + " = 5;";
+        assertDoesNotThrow(() ->
+            detector.detectSymbolNameTooLong(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectInconsistentNamingConventionInComment() {
+        String content = "(* myVar = 5; MyFunc[x_] := x + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectInconsistentNamingConvention(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectInconsistentNamingConventionInString() {
+        String content = "code = \"myVar = 5; MyFunc[x_] := x + 1\";";
+        assertDoesNotThrow(() ->
+            detector.detectInconsistentNamingConvention(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectInconsistentNamingConventionPascalCase() {
+        String content = "MyVar = 5; MyFunc[x_] := x + 1;";
+        assertDoesNotThrow(() ->
+            detector.detectInconsistentNamingConvention(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectBuiltinNameInLocalScopeInComment() {
+        String content = "(* Module[{List = {1, 2, 3}}, List[[1]]] *)";
+        assertDoesNotThrow(() ->
+            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectBuiltinNameInLocalScopeInString() {
+        String content = "code = \"Module[{List = {1, 2, 3}}, List[[1]]]\";";
+        assertDoesNotThrow(() ->
+            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectBuiltinNameInLocalScopeWithBuiltinVar() {
+        String content = "Module[{List = {1, 2, 3}, Table = {}}, List[[1]]]";
+        assertDoesNotThrow(() ->
+            detector.detectBuiltinNameInLocalScope(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectContextConflictsInComment() {
+        String content = "(* BeginPackage[\"Test`\"]; BeginPackage[\"Test`\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectContextConflicts(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectContextConflictsInString() {
+        String content = "code = \"BeginPackage[\\\"Test`\\\"]\";";
+        assertDoesNotThrow(() ->
+            detector.detectContextConflicts(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectReservedNameUsageWithReservedName() {
+        String content = "$Failed = 0;";
+        assertDoesNotThrow(() ->
+            detector.detectReservedNameUsage(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPrivateContextSymbolPublicInComment() {
+        String content = "(* BeginPackage[\"Test`\"]; Test`Private`func::usage = \"...\" *)";
+        assertDoesNotThrow(() ->
+            detector.detectPrivateContextSymbolPublic(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPrivateContextSymbolPublicInString() {
+        String content = "code = \"Test`Private`func::usage = \\\"...\\\"\";";
+        assertDoesNotThrow(() ->
+            detector.detectPrivateContextSymbolPublic(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectTempVariableNotTempInComment() {
+        String content = "(* temp = 1; temp = 2; temp = 3 *)";
+        assertDoesNotThrow(() ->
+            detector.detectTempVariableNotTemp(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectTempVariableNotTempInString() {
+        String content = "code = \"temp = 1; temp = 2; temp = 3\";";
+        assertDoesNotThrow(() ->
+            detector.detectTempVariableNotTemp(context, inputFile, content)
+        );
+    }
+
+    // ===== UNDEFINED SYMBOL DETECTION TESTS =====
+
+    @Test
+    void testDetectUndefinedFunctionCallNotDefined() {
+        String content = "result = undefinedFunc[x];";
+        assertDoesNotThrow(() ->
+            detector.detectUndefinedFunctionCall(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectTypoInBuiltinNameWithTypo() {
+        String content = "result = Lenght[{1, 2, 3}];";
+        assertDoesNotThrow(() ->
+            detector.detectTypoInBuiltinName(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectWrongCapitalizationLowercase() {
+        String content = "result = length[{1, 2, 3}];";
+        assertDoesNotThrow(() ->
+            detector.detectWrongCapitalization(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMissingImportWithUsedContext() {
+        String content = "Needs[\"Package1`\"]; result = Package2`Func[];";
+        assertDoesNotThrow(() ->
+            detector.detectMissingImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectContextNotFoundInComment() {
+        String content = "(* BeginPackage[\"NonExistent`\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectContextNotFound(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectContextNotFoundInString() {
+        String content = "code = \"BeginPackage[\\\"NonExistent`\\\"]\";";
+        assertDoesNotThrow(() ->
+            detector.detectContextNotFound(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectContextNotFoundTestPackage() {
+        String content = "BeginPackage[\"TestPackage`\"]";
+        assertDoesNotThrow(() ->
+            detector.detectContextNotFound(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectSymbolMaskedByImportWithLocalFunctions() {
+        String content = "Needs[\"Package`\"]; myFunc[x_] := x + 1;";
+        assertDoesNotThrow(() ->
+            detector.detectSymbolMaskedByImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMissingPathEntryInComment() {
+        String content = "(* Get[\"file.m\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectMissingPathEntry(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMissingPathEntryInString() {
+        String content = "code = \"Get[\\\"file.m\\\"]\";";
+        assertDoesNotThrow(() ->
+            detector.detectMissingPathEntry(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCircularNeedsInComment() {
+        String content = "(* Needs[\"Package`\"] *)";
+        when(inputFile.filename()).thenReturn("Package.m");
+        assertDoesNotThrow(() ->
+            detector.detectCircularNeeds(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCircularNeedsInString() {
+        String content = "code = \"Needs[\\\"Package`\\\"]\";";
+        when(inputFile.filename()).thenReturn("Package.m");
+        assertDoesNotThrow(() ->
+            detector.detectCircularNeeds(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCircularNeedsWithMatchingPackage() {
+        String content = "Needs[\"MyPackage`\"]";
+        when(inputFile.filename()).thenReturn("MyPackage.m");
+        assertDoesNotThrow(() ->
+            detector.detectCircularNeeds(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectForwardReferenceWithoutDeclarationCallBeforeDef() {
+        String content = "result = myFunc[5]; myFunc[x_] := x + 1;";
+        assertDoesNotThrow(() ->
+            detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content)
         );
     }
 

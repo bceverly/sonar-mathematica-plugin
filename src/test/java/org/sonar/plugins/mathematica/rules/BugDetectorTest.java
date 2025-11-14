@@ -268,14 +268,6 @@ class BugDetectorTest {
     }
 
     @Test
-    void testDetectSymbolNameCollisionI() {
-        String content = "I[x_] := Integrate[x, x];";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameCollision(context, inputFile, content)
-        );
-    }
-
-    @Test
     void testDetectBlockModuleMisuseForGlobal() {
         String content = "Module[{x = 5}, x + global]";
         assertDoesNotThrow(() ->
@@ -341,58 +333,10 @@ class BugDetectorTest {
     // ===== PHASE 4: ADVANCED BUG DETECTION =====
 
     @Test
-    void testDetectMissingEmptyListCheck() {
-        String content = "result = First[list];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingEmptyListCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMachinePrecisionInSymbolic() {
-        String content = "Solve[x^2 + 1.5*x + 1 == 0, x]";
-        assertDoesNotThrow(() ->
-            detector.detectMachinePrecisionInSymbolic(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingFailedCheck() {
-        String content = "result = Import[\"data.csv\"];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingFailedCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectZeroDenominator() {
-        String content = "result = x / y;";
-        assertDoesNotThrow(() ->
-            detector.detectZeroDenominator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingMatrixDimensionCheck() {
-        String content = "result = matrix.otherMatrix;";
-        assertDoesNotThrow(() ->
-            detector.detectMissingMatrixDimensionCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
     void testDetectIncorrectSetInScoping() {
         String content = "Module[{x = 5}, body]";
         assertDoesNotThrow(() ->
             detector.detectIncorrectSetInScoping(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingHoldAttributes() {
-        String content = "myHold[x_] := Hold[x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingHoldAttributes(context, inputFile, content)
         );
     }
 
@@ -413,14 +357,6 @@ class BugDetectorTest {
     }
 
     @Test
-    void testDetectUnpackingPackedArrays() {
-        String content = "arr[[1]] = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectUnpackingPackedArrays(context, inputFile, content)
-        );
-    }
-
-    @Test
     void testDetectMissingSpecialCaseHandling() {
         String content = "f[x_] := x / (x - 1);";
         assertDoesNotThrow(() ->
@@ -433,22 +369,6 @@ class BugDetectorTest {
         String content = "assoc = <|a -> 1|>;\nresult = Append[assoc, b -> 2];";
         assertDoesNotThrow(() ->
             detector.detectIncorrectAssociationOperations(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDateObjectValidation() {
-        String content = "date = DateObject[{2023, 13, 45}];";
-        assertDoesNotThrow(() ->
-            detector.detectDateObjectValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTotalMeanOnNonNumeric() {
-        String content = "result = Total[{\"a\", \"b\", \"c\"}];";
-        assertDoesNotThrow(() ->
-            detector.detectTotalMeanOnNonNumeric(context, inputFile, content)
         );
     }
 
@@ -595,46 +515,6 @@ class BugDetectorTest {
     // ===== ADDITIONAL TESTS FOR 80%+ COVERAGE =====
 
     @Test
-    void testDetectDivisionByZeroWithURL() {
-        String content = "url = \"http://example.com\"; result = x / y;";
-        assertDoesNotThrow(() ->
-            detector.detectDivisionByZero(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDivisionByZeroWithCheck() {
-        String content = "Check[result = x / y];";
-        assertDoesNotThrow(() ->
-            detector.detectDivisionByZero(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDivisionByZeroWithPi() {
-        String content = "result = x / Pi;";
-        assertDoesNotThrow(() ->
-            detector.detectDivisionByZero(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDivisionByZeroWithE() {
-        String content = "result = x / E;";
-        assertDoesNotThrow(() ->
-            detector.detectDivisionByZero(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDivisionByZeroWithNonZeroLiteral() {
-        String content = "result = x / 3.14;";
-        assertDoesNotThrow(() ->
-            detector.detectDivisionByZero(context, inputFile, content)
-        );
-    }
-
-    @Test
     void testDetectInfiniteLoopWithBreak() {
         String content = "While[True, If[condition, Break[]]; Print[x]]";
         assertDoesNotThrow(() ->
@@ -651,162 +531,10 @@ class BugDetectorTest {
     }
 
     @Test
-    void testDetectSymbolNameCollisionPi() {
-        String content = "Pi[x_] := 3.14 * x;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameCollision(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolNameCollisionSin() {
-        String content = "Sin[x_] := MyCustomSine[x];";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameCollision(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolNameCollisionLog() {
-        String content = "Log = {1, 2, 3};";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameCollision(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingEmptyListCheckLast() {
-        String content = "result = Last[myList];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingEmptyListCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingEmptyListCheckWithLengthCheck() {
-        String content = "If[Length[list] > 0, result = First[list]];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingEmptyListCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMachinePrecisionInSymbolicDSolve() {
-        String content = "DSolve[y'[x] == 0.5 * y[x], y[x], x]";
-        assertDoesNotThrow(() ->
-            detector.detectMachinePrecisionInSymbolic(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMachinePrecisionInSymbolicIntegrate() {
-        String content = "Integrate[x^2.5, x]";
-        assertDoesNotThrow(() ->
-            detector.detectMachinePrecisionInSymbolic(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMachinePrecisionInSymbolicLimit() {
-        String content = "Limit[(1 + 1.0/n)^n, n -> Infinity]";
-        assertDoesNotThrow(() ->
-            detector.detectMachinePrecisionInSymbolic(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingFailedCheckGet() {
-        String content = "data = Get[\"file.m\"];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingFailedCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingFailedCheckURLFetch() {
-        String content = "response = URLFetch[url];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingFailedCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingFailedCheckWithCheck() {
-        String content = "data = Import[\"file.csv\"];\nIf[data === $Failed, Abort[]];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingFailedCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectZeroDenominatorWithCheck() {
-        String content = "If[y != 0, result = x / y];";
-        assertDoesNotThrow(() ->
-            detector.detectZeroDenominator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectZeroDenominatorWithPositiveCheck() {
-        String content = "If[denom > 0, result = numer / denom];";
-        assertDoesNotThrow(() ->
-            detector.detectZeroDenominator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingMatrixDimensionCheckWithCheck() {
-        String content = "If[MatrixQ[A], result = A.B];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingMatrixDimensionCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingMatrixDimensionCheckWithDimensions() {
-        String content = "dims = Dimensions[matrix1];\nresult = matrix1.matrix2;";
-        assertDoesNotThrow(() ->
-            detector.detectMissingMatrixDimensionCheck(context, inputFile, content)
-        );
-    }
-
-    @Test
     void testDetectIncorrectSetInScopingBlock() {
         String content = "Block[{y = 10}, body]";
         assertDoesNotThrow(() ->
             detector.detectIncorrectSetInScoping(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingHoldAttributesWithUnevaluated() {
-        String content = "myFunc[x_] := Unevaluated[x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingHoldAttributes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingHoldAttributesWithSetAttributes() {
-        String content = "SetAttributes[myFunc, HoldAll];\nmyFunc[x_] := Unevaluated[x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingHoldAttributes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnpackingPackedArraysWithTable() {
-        String content = "arr = Table[i, {i, 1, 1000}];\nDo[AppendTo[arr, i], {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectUnpackingPackedArrays(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnpackingPackedArraysWithRange() {
-        String content = "arr = Range[1000];\nDo[Delete[arr, 1], {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectUnpackingPackedArrays(context, inputFile, content)
         );
     }
 
@@ -823,38 +551,6 @@ class BugDetectorTest {
         String content = "assoc1 = <|\"a\" -> 1|>;\nassoc2 = <|\"b\" -> 2|>;\nresult = Join[assoc1, assoc2];";
         assertDoesNotThrow(() ->
             detector.detectIncorrectAssociationOperations(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDateObjectValidationInvalidMonth() {
-        String content = "date = DateObject[{2023, 15, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectDateObjectValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDateObjectValidationInvalidDay() {
-        String content = "date = DateObject[{2023, 6, 35}];";
-        assertDoesNotThrow(() ->
-            detector.detectDateObjectValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTotalMeanOnNonNumericWithCheck() {
-        String content = "If[VectorQ[data, NumericQ], result = Mean[data]];";
-        assertDoesNotThrow(() ->
-            detector.detectTotalMeanOnNonNumeric(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTotalMeanOnNonNumericStandardDeviation() {
-        String content = "result = StandardDeviation[values];";
-        assertDoesNotThrow(() ->
-            detector.detectTotalMeanOnNonNumeric(context, inputFile, content)
         );
     }
 
@@ -976,5 +672,166 @@ class BugDetectorTest {
             detector.detectTypeMismatch(context, inputFile, content);
             detector.detectStreamReopenAttempt(context, inputFile, content);
         });
+    }
+
+    // ===== ADDITIONAL PARAMETERIZED TESTS =====
+
+    @ParameterizedTest
+    @MethodSource("detectSymbolNameCollisionData")
+    void testDetectSymbolNameCollisionParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectSymbolNameCollision(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectSymbolNameCollisionData() {
+        return Stream.of(
+            Arguments.of("I[x_] := Integrate[x, x];"),
+            Arguments.of("Pi[x_] := 3.14 * x;"),
+            Arguments.of("Sin[x_] := MyCustomSine[x];"),
+            Arguments.of("Log = {1, 2, 3};")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingEmptyListCheckData")
+    void testDetectMissingEmptyListCheckParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectMissingEmptyListCheck(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectMissingEmptyListCheckData() {
+        return Stream.of(
+            Arguments.of("result = First[list];"),
+            Arguments.of("result = Last[myList];"),
+            Arguments.of("If[Length[list] > 0, result = First[list]];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMachinePrecisionInSymbolicData")
+    void testDetectMachinePrecisionInSymbolicParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectMachinePrecisionInSymbolic(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectMachinePrecisionInSymbolicData() {
+        return Stream.of(
+            Arguments.of("Solve[x^2 + 1.5*x + 1 == 0, x]"),
+            Arguments.of("DSolve[y'[x] == 0.5 * y[x], y[x], x]"),
+            Arguments.of("Integrate[x^2.5, x]"),
+            Arguments.of("Limit[(1 + 1.0/n)^n, n -> Infinity]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingFailedCheckData")
+    void testDetectMissingFailedCheckParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectMissingFailedCheck(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectMissingFailedCheckData() {
+        return Stream.of(
+            Arguments.of("result = Import[\"data.csv\"];"),
+            Arguments.of("data = Get[\"file.m\"];"),
+            Arguments.of("response = URLFetch[url];"),
+            Arguments.of("data = Import[\"file.csv\"];\nIf[data === $Failed, Abort[]];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectZeroDenominatorData")
+    void testDetectZeroDenominatorParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectZeroDenominator(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectZeroDenominatorData() {
+        return Stream.of(
+            Arguments.of("result = x / y;"),
+            Arguments.of("If[y != 0, result = x / y];"),
+            Arguments.of("If[denom > 0, result = numer / denom];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingMatrixDimensionCheckData")
+    void testDetectMissingMatrixDimensionCheckParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectMissingMatrixDimensionCheck(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectMissingMatrixDimensionCheckData() {
+        return Stream.of(
+            Arguments.of("result = matrix.otherMatrix;"),
+            Arguments.of("If[MatrixQ[A], result = A.B];"),
+            Arguments.of("dims = Dimensions[matrix1];\nresult = matrix1.matrix2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingHoldAttributesData")
+    void testDetectMissingHoldAttributesParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectMissingHoldAttributes(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectMissingHoldAttributesData() {
+        return Stream.of(
+            Arguments.of("myHold[x_] := Hold[x];"),
+            Arguments.of("myFunc[x_] := Unevaluated[x];"),
+            Arguments.of("SetAttributes[myFunc, HoldAll];\nmyFunc[x_] := Unevaluated[x];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnpackingPackedArraysData")
+    void testDetectUnpackingPackedArraysParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectUnpackingPackedArrays(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectUnpackingPackedArraysData() {
+        return Stream.of(
+            Arguments.of("arr[[1]] = 5;"),
+            Arguments.of("arr = Table[i, {i, 1, 1000}];\nDo[AppendTo[arr, i], {i, 1, 10}];"),
+            Arguments.of("arr = Range[1000];\nDo[Delete[arr, 1], {i, 1, 10}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDateObjectValidationData")
+    void testDetectDateObjectValidationParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectDateObjectValidation(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectDateObjectValidationData() {
+        return Stream.of(
+            Arguments.of("date = DateObject[{2023, 13, 45}];"),
+            Arguments.of("date = DateObject[{2023, 15, 10}];"),
+            Arguments.of("date = DateObject[{2023, 6, 35}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTotalMeanOnNonNumericData")
+    void testDetectTotalMeanOnNonNumericParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectTotalMeanOnNonNumeric(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectTotalMeanOnNonNumericData() {
+        return Stream.of(
+            Arguments.of("result = Total[{\"a\", \"b\", \"c\"}];"),
+            Arguments.of("If[VectorQ[data, NumericQ], result = Mean[data]];"),
+            Arguments.of("result = StandardDeviation[values];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDivisionByZeroEdgeCasesData")
+    void testDetectDivisionByZeroEdgeCasesParameterized(String content) {
+        assertDoesNotThrow(() -> detector.detectDivisionByZero(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> detectDivisionByZeroEdgeCasesData() {
+        return Stream.of(
+            Arguments.of("url = \"http://example.com\"; result = x / y;"),
+            Arguments.of("Check[result = x / y];"),
+            Arguments.of("result = x / Pi;"),
+            Arguments.of("result = x / E;"),
+            Arguments.of("result = x / 3.14;")
+        );
     }
 }

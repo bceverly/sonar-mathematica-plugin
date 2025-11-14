@@ -507,4 +507,288 @@ class FrameworkDetectorTest {
         );
     }
 
+    // Additional tests for comment/string literal branches and edge cases
+
+    // ===== NOTEBOOK FRAMEWORK TESTS =====
+
+    @Test
+    void testDetectNotebookCellSizeNotNotebook() {
+        String content = "x = 5";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookCellSizeInComment() {
+        String content = "(* Cell[code here] *)";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookCellSizeInString() {
+        String content = "text = \"Cell[code here]\";";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookCellSizeExceedsThreshold() {
+        StringBuilder largeCell = new StringBuilder("Cell[");
+        for (int i = 0; i < 55; i++) {
+            largeCell.append("line ").append(i).append("\n");
+        }
+        largeCell.append("]");
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, largeCell.toString())
+        );
+    }
+
+    @Test
+    void testDetectNotebookUnorganizedNotNotebook() {
+        String content = "x = 5";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookUnorganizedWithSections() {
+        String content = "Notebook[{Cell[\"Code\"], Cell[\"Tests\"], Cell[\"Scratch\"]}]";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookNoSectionsNotNotebook() {
+        String content = "x = 5";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookNoSections(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookNoSectionsMultipleCellsNoSections() {
+        StringBuilder content = new StringBuilder("Notebook[{");
+        for (int i = 0; i < 12; i++) {
+            content.append("Cell[\"code ").append(i).append("\"],\n");
+        }
+        content.append("}]");
+        assertDoesNotThrow(() ->
+            detector.detectNotebookNoSections(context, inputFile, content.toString())
+        );
+    }
+
+    @Test
+    void testDetectNotebookInitCellMisuseInComment() {
+        String content = "(* Cell[InitializationCell->True, Integrate[]] *)";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookInitCellMisuse(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookInitCellMisuseInString() {
+        String content = "text = \"Cell[InitializationCell->True, Integrate[]]\";";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookInitCellMisuse(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookInitCellMisuseWithHeavyComputation() {
+        String content = "Cell[InitializationCell->True, Integrate[f[x], x]]";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookInitCellMisuse(context, inputFile, content)
+        );
+    }
+
+    // ===== MANIPULATE/DYNAMIC FRAMEWORK TESTS =====
+
+    @Test
+    void testDetectManipulateTooComplexInComment() {
+        String content = "(* Manipulate[expr, controls] *)";
+        assertDoesNotThrow(() ->
+            detector.detectManipulateTooComplex(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectManipulateTooComplexInString() {
+        String content = "code = \"Manipulate[expr, controls]\";";
+        assertDoesNotThrow(() ->
+            detector.detectManipulateTooComplex(context, inputFile, content)
+        );
+    }
+
+    // ===== PACKAGE FRAMEWORK TESTS =====
+
+    @Test
+    void testDetectPackageNoBeginNoBeginPackage() {
+        String content = "x = 5";
+        assertDoesNotThrow(() ->
+            detector.detectPackageNoBegin(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageNoBeginWithBeginPackageAndBegin() {
+        String content = "BeginPackage[\"Test`\"]; Begin[\"`Private`\"]; End[]; EndPackage[];";
+        assertDoesNotThrow(() ->
+            detector.detectPackageNoBegin(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackagePublicPrivateMixNoBeginPackage() {
+        String content = "x = 5";
+        assertDoesNotThrow(() ->
+            detector.detectPackagePublicPrivateMix(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackagePublicPrivateMixWithBegin() {
+        String content = "BeginPackage[\"Test`\"]; Begin[\"`Private`\"]; End[]; EndPackage[];";
+        assertDoesNotThrow(() ->
+            detector.detectPackagePublicPrivateMix(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageNoUsageNoBeginPackage() {
+        String content = "x = 5";
+        assertDoesNotThrow(() ->
+            detector.detectPackageNoUsage(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageCircularDependencyInComment() {
+        String content = "(* Needs[\"Package`\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageCircularDependencyInString() {
+        String content = "code = \"Needs[\\\"Package`\\\"]\";";
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageCircularDependencyWithDependencies() {
+        String content = "BeginPackage[\"A`\", {\"B`\"}]; Needs[\"A`\"]";
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+    }
+
+    // ===== PARALLEL COMPUTING FRAMEWORK TESTS =====
+
+    @Test
+    void testDetectParallelNoGainInComment() {
+        String content = "(* ParallelTable[i + 1, {i, 1, 100}] *)";
+        assertDoesNotThrow(() ->
+            detector.detectParallelNoGain(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParallelNoGainInString() {
+        String content = "code = \"ParallelTable[i + 1, {i, 1, 100}]\";";
+        assertDoesNotThrow(() ->
+            detector.detectParallelNoGain(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParallelNoGainSimpleOperation() {
+        String content = "ParallelTable[i + 1, {i, 1, 100}]";
+        assertDoesNotThrow(() ->
+            detector.detectParallelNoGain(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParallelRaceConditionInComment() {
+        String content = "(* ParallelDo[AppendTo[results, i], {i, 1, 100}] *)";
+        assertDoesNotThrow(() ->
+            detector.detectParallelRaceCondition(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParallelRaceConditionInString() {
+        String content = "code = \"ParallelDo[AppendTo[results, i], {i, 1, 100}]\";";
+        assertDoesNotThrow(() ->
+            detector.detectParallelRaceCondition(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParallelRaceConditionWithAppendTo() {
+        String content = "results = {}; ParallelDo[AppendTo[results, i], {i, 1, 100}]";
+        assertDoesNotThrow(() ->
+            detector.detectParallelRaceCondition(context, inputFile, content)
+        );
+    }
+
+    // ===== CLOUD DEPLOYMENT FRAMEWORK TESTS =====
+
+    @Test
+    void testDetectCloudApiMissingAuthInComment() {
+        String content = "(* APIFunction[{}, expr] *)";
+        assertDoesNotThrow(() ->
+            detector.detectCloudApiMissingAuth(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCloudApiMissingAuthInString() {
+        String content = "code = \"APIFunction[{}, expr]\";";
+        assertDoesNotThrow(() ->
+            detector.detectCloudApiMissingAuth(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCloudPermissionsTooOpenInComment() {
+        String content = "(* CloudDeploy[expr, Permissions -> \"Public\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCloudPermissionsTooOpenInString() {
+        String content = "code = \"CloudDeploy[expr, Permissions -> \\\"Public\\\"]\";";
+        assertDoesNotThrow(() ->
+            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCloudDeployNoValidationNoValidation() {
+        String content = "CloudDeploy[APIFunction[{\"x\"}, expr]]";
+        assertDoesNotThrow(() ->
+            detector.detectCloudDeployNoValidation(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectCloudDeployNoValidationWithValidation() {
+        String content = "CloudDeploy[APIFunction[{\"x\"}, If[StringQ[x], expr, $Failed]]]";
+        assertDoesNotThrow(() ->
+            detector.detectCloudDeployNoValidation(context, inputFile, content)
+        );
+    }
+
 }

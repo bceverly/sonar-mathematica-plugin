@@ -96,30 +96,6 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-                        @Test
-    void testDetectImageOperationOnNonImage() {
-        String content = "result = ImageData[{{1, 2}, {3, 4}}];";
-        assertDoesNotThrow(() ->
-            detector.detectImageOperationOnNonImage(context, inputFile, content)
-        );
-    }
-
-        @Test
-    void testDetectDatasetOperationOnList() {
-        String content = "data = {{1, 2}, {3, 4}};\nresult = data[All];";
-        assertDoesNotThrow(() ->
-            detector.detectDatasetOperationOnList(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGraphOperationOnNonGraph() {
-        String content = "result = VertexList[{{1, 2}, {2, 3}}];";
-        assertDoesNotThrow(() ->
-            detector.detectGraphOperationOnNonGraph(context, inputFile, content)
-        );
-    }
-
     // ===== DATA FLOW ANALYSIS TESTS =====
 
                 @Test
@@ -165,14 +141,6 @@ class TypeAndDataFlowDetectorTest {
                         // ===== ADDITIONAL EDGE CASE TESTS =====
 
             @Test
-    void testDetectDatasetOperationOnListWithMultipleInstances() {
-        String content = "myData = {{1, 2}, {3, 4}};\nr1 = myData[All];\nr2 = myData[All, 1];";
-        assertDoesNotThrow(() ->
-            detector.detectDatasetOperationOnList(context, inputFile, content)
-        );
-    }
-
-            @Test
     void testDetectSharedMutableStateMultipleFunctions() {
         String content = "GlobalCounter = 0;\n"
                 + "IncrementA[] := GlobalCounter = GlobalCounter + 1;\n"
@@ -183,55 +151,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-                                                                                            @Test
-    void testDetectGraphOperationOnNonGraphEdgeList() {
-        String content = "edges = {{1, 2}, {2, 3}}; vertices = EdgeList[edges];";
-        assertDoesNotThrow(() ->
-            detector.detectGraphOperationOnNonGraph(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectImageOperationOnNonImageImageDimensions() {
-        String content = "pixels = {{1, 2}, {3, 4}}; dims = ImageDimensions[pixels];";
-        assertDoesNotThrow(() ->
-            detector.detectImageOperationOnNonImage(context, inputFile, content)
-        );
-    }
-
                     // ===== ADDITIONAL COMPREHENSIVE TESTS FOR 80%+ COVERAGE =====
-
-                                                                                                                    @Test
-    void testDetectImageOperationOnNonImageInComments() {
-        String content = "(* result = ImageData[{{1, 2}, {3, 4}}]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectImageOperationOnNonImage(context, inputFile, content)
-        );
-    }
-
-        @Test
-    void testDetectDatasetOperationOnListInComments() {
-        String content = "(* data = {{1, 2}, {3, 4}}; result = data[All]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectDatasetOperationOnList(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDatasetOperationOnListNoListAssignment() {
-        String content = "data[All]";
-        assertDoesNotThrow(() ->
-            detector.detectDatasetOperationOnList(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGraphOperationOnNonGraphInComments() {
-        String content = "(* result = VertexList[{{1, 2}, {2, 3}}]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectGraphOperationOnNonGraph(context, inputFile, content)
-        );
-    }
 
                                                                                                                             @Test
     void testComplexDataFlowScenarios() {
@@ -1173,6 +1093,204 @@ class TypeAndDataFlowDetectorTest {
             Arguments.of("Map[f, {1, 2, 3}];"),
             Arguments.of("str = \\\"Map[f, 5];\\"),
             Arguments.of("(* Map[f, 5]; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectImageOperationOnNonImageData")
+    void testDetectImageOperationOnNonImageParameterized(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectImageOperationOnNonImage(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectImageOperationOnNonImageData() {
+        return Stream.of(
+            Arguments.of("result = ImageData[{{1, 2}, {3, 4}}];"),
+            Arguments.of("pixels = {{1, 2}, {3, 4}}; dims = ImageDimensions[pixels];"),
+            Arguments.of("(* result = ImageData[{{1, 2}, {3, 4}}]; *)"),
+            Arguments.of("image = {{1,2},{3,4}}; result = ImageRotate[image];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDatasetOperationOnListData")
+    void testDetectDatasetOperationOnListParameterized(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDatasetOperationOnList(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDatasetOperationOnListData() {
+        return Stream.of(
+            Arguments.of("data = {{1, 2}, {3, 4}};\nresult = data[All];"),
+            Arguments.of("myData = {{1, 2}, {3, 4}};\nr1 = myData[All];\nr2 = myData[All, 1];"),
+            Arguments.of("(* data = {{1, 2}, {3, 4}}; result = data[All]; *)"),
+            Arguments.of("data[All]"),
+            Arguments.of("list = {{1,2},{3,4}}; result = list[1, All];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectGraphOperationOnNonGraphData")
+    void testDetectGraphOperationOnNonGraphParameterized(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectGraphOperationOnNonGraph(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectGraphOperationOnNonGraphData() {
+        return Stream.of(
+            Arguments.of("result = VertexList[{{1, 2}, {2, 3}}];"),
+            Arguments.of("edges = {{1, 2}, {2, 3}}; vertices = EdgeList[edges];"),
+            Arguments.of("(* result = VertexList[{{1, 2}, {2, 3}}]; *)"),
+            Arguments.of("data = {{1,2},{2,3}}; result = VertexCount[data];")
+        );
+    }
+
+    // Additional tests for comment/string literal branches
+
+    @Test
+    void testDetectNumericOperationOnStringInComment() {
+        String content = "(* result = Sin[\"text\"] *)";
+        assertDoesNotThrow(() ->
+            detector.detectNumericOperationOnString(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectStringOperationOnNumberInComment() {
+        String content = "(* result = StringLength[42] *)";
+        assertDoesNotThrow(() ->
+            detector.detectStringOperationOnNumber(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectFunctionReturnsWrongTypeInComment() {
+        String content = "(* f[x_] := (y = 1; \"text\") *)";
+        assertDoesNotThrow(() ->
+            detector.detectFunctionReturnsWrongType(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMixedNumericTypesInComment() {
+        String content = "(* result = 1 + 1.5 *)";
+        assertDoesNotThrow(() ->
+            detector.detectMixedNumericTypes(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNullAssignmentToTypedVariableInComment() {
+        String content = "(* x : _Integer = Null *)";
+        assertDoesNotThrow(() ->
+            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectImplicitTypeConversionInComment() {
+        String content = "(* result = ToExpression[\"42\"] + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectImplicitTypeConversion(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectGraphicsObjectInNumericContextInComment() {
+        String content = "(* result = Plot[x, {x, 0, 1}] + 5 *)";
+        assertDoesNotThrow(() ->
+            detector.detectGraphicsObjectInNumericContext(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectSoundOperationOnNonSoundInComment() {
+        String content = "(* result = AudioData[{1, 2, 3}] *)";
+        assertDoesNotThrow(() ->
+            detector.detectSoundOperationOnNonSound(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectVariableAliasingIssueInComment() {
+        String content = "(* a = b; a = 5 *)";
+        assertDoesNotThrow(() ->
+            detector.detectVariableAliasingIssue(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectModificationOfLoopIteratorInComment() {
+        String content = "(* Do[i = i + 1, {i, 10}] *)";
+        assertDoesNotThrow(() ->
+            detector.detectModificationOfLoopIterator(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUseOfIteratorOutsideLoopInComment() {
+        String content = "(* Do[Print[i], {i, 10}]; Print[i] *)";
+        assertDoesNotThrow(() ->
+            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectReadingUnsetVariableInComment() {
+        String content = "(* Unset[x]; Print[x] *)";
+        assertDoesNotThrow(() ->
+            detector.detectReadingUnsetVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectDoubleAssignmentSameValueInComment() {
+        String content = "(* x = 5; x = 5 *)";
+        assertDoesNotThrow(() ->
+            detector.detectDoubleAssignmentSameValue(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectMutationInPureFunctionInComment() {
+        String content = "(* Function[{x}, x = x + 1] *)";
+        assertDoesNotThrow(() ->
+            detector.detectMutationInPureFunction(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectVariableScopeEscapeInComment() {
+        String content = "(* Module[{x}, x = 5]; Print[x] *)";
+        assertDoesNotThrow(() ->
+            detector.detectVariableScopeEscape(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectClosureOverMutableVariableInComment() {
+        String content = "(* x = 1; f = Function[{}, x++] *)";
+        assertDoesNotThrow(() ->
+            detector.detectClosureOverMutableVariable(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectAssignmentInConditionEnhancedInComment() {
+        String content = "(* If[x = 5, Print[x]] *)";
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentInConditionEnhanced(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectAssignmentAsReturnValueInComment() {
+        String content = "(* f[x_] := y = x + 1 *)";
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentAsReturnValue(context, inputFile, content)
         );
     }
 
