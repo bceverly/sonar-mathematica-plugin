@@ -144,11 +144,7 @@ public class InitializationTrackingVisitor implements AstVisitor {
 
         // Skip variables that look like they might be global configuration or state
         // (typically capitalized or very descriptive names)
-        if (varName.length() > 15 && Character.isUpperCase(varName.charAt(0))) {
-            return true;
-        }
-
-        return false;
+        return varName.length() > 15 && Character.isUpperCase(varName.charAt(0));
     }
 
     @Override

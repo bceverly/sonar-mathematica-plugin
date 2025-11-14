@@ -172,42 +172,60 @@ public class MathematicaParser {
         for (String part : parts) {
             String param = part.trim();
             if (!param.isEmpty()) {
-                // Extract parameter name (before _ or ? or : or =)
-                // Examples:
-                // - file_ -> file
-                // - x_Integer -> x
-                // - opt:value -> opt
-                // - default:val -> default
-                // - x_:0 -> x
-                int underscorePos = param.indexOf('_');
-                int questionPos = param.indexOf('?');
-                int colonPos = param.indexOf(':');
-                int equalsPos = param.indexOf('=');
-                int endPos = param.length();
-
-                if (underscorePos > 0) {
-                    endPos = Math.min(endPos, underscorePos);
-                }
-                if (questionPos > 0) {
-                    endPos = Math.min(endPos, questionPos);
-                }
-                if (colonPos > 0) {
-                    endPos = Math.min(endPos, colonPos);
-                }
-                if (equalsPos > 0) {
-                    endPos = Math.min(endPos, equalsPos);
-                }
-
-                String extractedName = param.substring(0, endPos).trim();
-
-                // Only add if it looks like a valid identifier
-                if (!extractedName.isEmpty() && isValidIdentifier(extractedName)) {
-                    parameters.add(extractedName);
-                }
+                extractParameterName(param).ifPresent(parameters::add);
             }
         }
 
         return parameters;
+    }
+
+    /**
+     * Extract parameter name from a Mathematica parameter string.
+     * Examples:
+     * - file_ -> file
+     * - x_Integer -> x
+     * - opt:value -> opt
+     * - default:val -> default
+     * - x_:0 -> x
+     *
+     * @return Optional containing the parameter name if valid, empty otherwise
+     */
+    private java.util.Optional<String> extractParameterName(String param) {
+        int endPos = findParameterNameEnd(param);
+        String extractedName = param.substring(0, endPos).trim();
+
+        if (!extractedName.isEmpty() && isValidIdentifier(extractedName)) {
+            return java.util.Optional.of(extractedName);
+        }
+        return java.util.Optional.empty();
+    }
+
+    /**
+     * Find the position where the parameter name ends (before any type/default specifiers).
+     */
+    private int findParameterNameEnd(String param) {
+        int endPos = param.length();
+
+        // Check for delimiters that indicate end of parameter name
+        int underscorePos = param.indexOf('_');
+        int questionPos = param.indexOf('?');
+        int colonPos = param.indexOf(':');
+        int equalsPos = param.indexOf('=');
+
+        if (underscorePos > 0) {
+            endPos = Math.min(endPos, underscorePos);
+        }
+        if (questionPos > 0) {
+            endPos = Math.min(endPos, questionPos);
+        }
+        if (colonPos > 0) {
+            endPos = Math.min(endPos, colonPos);
+        }
+        if (equalsPos > 0) {
+            endPos = Math.min(endPos, equalsPos);
+        }
+
+        return endPos;
     }
 
     /**
