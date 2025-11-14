@@ -3,6 +3,7 @@ package org.sonar.plugins.mathematica.rules;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
@@ -69,36 +70,31 @@ class CustomRuleDetectorTest {
         verifyNoInteractions(sensor);
     }
 
-    @Test
-    void testPatternMatchRuleSingleMatch() {
-        String content = "x = AppendTo[list, item];\ny = 5;";
-
+    @ParameterizedTest
+    @MethodSource("patternMatchRuleTestData")
+    void testPatternMatchRule(String content, String ruleId, String pattern, String message, String expectedMessage, int expectedTimes) {
         when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("test-rule");
+        when(ruleKey.rule()).thenReturn(ruleId);
         when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Use Join instead");
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn(pattern);
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn(message);
 
         Collection<ActiveRule> rules = Collections.singletonList(activeRule);
         detector.executeCustomRules(context, inputFile, content, rules);
 
-        verify(sensor, times(1)).queueIssue(inputFile, 1, "test-rule", "Use Join instead");
+        if (expectedTimes == 1) {
+            verify(sensor, times(1)).queueIssue(inputFile, 1, ruleId, expectedMessage);
+        } else if (expectedTimes > 1) {
+            verify(sensor, atLeast(1)).queueIssue(eq(inputFile), anyInt(), eq(ruleId), eq(expectedMessage));
+        }
     }
 
-    @Test
-    void testPatternMatchRuleMultipleMatches() {
-        String content = "f[x_]; g[y_]; h[z_];";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("pattern-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("\\[\\w+_\\]");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Pattern found");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, atLeast(1)).queueIssue(eq(inputFile), anyInt(), eq("pattern-rule"), eq("Pattern found"));
+    private static Stream<Arguments> patternMatchRuleTestData() {
+        return Stream.of(
+            Arguments.of("x = AppendTo[list, item];\ny = 5;", "test-rule", "AppendTo", "Use Join instead", "Use Join instead", 1),
+            Arguments.of("f[x_]; g[y_]; h[z_];", "pattern-rule", "\\[\\w+_\\]", "Pattern found", "Pattern found", 3),
+            Arguments.of("x = AppendTo[list, item];", "test-rule", "AppendTo", null, "Code matches forbidden pattern", 1)
+        );
     }
 
     static class NoMatchTestData {
@@ -360,264 +356,99 @@ class CustomRuleDetectorTest {
 
     // ===== COMPREHENSIVE ADDITIONAL TESTS =====
 
-    @Test
-    void testPatternMatchRuleInComment() {
-        String content = "(* AppendTo[list, x] *)\ny = 5;";
-
+    @ParameterizedTest
+    @MethodSource("patternMatchRuleEdgeCasesTestData")
+    void testPatternMatchRuleEdgeCases(String content, String pattern, String message, boolean shouldMatch, int expectedTimes) {
         when(activeRule.ruleKey()).thenReturn(ruleKey);
         when(ruleKey.rule()).thenReturn("test-rule");
         when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Use Join instead");
+        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn(pattern);
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn(message);
 
         Collection<ActiveRule> rules = Collections.singletonList(activeRule);
         detector.executeCustomRules(context, inputFile, content, rules);
 
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+        if (shouldMatch) {
+            if (expectedTimes == 1) {
+                verify(sensor, times(1)).queueIssue(eq(inputFile), anyInt(), eq("test-rule"),
+                        eq(message != null && !message.isEmpty() ? message : "Code matches forbidden pattern"));
+            } else {
+                verify(sensor, times(expectedTimes)).queueIssue(eq(inputFile), anyInt(), eq("test-rule"), anyString());
+            }
+        } else {
+            verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+        }
     }
 
-    @Test
-    void testPatternMatchRuleInStringLiteral() {
-        String content = "x = \"AppendTo[list, x]\";";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("test-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Use Join instead");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    private static Stream<Arguments> patternMatchRuleEdgeCasesTestData() {
+        return Stream.of(
+            Arguments.of("(* AppendTo[list, x] *)\ny = 5;", "AppendTo", "Use Join instead", false, 0),
+            Arguments.of("x = \"AppendTo[list, x]\";", "AppendTo", "Use Join instead", false, 0),
+            Arguments.of("AppendTo[list, x]", "AppendTo", "", true, 1),
+            Arguments.of("Module[{x}, x = 5];\nModule[{y, z}, y + z];", "Module\\s*\\[\\s*\\{[^}]+\\}", "Module found", true, 2),
+            Arguments.of("x = 5;", null, "Message", false, 0)
+        );
     }
 
-    @Test
-    void testPatternMatchRuleWithEmptyMessage() {
-        String content = "AppendTo[list, x]";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("test-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("AppendTo");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, times(1)).queueIssue(inputFile, 1, "test-rule",
-                "Code matches forbidden pattern");
-    }
-
-    @Test
-    void testPatternMatchRuleWithComplexRegex() {
-        String content = "Module[{x}, x = 5];\nModule[{y, z}, y + z];";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("test-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn("Module\\s*\\[\\s*\\{[^}]+\\}");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Module found");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, times(2)).queueIssue(eq(inputFile), anyInt(), eq("test-rule"), eq("Module found"));
-    }
-
-    @Test
-    void testPatternMatchRuleWithNullPattern() {
-        String content = "x = 5;";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("test-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.PATTERN_MATCH_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.PATTERN_PARAM)).thenReturn(null);
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    void testFunctionNamePatternRuleInComment() {
-        String content = "(* legacyFunc[x_] := x *)\ny = 5;";
-
+    @ParameterizedTest
+    @MethodSource("functionNamePatternRuleEdgeCasesTestData")
+    void testFunctionNamePatternRuleEdgeCases(String content, String pattern, String message, boolean shouldMatch) {
         when(activeRule.ruleKey()).thenReturn(ruleKey);
         when(ruleKey.rule()).thenReturn("func-rule");
         when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Legacy function");
+        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn(pattern);
+        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn(message);
 
         Collection<ActiveRule> rules = Collections.singletonList(activeRule);
         detector.executeCustomRules(context, inputFile, content, rules);
 
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+        if (shouldMatch) {
+            verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"),
+                    contains("Function name matches forbidden pattern"));
+        } else {
+            verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+        }
     }
 
-    @Test
-    void testFunctionNamePatternRuleInStringLiteral() {
-        String content = "x = \"legacyFunc[x_] := x\";";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("func-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Legacy function");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    private static Stream<Arguments> functionNamePatternRuleEdgeCasesTestData() {
+        return Stream.of(
+            Arguments.of("(* legacyFunc[x_] := x *)\ny = 5;", "legacy.*", "Legacy function", false),
+            Arguments.of("x = \"legacyFunc[x_] := x\";", "legacy.*", "Legacy function", false),
+            Arguments.of("legacyFunc[x_] := x;", "legacy.*", null, true),
+            Arguments.of("legacyFunc[x_] := x;", "legacy.*", "", true),
+            Arguments.of("legacyFunc[x_] := x;", "[invalid(regex", "Message", false),
+            Arguments.of("legacyFunc[x_] := x;", null, "Message", false)
+        );
     }
 
-    @Test
-    void testFunctionNamePatternRuleDefaultMessage() {
-        String content = "legacyFunc[x_] := x;";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("func-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn(null);
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"),
-                contains("Function name matches forbidden pattern"));
-    }
-
-    @Test
-    void testFunctionNamePatternRuleWithEmptyMessage() {
-        String content = "legacyFunc[x_] := x;";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("func-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("legacy.*");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("func-rule"),
-                contains("Function name matches forbidden pattern"));
-    }
-
-    @Test
-    void testFunctionNamePatternRuleWithInvalidRegex() {
-        String content = "legacyFunc[x_] := x;";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("func-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn("[invalid(regex");
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    void testFunctionNamePatternRuleWithNullPattern() {
-        String content = "legacyFunc[x_] := x;";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("func-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.FUNCTION_NAME_PATTERN_PARAM)).thenReturn(null);
-        when(activeRule.param(CustomRuleTemplatesDefinition.MESSAGE_PARAM)).thenReturn("Message");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    void testForbiddenApiRuleInComment() {
-        String content = "(* Get[\"file.m\"] *)\ny = 5;";
-
+    @ParameterizedTest
+    @MethodSource("forbiddenApiRuleEdgeCasesTestData")
+    void testForbiddenApiRuleEdgeCases(String content, String apiName, String reason, boolean shouldMatch) {
         when(activeRule.ruleKey()).thenReturn(ruleKey);
         when(ruleKey.rule()).thenReturn("api-rule");
         when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
-        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Security risk");
+        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn(apiName);
+        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn(reason);
 
         Collection<ActiveRule> rules = Collections.singletonList(activeRule);
         detector.executeCustomRules(context, inputFile, content, rules);
 
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+        if (shouldMatch) {
+            verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("api-rule"),
+                    contains("This API should not be used"));
+        } else {
+            verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+        }
     }
 
-    @Test
-    void testForbiddenApiRuleInStringLiteral() {
-        String content = "x = \"Get[file]\";";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("api-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
-        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Security risk");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    void testForbiddenApiRuleWithEmptyReason() {
-        String content = "Get[file]";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("api-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
-        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, times(1)).queueIssue(eq(inputFile), eq(1), eq("api-rule"),
-                contains("This API should not be used"));
-    }
-
-    @Test
-    void testForbiddenApiRuleWithNullApiName() {
-        String content = "Get[file]";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("api-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn(null);
-        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Reason");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
-    }
-
-    @Test
-    void testForbiddenApiRulePartialMatch() {
-        String content = "x = MyGet[file];";
-
-        when(activeRule.ruleKey()).thenReturn(ruleKey);
-        when(ruleKey.rule()).thenReturn("api-rule");
-        when(activeRule.templateRuleKey()).thenReturn(CustomRuleTemplatesDefinition.FORBIDDEN_API_TEMPLATE_KEY);
-        when(activeRule.param(CustomRuleTemplatesDefinition.API_NAME_PARAM)).thenReturn("Get");
-        when(activeRule.param(CustomRuleTemplatesDefinition.REASON_PARAM)).thenReturn("Security risk");
-
-        Collection<ActiveRule> rules = Collections.singletonList(activeRule);
-        detector.executeCustomRules(context, inputFile, content, rules);
-
-        verify(sensor, never()).queueIssue(any(), anyInt(), anyString(), anyString());
+    private static Stream<Arguments> forbiddenApiRuleEdgeCasesTestData() {
+        return Stream.of(
+            Arguments.of("(* Get[\"file.m\"] *)\ny = 5;", "Get", "Security risk", false),
+            Arguments.of("x = \"Get[file]\";", "Get", "Security risk", false),
+            Arguments.of("Get[file]", "Get", "", true),
+            Arguments.of("Get[file]", null, "Reason", false),
+            Arguments.of("x = MyGet[file];", "Get", "Security risk", false)
+        );
     }
 
     @Test

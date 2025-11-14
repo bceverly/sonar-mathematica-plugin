@@ -2,6 +2,9 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
 import org.sonar.plugins.mathematica.symboltable.Scope;
@@ -14,6 +17,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -734,10 +738,11 @@ class SymbolTableDetectorTest {
         );
     }
 
-    @Test
-    void testTypeInconsistencyWithTable() {
-        Symbol symbol = createMockSymbol("data", 10, false, false);
-        SymbolReference assign = createMockReference(10, "data = Table[i^2, {i, 10}]");
+    @ParameterizedTest
+    @MethodSource("typeInconsistencyTestData")
+    void testTypeInconsistency(String symbolName, String assignmentCode) {
+        Symbol symbol = createMockSymbol(symbolName, 10, false, false);
+        SymbolReference assign = createMockReference(10, assignmentCode);
 
         when(symbol.getAssignments()).thenReturn(Collections.singletonList(assign));
         when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(assign));
@@ -748,31 +753,11 @@ class SymbolTableDetectorTest {
         );
     }
 
-    @Test
-    void testTypeInconsistencyWithStringAssignment() {
-        Symbol symbol = createMockSymbol("msg", 10, false, false);
-        SymbolReference assign = createMockReference(10, "msg = \"Hello\"");
-
-        when(symbol.getAssignments()).thenReturn(Collections.singletonList(assign));
-        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(assign));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
-        );
-    }
-
-    @Test
-    void testTypeInconsistencyWithNumber() {
-        Symbol symbol = createMockSymbol("count", 10, false, false);
-        SymbolReference assign = createMockReference(10, "count = 42");
-
-        when(symbol.getAssignments()).thenReturn(Collections.singletonList(assign));
-        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(assign));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+    private static Stream<Arguments> typeInconsistencyTestData() {
+        return Stream.of(
+            Arguments.of("data", "data = Table[i^2, {i, 10}]"),
+            Arguments.of("msg", "msg = \"Hello\""),
+            Arguments.of("count", "count = 42")
         );
     }
 
