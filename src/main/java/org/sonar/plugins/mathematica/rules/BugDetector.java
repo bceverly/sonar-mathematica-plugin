@@ -29,9 +29,15 @@ public class BugDetector extends BaseDetector {
 
     // ===== PATTERNS FOR BUG DETECTION =====
 
-    //NOSONAR - Possessive quantifiers prevent backtracking  // Not //= or /=
-
-    private static final Pattern DIVISION_PATTERN = Pattern.compile("/(?!=)"); //NOSONAR - Possessive quantifiers prevent backtracking
+    //NOSONAR - Possessive quantifiers prevent backtracking
+    // Matches division (/) but excludes:
+    // - /. (ReplaceAll)
+    // - // (Postfix - both first and second /)
+    // - /* (comment start)
+    // - /= (DivideBy assignment)
+    // - /@ (Map operator)
+    // Uses negative lookbehind and lookahead to ensure / is standalone
+    private static final Pattern DIVISION_PATTERN = Pattern.compile("(?<![/])/(?![./*=@])"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern ASSIGNMENT_IN_IF_PATTERN = Pattern.compile(
         "(?:If|While|Which)\\s*+\\[[^\\]]*+\\b(\\w++)\\s*+=\\s*+(?!=)[^=]"
     );

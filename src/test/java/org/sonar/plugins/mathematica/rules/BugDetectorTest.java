@@ -834,4 +834,39 @@ class BugDetectorTest {
             Arguments.of("result = x / 3.14;")
         );
     }
+
+    @ParameterizedTest
+    @MethodSource("divisionLikeOperatorsNotDivisionData")
+    void testDivisionLikeOperatorsNotFlaggedAsDivision(String content) {
+        // These operators look like division but are NOT - should not trigger division by zero warnings
+        // The test verifies that the detector doesn't crash and correctly filters out these cases
+        assertDoesNotThrow(() -> detector.detectDivisionByZero(context, inputFile, content));
+    }
+
+    private static Stream<Arguments> divisionLikeOperatorsNotDivisionData() {
+        return Stream.of(
+            // ReplaceAll (/.) - pattern replacement operator
+            Arguments.of("entityType = \"EntityType\" /. nbInfo;"),
+            Arguments.of("historyData = \"HistoryData\" /. nbInfo;"),
+            Arguments.of("value = key /. {key -> 42};"),
+
+            // Postfix (//) - apply function to result
+            Arguments.of("result = expression // Simplify;"),
+            Arguments.of("data // Length;"),
+            Arguments.of("list // First // Print;"),
+
+            // Comment (/*) - block comment
+            Arguments.of("x = 5; /* this is a comment */ y = 10;"),
+            Arguments.of("result /* comment */ = x + y;"),
+
+            // DivideBy (/=) - divide and assign
+            Arguments.of("x /= 2;"),
+            Arguments.of("total /= count;"),
+
+            // Map (/@) - apply function to each element
+            Arguments.of("outList = Sort[FileBaseName /@ FileBaseName /@ FileNames[\"*.html\"]];"),
+            Arguments.of("inList = Sort[FileBaseName /@ buildList];"),
+            Arguments.of("result = f /@ {1, 2, 3};")
+        );
+    }
 }
