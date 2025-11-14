@@ -667,8 +667,9 @@ class InitializationTrackingVisitorTest {
     @Test
     void testModuleWithMixedVariables() {
         // Test: Module[{uninit, init = 10}, use uninit; uninit = 5; use init]
-        // uninit is used before assignment (should be flagged)
-        // init is initialized in declaration (should NOT be flagged)
+        // In Mathematica, Module variables are automatically initialized to unique symbols,
+        // so "uninit" is actually initialized (just not with an explicit value)
+        // Both uninit and init should NOT be flagged
 
         // Create Module[{uninit, init = 10}, body] structure
         ListNode declarationList = new ListNode(
@@ -688,7 +689,7 @@ class InitializationTrackingVisitorTest {
 
         // Body: use uninit; uninit = 5; use init
         List<AstNode> bodyStatements = new ArrayList<>();
-        bodyStatements.add(new IdentifierNode("uninit", 2, 4, 2, 10));  // Use uninit before assignment
+        bodyStatements.add(new IdentifierNode("uninit", 2, 4, 2, 10));  // Use uninit (it's initialized by Module)
         bodyStatements.add(new FunctionCallNode(
             "Set",
             Arrays.asList(
@@ -720,10 +721,9 @@ class InitializationTrackingVisitorTest {
 
         Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
 
-        // "uninit" is used before assignment - SHOULD be flagged
-        assertTrue(uninitVars.contains("uninit"),
-            "uninit is used before assignment - should be flagged");
-        // "init" is initialized in declaration - should NOT be flagged
+        // Module variables are automatically initialized, so neither should be flagged
+        assertFalse(uninitVars.contains("uninit"),
+            "uninit is initialized by Module - should not be flagged");
         assertFalse(uninitVars.contains("init"),
             "init is initialized in Module declaration - should not be flagged");
     }

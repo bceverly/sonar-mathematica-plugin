@@ -229,10 +229,15 @@ public class InitializationTrackingVisitor implements AstVisitor {
 
     /**
      * Process an uninitialized variable declaration: Module[{x}, ...]
+     * Note: In Mathematica, "uninitialized" Module variables are actually initialized
+     * to unique symbols, so they should be treated as "assigned" for our analysis.
      */
     private void processUninitializedVariable(IdentifierNode identifierNode) {
         String varName = identifierNode.getName();
         declaredVariables.get(currentFunction).add(varName);
+        // Module variables are automatically initialized, even if no explicit value is given
+        currentlyAssigned.add(varName);
+        assignedVariables.get(currentFunction).add(varName);
     }
 
     /**
