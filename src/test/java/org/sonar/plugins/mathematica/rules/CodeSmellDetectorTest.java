@@ -272,11 +272,11 @@ class CodeSmellDetectorTest {
     private static Stream<Arguments> noExceptionTestData() {
         return Stream.of(
             Arguments.of("LongFunctions with short function", "ShortFunc[x_] := x + 1",
-                (DetectorMethod) (det, ctx, file, content) -> det.detectLongFunctions(ctx, file, content)),
+                (DetectorMethod) CodeSmellDetector::detectLongFunctions),
             Arguments.of("UncompiledNumerical with Compile nearby", "f = Compile[{{x}}, x]; Do[sum += i, {i, 100}]",
-                (DetectorMethod) (det, ctx, file, content) -> det.detectUncompiledNumerical(ctx, file, content)),
+                (DetectorMethod) CodeSmellDetector::detectUncompiledNumerical),
             Arguments.of("LargeCommentedBlock with small comment", "(* Short comment *)",
-                (DetectorMethod) (det, ctx, file, content) -> det.detectLargeCommentedBlock(ctx, file, content))
+                (DetectorMethod) CodeSmellDetector::detectLargeCommentedBlock)
         );
     }
 

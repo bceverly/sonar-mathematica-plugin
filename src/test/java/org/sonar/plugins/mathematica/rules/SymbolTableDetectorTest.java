@@ -814,40 +814,17 @@ class SymbolTableDetectorTest {
         );
     }
 
-    @Test
-    void testScopeLeakWithSymbol() {
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.CsvSource({
+        "var,Symbol[\"var\"]",
+        "expr,Evaluate[expr]",
+        "held,ReleaseHold[Hold[held]]"
+    })
+    void testScopeLeakThroughDynamicEvaluation(String symbolName, String referenceCode) {
         Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
-        Symbol symbol = createMockSymbolWithScope("var", 10, false, true, moduleScope);
+        Symbol symbol = createMockSymbolWithScope(symbolName, 10, false, true, moduleScope);
 
-        SymbolReference ref = createMockReference(20, "Symbol[\"var\"]");
-        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(ref));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable)
-        );
-    }
-
-    @Test
-    void testScopeLeakWithEvaluate() {
-        Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
-        Symbol symbol = createMockSymbolWithScope("expr", 10, false, true, moduleScope);
-
-        SymbolReference ref = createMockReference(20, "Evaluate[expr]");
-        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(ref));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable)
-        );
-    }
-
-    @Test
-    void testScopeLeakWithReleaseHold() {
-        Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
-        Symbol symbol = createMockSymbolWithScope("held", 10, false, true, moduleScope);
-
-        SymbolReference ref = createMockReference(20, "ReleaseHold[Hold[held]]");
+        SymbolReference ref = createMockReference(20, referenceCode);
         when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(ref));
         when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
 

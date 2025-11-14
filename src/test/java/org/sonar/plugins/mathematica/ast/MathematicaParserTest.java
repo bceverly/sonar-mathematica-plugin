@@ -86,76 +86,18 @@ class MathematicaParserTest {
         }
     }
 
-    @Test
-    void testParseParametersWithEmptyParametersBetweenCommas() {
-        String code = "f[x_, , y_] := x + y";  // Empty parameter between commas
-        List<AstNode> nodes = parser.parse(code);
-        assertNotNull(nodes);
-    }
-
     // ===== TEST GROUP 3: Parameter Name Extraction =====
 
-    @Test
-    void testExtractParameterNameWithUnderscore() {
-        // Test Lines 193-229: extractParameterName with various patterns
-        String code = "f[param_] := param + 1";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        if (!nodes.isEmpty() && nodes.get(0) instanceof FunctionDefNode) {
-            FunctionDefNode funcNode = (FunctionDefNode) nodes.get(0);
-            assertTrue(funcNode.getParameters().contains("param"));
-        }
-    }
-
-    @Test
-    void testExtractParameterNameWithTypeConstraint() {
-        // Test delimiter checking (underscore, question, colon, equals)
-        String code = "f[x_Integer, y_Real, z_String] := x";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        if (!nodes.isEmpty() && nodes.get(0) instanceof FunctionDefNode) {
-            FunctionDefNode funcNode = (FunctionDefNode) nodes.get(0);
-            assertEquals(3, funcNode.getParameters().size());
-            assertTrue(funcNode.getParameters().contains("x"));
-            assertTrue(funcNode.getParameters().contains("y"));
-            assertTrue(funcNode.getParameters().contains("z"));
-        }
-    }
-
-    @Test
-    void testExtractParameterNameWithQuestionMark() {
-        // Test questionPos > 0 delimiter
-        String code = "f[x_?NumericQ] := x + 1";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        if (!nodes.isEmpty() && nodes.get(0) instanceof FunctionDefNode) {
-            FunctionDefNode funcNode = (FunctionDefNode) nodes.get(0);
-            assertTrue(funcNode.getParameters().contains("x"));
-        }
-    }
-
-    @Test
-    void testExtractParameterNameWithColon() {
-        // Test colonPos > 0 delimiter (default values)
-        String code = "f[x_:0, y_:1] := x + y";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        if (!nodes.isEmpty() && nodes.get(0) instanceof FunctionDefNode) {
-            FunctionDefNode funcNode = (FunctionDefNode) nodes.get(0);
-            assertEquals(2, funcNode.getParameters().size());
-            assertTrue(funcNode.getParameters().contains("x"));
-            assertTrue(funcNode.getParameters().contains("y"));
-        }
-    }
-
-    @Test
-    void testExtractParameterNameWithEquals() {
-        // Test equalsPos > 0 delimiter
-        String code = "f[opt=defaultValue] := opt";
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "f[x_, , y_] := x + y",              // Empty parameter between commas
+        "f[param_] := param + 1",            // With underscore
+        "f[x_Integer, y_Real, z_String] := x", // With type constraint
+        "f[x_?NumericQ] := x + 1",           // With question mark
+        "f[x_:0, y_:1] := x + y",            // With colon (default values)
+        "f[opt=defaultValue] := opt"          // With equals
+    })
+    void testExtractParameterName(String code) {
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
     }
@@ -235,59 +177,18 @@ class MathematicaParserTest {
 
     // ===== TEST GROUP 6: Expression Parsing =====
 
-    @Test
-    void testParseExpressionEmptyExpression() {
-        String code = "f[] := ";  // Empty body after :=
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "f[] := ",                      // Empty expression
+        "f[x_] :=    \n\t  ",          // Whitespace only
+        "f[x_] := 42",                 // Number literal
+        "f[x_] := \"Hello, World!\"",  // String literal
+        "f[x_] := Sin[x]",             // Function call
+        "f[x_] := myVariable"          // Identifier
+    })
+    void testParseExpression(String code) {
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
-    }
-
-    @Test
-    void testParseExpressionWhitespaceOnlyExpression() {
-        // Test empty expression with whitespace
-        String code = "f[x_] :=    \n\t  ";
-        List<AstNode> nodes = parser.parse(code);
-        assertNotNull(nodes);
-    }
-
-    @Test
-    void testParseExpressionNumberLiteral() {
-        // Test NUMBER_PATTERN matching
-        String code = "f[x_] := 42";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        assertFalse(nodes.isEmpty());
-    }
-
-    @Test
-    void testParseExpressionStringLiteral() {
-        // Test STRING_PATTERN matching
-        String code = "f[x_] := \"Hello, World!\"";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        assertFalse(nodes.isEmpty());
-    }
-
-    @Test
-    void testParseExpressionFunctionCall() {
-        // Test FUNCTION_CALL_PATTERN matching
-        String code = "f[x_] := Sin[x]";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        assertFalse(nodes.isEmpty());
-    }
-
-    @Test
-    void testParseExpressionIdentifier() {
-        // Test IDENTIFIER_PATTERN matching
-        String code = "f[x_] := myVariable";
-        List<AstNode> nodes = parser.parse(code);
-
-        assertNotNull(nodes);
-        assertFalse(nodes.isEmpty());
     }
 
     // ===== INTEGRATION TESTS =====
