@@ -2,8 +2,13 @@ package org.sonar.plugins.mathematica.rules;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
+
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.mockito.Mockito.mock;
@@ -26,161 +31,9 @@ class UnusedAndNamingDetectorTest {
 
     // ===== UNUSED CODE DETECTION TESTS (15 rules) =====
 
-    @Test
-    void testDetectUnusedPrivateFunction() {
-        String content = "privateFunc[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPrivateFunction(context, inputFile, content)
-        );
-    }
+                                                                // ===== SHADOWING & NAMING TESTS (15 rules) =====
 
-    @Test
-    void testDetectUnusedFunctionParameter() {
-        String content = "f[x_, y_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedModuleVariable() {
-        String content = "Module[{x = 5, y = 10}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedWithVariable() {
-        String content = "With[{x = 5, y = 10}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedWithVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedImport() {
-        String content = "Needs[\"UnusedPackage`\"];\nf[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedPatternName() {
-        String content = "f[x_] := 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPatternName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedOptionalParameter() {
-        String content = "f[x_, y___ := 10] := x;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedOptionalParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadCodeAfterReturn() {
-        String content = "f[x_] := (Return[x]; Print[\"dead code\"])";
-        assertDoesNotThrow(() ->
-            detector.detectDeadCodeAfterReturn(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnreachableAfterAbortThrow() {
-        String content = "f[x_] := (Abort[]; Print[\"unreachable\"])";
-        assertDoesNotThrow(() ->
-            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentNeverRead() {
-        String content = "x = 5; x = 10; y = x;";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentNeverRead(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionDefinedButNeverCalled() {
-        String content = "UnusedFunc[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectRedefinedWithoutUse() {
-        String content = "x = 5; x = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectRedefinedWithoutUse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUnused() {
-        String content = "Do[Print[\"hello\"], {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCatchWithoutThrow() {
-        String content = "Catch[Print[\"test\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectConditionAlwaysFalse() {
-        String content = "If[False, result, other]";
-        assertDoesNotThrow(() ->
-            detector.detectConditionAlwaysFalse(context, inputFile, content)
-        );
-    }
-
-    // ===== SHADOWING & NAMING TESTS (15 rules) =====
-
-    @Test
-    void testDetectLocalShadowsGlobal() {
-        String content = "x = 10;\nModule[{x = 5}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectLocalShadowsGlobal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParameterShadowsBuiltin() {
-        String content = "f[List_] := List + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectParameterShadowsBuiltin(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLocalShadowsParameter() {
-        String content = "f[x_] := Module[{x = 5}, x + 1];";
-        assertDoesNotThrow(() ->
-            detector.detectLocalShadowsParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMultipleDefinitionsSameSymbol() {
-        String content = "f[x_] := x + 1;\nf[x_, y_] := x + y;";
-        assertDoesNotThrow(() ->
-            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content)
-        );
-    }
-
-    @Test
+                    @Test
     void testDetectSymbolNameTooShort() {
         String longFunction = "f[x_] := (\n" + "a = 1;\n".repeat(60) + "a\n)";
         assertDoesNotThrow(() ->
@@ -188,23 +41,7 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectSymbolNameTooLong() {
-        String content = "veryLongSymbolNameThatExceedsFiftyCharactersInLength = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentNamingConvention() {
-        String content = "camelCaseVar = 1;\nsnake_case_var = 2;\nPascalCase = 3;";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentNamingConvention(context, inputFile, content)
-        );
-    }
-
-    @Test
+            @Test
     void testDetectBuiltinNameInLocalScope() {
         String content = "Module[{List = {1, 2, 3}}, List[[1]]]";
         assertDoesNotThrow(() ->
@@ -212,73 +49,9 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectContextConflicts() {
-        String content = "Context1`myFunc[x_] := x;\nContext2`myFunc[y_] := y;";
-        assertDoesNotThrow(() ->
-            detector.detectContextConflicts(context, inputFile, content)
-        );
-    }
+                                // ===== UNDEFINED SYMBOL DETECTION TESTS (10 rules) =====
 
-    @Test
-    void testDetectReservedNameUsage() {
-        String content = "$Path = \"/custom/path\";";
-        assertDoesNotThrow(() ->
-            detector.detectReservedNameUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPrivateContextSymbolPublic() {
-        String content = "MyPackage`Private`internalFunc[x]";
-        assertDoesNotThrow(() ->
-            detector.detectPrivateContextSymbolPublic(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMismatchedBeginEnd() {
-        String content = "BeginPackage[\"Test`\"];\nBegin[\"`Private`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectMismatchedBeginEnd(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolAfterEndPackage() {
-        String content = "BeginPackage[\"Test`\"];\nEndPackage[];\nf[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolAfterEndPackage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGlobalInPackage() {
-        String content = "BeginPackage[\"Test`\"];\nGlobal`var = 5;\nEndPackage[];";
-        assertDoesNotThrow(() ->
-            detector.detectGlobalInPackage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTempVariableNotTemp() {
-        String content = "temp = 1;\ntemp = 2;\ntemp = 3;\ntemp = 4;";
-        assertDoesNotThrow(() ->
-            detector.detectTempVariableNotTemp(context, inputFile, content)
-        );
-    }
-
-    // ===== UNDEFINED SYMBOL DETECTION TESTS (10 rules) =====
-
-    @Test
-    void testDetectUndefinedFunctionCall() {
-        String content = "result = undefinedFunc[x];";
-        assertDoesNotThrow(() ->
-            detector.detectUndefinedFunctionCall(context, inputFile, content)
-        );
-    }
-
-    @Test
+        @Test
     void testDetectUndefinedVariableReference() {
         String content = "result = undefinedVar + 5;";
         assertDoesNotThrow(() ->
@@ -286,137 +59,9 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectTypoInBuiltinName() {
-        String content = "result = Lenght[{1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectTypoInBuiltinName(context, inputFile, content)
-        );
-    }
+                                    // ===== COMPREHENSIVE AND EDGE CASE TESTS =====
 
-    @Test
-    void testDetectWrongCapitalization() {
-        String content = "result = length[{1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongCapitalization(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingImport() {
-        String content = "result = UnknownContext`func[x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectContextNotFound() {
-        String content = "Needs[\"TestDebugPackage`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectContextNotFound(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolMaskedByImport() {
-        String content = "f[x_] := x + 1;\nNeeds[\"SomePackage`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolMaskedByImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingPathEntry() {
-        String content = "Get[\"myfile.m\"]";
-        assertDoesNotThrow(() ->
-            detector.detectMissingPathEntry(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCircularNeeds() {
-        String content = "Needs[\"test`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectCircularNeeds(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectForwardReferenceWithoutDeclaration() {
-        String content = "result = forwardFunc[x];\nforwardFunc[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content)
-        );
-    }
-
-    // ===== COMPREHENSIVE AND EDGE CASE TESTS =====
-
-    @Test
-    void testAllUnusedMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectUnusedPrivateFunction(context, inputFile, content);
-            detector.detectUnusedFunctionParameter(context, inputFile, content);
-            detector.detectUnusedModuleVariable(context, inputFile, content);
-            detector.detectUnusedWithVariable(context, inputFile, content);
-            detector.detectUnusedImport(context, inputFile, content);
-            detector.detectUnusedPatternName(context, inputFile, content);
-            detector.detectUnusedOptionalParameter(context, inputFile, content);
-            detector.detectDeadCodeAfterReturn(context, inputFile, content);
-            detector.detectUnreachableAfterAbortThrow(context, inputFile, content);
-            detector.detectAssignmentNeverRead(context, inputFile, content);
-            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content);
-            detector.detectRedefinedWithoutUse(context, inputFile, content);
-            detector.detectLoopVariableUnused(context, inputFile, content);
-            detector.detectCatchWithoutThrow(context, inputFile, content);
-            detector.detectConditionAlwaysFalse(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllShadowingMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectLocalShadowsGlobal(context, inputFile, content);
-            detector.detectParameterShadowsBuiltin(context, inputFile, content);
-            detector.detectLocalShadowsParameter(context, inputFile, content);
-            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content);
-            detector.detectSymbolNameTooShort(context, inputFile, content);
-            detector.detectSymbolNameTooLong(context, inputFile, content);
-            detector.detectInconsistentNamingConvention(context, inputFile, content);
-            detector.detectBuiltinNameInLocalScope(context, inputFile, content);
-            detector.detectContextConflicts(context, inputFile, content);
-            detector.detectReservedNameUsage(context, inputFile, content);
-            detector.detectPrivateContextSymbolPublic(context, inputFile, content);
-            detector.detectMismatchedBeginEnd(context, inputFile, content);
-            detector.detectSymbolAfterEndPackage(context, inputFile, content);
-            detector.detectGlobalInPackage(context, inputFile, content);
-            detector.detectTempVariableNotTemp(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllUndefinedSymbolMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectUndefinedFunctionCall(context, inputFile, content);
-            detector.detectUndefinedVariableReference(context, inputFile, content);
-            detector.detectTypoInBuiltinName(context, inputFile, content);
-            detector.detectWrongCapitalization(context, inputFile, content);
-            detector.detectMissingImport(context, inputFile, content);
-            detector.detectContextNotFound(context, inputFile, content);
-            detector.detectSymbolMaskedByImport(context, inputFile, content);
-            detector.detectMissingPathEntry(context, inputFile, content);
-            detector.detectCircularNeeds(context, inputFile, content);
-            detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content);
-        });
-    }
-
-    @Test
+                @Test
     void testComplexCodeWithMultipleIssues() {
         String content = "BeginPackage[\"MyPackage`\"];\n"
                 + "Begin[\"`Private`\"];\n"
@@ -510,151 +155,7 @@ class UnusedAndNamingDetectorTest {
 
     // ===== ADDITIONAL COMPREHENSIVE TESTS FOR 80%+ COVERAGE =====
 
-    @Test
-    void testDetectUnusedPrivateFunctionCalled() {
-        String content = "privateFunc[x_] := x + 1;\nresult = privateFunc[5];";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPrivateFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedFunctionParameterAllUsed() {
-        String content = "f[x_, y_] := x + y;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedFunctionParameterInComments() {
-        String content = "(* f[x_, y_] := x + 1; *)";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedFunctionParameterWithPatternType() {
-        String content = "f[x_Integer, y_Real] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedModuleVariableAllUsed() {
-        String content = "Module[{x = 5, y = 10}, x + y]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedWithVariableAllUsed() {
-        String content = "With[{x = 5, y = 10}, x + y]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedWithVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedImportUsed() {
-        String content = "Needs[\"Package1`\"];\nresult = Package1`func[x];";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedImportInComments() {
-        String content = "(* Needs[\"UnusedPackage`\"]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedPatternNameUsed() {
-        String content = "f[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPatternName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedOptionalParameterWithUsage() {
-        String content = "f[x_, y___ := 10] := x + Length[{y}];";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedOptionalParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadCodeAfterReturnWithClosingBracket() {
-        String content = "f[x_] := (Return[x])";
-        assertDoesNotThrow(() ->
-            detector.detectDeadCodeAfterReturn(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnreachableAfterThrow() {
-        String content = "f[x_] := (Throw[error]; x)";
-        assertDoesNotThrow(() ->
-            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectRedefinedWithoutUseWithUsageBetween() {
-        String content = "x = 5; Print[x]; x = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectRedefinedWithoutUse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUsedMultipleTimes() {
-        String content = "Do[Print[i]; result = i * 2;, {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCatchWithoutThrowWithThrow() {
-        String content = "Catch[Throw[\"error\"]; Print[\"test\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLocalShadowsGlobalNoGlobals() {
-        String content = "Module[{x = 5}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectLocalShadowsGlobal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParameterShadowsBuiltinNonBuiltin() {
-        String content = "f[myParam_] := myParam + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectParameterShadowsBuiltin(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLocalShadowsParameterNoShadowing() {
-        String content = "f[x_] := Module[{y = 5}, x + y];";
-        assertDoesNotThrow(() ->
-            detector.detectLocalShadowsParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                                            @Test
     void testDetectSymbolNameTooShortShortFunction() {
         String content = "f[x_] := x + 1;";
         assertDoesNotThrow(() ->
@@ -670,23 +171,7 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectSymbolNameTooLongShortName() {
-        String content = "shortName = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentNamingConventionConsistent() {
-        String content = "camelCaseOne = 1;\ncamelCaseTwo = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentNamingConvention(context, inputFile, content)
-        );
-    }
-
-    @Test
+            @Test
     void testDetectBuiltinNameInLocalScopeNonBuiltin() {
         String content = "Module[{myList = {1, 2, 3}}, myList[[1]]]";
         assertDoesNotThrow(() ->
@@ -694,127 +179,7 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectContextConflictsNoConflicts() {
-        String content = "Context1`myFunc[x_] := x;\nContext1`otherFunc[y_] := y;";
-        assertDoesNotThrow(() ->
-            detector.detectContextConflicts(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectReservedNameUsageNonReserved() {
-        String content = "myPath = \"/custom/path\";";
-        assertDoesNotThrow(() ->
-            detector.detectReservedNameUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMismatchedBeginEndBalanced() {
-        String content = "BeginPackage[\"Test`\"];\nBegin[\"`Private`\"];\nEnd[];\nEndPackage[];";
-        assertDoesNotThrow(() ->
-            detector.detectMismatchedBeginEnd(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolAfterEndPackageNoSymbols() {
-        String content = "BeginPackage[\"Test`\"];\nEndPackage[];";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolAfterEndPackage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGlobalInPackageNoPackage() {
-        String content = "Global`var = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectGlobalInPackage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTempVariableNotTempUsedOnce() {
-        String content = "temp = 1;";
-        assertDoesNotThrow(() ->
-            detector.detectTempVariableNotTemp(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUndefinedFunctionCallAllDefined() {
-        String content = "f[x_] := x + 1;\nresult = f[5];";
-        assertDoesNotThrow(() ->
-            detector.detectUndefinedFunctionCall(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTypoInBuiltinNameNoTypos() {
-        String content = "result = Length[{1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectTypoInBuiltinName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectWrongCapitalizationCorrectCapitalization() {
-        String content = "result = Length[{1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongCapitalization(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingImportAllImported() {
-        String content = "Needs[\"Package1`\"];\nresult = Package1`func[x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectContextNotFoundValidPackage() {
-        String content = "Needs[\"MyValidPackage`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectContextNotFound(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolMaskedByImportNoLocalFunctions() {
-        String content = "Needs[\"SomePackage`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolMaskedByImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingPathEntryWithAbsolutePath() {
-        String content = "Get[\"/full/path/to/myfile.m\"]";
-        assertDoesNotThrow(() ->
-            detector.detectMissingPathEntry(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCircularNeedsDifferentPackage() {
-        String content = "Needs[\"CompletelyDifferent`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectCircularNeeds(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectForwardReferenceWithoutDeclarationNoForwardRef() {
-        String content = "myFunc[x_] := x + 1;\nresult = myFunc[5];";
-        assertDoesNotThrow(() ->
-            detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                                @Test
     void testComplexMixedScenarios() {
         String content = "BeginPackage[\"TestPkg`\"];\n"
                 + "PublicFunc::usage = \"Public function\";\n"
@@ -834,161 +199,9 @@ class UnusedAndNamingDetectorTest {
         });
     }
 
-    @Test
-    void testDetectUnusedModuleVariableInStrings() {
-        String content = "str = \"Module[{x = 5, y = 10}, x + 1]\";";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
+                            // ===== ADDITIONAL NEGATIVE CASE TESTS =====
 
-    @Test
-    void testDetectUnusedFunctionParameterNoBody() {
-        String content = "f[x_, y_]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionDefinedButNeverCalledWithMultipleCalls() {
-        String content = "MyFunc[x_] := x + 1;\nresult1 = MyFunc[1];\nresult2 = MyFunc[2];";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUndefinedFunctionCallWithBuiltins() {
-        String content = "result = Map[f, {1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectUndefinedFunctionCall(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingPathEntryWithFileNameJoin() {
-        String content = "Get[FileNameJoin[{dir, \"myfile.m\"}]]";
-        assertDoesNotThrow(() ->
-            detector.detectMissingPathEntry(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUnusedWithIteratorInBody() {
-        String content = "Do[result = i * 2, {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    // ===== ADDITIONAL NEGATIVE CASE TESTS =====
-
-    @Test
-    void testDetectUnusedPrivateFunctionNoPattern() {
-        String content = "PublicFunc[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPrivateFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedFunctionParameterInString() {
-        String content = "str = \"f[x_, y_] := x + 1;\";";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedPatternNameInComment() {
-        String content = "(* f[x_] := 1; *)";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPatternName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadCodeAfterReturnInComment() {
-        String content = "(* Return[x]; Print[\"dead\"] *)";
-        assertDoesNotThrow(() ->
-            detector.detectDeadCodeAfterReturn(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnreachableAfterAbortThrowInString() {
-        String content = "str = \"Abort[]; Print[test]\";";
-        assertDoesNotThrow(() ->
-            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentNeverReadInComment() {
-        String content = "(* x = 5; x = 10; *)";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentNeverRead(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionDefinedButNeverCalledInString() {
-        String content = "str = \"UnusedFunc[x_] := x + 1;\";";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectRedefinedWithoutUseInComment() {
-        String content = "(* x = 5; x = 10; *)";
-        assertDoesNotThrow(() ->
-            detector.detectRedefinedWithoutUse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectConditionAlwaysFalseInComment() {
-        String content = "(* If[False, result, other] *)";
-        assertDoesNotThrow(() ->
-            detector.detectConditionAlwaysFalse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParameterShadowsBuiltinInComment() {
-        String content = "(* f[List_] := List + 1; *)";
-        assertDoesNotThrow(() ->
-            detector.detectParameterShadowsBuiltin(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMultipleDefinitionsSameSymbolInComment() {
-        String content = "(* f[x_] := x + 1;\nf[x_, y_] := x + y; *)";
-        assertDoesNotThrow(() ->
-            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolNameTooLongInComment() {
-        String content = "(* veryLongSymbolNameThatExceedsFiftyCharactersInLength = 5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentNamingConventionInComment() {
-        String content = "(* camelCaseVar = 1;\nsnake_case_var = 2; *)";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentNamingConvention(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                        @Test
     void testDetectBuiltinNameInLocalScopeInComment() {
         String content = "(* Module[{List = {1, 2, 3}}, List[[1]]] *)";
         assertDoesNotThrow(() ->
@@ -996,171 +209,11 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectContextConflictsInComment() {
-        String content = "(* Context1`myFunc[x_] := x;\nContext2`myFunc[y_] := y; *)";
-        assertDoesNotThrow(() ->
-            detector.detectContextConflicts(context, inputFile, content)
-        );
-    }
+                        // ===== EDGE CASE TESTS =====
 
-    @Test
-    void testDetectPrivateContextSymbolPublicInComment() {
-        String content = "(* MyPackage`Private`internalFunc[x] *)";
-        assertDoesNotThrow(() ->
-            detector.detectPrivateContextSymbolPublic(context, inputFile, content)
-        );
-    }
+                                                // ===== BOUNDARY CASE TESTS =====
 
-    @Test
-    void testDetectContextNotFoundInComment() {
-        String content = "(* Needs[\"TestDebugPackage`\"]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectContextNotFound(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingPathEntryInComment() {
-        String content = "(* Get[\"myfile.m\"] *)";
-        assertDoesNotThrow(() ->
-            detector.detectMissingPathEntry(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCircularNeedsInComment() {
-        String content = "(* Needs[\"test`\"]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectCircularNeeds(context, inputFile, content)
-        );
-    }
-
-    // ===== EDGE CASE TESTS =====
-
-    @Test
-    void testDetectUnusedOptionalParameterNoAssignment() {
-        String content = "f[x_, y___] := x;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedOptionalParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadCodeAfterReturnAtEndOfFile() {
-        String content = "f[x_] := Return[x]";
-        assertDoesNotThrow(() ->
-            detector.detectDeadCodeAfterReturn(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnreachableAfterAbortThrowAtEndOfFile() {
-        String content = "f[x_] := Abort[]";
-        assertDoesNotThrow(() ->
-            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentNeverReadSingleAssignment() {
-        String content = "x = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentNeverRead(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectRedefinedWithoutUseDifferentVariables() {
-        String content = "x = 5; y = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectRedefinedWithoutUse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUnusedNoBody() {
-        String content = "Do[Print[\"hello\"], i]";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCatchWithoutThrowEmpty() {
-        String content = "Catch[]";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLocalShadowsParameterNoModule() {
-        String content = "f[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectLocalShadowsParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolAfterEndPackageNoEndPackage() {
-        String content = "f[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolAfterEndPackage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUndefinedFunctionCallSingleLetterVariable() {
-        String content = "result = f[x];";
-        assertDoesNotThrow(() ->
-            detector.detectUndefinedFunctionCall(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectForwardReferenceWithoutDeclarationBuiltin() {
-        String content = "result = Map[f, list];\nf[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content)
-        );
-    }
-
-    // ===== BOUNDARY CASE TESTS =====
-
-    @Test
-    void testDetectUnusedModuleVariableEmptyVarList() {
-        String content = "Module[{}, result]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedWithVariableEmptyVarList() {
-        String content = "With[{}, result]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedWithVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolNameTooLongExactly50Chars() {
-        String content = "symbolNameThatIsExactlyFiftyCharactersLongHere1 = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolNameTooLongExactly51Chars() {
-        String content = "symbolNameThatIsExactlyFiftyOneCharactersLongHere12 = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
+                    @Test
     void testDetectSymbolNameTooShortExactly50Lines() {
         String content = "f[x_] := (\n" + "a = 1;\n".repeat(50) + "a\n)";
         assertDoesNotThrow(() ->
@@ -1176,318 +229,18 @@ class UnusedAndNamingDetectorTest {
         );
     }
 
-    @Test
-    void testDetectTempVariableNotTempExactly2Uses() {
-        String content = "temp = 1;\ntemp = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectTempVariableNotTemp(context, inputFile, content)
-        );
-    }
+                // ===== WHITESPACE AND SPECIAL CHARACTER TESTS =====
 
-    @Test
-    void testDetectTempVariableNotTempExactly3Uses() {
-        String content = "temp = 1;\ntemp = 2;\ntemp = 3;";
-        assertDoesNotThrow(() ->
-            detector.detectTempVariableNotTemp(context, inputFile, content)
-        );
-    }
+                        // ===== MULTIPLE PATTERNS IN ONE FILE TESTS =====
 
-    @Test
-    void testDetectTmpVariableNotTemp() {
-        String content = "tmp = 1;\ntmp = 2;\ntmp = 3;\ntmp = 4;";
-        assertDoesNotThrow(() ->
-            detector.detectTempVariableNotTemp(context, inputFile, content)
-        );
-    }
+                            // ===== NESTED STRUCTURE TESTS =====
 
-    // ===== WHITESPACE AND SPECIAL CHARACTER TESTS =====
+                    // ===== PARAMETER PATTERN TESTS =====
 
-    @Test
-    void testDetectUnusedFunctionParameterWithWhitespace() {
-        String content = "f[ x_  ,  y_  ] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
+                    // ===== SPECIFIC COVERAGE GAP TESTS =====
 
-    @Test
-    void testDetectUnusedModuleVariableWithWhitespace() {
-        String content = "Module[{ x = 5 , y = 10 }, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedWithVariableWithWhitespace() {
-        String content = "With[{ x = 5 , y = 10 }, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedWithVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadCodeAfterReturnWithWhitespace() {
-        String content = "f[x_] := (Return[x]  \n  \n  Print[\"dead\"])";
-        assertDoesNotThrow(() ->
-            detector.detectDeadCodeAfterReturn(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnreachableAfterAbortThrowWithWhitespace() {
-        String content = "f[x_] := (Abort[]  ;  Print[\"unreachable\"])";
-        assertDoesNotThrow(() ->
-            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
-        );
-    }
-
-    // ===== MULTIPLE PATTERNS IN ONE FILE TESTS =====
-
-    @Test
-    void testMultipleUnusedPrivateFunctions() {
-        String content = "func1[x_] := x + 1;\nfunc2[y_] := y * 2;\nfunc3[z_] := z - 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPrivateFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testMultipleUnusedImports() {
-        String content = "Needs[\"Package1`\"];\nNeeds[\"Package2`\"];\nNeeds[\"Package3`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testMultipleContextConflicts() {
-        String content = "Pkg1`func[x_];\nPkg2`func[x_];\nPkg3`func[x_];";
-        assertDoesNotThrow(() ->
-            detector.detectContextConflicts(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testMultipleReservedNameUsages() {
-        String content = "$Path = 1;\n$Version = 2;\n$SystemID = 3;";
-        assertDoesNotThrow(() ->
-            detector.detectReservedNameUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testMultipleTyposInBuiltinNames() {
-        String content = "Lenght[list];\nFrist[list];\nTabel[i, {i, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectTypoInBuiltinName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testMultipleWrongCapitalizations() {
-        String content = "length[list];\nfirst[list];\ntable[i, {i, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongCapitalization(context, inputFile, content)
-        );
-    }
-
-    // ===== NESTED STRUCTURE TESTS =====
-
-    @Test
-    void testNestedModuleVariables() {
-        String content = "Module[{x = 5}, Module[{y = 10}, x + y]]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testNestedWithVariables() {
-        String content = "With[{x = 5}, With[{y = 10}, x + y]]";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedWithVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testNestedLoops() {
-        String content = "Do[Do[Print[i, j], {j, 1, 5}], {i, 1, 10}]";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testNestedCatchThrow() {
-        String content = "Catch[Catch[Throw[\"inner\"]; Print[\"test\"]]];";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    // ===== PARAMETER PATTERN TESTS =====
-
-    @Test
-    void testDetectUnusedFunctionParameterWithTypePattern() {
-        String content = "f[x_Integer, y_Real, z_String] := x + y;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedFunctionParameterWithConditionPattern() {
-        String content = "f[x_?NumericQ, y_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedFunctionParameterBlankPattern() {
-        String content = "f[_, _] := 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedFunctionParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedPatternNameWithBlankSequence() {
-        String content = "f[x__] := Length[{x}];";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedPatternName(context, inputFile, content)
-        );
-    }
-
-    // ===== SPECIFIC COVERAGE GAP TESTS =====
-
-    @Test
-    void testDetectUnusedOptionalParameterNoFunctionBody() {
-        String content = "x___";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedOptionalParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedOptionalParameterInComment() {
-        String content = "(* f[x_, y___ := 10] := x; *)";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedOptionalParameter(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUnusedInComment() {
-        String content = "(* Do[Print[\"hello\"], {i, 1, 10}]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUnusedInString() {
-        String content = "str = \"Do[Print[hello], {i, 1, 10}]\";";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectLoopVariableUnusedMalformedLoop() {
-        String content = "Do[Print[\"hello\"]";
-        assertDoesNotThrow(() ->
-            detector.detectLoopVariableUnused(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedImportOnSameLine() {
-        String content = "Needs[\"Package1`\"]; result = Package1`func[x];";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedImport(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectContextNotFoundWithTestName() {
-        String content = "Needs[\"TestPackage`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectContextNotFound(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectContextNotFoundWithDebugName() {
-        String content = "Needs[\"DebugPackage`\"];";
-        assertDoesNotThrow(() ->
-            detector.detectContextNotFound(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingPathEntryWithBackslash() {
-        String content = "Get[\"C:\\\\path\\\\myfile.m\"]";
-        assertDoesNotThrow(() ->
-            detector.detectMissingPathEntry(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedModuleVariableNoBody() {
-        String content = "Module[{x = 5, y = 10}";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedModuleVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUnusedWithVariableNoBody() {
-        String content = "With[{x = 5, y = 10}";
-        assertDoesNotThrow(() ->
-            detector.detectUnusedWithVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTempVariableNotTempInString() {
-        String content = "str = \"temp = 1; temp = 2; temp = 3; temp = 4;\";";
-        assertDoesNotThrow(() ->
-            detector.detectTempVariableNotTemp(context, inputFile, content)
-        );
-    }
-
-    // Additional branch coverage tests
-    @Test
-    void testDetectInComments() {
-        String content = "(* F[x] := x; Return[1]; *)";
-        assertDoesNotThrow(() -> {
-            detector.detectUnusedPrivateFunction(context, inputFile, content);
-            detector.detectDeadCodeAfterReturn(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testDetectInStringLiterals() {
-        String content = "str = \"Module[{unused}, result]\";";
-        assertDoesNotThrow(() -> {
-            detector.detectUnusedModuleVariable(context, inputFile, content);
-            detector.detectUnusedFunctionParameter(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testDetectEdgeCases() {
-        String content = "F[x_] := x;";
-        assertDoesNotThrow(() -> {
-            detector.detectUnusedPrivateFunction(context, inputFile, content);
-            detector.detectUnusedModuleVariable(context, inputFile, content);
-            detector.detectDeadCodeAfterReturn(context, inputFile, content);
-        });
-    }
-
-    // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
+                                                    // Additional branch coverage tests
+                // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
 
     @Test
     void testDetectUnusedPrivateFunctionTriggered() {
@@ -1600,8 +353,8 @@ class UnusedAndNamingDetectorTest {
     // ===== EXCEPTION HANDLING TESTS FOR CATCH BLOCKS =====
 
     @Test
-    void testAllDetectMethodsWithMalformedInput() {
-        // Target all 40 catch blocks with null content to trigger exceptions
+    void testAllDetectMethodsWithMalformedInputPart1() {
+        // Test methods 1-20 with null content to trigger exception handlers
         String content = null;
         assertDoesNotThrow(() -> detector.detectUnusedPrivateFunction(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectUnusedFunctionParameter(context, inputFile, content));
@@ -1623,6 +376,12 @@ class UnusedAndNamingDetectorTest {
         assertDoesNotThrow(() -> detector.detectLocalShadowsParameter(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectSymbolNameTooShort(context, inputFile, content));
+    }
+
+    @Test
+    void testAllDetectMethodsWithMalformedInputPart2() {
+        // Test methods 21-40 with null content to trigger exception handlers
+        String content = null;
         assertDoesNotThrow(() -> detector.detectSymbolNameTooLong(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectInconsistentNamingConvention(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectBuiltinNameInLocalScope(context, inputFile, content));
@@ -1644,4 +403,639 @@ class UnusedAndNamingDetectorTest {
         assertDoesNotThrow(() -> detector.detectCircularNeeds(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content));
     }
+
+    // ===== PARAMETERIZED TESTS =====
+
+    @ParameterizedTest
+    @MethodSource("detectAssignmentNeverReadTestData")
+    void testDetectDetectAssignmentNeverRead(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentNeverRead(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAssignmentNeverReadTestData() {
+        return Stream.of(
+            Arguments.of("x = 5; x = 10; y = x;"),
+            Arguments.of("(* x = 5; x = 10; *)"),
+            Arguments.of("x = 5;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectCatchWithoutThrowTestData")
+    void testDetectDetectCatchWithoutThrow(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCatchWithoutThrow(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectCatchWithoutThrowTestData() {
+        return Stream.of(
+            Arguments.of("Catch[Print[\\\"test\\\"]]"),
+            Arguments.of("Catch[Throw[\\\"error\\\"]; Print[\\\"test\\\"]]"),
+            Arguments.of("Catch[]"),
+            Arguments.of("Catch[Catch[Throw[\\\"inner\\\"]; Print[\\\"test\\\"]]];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectCircularNeedsTestData")
+    void testDetectDetectCircularNeeds(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCircularNeeds(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectCircularNeedsTestData() {
+        return Stream.of(
+            Arguments.of("Needs[\\\"test`\\\"];"),
+            Arguments.of("Needs[\\\"CompletelyDifferent`\\\"];"),
+            Arguments.of("(* Needs[\\\"test`\\\"]; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectConditionAlwaysFalseTestData")
+    void testDetectDetectConditionAlwaysFalse(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectConditionAlwaysFalse(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectConditionAlwaysFalseTestData() {
+        return Stream.of(
+            Arguments.of("If[False, result, other]"),
+            Arguments.of("(* If[False, result, other] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectContextConflictsTestData")
+    void testDetectDetectContextConflicts(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectContextConflicts(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectContextConflictsTestData() {
+        return Stream.of(
+            Arguments.of("Context1`myFunc[x_] := x;\\nContext2`myFunc[y_] := y;"),
+            Arguments.of("Context1`myFunc[x_] := x;\\nContext1`otherFunc[y_] := y;"),
+            Arguments.of("(* Context1`myFunc[x_] := x;\\nContext2`myFunc[y_] := y; *)"),
+            Arguments.of("Pkg1`func[x_];\\nPkg2`func[x_];\\nPkg3`func[x_];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectContextNotFoundTestData")
+    void testDetectDetectContextNotFound(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectContextNotFound(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectContextNotFoundTestData() {
+        return Stream.of(
+            Arguments.of("Needs[\\\"TestDebugPackage`\\\"];"),
+            Arguments.of("Needs[\\\"MyValidPackage`\\\"];"),
+            Arguments.of("(* Needs[\\\"TestDebugPackage`\\\"]; *)"),
+            Arguments.of("Needs[\\\"TestPackage`\\\"];"),
+            Arguments.of("Needs[\\\"DebugPackage`\\\"];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDeadCodeAfterReturnTestData")
+    void testDetectDetectDeadCodeAfterReturn(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDeadCodeAfterReturn(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDeadCodeAfterReturnTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := (Return[x]; Print[\\\"dead code\\\"])"),
+            Arguments.of("f[x_] := (Return[x])"),
+            Arguments.of("(* Return[x]; Print[\\\"dead\\\"] *)"),
+            Arguments.of("f[x_] := Return[x]"),
+            Arguments.of("f[x_] := (Return[x]  \\n  \\n  Print[\\\"dead\\\"])")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectForwardReferenceWithoutDeclarationTestData")
+    void testDetectDetectForwardReferenceWithoutDeclaration(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectForwardReferenceWithoutDeclaration(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectForwardReferenceWithoutDeclarationTestData() {
+        return Stream.of(
+            Arguments.of("result = forwardFunc[x];\\nforwardFunc[x_] := x + 1;"),
+            Arguments.of("myFunc[x_] := x + 1;\\nresult = myFunc[5];"),
+            Arguments.of("result = Map[f, list];\\nf[x_] := x + 1;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectFunctionDefinedButNeverCalledTestData")
+    void testDetectDetectFunctionDefinedButNeverCalled(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFunctionDefinedButNeverCalled(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectFunctionDefinedButNeverCalledTestData() {
+        return Stream.of(
+            Arguments.of("UnusedFunc[x_] := x + 1;"),
+            Arguments.of("MyFunc[x_] := x + 1;\\nresult1 = MyFunc[1];\\nresult2 = MyFunc[2];"),
+            Arguments.of("str = \\\"UnusedFunc[x_] := x + 1;\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectGlobalInPackageTestData")
+    void testDetectDetectGlobalInPackage(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectGlobalInPackage(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectGlobalInPackageTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"Test`\\\"];\\nGlobal`var = 5;\\nEndPackage[];"),
+            Arguments.of("Global`var = 5;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectInconsistentNamingConventionTestData")
+    void testDetectDetectInconsistentNamingConvention(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInconsistentNamingConvention(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectInconsistentNamingConventionTestData() {
+        return Stream.of(
+            Arguments.of("camelCaseVar = 1;\\nsnake_case_var = 2;\\nPascalCase = 3;"),
+            Arguments.of("camelCaseOne = 1;\\ncamelCaseTwo = 2;"),
+            Arguments.of("(* camelCaseVar = 1;\\nsnake_case_var = 2; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectLocalShadowsGlobalTestData")
+    void testDetectDetectLocalShadowsGlobal(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectLocalShadowsGlobal(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectLocalShadowsGlobalTestData() {
+        return Stream.of(
+            Arguments.of("x = 10;\\nModule[{x = 5}, x + 1]"),
+            Arguments.of(""),
+            Arguments.of("Module[{x = 5}, x + 1]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectLocalShadowsParameterTestData")
+    void testDetectDetectLocalShadowsParameter(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectLocalShadowsParameter(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectLocalShadowsParameterTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := Module[{x = 5}, x + 1];"),
+            Arguments.of("f[x_] := Module[{y = 5}, x + y];"),
+            Arguments.of("f[x_] := x + 1;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectLoopVariableUnusedTestData")
+    void testDetectDetectLoopVariableUnused(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectLoopVariableUnused(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectLoopVariableUnusedTestData() {
+        return Stream.of(
+            Arguments.of("Do[Print[\\\"hello\\\"], {i, 1, 10}];"),
+            Arguments.of("Do[Print[i]; result = i * 2;, {i, 1, 10}];"),
+            Arguments.of("Do[result = i * 2, {i, 1, 10}];"),
+            Arguments.of("Do[Print[\\\"hello\\\"], i]"),
+            Arguments.of("Do[Do[Print[i, j], {j, 1, 5}], {i, 1, 10}]"),
+            Arguments.of("(* Do[Print[\\\"hello\\\"], {i, 1, 10}]; *)"),
+            Arguments.of("str = \\\"Do[Print[hello], {i, 1, 10}]\\"),
+            Arguments.of("Do[Print[\\\"hello\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMismatchedBeginEndTestData")
+    void testDetectDetectMismatchedBeginEnd(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMismatchedBeginEnd(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMismatchedBeginEndTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"Test`\\\"];\\nBegin[\\\"`Private`\\\"];"),
+            Arguments.of("BeginPackage[\\\"Test`\\\"];\\nBegin[\\\"`Private`\\\"];\\nEnd[];\\nEndPackage[];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingImportTestData")
+    void testDetectDetectMissingImport(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingImport(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingImportTestData() {
+        return Stream.of(
+            Arguments.of("result = UnknownContext`func[x];"),
+            Arguments.of("Needs[\\\"Package1`\\\"];\\nresult = Package1`func[x];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingPathEntryTestData")
+    void testDetectDetectMissingPathEntry(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingPathEntry(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingPathEntryTestData() {
+        return Stream.of(
+            Arguments.of("Get[\\\"myfile.m\\\"]"),
+            Arguments.of("Get[\\\"/full/path/to/myfile.m\\\"]"),
+            Arguments.of("Get[FileNameJoin[{dir, \\\"myfile.m\\\"}]]"),
+            Arguments.of("(* Get[\\\"myfile.m\\\"] *)"),
+            Arguments.of("Get[\\\"C:\\\\\\\\path\\\\\\\\myfile.m\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMultipleDefinitionsSameSymbolTestData")
+    void testDetectDetectMultipleDefinitionsSameSymbol(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMultipleDefinitionsSameSymbol(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMultipleDefinitionsSameSymbolTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := x + 1;\\nf[x_, y_] := x + y;"),
+            Arguments.of("(* f[x_] := x + 1;\\nf[x_, y_] := x + y; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectParameterShadowsBuiltinTestData")
+    void testDetectDetectParameterShadowsBuiltin(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectParameterShadowsBuiltin(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectParameterShadowsBuiltinTestData() {
+        return Stream.of(
+            Arguments.of("f[List_] := List + 1;"),
+            Arguments.of("f[myParam_] := myParam + 1;"),
+            Arguments.of("(* f[List_] := List + 1; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPrivateContextSymbolPublicTestData")
+    void testDetectDetectPrivateContextSymbolPublic(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPrivateContextSymbolPublic(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPrivateContextSymbolPublicTestData() {
+        return Stream.of(
+            Arguments.of("MyPackage`Private`internalFunc[x]"),
+            Arguments.of("(* MyPackage`Private`internalFunc[x] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectRedefinedWithoutUseTestData")
+    void testDetectDetectRedefinedWithoutUse(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectRedefinedWithoutUse(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectRedefinedWithoutUseTestData() {
+        return Stream.of(
+            Arguments.of("x = 5; x = 10;"),
+            Arguments.of("x = 5; Print[x]; x = 10;"),
+            Arguments.of("(* x = 5; x = 10; *)"),
+            Arguments.of("x = 5; y = 10;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectReservedNameUsageTestData")
+    void testDetectDetectReservedNameUsage(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectReservedNameUsage(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectReservedNameUsageTestData() {
+        return Stream.of(
+            Arguments.of("$Path = \\\"/custom/path\\"),
+            Arguments.of("myPath = \\\"/custom/path\\"),
+            Arguments.of("$Path = 1;\\n$Version = 2;\\n$SystemID = 3;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSymbolAfterEndPackageTestData")
+    void testDetectDetectSymbolAfterEndPackage(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSymbolAfterEndPackage(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSymbolAfterEndPackageTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"Test`\\\"];\\nEndPackage[];\\nf[x_] := x + 1;"),
+            Arguments.of("BeginPackage[\\\"Test`\\\"];\\nEndPackage[];"),
+            Arguments.of("f[x_] := x + 1;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSymbolMaskedByImportTestData")
+    void testDetectDetectSymbolMaskedByImport(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSymbolMaskedByImport(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSymbolMaskedByImportTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := x + 1;\\nNeeds[\\\"SomePackage`\\\"];"),
+            Arguments.of("Needs[\\\"SomePackage`\\\"];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSymbolNameTooLongTestData")
+    void testDetectDetectSymbolNameTooLong(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSymbolNameTooLong(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSymbolNameTooLongTestData() {
+        return Stream.of(
+            Arguments.of("veryLongSymbolNameThatExceedsFiftyCharactersInLength = 5;"),
+            Arguments.of("shortName = 5;"),
+            Arguments.of("(* veryLongSymbolNameThatExceedsFiftyCharactersInLength = 5; *)"),
+            Arguments.of("symbolNameThatIsExactlyFiftyCharactersLongHere1 = 5;"),
+            Arguments.of("symbolNameThatIsExactlyFiftyOneCharactersLongHere12 = 5;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTempVariableNotTempTestData")
+    void testDetectDetectTempVariableNotTemp(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTempVariableNotTemp(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTempVariableNotTempTestData() {
+        return Stream.of(
+            Arguments.of("temp = 1;\\ntemp = 2;\\ntemp = 3;\\ntemp = 4;"),
+            Arguments.of("temp = 1;"),
+            Arguments.of("temp = 1;\\ntemp = 2;"),
+            Arguments.of("temp = 1;\\ntemp = 2;\\ntemp = 3;"),
+            Arguments.of("tmp = 1;\\ntmp = 2;\\ntmp = 3;\\ntmp = 4;"),
+            Arguments.of("str = \\\"temp = 1; temp = 2; temp = 3; temp = 4;\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTypoInBuiltinNameTestData")
+    void testDetectDetectTypoInBuiltinName(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTypoInBuiltinName(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTypoInBuiltinNameTestData() {
+        return Stream.of(
+            Arguments.of("result = Lenght[{1, 2, 3}];"),
+            Arguments.of("result = Length[{1, 2, 3}];"),
+            Arguments.of("Lenght[list];\\nFrist[list];\\nTabel[i, {i, 10}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUndefinedFunctionCallTestData")
+    void testDetectDetectUndefinedFunctionCall(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUndefinedFunctionCall(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUndefinedFunctionCallTestData() {
+        return Stream.of(
+            Arguments.of("result = undefinedFunc[x];"),
+            Arguments.of(""),
+            Arguments.of("f[x_] := x + 1;\\nresult = f[5];"),
+            Arguments.of("result = Map[f, {1, 2, 3}];"),
+            Arguments.of("result = f[x];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnreachableAfterAbortThrowTestData")
+    void testDetectDetectUnreachableAfterAbortThrow(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnreachableAfterAbortThrow(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnreachableAfterAbortThrowTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := (Abort[]; Print[\\\"unreachable\\\"])"),
+            Arguments.of("f[x_] := (Throw[error]; x)"),
+            Arguments.of("str = \\\"Abort[]; Print[test]\\"),
+            Arguments.of("f[x_] := Abort[]"),
+            Arguments.of("f[x_] := (Abort[]  ;  Print[\\\"unreachable\\\"])")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedFunctionParameterTestData")
+    void testDetectDetectUnusedFunctionParameter(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedFunctionParameter(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedFunctionParameterTestData() {
+        return Stream.of(
+            Arguments.of("f[x_, y_] := x + 1;"),
+            Arguments.of("f[x_, y_] := x + y;"),
+            Arguments.of("(* f[x_, y_] := x + 1; *)"),
+            Arguments.of("f[x_Integer, y_Real] := x + 1;"),
+            Arguments.of("f[x_, y_]"),
+            Arguments.of("str = \\\"f[x_, y_] := x + 1;\\"),
+            Arguments.of("f[ x_  ,  y_  ] := x + 1;"),
+            Arguments.of("f[x_Integer, y_Real, z_String] := x + y;"),
+            Arguments.of("f[x_?NumericQ, y_] := x + 1;"),
+            Arguments.of("f[_, _] := 1;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedImportTestData")
+    void testDetectDetectUnusedImport(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedImport(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedImportTestData() {
+        return Stream.of(
+            Arguments.of("Needs[\\\"UnusedPackage`\\\"];\\nf[x_] := x + 1;"),
+            Arguments.of("Needs[\\\"Package1`\\\"];\\nresult = Package1`func[x];"),
+            Arguments.of("(* Needs[\\\"UnusedPackage`\\\"]; *)"),
+            Arguments.of("Needs[\\\"Package1`\\\"];\\nNeeds[\\\"Package2`\\\"];\\nNeeds[\\\"Package3`\\\"];"),
+            Arguments.of("Needs[\\\"Package1`\\\"]; result = Package1`func[x];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedModuleVariableTestData")
+    void testDetectDetectUnusedModuleVariable(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedModuleVariable(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedModuleVariableTestData() {
+        return Stream.of(
+            Arguments.of("Module[{x = 5, y = 10}, x + 1]"),
+            Arguments.of("Module[{x = 5, y = 10}, x + y]"),
+            Arguments.of("str = \\\"Module[{x = 5, y = 10}, x + 1]\\"),
+            Arguments.of("Module[{}, result]"),
+            Arguments.of("Module[{ x = 5 , y = 10 }, x + 1]"),
+            Arguments.of("Module[{x = 5}, Module[{y = 10}, x + y]]"),
+            Arguments.of("Module[{x = 5, y = 10}"),
+            Arguments.of("str = \\\"Module[{unused}, result]\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedOptionalParameterTestData")
+    void testDetectDetectUnusedOptionalParameter(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedOptionalParameter(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedOptionalParameterTestData() {
+        return Stream.of(
+            Arguments.of("f[x_, y___ := 10] := x;"),
+            Arguments.of("f[x_, y___ := 10] := x + Length[{y}];"),
+            Arguments.of("f[x_, y___] := x;"),
+            Arguments.of("x___"),
+            Arguments.of("(* f[x_, y___ := 10] := x; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedPatternNameTestData")
+    void testDetectDetectUnusedPatternName(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedPatternName(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedPatternNameTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := 1;"),
+            Arguments.of("f[x_] := x + 1;"),
+            Arguments.of("(* f[x_] := 1; *)"),
+            Arguments.of("f[x__] := Length[{x}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedPrivateFunctionTestData")
+    void testDetectDetectUnusedPrivateFunction(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedPrivateFunction(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedPrivateFunctionTestData() {
+        return Stream.of(
+            Arguments.of("privateFunc[x_] := x + 1;"),
+            Arguments.of(""),
+            Arguments.of("privateFunc[x_] := x + 1;\\nresult = privateFunc[5];"),
+            Arguments.of("PublicFunc[x_] := x + 1;"),
+            Arguments.of("func1[x_] := x + 1;\\nfunc2[y_] := y * 2;\\nfunc3[z_] := z - 1;"),
+            Arguments.of("(* F[x] := x; Return[1]; *)"),
+            Arguments.of("F[x_] := x;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUnusedWithVariableTestData")
+    void testDetectDetectUnusedWithVariable(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUnusedWithVariable(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUnusedWithVariableTestData() {
+        return Stream.of(
+            Arguments.of("With[{x = 5, y = 10}, x + 1]"),
+            Arguments.of("With[{x = 5, y = 10}, x + y]"),
+            Arguments.of("With[{}, result]"),
+            Arguments.of("With[{ x = 5 , y = 10 }, x + 1]"),
+            Arguments.of("With[{x = 5}, With[{y = 10}, x + y]]"),
+            Arguments.of("With[{x = 5, y = 10}")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWrongCapitalizationTestData")
+    void testDetectDetectWrongCapitalization(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWrongCapitalization(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWrongCapitalizationTestData() {
+        return Stream.of(
+            Arguments.of("result = length[{1, 2, 3}];"),
+            Arguments.of("result = Length[{1, 2, 3}];"),
+            Arguments.of("length[list];\\nfirst[list];\\ntable[i, {i, 10}];")
+        );
+    }
+
 }

@@ -474,7 +474,9 @@ public class MathematicaRulesSensor implements Sensor {
                                          java.util.concurrent.atomic.AtomicInteger processedCount,
                                          int totalFiles, int progressInterval, long startTime) {
         long fileStartTime = System.currentTimeMillis();
-        LOG.debug("Analyzing: {}", inputFile.filename());
+        if (LOG.isDebugEnabled()) {
+            LOG.debug("Analyzing: {}", inputFile.filename());
+        }
 
         analyzeFile(context, inputFile);
         int count = processedCount.incrementAndGet();
@@ -488,7 +490,7 @@ public class MathematicaRulesSensor implements Sensor {
      */
     private void logSlowFileIfNeeded(InputFile inputFile, long fileStartTime, int count, int totalFiles) {
         long fileElapsed = System.currentTimeMillis() - fileStartTime;
-        if (fileElapsed > 5000) {
+        if (fileElapsed > 5000 && LOG.isInfoEnabled()) {
             LOG.info("Completed {}/{} files - {} took {}ms ({} lines)",
                 count, totalFiles, inputFile.filename(), fileElapsed, inputFile.lines());
         }
@@ -498,7 +500,7 @@ public class MathematicaRulesSensor implements Sensor {
      * Logs progress periodically based on interval.
      */
     private void logProgressIfNeeded(int count, int totalFiles, int progressInterval, long startTime) {
-        if (count % progressInterval != 0) {
+        if (count % progressInterval != 0 || !LOG.isInfoEnabled()) {
             return;
         }
 

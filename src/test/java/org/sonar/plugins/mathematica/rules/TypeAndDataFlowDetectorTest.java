@@ -31,22 +31,6 @@ class TypeAndDataFlowDetectorTest {
 
     // ===== TYPE MISMATCH DETECTION TESTS =====
 
-    @Test
-    void testDetectNumericOperationOnString() {
-        String content = "result = \"hello\" + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectNumericOperationOnString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStringOperationOnNumber() {
-        String content = "result = StringLength[42];";
-        assertDoesNotThrow(() ->
-            detector.detectStringOperationOnNumber(context, inputFile, content)
-        );
-    }
-
     @ParameterizedTest
     @MethodSource("wrongArgumentTypeTestData")
     void testDetectWrongArgumentType(String content) {
@@ -61,46 +45,6 @@ class TypeAndDataFlowDetectorTest {
             Arguments.of("result = Length[42];"),
             Arguments.of("result = First[123];"),
             Arguments.of("result = Rest[\"string\"];")
-        );
-    }
-
-    @Test
-    void testDetectFunctionReturnsWrongType() {
-        String content = "f[x_] := (If[x > 0, 5, \"error\"])";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionReturnsWrongType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectComparisonIncompatibleTypes() {
-        String content = "result = \"hello\" > 5;";
-        assertDoesNotThrow(() ->
-            detector.detectComparisonIncompatibleTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMixedNumericTypes() {
-        String content = "result = 1/2 + 3.5;";
-        assertDoesNotThrow(() ->
-            detector.detectMixedNumericTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIntegerDivisionExpectingReal() {
-        String content = "result = 5/2;";
-        assertDoesNotThrow(() ->
-            detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectListFunctionOnAssociation() {
-        String content = "result = Append[<|a -> 1|>, b -> 2];";
-        assertDoesNotThrow(() ->
-            detector.detectListFunctionOnAssociation(context, inputFile, content)
         );
     }
 
@@ -152,47 +96,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectNullAssignmentToTypedVariable() {
-        String content = "x = Null; result = x + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTypeCastWithoutValidation() {
-        String content = "result = ToExpression[userInput];";
-        assertDoesNotThrow(() ->
-            detector.detectTypeCastWithoutValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectImplicitTypeConversion() {
-        String content = "result = ToString[\"already a string\"];";
-        assertDoesNotThrow(() ->
-            detector.detectImplicitTypeConversion(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGraphicsObjectInNumericContext() {
-        String content = "result = Plot[x^2, {x, 0, 1}] + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectGraphicsObjectInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolInNumericContext() {
-        String content = "result = undefinedVar + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
+                        @Test
     void testDetectImageOperationOnNonImage() {
         String content = "result = ImageData[{{1, 2}, {3, 4}}];";
         assertDoesNotThrow(() ->
@@ -200,15 +104,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectSoundOperationOnNonSound() {
-        String content = "result = AudioData[{0.1, 0.2, 0.3}];";
-        assertDoesNotThrow(() ->
-            detector.detectSoundOperationOnNonSound(context, inputFile, content)
-        );
-    }
-
-    @Test
+        @Test
     void testDetectDatasetOperationOnList() {
         String content = "data = {{1, 2}, {3, 4}};\nresult = data[All];";
         assertDoesNotThrow(() ->
@@ -226,31 +122,7 @@ class TypeAndDataFlowDetectorTest {
 
     // ===== DATA FLOW ANALYSIS TESTS =====
 
-    @Test
-    void testDetectUninitializedVariableUseEnhanced() {
-        String content = "x = 5; y = x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableMayBeUninitialized() {
-        String content = "If[cond, x = 5]; y = x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableMayBeUninitialized(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadStore() {
-        String content = "x = 5; x = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectDeadStore(context, inputFile, content)
-        );
-    }
-
-    @Test
+                @Test
     void testDetectOverwrittenBeforeRead() {
         String content = "x = 1; x = 2; y = x;";
         assertDoesNotThrow(() ->
@@ -258,156 +130,9 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectVariableAliasingIssue() {
-        String content = "list1 = list2; list1[[1]] = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableAliasingIssue(context, inputFile, content)
-        );
-    }
+                                                    // ===== EDGE CASES AND EXCEPTION HANDLING =====
 
-    @Test
-    void testDetectModificationOfLoopIterator() {
-        String content = "Do[i = i + 1; Print[i], {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectModificationOfLoopIterator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUseOfIteratorOutsideLoop() {
-        String content = "Do[Print[i], {i, 1, 10}]; y = i;";
-        assertDoesNotThrow(() ->
-            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectReadingUnsetVariable() {
-        String content = "Clear[x]; y = x;";
-        assertDoesNotThrow(() ->
-            detector.detectReadingUnsetVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDoubleAssignmentSameValue() {
-        String content = "x = 5; y = 10; x = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectDoubleAssignmentSameValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMutationInPureFunction() {
-        String content = "f = (x++ &);";
-        assertDoesNotThrow(() ->
-            detector.detectMutationInPureFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSharedMutableState() {
-        String content = "global = 0;\nf[x_] := global = global + x;\ng[y_] := global = global + y;";
-        assertDoesNotThrow(() ->
-            detector.detectSharedMutableState(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableScopeEscape() {
-        String content = "Module[{x}, x]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableScopeEscape(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectClosureOverMutableVariable() {
-        String content = "Table[Function[x, i], {i, 1, 5}]";
-        assertDoesNotThrow(() ->
-            detector.detectClosureOverMutableVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentInConditionEnhanced() {
-        String content = "If[x = 5, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentInConditionEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentAsReturnValue() {
-        String content = "f[x_] := (y = x + 1; y)";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentAsReturnValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNeverModified() {
-        String content = "Module[{x = 5}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNeverModified(context, inputFile, content)
-        );
-    }
-
-    // ===== EDGE CASES AND EXCEPTION HANDLING =====
-
-    @Test
-    void testAllMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectNumericOperationOnString(context, inputFile, content);
-            detector.detectStringOperationOnNumber(context, inputFile, content);
-            detector.detectWrongArgumentType(context, inputFile, content);
-            detector.detectFunctionReturnsWrongType(context, inputFile, content);
-            detector.detectComparisonIncompatibleTypes(context, inputFile, content);
-            detector.detectMixedNumericTypes(context, inputFile, content);
-            detector.detectIntegerDivisionExpectingReal(context, inputFile, content);
-            detector.detectListFunctionOnAssociation(context, inputFile, content);
-            detector.detectPatternTypeMismatch(context, inputFile, content);
-            detector.detectOptionalTypeInconsistent(context, inputFile, content);
-            detector.detectNullAssignmentToTypedVariable(context, inputFile, content);
-            detector.detectTypeCastWithoutValidation(context, inputFile, content);
-            detector.detectImplicitTypeConversion(context, inputFile, content);
-            detector.detectGraphicsObjectInNumericContext(context, inputFile, content);
-            detector.detectSymbolInNumericContext(context, inputFile, content);
-            detector.detectImageOperationOnNonImage(context, inputFile, content);
-            detector.detectSoundOperationOnNonSound(context, inputFile, content);
-            detector.detectDatasetOperationOnList(context, inputFile, content);
-            detector.detectGraphOperationOnNonGraph(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllDataFlowMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content);
-            detector.detectVariableMayBeUninitialized(context, inputFile, content);
-            detector.detectDeadStore(context, inputFile, content);
-            detector.detectOverwrittenBeforeRead(context, inputFile, content);
-            detector.detectVariableAliasingIssue(context, inputFile, content);
-            detector.detectModificationOfLoopIterator(context, inputFile, content);
-            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content);
-            detector.detectReadingUnsetVariable(context, inputFile, content);
-            detector.detectDoubleAssignmentSameValue(context, inputFile, content);
-            detector.detectMutationInPureFunction(context, inputFile, content);
-            detector.detectSharedMutableState(context, inputFile, content);
-            detector.detectVariableScopeEscape(context, inputFile, content);
-            detector.detectClosureOverMutableVariable(context, inputFile, content);
-            detector.detectAssignmentInConditionEnhanced(context, inputFile, content);
-            detector.detectAssignmentAsReturnValue(context, inputFile, content);
-            detector.detectVariableNeverModified(context, inputFile, content);
-        });
-    }
-
-    @Test
+            @Test
     void testComplexCodeSample() {
         String content = "f[x_Integer] := Module[{y = x + 1}, y * 2];\n"
                 + "result = f[\"test\"];\n"
@@ -437,65 +162,9 @@ class TypeAndDataFlowDetectorTest {
     }
 
     // Additional tests to push coverage over 80%
-    @Test
-    void testDetectIntegerDivisionExpectingRealWithVariables() {
-        String content = "a = 1; b = 2; result = a/b;";
-        assertDoesNotThrow(() ->
-            detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
-        );
-    }
+                        // ===== ADDITIONAL EDGE CASE TESTS =====
 
-    @Test
-    void testDetectVariableAliasingIssueWithAppend() {
-        String content = "list1 = list2; AppendTo[list1, 5];";
-        assertDoesNotThrow(() ->
-            detector.detectVariableAliasingIssue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectModificationOfLoopIteratorTable() {
-        String content = "Table[i = i + 1, {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectModificationOfLoopIterator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUseOfIteratorOutsideLoopTable() {
-        String content = "Table[Print[i], {i, 1, 10}]; x = i + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectClosureOverMutableVariableDo() {
-        String content = "Do[Function[x, i + x], {i, 1, 5}]";
-        assertDoesNotThrow(() ->
-            detector.detectClosureOverMutableVariable(context, inputFile, content)
-        );
-    }
-
-    // ===== ADDITIONAL EDGE CASE TESTS =====
-
-    @Test
-    void testDetectNullAssignmentMultipleContexts() {
-        String content = "var = Null; x = var + 10; y = var * 5;";
-        assertDoesNotThrow(() ->
-            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolInNumericContextComplex() {
-        String content = "Module[{x}, result = unknownSymbol + 42;]";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
+            @Test
     void testDetectDatasetOperationOnListWithMultipleInstances() {
         String content = "myData = {{1, 2}, {3, 4}};\nr1 = myData[All];\nr2 = myData[All, 1];";
         assertDoesNotThrow(() ->
@@ -503,23 +172,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectVariableScopeEscapeBlock() {
-        String content = "Block[{temp}, temp]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableScopeEscape(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableScopeEscapeWith() {
-        String content = "With[{x = 5}, x]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableScopeEscape(context, inputFile, content)
-        );
-    }
-
-    @Test
+            @Test
     void testDetectSharedMutableStateMultipleFunctions() {
         String content = "GlobalCounter = 0;\n"
                 + "IncrementA[] := GlobalCounter = GlobalCounter + 1;\n"
@@ -530,183 +183,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectDeadStoreMultipleAssignments() {
-        String content = "x = 1; y = 2; x = 3; z = x;";
-        assertDoesNotThrow(() ->
-            detector.detectDeadStore(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableMayBeUninitializedNestedIf() {
-        String content = "If[condition1, If[condition2, x = 5]]; y = x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableMayBeUninitialized(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectReadingUnsetVariableUnset() {
-        String content = "Unset[myVar]; result = myVar + 10;";
-        assertDoesNotThrow(() ->
-            detector.detectReadingUnsetVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDoubleAssignmentSameValueThreeTimes() {
-        String content = "x = 42; y = 10; x = 42; z = x; x = 42;";
-        assertDoesNotThrow(() ->
-            detector.detectDoubleAssignmentSameValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentAsReturnValueComplexCase() {
-        String content = "ComputeValue[input_] := (result = input * 2; result)";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentAsReturnValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNeverModifiedMultipleVars() {
-        String content = "Module[{a = 1, b = 2, c = 3}, a + b + c]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNeverModified(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMutationInPureFunctionPlusPlus() {
-        String content = "Map[(counter++ &), Range[10]]";
-        assertDoesNotThrow(() ->
-            detector.detectMutationInPureFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIntegerDivisionWithNConversion() {
-        String content = "result = N[5/2];";
-        assertDoesNotThrow(() ->
-            detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectWrongArgumentTypeMapWithList() {
-        String content = "Map[f, {1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectWrongArgumentType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectComparisonIncompatibleTypesGreaterThan() {
-        String content = "If[\"hello\" >= 42, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectComparisonIncompatibleTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectComparisonIncompatibleTypesLessThan() {
-        String content = "If[\"world\" < 10, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectComparisonIncompatibleTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMixedNumericTypesSubtraction() {
-        String content = "result = 3/4 - 2.5;";
-        assertDoesNotThrow(() ->
-            detector.detectMixedNumericTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectOptionalTypeInconsistentRealInteger() {
-        String content = "f[x_Real : 10] := x * 2.0;";
-        assertDoesNotThrow(() ->
-            detector.detectOptionalTypeInconsistent(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTypeCastWithoutValidationWithStringQ() {
-        String content = "If[StringQ[input], ToExpression[input], $Failed]";
-        assertDoesNotThrow(() ->
-            detector.detectTypeCastWithoutValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectImplicitTypeConversionNested() {
-        String content = "result = StringJoin[ToString[\"value\"], \" suffix\"];";
-        assertDoesNotThrow(() ->
-            detector.detectImplicitTypeConversion(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGraphicsObjectInNumericContextListPlot() {
-        String content = "plot = ListPlot[data]; result = plot + 10;";
-        assertDoesNotThrow(() ->
-            detector.detectGraphicsObjectInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSoundOperationOnNonSoundSampleRate() {
-        String content = "audioData = {0.1, 0.2, 0.3}; rate = SampleRate[audioData];";
-        assertDoesNotThrow(() ->
-            detector.detectSoundOperationOnNonSound(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectListFunctionOnAssociationAssociation() {
-        String content = "assoc = <|\"a\" -> 1, \"b\" -> 2|>; result = Append[assoc, \"c\" -> 3];";
-        assertDoesNotThrow(() ->
-            detector.detectListFunctionOnAssociation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTypeMismatchRealVsInteger() {
-        String content = "g[x_Real] := x * 2.0;\nresult = g[42];";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTypeMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionReturnsWrongTypeConsistentTypes() {
-        String content = "h[x_] := (If[x > 0, x, x * 2])";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionReturnsWrongType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStringOperationOnNumberStringTake() {
-        String content = "result = StringTake[123, 2];";
-        assertDoesNotThrow(() ->
-            detector.detectStringOperationOnNumber(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNumericOperationOnStringSubtraction() {
-        String content = "result = \"text\" - 5;";
-        assertDoesNotThrow(() ->
-            detector.detectNumericOperationOnString(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                                                            @Test
     void testDetectGraphOperationOnNonGraphEdgeList() {
         String content = "edges = {{1, 2}, {2, 3}}; vertices = EdgeList[edges];";
         assertDoesNotThrow(() ->
@@ -722,265 +199,9 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectUninitializedVariableUseEnhancedWithModule() {
-        String content = "Module[{x, y}, y = x + 1;]";
-        assertDoesNotThrow(() ->
-            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content)
-        );
-    }
+                    // ===== ADDITIONAL COMPREHENSIVE TESTS FOR 80%+ COVERAGE =====
 
-    @Test
-    void testDetectUseOfIteratorOutsideLoopInBody() {
-        String content = "Do[Print[j], {j, 1, 10}];\nresult = j * 2;";
-        assertDoesNotThrow(() ->
-            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectModificationOfLoopIteratorIncrement() {
-        String content = "Do[k++; Print[k], {k, 1, 5}];";
-        assertDoesNotThrow(() ->
-            detector.detectModificationOfLoopIterator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableAliasingIssuePartAssignment() {
-        String content = "arr1 = arr2;\narr1[[1]] = 99;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableAliasingIssue(context, inputFile, content)
-        );
-    }
-
-    // ===== ADDITIONAL COMPREHENSIVE TESTS FOR 80%+ COVERAGE =====
-
-    @Test
-    void testDetectNumericOperationOnStringMultiplication() {
-        String content = "result = \"text\" * 2;";
-        assertDoesNotThrow(() ->
-            detector.detectNumericOperationOnString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNumericOperationOnStringDivision() {
-        String content = "result = \"text\" / 2;";
-        assertDoesNotThrow(() ->
-            detector.detectNumericOperationOnString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNumericOperationOnStringPower() {
-        String content = "result = \"text\"^2;";
-        assertDoesNotThrow(() ->
-            detector.detectNumericOperationOnString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStringOperationOnNumberStringDrop() {
-        String content = "result = StringDrop[456, 1];";
-        assertDoesNotThrow(() ->
-            detector.detectStringOperationOnNumber(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStringOperationOnNumberStringReplace() {
-        String content = "result = StringReplace[789, \"a\" -> \"b\"];";
-        assertDoesNotThrow(() ->
-            detector.detectStringOperationOnNumber(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStringOperationOnNumberStringJoin() {
-        String content = "result = StringJoin[123];";
-        assertDoesNotThrow(() ->
-            detector.detectStringOperationOnNumber(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectWrongArgumentTypeInStrings() {
-        String content = "str = \"Map[f, 5];\";";
-        assertDoesNotThrow(() ->
-            detector.detectWrongArgumentType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectWrongArgumentTypeInComments() {
-        String content = "(* Map[f, 5]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectWrongArgumentType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionReturnsWrongTypeConsistentNumbers() {
-        String content = "f[x_] := (If[x > 0, 5, 10])";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionReturnsWrongType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionReturnsWrongTypeInComments() {
-        String content = "(* f[x_] := (If[x > 0, 5, \"error\"]) *)";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionReturnsWrongType(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectComparisonIncompatibleTypesInStrings() {
-        String content = "str = \"result = \\\"hello\\\" > 5;\";";
-        assertDoesNotThrow(() ->
-            detector.detectComparisonIncompatibleTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectComparisonIncompatibleTypesLessOrEqual() {
-        String content = "result = \"world\" <= 100;";
-        assertDoesNotThrow(() ->
-            detector.detectComparisonIncompatibleTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMixedNumericTypesInComments() {
-        String content = "(* result = 1/2 + 3.5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectMixedNumericTypes(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIntegerDivisionExpectingRealInComments() {
-        String content = "(* result = 5/2; *)";
-        assertDoesNotThrow(() ->
-            detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIntegerDivisionExpectingRealWithPostfixN() {
-        String content = "result = 5/2 // N;";
-        assertDoesNotThrow(() ->
-            detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectListFunctionOnAssociationInComments() {
-        String content = "(* result = Append[<|a -> 1|>, b -> 2]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectListFunctionOnAssociation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTypeMismatchStringVsString() {
-        String content = "f[x_String] := StringLength[x];\nresult = f[\"text\"];";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTypeMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTypeMismatchListType() {
-        String content = "f[x_List] := Length[x];\nresult = f[{1, 2, 3}];";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTypeMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectOptionalTypeInconsistentInComments() {
-        String content = "(* f[x_Integer : 1.5] := x + 1; *)";
-        assertDoesNotThrow(() ->
-            detector.detectOptionalTypeInconsistent(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNullAssignmentToTypedVariableInComments() {
-        String content = "(* x = Null; result = x + 5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNullAssignmentToTypedVariableNoPowerOp() {
-        String content = "x = Null; result = x;";
-        assertDoesNotThrow(() ->
-            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTypeCastWithoutValidationInComments() {
-        String content = "(* result = ToExpression[userInput]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectTypeCastWithoutValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTypeCastWithoutValidationWithIfStringQ() {
-        String content = "If[StringQ[input], ToExpression[input]]";
-        assertDoesNotThrow(() ->
-            detector.detectTypeCastWithoutValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectImplicitTypeConversionInComments() {
-        String content = "(* result = ToString[\"already a string\"]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectImplicitTypeConversion(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGraphicsObjectInNumericContextInComments() {
-        String content = "(* result = Plot[x^2, {x, 0, 1}] + 5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectGraphicsObjectInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGraphicsObjectInNumericContextGraphics() {
-        String content = "g = Graphics[Circle[]]; result = g * 2;";
-        assertDoesNotThrow(() ->
-            detector.detectGraphicsObjectInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolInNumericContextInComments() {
-        String content = "(* result = undefinedVar + 5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolInNumericContextWithPriorAssignment() {
-        String content = "definedVar = 10; result = definedVar + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolInNumericContext(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                                                                                    @Test
     void testDetectImageOperationOnNonImageInComments() {
         String content = "(* result = ImageData[{{1, 2}, {3, 4}}]; *)";
         assertDoesNotThrow(() ->
@@ -988,15 +209,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectSoundOperationOnNonSoundInComments() {
-        String content = "(* result = AudioData[{0.1, 0.2, 0.3}]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectSoundOperationOnNonSound(context, inputFile, content)
-        );
-    }
-
-    @Test
+        @Test
     void testDetectDatasetOperationOnListInComments() {
         String content = "(* data = {{1, 2}, {3, 4}}; result = data[All]; *)";
         assertDoesNotThrow(() ->
@@ -1020,247 +233,7 @@ class TypeAndDataFlowDetectorTest {
         );
     }
 
-    @Test
-    void testDetectUninitializedVariableUseEnhancedInComments() {
-        String content = "(* x = 5; y = x + 1; *)";
-        assertDoesNotThrow(() ->
-            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUninitializedVariableUseEnhancedWithBlock() {
-        String content = "Block[{x = 5}, y = x + 1;]";
-        assertDoesNotThrow(() ->
-            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableMayBeUninitializedInComments() {
-        String content = "(* If[cond, x = 5]; y = x + 1; *)";
-        assertDoesNotThrow(() ->
-            detector.detectVariableMayBeUninitialized(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableMayBeUninitializedNoUsageAfter() {
-        String content = "If[cond, x = 5];";
-        assertDoesNotThrow(() ->
-            detector.detectVariableMayBeUninitialized(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadStoreInComments() {
-        String content = "(* x = 5; x = 10; *)";
-        assertDoesNotThrow(() ->
-            detector.detectDeadStore(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeadStoreWithUsage() {
-        String content = "x = 5; Print[x]; x = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectDeadStore(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableAliasingIssueInComments() {
-        String content = "(* list1 = list2; list1[[1]] = 5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectVariableAliasingIssue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableAliasingIssueNoModification() {
-        String content = "list1 = list2; result = list1;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableAliasingIssue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectModificationOfLoopIteratorInComments() {
-        String content = "(* Do[i = i + 1; Print[i], {i, 1, 10}]; *)";
-        assertDoesNotThrow(() ->
-            detector.detectModificationOfLoopIterator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectModificationOfLoopIteratorMultiplyAssign() {
-        String content = "Do[i *= 2; Print[i], {i, 1, 10}];";
-        assertDoesNotThrow(() ->
-            detector.detectModificationOfLoopIterator(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectUseOfIteratorOutsideLoopInComments() {
-        String content = "(* Do[Print[i], {i, 1, 10}]; y = i; *)";
-        assertDoesNotThrow(() ->
-            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectReadingUnsetVariableInComments() {
-        String content = "(* Clear[x]; y = x; *)";
-        assertDoesNotThrow(() ->
-            detector.detectReadingUnsetVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDoubleAssignmentSameValueInComments() {
-        String content = "(* x = 5; y = 10; x = 5; *)";
-        assertDoesNotThrow(() ->
-            detector.detectDoubleAssignmentSameValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDoubleAssignmentSameValueDifferentValues() {
-        String content = "x = 5; x = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectDoubleAssignmentSameValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMutationInPureFunctionInComments() {
-        String content = "(* f = (x++ &); *)";
-        assertDoesNotThrow(() ->
-            detector.detectMutationInPureFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMutationInPureFunctionNested() {
-        String content = "Map[(total++ &), Range[5]]";
-        assertDoesNotThrow(() ->
-            detector.detectMutationInPureFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSharedMutableStateInComments() {
-        String content = "(* global = 0; f[x_] := global = global + x; g[y_] := global = global + y; *)";
-        assertDoesNotThrow(() ->
-            detector.detectSharedMutableState(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSharedMutableStateSingleFunction() {
-        String content = "global = 0;\nf[x_] := global = global + x;";
-        assertDoesNotThrow(() ->
-            detector.detectSharedMutableState(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableScopeEscapeInComments() {
-        String content = "(* Module[{x}, x] *)";
-        assertDoesNotThrow(() ->
-            detector.detectVariableScopeEscape(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableScopeEscapeWithInitialization() {
-        String content = "Module[{x = 5}, x]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableScopeEscape(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectClosureOverMutableVariableInComments() {
-        String content = "(* Table[Function[x, i], {i, 1, 5}] *)";
-        assertDoesNotThrow(() ->
-            detector.detectClosureOverMutableVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectClosureOverMutableVariableNoCapture() {
-        String content = "Table[Function[x, x + 1], {i, 1, 5}]";
-        assertDoesNotThrow(() ->
-            detector.detectClosureOverMutableVariable(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentInConditionEnhancedInComments() {
-        String content = "(* If[x = 5, True, False] *)";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentInConditionEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentInConditionEnhancedWithComparison() {
-        String content = "If[x == 5, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentInConditionEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentAsReturnValueInComments() {
-        String content = "(* f[x_] := (y = x + 1; y) *)";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentAsReturnValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssignmentAsReturnValueDirectReturn() {
-        String content = "f[x_] := x + 1";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentAsReturnValue(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNeverModifiedInComments() {
-        String content = "(* Module[{x = 5}, x + 1] *)";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNeverModified(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNeverModifiedWithBlock() {
-        String content = "Block[{x = 5}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNeverModified(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNeverModifiedWithWith() {
-        String content = "With[{x = 5}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNeverModified(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNeverModifiedWithModification() {
-        String content = "Module[{x = 5}, x = x + 1; x]";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNeverModified(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                                                                                            @Test
     void testComplexDataFlowScenarios() {
         String content = "Module[{counter = 0}, \n"
                 + "  Do[counter = counter + i, {i, 1, 10}];\n"
@@ -1287,23 +260,7 @@ class TypeAndDataFlowDetectorTest {
         });
     }
 
-    @Test
-    void testDetectUninitializedVariableUseEnhancedNestedModule() {
-        String content = "Module[{x}, Module[{y = x}, y + 1]]";
-        assertDoesNotThrow(() ->
-            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNullAssignmentToTypedVariableInMultiplication() {
-        String content = "x = Null; result = x * 10;";
-        assertDoesNotThrow(() ->
-            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
-        );
-    }
-
-    // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
+            // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
 
     @Test
     void testDetectNumericOperationOnStringTriggered() {
@@ -1687,4 +644,536 @@ class TypeAndDataFlowDetectorTest {
             detector.detectVariableNeverModified(context, inputFile, content)
         );
     }
+
+    // ===== PARAMETERIZED TESTS =====
+
+    @ParameterizedTest
+    @MethodSource("detectAssignmentAsReturnValueTestData")
+    void testDetectDetectAssignmentAsReturnValue(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentAsReturnValue(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAssignmentAsReturnValueTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := (y = x + 1; y)"),
+            Arguments.of("ComputeValue[input_] := (result = input * 2; result)"),
+            Arguments.of("(* f[x_] := (y = x + 1; y) *)"),
+            Arguments.of("f[x_] := x + 1")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectAssignmentInConditionEnhancedTestData")
+    void testDetectDetectAssignmentInConditionEnhanced(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAssignmentInConditionEnhanced(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAssignmentInConditionEnhancedTestData() {
+        return Stream.of(
+            Arguments.of("If[x = 5, True, False]"),
+            Arguments.of("(* If[x = 5, True, False] *)"),
+            Arguments.of("If[x == 5, True, False]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectClosureOverMutableVariableTestData")
+    void testDetectDetectClosureOverMutableVariable(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectClosureOverMutableVariable(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectClosureOverMutableVariableTestData() {
+        return Stream.of(
+            Arguments.of("Table[Function[x, i], {i, 1, 5}]"),
+            Arguments.of("Do[Function[x, i + x], {i, 1, 5}]"),
+            Arguments.of("(* Table[Function[x, i], {i, 1, 5}] *)"),
+            Arguments.of("Table[Function[x, x + 1], {i, 1, 5}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectComparisonIncompatibleTypesTestData")
+    void testDetectDetectComparisonIncompatibleTypes(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectComparisonIncompatibleTypes(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectComparisonIncompatibleTypesTestData() {
+        return Stream.of(
+            Arguments.of("result = \\\"hello\\\" > 5;"),
+            Arguments.of("If[\\\"hello\\\" >= 42, True, False]"),
+            Arguments.of("If[\\\"world\\\" < 10, True, False]"),
+            Arguments.of("str = \\\"result = \\\\\\\"hello\\\\\\\" > 5;\\"),
+            Arguments.of("result = \\\"world\\\" <= 100;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDeadStoreTestData")
+    void testDetectDetectDeadStore(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDeadStore(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDeadStoreTestData() {
+        return Stream.of(
+            Arguments.of("x = 5; x = 10;"),
+            Arguments.of("x = 1; y = 2; x = 3; z = x;"),
+            Arguments.of("(* x = 5; x = 10; *)"),
+            Arguments.of("x = 5; Print[x]; x = 10;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDoubleAssignmentSameValueTestData")
+    void testDetectDetectDoubleAssignmentSameValue(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDoubleAssignmentSameValue(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDoubleAssignmentSameValueTestData() {
+        return Stream.of(
+            Arguments.of("x = 5; y = 10; x = 5;"),
+            Arguments.of("x = 42; y = 10; x = 42; z = x; x = 42;"),
+            Arguments.of("(* x = 5; y = 10; x = 5; *)"),
+            Arguments.of("x = 5; x = 10;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectFunctionReturnsWrongTypeTestData")
+    void testDetectDetectFunctionReturnsWrongType(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFunctionReturnsWrongType(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectFunctionReturnsWrongTypeTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := (If[x > 0, 5, \\\"error\\\"])"),
+            Arguments.of("h[x_] := (If[x > 0, x, x * 2])"),
+            Arguments.of("f[x_] := (If[x > 0, 5, 10])"),
+            Arguments.of("(* f[x_] := (If[x > 0, 5, \\\"error\\\"]) *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectGraphicsObjectInNumericContextTestData")
+    void testDetectDetectGraphicsObjectInNumericContext(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectGraphicsObjectInNumericContext(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectGraphicsObjectInNumericContextTestData() {
+        return Stream.of(
+            Arguments.of("result = Plot[x^2, {x, 0, 1}] + 5;"),
+            Arguments.of("plot = ListPlot[data]; result = plot + 10;"),
+            Arguments.of("(* result = Plot[x^2, {x, 0, 1}] + 5; *)"),
+            Arguments.of("g = Graphics[Circle[]]; result = g * 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectImplicitTypeConversionTestData")
+    void testDetectDetectImplicitTypeConversion(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectImplicitTypeConversion(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectImplicitTypeConversionTestData() {
+        return Stream.of(
+            Arguments.of("result = ToString[\\\"already a string\\\"];"),
+            Arguments.of("result = StringJoin[ToString[\\\"value\\\"], \\\" suffix\\\"];"),
+            Arguments.of("(* result = ToString[\\\"already a string\\\"]; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectIntegerDivisionExpectingRealTestData")
+    void testDetectDetectIntegerDivisionExpectingReal(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectIntegerDivisionExpectingReal(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectIntegerDivisionExpectingRealTestData() {
+        return Stream.of(
+            Arguments.of("result = 5/2;"),
+            Arguments.of("a = 1; b = 2; result = a/b;"),
+            Arguments.of("result = N[5/2];"),
+            Arguments.of("(* result = 5/2; *)"),
+            Arguments.of("result = 5/2 // N;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectListFunctionOnAssociationTestData")
+    void testDetectDetectListFunctionOnAssociation(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectListFunctionOnAssociation(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectListFunctionOnAssociationTestData() {
+        return Stream.of(
+            Arguments.of("result = Append[<|a -> 1|>, b -> 2];"),
+            Arguments.of("assoc = <|\\\"a\\\" -> 1, \\\"b\\\" -> 2|>; result = Append[assoc, \\\"c\\\" -> 3];"),
+            Arguments.of("(* result = Append[<|a -> 1|>, b -> 2]; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMixedNumericTypesTestData")
+    void testDetectDetectMixedNumericTypes(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMixedNumericTypes(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMixedNumericTypesTestData() {
+        return Stream.of(
+            Arguments.of("result = 1/2 + 3.5;"),
+            Arguments.of("result = 3/4 - 2.5;"),
+            Arguments.of("(* result = 1/2 + 3.5; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectModificationOfLoopIteratorTestData")
+    void testDetectDetectModificationOfLoopIterator(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectModificationOfLoopIterator(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectModificationOfLoopIteratorTestData() {
+        return Stream.of(
+            Arguments.of("Do[i = i + 1; Print[i], {i, 1, 10}];"),
+            Arguments.of("Table[i = i + 1, {i, 1, 10}];"),
+            Arguments.of("Do[k++; Print[k], {k, 1, 5}];"),
+            Arguments.of("(* Do[i = i + 1; Print[i], {i, 1, 10}]; *)"),
+            Arguments.of("Do[i *= 2; Print[i], {i, 1, 10}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMutationInPureFunctionTestData")
+    void testDetectDetectMutationInPureFunction(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMutationInPureFunction(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMutationInPureFunctionTestData() {
+        return Stream.of(
+            Arguments.of("f = (x++ &);"),
+            Arguments.of("Map[(counter++ &), Range[10]]"),
+            Arguments.of("(* f = (x++ &); *)"),
+            Arguments.of("Map[(total++ &), Range[5]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNullAssignmentToTypedVariableTestData")
+    void testDetectDetectNullAssignmentToTypedVariable(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNullAssignmentToTypedVariable(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNullAssignmentToTypedVariableTestData() {
+        return Stream.of(
+            Arguments.of("x = Null; result = x + 5;"),
+            Arguments.of("var = Null; x = var + 10; y = var * 5;"),
+            Arguments.of("(* x = Null; result = x + 5; *)"),
+            Arguments.of("x = Null; result = x;"),
+            Arguments.of("x = Null; result = x * 10;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNumericOperationOnStringTestData")
+    void testDetectDetectNumericOperationOnString(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNumericOperationOnString(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNumericOperationOnStringTestData() {
+        return Stream.of(
+            Arguments.of("result = \\\"hello\\\" + 5;"),
+            Arguments.of(""),
+            Arguments.of("result = \\\"text\\\" - 5;"),
+            Arguments.of("result = \\\"text\\\" * 2;"),
+            Arguments.of("result = \\\"text\\\" / 2;"),
+            Arguments.of("result = \\\"text\\\"^2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectOptionalTypeInconsistentTestData")
+    void testDetectDetectOptionalTypeInconsistent(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectOptionalTypeInconsistent(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectOptionalTypeInconsistentTestData() {
+        return Stream.of(
+            Arguments.of("f[x_Real : 10] := x * 2.0;"),
+            Arguments.of("(* f[x_Integer : 1.5] := x + 1; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPatternTypeMismatchTestData")
+    void testDetectDetectPatternTypeMismatch(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPatternTypeMismatch(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPatternTypeMismatchTestData() {
+        return Stream.of(
+            Arguments.of("g[x_Real] := x * 2.0;\\nresult = g[42];"),
+            Arguments.of("f[x_String] := StringLength[x];\\nresult = f[\\\"text\\\"];"),
+            Arguments.of("f[x_List] := Length[x];\\nresult = f[{1, 2, 3}];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectReadingUnsetVariableTestData")
+    void testDetectDetectReadingUnsetVariable(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectReadingUnsetVariable(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectReadingUnsetVariableTestData() {
+        return Stream.of(
+            Arguments.of("Clear[x]; y = x;"),
+            Arguments.of("Unset[myVar]; result = myVar + 10;"),
+            Arguments.of("(* Clear[x]; y = x; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSharedMutableStateTestData")
+    void testDetectDetectSharedMutableState(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSharedMutableState(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSharedMutableStateTestData() {
+        return Stream.of(
+            Arguments.of("global = 0;\\nf[x_] := global = global + x;\\ng[y_] := global = global + y;"),
+            Arguments.of("(* global = 0; f[x_] := global = global + x; g[y_] := global = global + y; *)"),
+            Arguments.of("global = 0;\\nf[x_] := global = global + x;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSoundOperationOnNonSoundTestData")
+    void testDetectDetectSoundOperationOnNonSound(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSoundOperationOnNonSound(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSoundOperationOnNonSoundTestData() {
+        return Stream.of(
+            Arguments.of("result = AudioData[{0.1, 0.2, 0.3}];"),
+            Arguments.of("audioData = {0.1, 0.2, 0.3}; rate = SampleRate[audioData];"),
+            Arguments.of("(* result = AudioData[{0.1, 0.2, 0.3}]; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectStringOperationOnNumberTestData")
+    void testDetectDetectStringOperationOnNumber(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectStringOperationOnNumber(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectStringOperationOnNumberTestData() {
+        return Stream.of(
+            Arguments.of("result = StringLength[42];"),
+            Arguments.of("result = StringTake[123, 2];"),
+            Arguments.of("result = StringDrop[456, 1];"),
+            Arguments.of("result = StringReplace[789, \\\"a\\\" -> \\\"b\\\"];"),
+            Arguments.of("result = StringJoin[123];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSymbolInNumericContextTestData")
+    void testDetectDetectSymbolInNumericContext(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSymbolInNumericContext(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSymbolInNumericContextTestData() {
+        return Stream.of(
+            Arguments.of("result = undefinedVar + 5;"),
+            Arguments.of("Module[{x}, result = unknownSymbol + 42;]"),
+            Arguments.of("(* result = undefinedVar + 5; *)"),
+            Arguments.of("definedVar = 10; result = definedVar + 5;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTypeCastWithoutValidationTestData")
+    void testDetectDetectTypeCastWithoutValidation(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTypeCastWithoutValidation(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTypeCastWithoutValidationTestData() {
+        return Stream.of(
+            Arguments.of("result = ToExpression[userInput];"),
+            Arguments.of("If[StringQ[input], ToExpression[input], $Failed]"),
+            Arguments.of("(* result = ToExpression[userInput]; *)"),
+            Arguments.of("If[StringQ[input], ToExpression[input]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUninitializedVariableUseEnhancedTestData")
+    void testDetectDetectUninitializedVariableUseEnhanced(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUninitializedVariableUseEnhanced(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUninitializedVariableUseEnhancedTestData() {
+        return Stream.of(
+            Arguments.of("x = 5; y = x + 1;"),
+            Arguments.of(""),
+            Arguments.of("Module[{x, y}, y = x + 1;]"),
+            Arguments.of("(* x = 5; y = x + 1; *)"),
+            Arguments.of("Block[{x = 5}, y = x + 1;]"),
+            Arguments.of("Module[{x}, Module[{y = x}, y + 1]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectUseOfIteratorOutsideLoopTestData")
+    void testDetectDetectUseOfIteratorOutsideLoop(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectUseOfIteratorOutsideLoop(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectUseOfIteratorOutsideLoopTestData() {
+        return Stream.of(
+            Arguments.of("Do[Print[i], {i, 1, 10}]; y = i;"),
+            Arguments.of("Table[Print[i], {i, 1, 10}]; x = i + 1;"),
+            Arguments.of("Do[Print[j], {j, 1, 10}];\\nresult = j * 2;"),
+            Arguments.of("(* Do[Print[i], {i, 1, 10}]; y = i; *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectVariableAliasingIssueTestData")
+    void testDetectDetectVariableAliasingIssue(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectVariableAliasingIssue(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectVariableAliasingIssueTestData() {
+        return Stream.of(
+            Arguments.of("list1 = list2; list1[[1]] = 5;"),
+            Arguments.of("list1 = list2; AppendTo[list1, 5];"),
+            Arguments.of("arr1 = arr2;\\narr1[[1]] = 99;"),
+            Arguments.of("(* list1 = list2; list1[[1]] = 5; *)"),
+            Arguments.of("list1 = list2; result = list1;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectVariableMayBeUninitializedTestData")
+    void testDetectDetectVariableMayBeUninitialized(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectVariableMayBeUninitialized(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectVariableMayBeUninitializedTestData() {
+        return Stream.of(
+            Arguments.of("If[cond, x = 5]; y = x + 1;"),
+            Arguments.of("If[condition1, If[condition2, x = 5]]; y = x + 1;"),
+            Arguments.of("(* If[cond, x = 5]; y = x + 1; *)"),
+            Arguments.of("If[cond, x = 5];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectVariableNeverModifiedTestData")
+    void testDetectDetectVariableNeverModified(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectVariableNeverModified(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectVariableNeverModifiedTestData() {
+        return Stream.of(
+            Arguments.of("Module[{x = 5}, x + 1]"),
+            Arguments.of("Module[{a = 1, b = 2, c = 3}, a + b + c]"),
+            Arguments.of("(* Module[{x = 5}, x + 1] *)"),
+            Arguments.of("Block[{x = 5}, x + 1]"),
+            Arguments.of("With[{x = 5}, x + 1]"),
+            Arguments.of("Module[{x = 5}, x = x + 1; x]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectVariableScopeEscapeTestData")
+    void testDetectDetectVariableScopeEscape(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectVariableScopeEscape(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectVariableScopeEscapeTestData() {
+        return Stream.of(
+            Arguments.of("Module[{x}, x]"),
+            Arguments.of("Block[{temp}, temp]"),
+            Arguments.of("With[{x = 5}, x]"),
+            Arguments.of("(* Module[{x}, x] *)"),
+            Arguments.of("Module[{x = 5}, x]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWrongArgumentTypeTestData")
+    void testDetectDetectWrongArgumentType(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWrongArgumentType(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWrongArgumentTypeTestData() {
+        return Stream.of(
+            Arguments.of("Map[f, {1, 2, 3}];"),
+            Arguments.of("str = \\\"Map[f, 5];\\"),
+            Arguments.of("(* Map[f, 5]; *)")
+        );
+    }
+
 }

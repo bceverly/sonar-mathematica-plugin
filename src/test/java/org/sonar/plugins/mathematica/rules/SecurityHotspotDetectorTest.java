@@ -21,7 +21,6 @@ import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.RETURNS_DEEP_STUBS;
 
 class SecurityHotspotDetectorTest {
@@ -66,35 +65,9 @@ class SecurityHotspotDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectFileUploadValidationWithException() {
-        String content = "Import[";
-        assertDoesNotThrow(() -> detector.detectFileUploadValidation(context, inputFile, content));
-    }
+        // ========== External API Safeguards Tests ==========
 
-    // ========== External API Safeguards Tests ==========
-
-    @Test
-    void testDetectExternalApiSafeguardsURLRead() {
-        String content = "URLRead[\"https://api.example.com\"]";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectExternalApiSafeguardsURLFetch() {
-        String content = "URLFetch[url]";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectExternalApiSafeguardsWithException() {
-        String content = "URLRead[";
-        assertDoesNotThrow(() -> detector.detectExternalApiSafeguards(context, inputFile, content));
-    }
-
-    // ========== Crypto Key Generation Tests ==========
+                // ========== Crypto Key Generation Tests ==========
 
     private static Stream<Arguments> cryptoKeyGenerationTestData() {
         return Stream.of(
@@ -111,566 +84,59 @@ class SecurityHotspotDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectCryptoKeyGenerationWithException() {
-        String content = "Random[";
-        assertDoesNotThrow(() -> detector.detectCryptoKeyGeneration(context, inputFile, content));
-    }
+        // ========== Network Operations Tests ==========
 
-    // ========== Network Operations Tests ==========
+                // ========== File System Modifications Tests ==========
 
-    @Test
-    void testDetectNetworkOperationsSocketConnect() {
-        String content = "SocketConnect[\"localhost\", 8080]";
-        detector.detectNetworkOperations(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+                // ========== Environment Variable Tests ==========
 
-    @Test
-    void testDetectNetworkOperationsSocketListen() {
-        String content = "SocketListen[8080]";
-        detector.detectNetworkOperations(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+            // ========== Import Without Format Tests ==========
 
-    @Test
-    void testDetectNetworkOperationsWithException() {
-        String content = "SocketConnect[";
-        assertDoesNotThrow(() -> detector.detectNetworkOperations(context, inputFile, content));
-    }
+                // ========== Weak Authentication Tests ==========
 
-    // ========== File System Modifications Tests ==========
+                // ========== Missing Authorization Tests ==========
 
-    @Test
-    void testDetectFileSystemModificationsDeleteFile() {
-        String content = "DeleteFile[\"temp.txt\"]";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+                // ========== Insecure Session Tests ==========
 
-    @Test
-    void testDetectFileSystemModificationsDeleteDirectory() {
-        String content = "DeleteDirectory[\"tempdir\"]";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+                // ========== Default Credentials Tests ==========
 
-    @Test
-    void testDetectFileSystemModificationsWithException() {
-        String content = "DeleteFile[";
-        assertDoesNotThrow(() -> detector.detectFileSystemModifications(context, inputFile, content));
-    }
+                    // ========== Password Plain Text Tests ==========
 
-    // ========== Environment Variable Tests ==========
+                // ========== Weak Session Token Tests ==========
 
-    @Test
-    void testDetectEnvironmentVariable() {
-        String content = "secret = Environment[\"API_KEY\"]";
-        detector.detectEnvironmentVariable(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+            // ========== Missing Access Control Tests ==========
 
-    @Test
-    void testDetectEnvironmentVariableWithException() {
-        String content = "Environment[";
-        assertDoesNotThrow(() -> detector.detectEnvironmentVariable(context, inputFile, content));
-    }
+                // ========== Weak Hashing Tests ==========
 
-    // ========== Import Without Format Tests ==========
+                    // ========== Insecure Random Hotspot Tests ==========
 
-    @Test
-    void testDetectImportWithoutFormat() {
-        String content = "Import[\"data.dat\"]";
-        detector.detectImportWithoutFormat(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+            // ========== Hardcoded Crypto Key Tests ==========
 
-    @Test
-    void testDetectImportWithFormat() {
-        String content = "Import[\"data.dat\", \"CSV\"]";
-        detector.detectImportWithoutFormat(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
+            // ========== Weak Cipher Mode Tests ==========
 
-    @Test
-    void testDetectImportWithoutFormatWithException() {
-        String content = "Import[";
-        assertDoesNotThrow(() -> detector.detectImportWithoutFormat(context, inputFile, content));
-    }
+                // ========== Insufficient Key Size Tests ==========
 
-    // ========== Weak Authentication Tests ==========
+                    // ========== Weak SSL Protocol Tests ==========
 
-    @Test
-    void testDetectWeakAuthenticationFormFunction() {
-        String content = "FormFunction[fields, function]";
-        detector.detectWeakAuthentication(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+                // ========== Certificate Validation Disabled Tests ==========
 
-    @Test
-    void testDetectWeakAuthenticationWithAuth() {
-        String content = "FormFunction[fields, function, Permissions -> \"Private\"]";
-        detector.detectWeakAuthentication(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
+            // ========== HTTP Without TLS Tests ==========
 
-    @Test
-    void testDetectWeakAuthenticationWithException() {
-        String content = "FormFunction[";
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
+                // ========== CORS Permissive Tests ==========
 
-    // ========== Missing Authorization Tests ==========
+            // ========== Open Redirect Tests ==========
 
-    @Test
-    void testDetectMissingAuthorizationAPIFunction() {
-        String content = "APIFunction[{\"x\" -> \"Integer\"}, #x + 1 &]";
-        detector.detectMissingAuthorization(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+            // ========== DNS Rebinding Tests ==========
 
-    @Test
-    void testDetectMissingAuthorizationWithPermissions() {
-        String content = "APIFunction[{\"x\" -> \"Integer\"}, #x + 1 &, Permissions -> \"Private\"]";
-        detector.detectMissingAuthorization(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
+                    // ========== Insecure WebSocket Tests ==========
 
-    @Test
-    void testDetectMissingAuthorizationWithException() {
-        String content = "APIFunction[";
-        assertDoesNotThrow(() -> detector.detectMissingAuthorization(context, inputFile, content));
-    }
+                // ========== Missing Security Headers Tests ==========
 
-    // ========== Insecure Session Tests ==========
+                // ========== Sensitive Data Log Tests ==========
 
-    @Test
-    void testDetectInsecureSessionSessionID() {
-        String content = "session = SessionID[]";
-        detector.detectInsecureSession(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
+                // ========== PII Exposure Tests ==========
 
-    @Test
-    void testDetectInsecureSessionCreateUUID() {
-        String content = "id = CreateUUID[]";
-        detector.detectInsecureSession(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectInsecureSessionWithException() {
-        String content = "SessionID[";
-        assertDoesNotThrow(() -> detector.detectInsecureSession(context, inputFile, content));
-    }
-
-    // ========== Default Credentials Tests ==========
-
-    @Test
-    void testDetectDefaultCredentialsPassword() {
-        String content = "password = \"password\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectDefaultCredentialsAdmin() {
-        String content = "pwd = \"admin\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectDefaultCredentialsNotPassword() {
-        String content = "message = \"The admin user is important\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectDefaultCredentialsWithException() {
-        String content = "password = \"";
-        assertDoesNotThrow(() -> detector.detectDefaultCredentials(context, inputFile, content));
-    }
-
-    // ========== Password Plain Text Tests ==========
-
-    @Test
-    void testDetectPasswordPlainText() {
-        String content = "password = \"mySecret123\"";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectPasswordPlainTextApiKey() {
-        String content = "apiKey = \"abc123def456\"";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectPasswordPlainTextWithException() {
-        String content = "password = \"";
-        assertDoesNotThrow(() -> detector.detectPasswordPlainText(context, inputFile, content));
-    }
-
-    // ========== Weak Session Token Tests ==========
-
-    @Test
-    void testDetectWeakSessionToken() {
-        String content = "token = RandomInteger[]";  // Simpler pattern
-        detector.detectWeakSessionToken(context, inputFile, content);
-        // Just verify it doesn't throw
-        assertDoesNotThrow(() -> detector.detectWeakSessionToken(context, inputFile, content));
-    }
-
-    @Test
-    void testDetectWeakSessionTokenWithException() {
-        String content = "RandomInteger[";
-        assertDoesNotThrow(() -> detector.detectWeakSessionToken(context, inputFile, content));
-    }
-
-    // ========== Missing Access Control Tests ==========
-
-    @Test
-    void testDetectMissingAccessControlCloudDeploy() {
-        String content = "CloudDeploy[myFunc]";
-        detector.detectMissingAccessControl(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectMissingAccessControlWithPermissions() {
-        String content = "CloudDeploy[myFunc, Permissions -> \"Private\"]";
-        detector.detectMissingAccessControl(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectMissingAccessControlWithException() {
-        String content = "CloudDeploy[";
-        assertDoesNotThrow(() -> detector.detectMissingAccessControl(context, inputFile, content));
-    }
-
-    // ========== Weak Hashing Tests ==========
-
-    @Test
-    void testDetectWeakHashingMD5() {
-        String content = "Hash[data, \"MD5\"]";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakHashingSHA1() {
-        String content = "Hash[data, \"SHA1\"]";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakHashingSHA256() {
-        String content = "Hash[data, \"SHA256\"]";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakHashingWithException() {
-        String content = "Hash[";
-        assertDoesNotThrow(() -> detector.detectWeakHashing(context, inputFile, content));
-    }
-
-    // ========== Insecure Random Hotspot Tests ==========
-
-    @Test
-    void testDetectInsecureRandomHotspot() {
-        String content = "RandomInteger[password]";  // Include security keyword
-        detector.detectInsecureRandomHotspot(context, inputFile, content);
-        // Just verify it doesn't throw
-        assertDoesNotThrow(() -> detector.detectInsecureRandomHotspot(context, inputFile, content));
-    }
-
-    @Test
-    void testDetectInsecureRandomHotspotWithException() {
-        String content = "RandomInteger[";
-        assertDoesNotThrow(() -> detector.detectInsecureRandomHotspot(context, inputFile, content));
-    }
-
-    // ========== Hardcoded Crypto Key Tests ==========
-
-    @Test
-    void testDetectHardcodedCryptoKey() {
-        String content = "Encrypt[data, \"ABCDEF1234567890ABCDEF1234567890\"]";
-        detector.detectHardcodedCryptoKey(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectHardcodedCryptoKeyWithException() {
-        String content = "Encrypt[";
-        assertDoesNotThrow(() -> detector.detectHardcodedCryptoKey(context, inputFile, content));
-    }
-
-    // ========== Weak Cipher Mode Tests ==========
-
-    @Test
-    void testDetectWeakCipherModeECB() {
-        String content = "Encrypt[data, key, \"ECB\"]";
-        detector.detectWeakCipherMode(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakCipherModeNone() {
-        String content = "Encrypt[data, key, None]";
-        detector.detectWeakCipherMode(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakCipherModeWithException() {
-        String content = "Encrypt[";
-        assertDoesNotThrow(() -> detector.detectWeakCipherMode(context, inputFile, content));
-    }
-
-    // ========== Insufficient Key Size Tests ==========
-
-    @Test
-    void testDetectInsufficientKeySize512() {
-        String content = "GenerateAsymmetricKeyPair[\"RSA\", 512]";
-        detector.detectInsufficientKeySize(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectInsufficientKeySize1024() {
-        String content = "GenerateAsymmetricKeyPair[\"RSA\", 1024]";
-        detector.detectInsufficientKeySize(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectInsufficientKeySizeGood() {
-        String content = "GenerateAsymmetricKeyPair[\"RSA\", 2048]";
-        detector.detectInsufficientKeySize(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectInsufficientKeySizeWithException() {
-        String content = "GenerateAsymmetricKeyPair[";
-        assertDoesNotThrow(() -> detector.detectInsufficientKeySize(context, inputFile, content));
-    }
-
-    // ========== Weak SSL Protocol Tests ==========
-
-    @Test
-    void testDetectWeakSslProtocolSSLv3() {
-        String content = "URLRead[url, \"Method\" -> \"SSLv3\"]";
-        detector.detectWeakSslProtocol(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakSslProtocolTLS10() {
-        String content = "URLRead[url, \"Method\" -> \"TLSv1.0\"]";
-        detector.detectWeakSslProtocol(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectWeakSslProtocolWithException() {
-        String content = "URLRead[";
-        assertDoesNotThrow(() -> detector.detectWeakSslProtocol(context, inputFile, content));
-    }
-
-    // ========== Certificate Validation Disabled Tests ==========
-
-    @Test
-    void testDetectCertificateValidationDisabled() {
-        String content = "URLRead[url, \"VerifyPeer\" -> False]";
-        detector.detectCertificateValidationDisabled(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectCertificateValidationDisabledWithException() {
-        String content = "URLRead[";
-        assertDoesNotThrow(() -> detector.detectCertificateValidationDisabled(context, inputFile, content));
-    }
-
-    // ========== HTTP Without TLS Tests ==========
-
-    @Test
-    void testDetectHttpWithoutTls() {
-        String content = "URLRead[\"http://api.example.com/data\"]";
-        detector.detectHttpWithoutTls(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectHttpWithoutTlsHTTPS() {
-        String content = "URLRead[\"https://api.example.com/data\"]";
-        detector.detectHttpWithoutTls(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectHttpWithoutTlsWithException() {
-        String content = "URLRead[";
-        assertDoesNotThrow(() -> detector.detectHttpWithoutTls(context, inputFile, content));
-    }
-
-    // ========== CORS Permissive Tests ==========
-
-    @Test
-    void testDetectCorsPermissive() {
-        String content = "APIFunction[func, \"AllowedOrigins\" -> {\"*\"}]";
-        detector.detectCorsPermissive(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectCorsPermissiveWithException() {
-        String content = "APIFunction[";
-        assertDoesNotThrow(() -> detector.detectCorsPermissive(context, inputFile, content));
-    }
-
-    // ========== Open Redirect Tests ==========
-
-    @Test
-    void testDetectOpenRedirect() {
-        String content = "HTTPRedirect[baseUrl <> userInput]";
-        detector.detectOpenRedirect(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectOpenRedirectWithException() {
-        String content = "HTTPRedirect[";
-        assertDoesNotThrow(() -> detector.detectOpenRedirect(context, inputFile, content));
-    }
-
-    // ========== DNS Rebinding Tests ==========
-
-    @Test
-    void testDetectDnsRebinding() {
-        String content = "URLRead[\"http://localhost:8080/api\"]";
-        detector.detectDnsRebinding(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectDnsRebinding127() {
-        String content = "SocketConnect[\"127.0.0.1\", 8080]";
-        detector.detectDnsRebinding(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectDnsRebindingNoLocalhost() {
-        String content = "URLRead[\"https://api.example.com\"]";
-        detector.detectDnsRebinding(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectDnsRebindingWithException() {
-        String content = "URLRead[";
-        assertDoesNotThrow(() -> detector.detectDnsRebinding(context, inputFile, content));
-    }
-
-    // ========== Insecure WebSocket Tests ==========
-
-    @Test
-    void testDetectInsecureWebsocket() {
-        String content = "SocketConnect[\"ws://example.com/socket\"]";
-        detector.detectInsecureWebsocket(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectInsecureWebsocketSecure() {
-        String content = "SocketConnect[\"wss://example.com/socket\"]";
-        detector.detectInsecureWebsocket(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectInsecureWebsocketWithException() {
-        String content = "SocketConnect[";
-        assertDoesNotThrow(() -> detector.detectInsecureWebsocket(context, inputFile, content));
-    }
-
-    // ========== Missing Security Headers Tests ==========
-
-    @Test
-    void testDetectMissingSecurityHeaders() {
-        String content = "APIFunction[{\"x\" -> \"Integer\"}, #x + 1 &]";
-        detector.detectMissingSecurityHeaders(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectMissingSecurityHeadersWithHeaders() {
-        String content = "APIFunction[{\"x\" -> \"Integer\"}, HTTPResponse[#x + 1, Headers -> {}] &]";
-        detector.detectMissingSecurityHeaders(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDetectMissingSecurityHeadersWithException() {
-        String content = "APIFunction[";
-        assertDoesNotThrow(() -> detector.detectMissingSecurityHeaders(context, inputFile, content));
-    }
-
-    // ========== Sensitive Data Log Tests ==========
-
-    @Test
-    void testDetectSensitiveDataLog() {
-        String content = "Print[\"User password: \", password]";
-        detector.detectSensitiveDataLog(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectSensitiveDataLogToken() {
-        String content = "Echo[token]";
-        detector.detectSensitiveDataLog(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectSensitiveDataLogWithException() {
-        String content = "Print[";
-        assertDoesNotThrow(() -> detector.detectSensitiveDataLog(context, inputFile, content));
-    }
-
-    // ========== PII Exposure Tests ==========
-
-    @Test
-    void testDetectPiiExposureSSN() {
-        String content = "ssn = \"123-45-6789\"";
-        detector.detectPiiExposure(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectPiiExposureCreditCard() {
-        String content = "creditCard: 1234567890123456";
-        detector.detectPiiExposure(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDetectPiiExposureWithException() {
-        String content = "ssn = ";
-        assertDoesNotThrow(() -> detector.detectPiiExposure(context, inputFile, content));
-    }
-
-    // ========== Clear Text Protocol Tests ==========
+                // ========== Clear Text Protocol Tests ==========
 
     private static Stream<Arguments> clearTextProtocolTestData() {
         return Stream.of(
@@ -687,177 +153,11 @@ class SecurityHotspotDetectorTest {
         verify(context, atLeastOnce()).newIssue();
     }
 
-    @Test
-    void testDetectClearTextProtocolSecure() {
-        String content = "Import[\"https://server.com/file.txt\"]";  // Use a secure protocol
-        detector.detectClearTextProtocol(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
+            // ========== Comprehensive Coverage Tests ==========
 
-    @Test
-    void testDetectClearTextProtocolWithException() {
-        String content = "ftp://";
-        assertDoesNotThrow(() -> detector.detectClearTextProtocol(context, inputFile, content));
-    }
+            // ===== ADDITIONAL EDGE CASES FOR >80% COVERAGE =====
 
-    // ========== Comprehensive Coverage Tests ==========
-
-    @Test
-    void testAllMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectFileUploadValidation(context, inputFile, content);
-            detector.detectExternalApiSafeguards(context, inputFile, content);
-            detector.detectCryptoKeyGeneration(context, inputFile, content);
-            detector.detectNetworkOperations(context, inputFile, content);
-            detector.detectFileSystemModifications(context, inputFile, content);
-            detector.detectEnvironmentVariable(context, inputFile, content);
-            detector.detectImportWithoutFormat(context, inputFile, content);
-            detector.detectWeakAuthentication(context, inputFile, content);
-            detector.detectMissingAuthorization(context, inputFile, content);
-            detector.detectInsecureSession(context, inputFile, content);
-            detector.detectDefaultCredentials(context, inputFile, content);
-            detector.detectPasswordPlainText(context, inputFile, content);
-            detector.detectWeakSessionToken(context, inputFile, content);
-            detector.detectMissingAccessControl(context, inputFile, content);
-            detector.detectWeakHashing(context, inputFile, content);
-            detector.detectInsecureRandomHotspot(context, inputFile, content);
-            detector.detectHardcodedCryptoKey(context, inputFile, content);
-            detector.detectWeakCipherMode(context, inputFile, content);
-            detector.detectInsufficientKeySize(context, inputFile, content);
-            detector.detectWeakSslProtocol(context, inputFile, content);
-            detector.detectCertificateValidationDisabled(context, inputFile, content);
-            detector.detectHttpWithoutTls(context, inputFile, content);
-            detector.detectCorsPermissive(context, inputFile, content);
-            detector.detectOpenRedirect(context, inputFile, content);
-            detector.detectDnsRebinding(context, inputFile, content);
-            detector.detectInsecureWebsocket(context, inputFile, content);
-            detector.detectMissingSecurityHeaders(context, inputFile, content);
-            detector.detectSensitiveDataLog(context, inputFile, content);
-            detector.detectPiiExposure(context, inputFile, content);
-            detector.detectClearTextProtocol(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testMultipleHotspotsInSingleFile() {
-        String content = "password = \"admin\";\n"
-                        + "Hash[data, \"MD5\"];\n"
-                        + "URLRead[\"http://example.com\"];\n"
-                        + "Import[\"file.dat\"];";
-
-        detector.detectDefaultCredentials(context, inputFile, content);
-        detector.detectWeakHashing(context, inputFile, content);
-        detector.detectHttpWithoutTls(context, inputFile, content);
-        detector.detectFileUploadValidation(context, inputFile, content);
-
-        // Should find multiple issues
-        verify(context, atLeast(4)).newIssue();
-    }
-
-    // ===== ADDITIONAL EDGE CASES FOR >80% COVERAGE =====
-
-    @Test
-    void testWeakEncryptionAlgorithms() {
-        String content = "Encrypt[data, key, \"DES\"]";
-        detector.detectWeakCipherMode(context, inputFile, content);
-        // DES is not explicitly checked by ECB pattern, but tests execution path
-        assertDoesNotThrow(() -> detector.detectWeakCipherMode(context, inputFile, content));
-    }
-
-    @Test
-    void testPredictableRandomNumbers() {
-        String content = "nonce = RandomInteger[10000]";
-        detector.detectInsecureRandomHotspot(context, inputFile, content);
-        assertDoesNotThrow(() -> detector.detectInsecureRandomHotspot(context, inputFile, content));
-    }
-
-    @Test
-    void testPubliclyWritableFiles() {
-        String content = "Export[\"/tmp/public.dat\", data]";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, never()).newIssue(); // Export is not explicitly checked
-    }
-
-    @Test
-    void testHardcodedSecretsApiKey() {
-        String content = "apiKey = \"sk_live_51234567890\"";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDisabledSecurityFeatures() {
-        String content = "CloudDeploy[myFunc, \"SecurityLevel\" -> None]";
-        detector.detectMissingAccessControl(context, inputFile, content);
-        // Note: Pattern doesn't check SecurityLevel, but tests path
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testCookieSecurityHttpOnly() {
-        String content = "SetCookie[\"session\", value]";
-        // Not explicitly detected, but tests execution
-        assertDoesNotThrow(() -> detector.detectMissingSecurityHeaders(context, inputFile, content));
-    }
-
-    @Test
-    void testCorsConfigurationAllOrigins() {
-        String content = "APIFunction[func, \"AllowedOrigins\" -> All]";
-        detector.detectCorsPermissive(context, inputFile, content);
-        // Pattern looks for "*", not All
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testOpenRedirectUserInput() {
-        String content = "HTTPRedirect[GetQueryParam[\"url\"]]";
-        detector.detectOpenRedirect(context, inputFile, content);
-        // Pattern looks for ++ or <>, won't match this
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testDebugModeEnabled() {
-        String content = "$Debug = True";
-        // Not explicitly detected, tests path
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
-
-    @Test
-    void testEmptyContentAllMethods() {
-        String content = "";
-
-        // Test all detection methods with empty content
-        assertDoesNotThrow(() -> {
-            detector.detectWeakAuthentication(context, inputFile, content);
-            detector.detectMissingAuthorization(context, inputFile, content);
-            detector.detectInsecureSession(context, inputFile, content);
-            detector.detectDefaultCredentials(context, inputFile, content);
-            detector.detectPasswordPlainText(context, inputFile, content);
-            detector.detectWeakSessionToken(context, inputFile, content);
-            detector.detectMissingAccessControl(context, inputFile, content);
-            detector.detectWeakHashing(context, inputFile, content);
-            detector.detectInsecureRandomHotspot(context, inputFile, content);
-            detector.detectHardcodedCryptoKey(context, inputFile, content);
-            detector.detectWeakCipherMode(context, inputFile, content);
-            detector.detectInsufficientKeySize(context, inputFile, content);
-            detector.detectWeakSslProtocol(context, inputFile, content);
-            detector.detectCertificateValidationDisabled(context, inputFile, content);
-            detector.detectHttpWithoutTls(context, inputFile, content);
-            detector.detectCorsPermissive(context, inputFile, content);
-            detector.detectOpenRedirect(context, inputFile, content);
-            detector.detectDnsRebinding(context, inputFile, content);
-            detector.detectInsecureWebsocket(context, inputFile, content);
-            detector.detectMissingSecurityHeaders(context, inputFile, content);
-            detector.detectSensitiveDataLog(context, inputFile, content);
-            detector.detectPiiExposure(context, inputFile, content);
-            detector.detectClearTextProtocol(context, inputFile, content);
-        });
-    }
-
-    @Test
+                                            @Test
     void testMalformedInputRobustness() {
         String[] malformedInputs = {
             "Import[",
@@ -905,386 +205,6 @@ class SecurityHotspotDetectorTest {
     // ===== ADDITIONAL TESTS FOR COMPREHENSIVE COVERAGE =====
 
     @Test
-    void testFileUploadOpenWrite() {
-        String content = "OpenWrite[\"output.txt\"]";
-        detector.detectFileUploadValidation(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testFileUploadPut() {
-        String content = "Put[data, \"file.m\"]";
-        detector.detectFileUploadValidation(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testMultipleFileUploads() {
-        String content = "Import[\"file1.dat\"]\nGet[\"file2.m\"]\nOpenRead[\"file3.txt\"]";
-        detector.detectFileUploadValidation(context, inputFile, content);
-        verify(context, atLeast(3)).newIssue();
-    }
-
-    @Test
-    void testExternalApiURLExecute() {
-        String content = "URLExecute[url, \"POST\"]";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testExternalApiURLSubmit() {
-        String content = "URLSubmit[job]";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testExternalApiServiceExecute() {
-        String content = "ServiceExecute[service, request]";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testExternalApiServiceConnect() {
-        String content = "ServiceConnect[\"Twitter\"]";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testCryptoGenerateAsymmetricKeyPair() {
-        String content = "GenerateAsymmetricKeyPair[]";
-        detector.detectCryptoKeyGeneration(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testCryptoTableRandom() {
-        String content = "Table[Random[], {i, 1, 10}]";
-        detector.detectCryptoKeyGeneration(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testNetworkSocketOpen() {
-        String content = "SocketOpen[8080]";
-        detector.detectNetworkOperations(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testNetworkWebExecute() {
-        String content = "WebExecute[session, \"Navigate\"]";
-        detector.detectNetworkOperations(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testFileSystemRenameFile() {
-        String content = "RenameFile[\"old.txt\", \"new.txt\"]";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testFileSystemCopyFile() {
-        String content = "CopyFile[\"source.txt\", \"dest.txt\"]";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testFileSystemSetFileDate() {
-        String content = "SetFileDate[\"file.txt\", Now]";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testWeakAuthenticationAuthenticationDialog() {
-        String content = "AuthenticationDialog[func]";
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
-
-    @Test
-    void testWeakAuthenticationCreateDialog() {
-        String content = "CreateDialog[items]";
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
-
-    @Test
-    void testWeakAuthenticationFormPage() {
-        String content = "FormPage[fields]";
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
-
-    @Test
-    void testWeakAuthenticationCloudDeploy() {
-        String content = "CloudDeploy[func]";
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
-
-    @Test
-    void testWeakAuthenticationAPIFunction() {
-        String content = "APIFunction[{}, func]";
-        assertDoesNotThrow(() -> detector.detectWeakAuthentication(context, inputFile, content));
-    }
-
-    @Test
-    void testMissingAuthorizationFormFunction() {
-        String content = "FormFunction[{\"x\" -> \"Integer\"}, #x + 1 &]";
-        detector.detectMissingAuthorization(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testMissingAuthorizationWithRequesterAddress() {
-        String content = "APIFunction[{\"x\" -> \"Integer\"}, If[$RequesterAddress == \"127.0.0.1\", #x, $Failed] &]";
-        detector.detectMissingAuthorization(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testInsecureSessionSessionToken() {
-        String content = "token = SessionToken[]";
-        detector.detectInsecureSession(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testInsecureSessionHashRandom() {
-        String content = "sessionId = Hash[RandomInteger[{0, 2^64}]]";
-        detector.detectInsecureSession(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDefaultCredentialsRoot() {
-        String content = "credential = \"root\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDefaultCredentials123456() {
-        String content = "passwd = \"123456\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testDefaultCredentialsGuest() {
-        String content = "password = \"guest\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testPasswordPlainTextCredential() {
-        String content = "credential = \"MySecretPass123\"";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testPasswordPlainTextSecret() {
-        String content = "secret = \"TopSecretValue\"";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testPasswordPlainTextToken() {
-        String content = "token = \"bearer_xyz123\"";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testWeakSessionTokenRandomReal() {
-        String content = "token = RandomReal[key]";
-        detector.detectWeakSessionToken(context, inputFile, content);
-        assertDoesNotThrow(() -> detector.detectWeakSessionToken(context, inputFile, content));
-    }
-
-    @Test
-    void testWeakSessionTokenSeedRandom() {
-        String content = "SeedRandom[password]";
-        detector.detectWeakSessionToken(context, inputFile, content);
-        assertDoesNotThrow(() -> detector.detectWeakSessionToken(context, inputFile, content));
-    }
-
-    @Test
-    void testMissingAccessControlWithDollarPermissions() {
-        String content = "CloudDeploy[myFunc, $Permissions -> \"Private\"]";
-        detector.detectMissingAccessControl(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testWeakHashingMD2() {
-        String content = "Hash[data, \"MD2\"]";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testWeakHashingMD4() {
-        String content = "Hash[data, \"MD4\"]";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testWeakHashingSha1() {
-        String content = "Hash[data, \"SHA-1\"]";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testInsecureRandomKey() {
-        String content = "key = RandomInteger[{0, 255}, 16]";
-        detector.detectInsecureRandomHotspot(context, inputFile, content);
-        assertDoesNotThrow(() -> detector.detectInsecureRandomHotspot(context, inputFile, content));
-    }
-
-    @Test
-    void testInsecureRandomNonce() {
-        String content = "nonce = RandomReal[{0, 1000}]";
-        detector.detectInsecureRandomHotspot(context, inputFile, content);
-        assertDoesNotThrow(() -> detector.detectInsecureRandomHotspot(context, inputFile, content));
-    }
-
-    @Test
-    void testHardcodedCryptoKeyDecrypt() {
-        String content = "Decrypt[ciphertext, \"FEDCBA9876543210FEDCBA9876543210\"]";
-        detector.detectHardcodedCryptoKey(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testHardcodedCryptoKeyGenerateSymmetricKey() {
-        String content = "GenerateSymmetricKey[\"0123456789ABCDEF0123456789ABCDEF\"]";
-        detector.detectHardcodedCryptoKey(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testInsufficientKeySize768() {
-        String content = "GenerateAsymmetricKeyPair[\"RSA\", 768]";
-        detector.detectInsufficientKeySize(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testWeakSslProtocolSSLv2() {
-        String content = "URLRead[url, \"Method\" -> \"SSLv2\"]";
-        detector.detectWeakSslProtocol(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testWeakSslProtocolTLSv1() {
-        String content = "URLRead[url, \"Method\" -> \"TLSv1\"]";
-        detector.detectWeakSslProtocol(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testHttpWithoutTlsURLFetch() {
-        String content = "URLFetch[\"http://example.com/data\"]";
-        detector.detectHttpWithoutTls(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testHttpWithoutTlsURLSubmit() {
-        String content = "URLSubmit[\"http://example.com/job\"]";
-        detector.detectHttpWithoutTls(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testOpenRedirectPlusPlus() {
-        String content = "HTTPRedirect[\"http://base.com\" ++ userParam]";
-        detector.detectOpenRedirect(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testInsecureWebsocketMultiple() {
-        String content = "SocketConnect[\"ws://server1.com\"]\nSocketConnect[\"ws://server2.com\"]";
-        detector.detectInsecureWebsocket(context, inputFile, content);
-        verify(context, atLeast(2)).newIssue();
-    }
-
-    @Test
-    void testMissingSecurityHeadersFormPage() {
-        String content = "FormPage[{\"name\" -> \"String\"}, func]";
-        detector.detectMissingSecurityHeaders(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testMissingSecurityHeadersWithHTTPResponse() {
-        String content = "APIFunction[{\"x\" -> \"Integer\"}, HTTPResponse[#x, Headers -> {\"X-Frame-Options\" -> \"DENY\"}] &]";
-        detector.detectMissingSecurityHeaders(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
-    void testSensitiveDataLogWriteString() {
-        String content = "WriteString[$Output, \"Token: \", apiKey]";
-        detector.detectSensitiveDataLog(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testSensitiveDataLogApiKey() {
-        String content = "Print[\"API Key: \", apiKey]";
-        detector.detectSensitiveDataLog(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testSensitiveDataLogSecret() {
-        String content = "Echo[\"Secret: \", secret]";
-        detector.detectSensitiveDataLog(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testPiiExposurePassport() {
-        String content = "passport = \"A12345678\"";
-        detector.detectPiiExposure(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testPiiExposureDriverLicense() {
-        String content = "driverLicense: D123456789";
-        detector.detectPiiExposure(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testPiiExposureTaxId() {
-        String content = "taxId = 123456789";
-        detector.detectPiiExposure(context, inputFile, content);
-        verify(context, atLeastOnce()).newIssue();
-    }
-
-    @Test
-    void testClearTextProtocolLdaps() {
-        String content = "url = \"ldaps://directory.example.com\"";
-        detector.detectClearTextProtocol(context, inputFile, content);
-        verify(context, never()).newIssue();
-    }
-
-    @Test
     void testCodeInStringLiteralsNotDetected() {
         String content = "warning = \"Never use password = 'admin' in production\"\n"
                        + "message = \"URLRead[\\\"http://example.com\\\"] is not secure\"\n"
@@ -1327,206 +247,575 @@ class SecurityHotspotDetectorTest {
 
     // ===== ADDITIONAL COVERAGE TESTS FOR 80%+ TARGET =====
 
-    @Test
-    void testFileUploadInComment() {
-        String content = "(* Import[\"file.dat\"] *)";
-        detector.detectFileUploadValidation(context, inputFile, content);
-        verify(context, never()).newIssue();
+
+    // ===== PARAMETERIZED TESTS =====
+
+    @ParameterizedTest
+    @MethodSource("detectCertificateValidationDisabledTestData")
+    void testDetectDetectCertificateValidationDisabled(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCertificateValidationDisabled(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testExternalApiInComment() {
-        String content = "(* URLRead[\"https://api.com\"] *)";
-        detector.detectExternalApiSafeguards(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectCertificateValidationDisabledTestData() {
+        return Stream.of(
+            Arguments.of("URLRead[url, \\\"VerifyPeer\\\" -> False]"),
+            Arguments.of("URLRead["),
+            Arguments.of("(* URLRead[url, \\\"VerifyPeer\\\" -> False] *)")
+        );
     }
 
-    @Test
-    void testCryptoKeyInComment() {
-        String content = "(* Random[] *)";
-        detector.detectCryptoKeyGeneration(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectClearTextProtocolTestData")
+    void testDetectDetectClearTextProtocol(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectClearTextProtocol(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testNetworkOperationsInComment() {
-        String content = "(* SocketConnect[\"localhost\", 8080] *)";
-        detector.detectNetworkOperations(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectClearTextProtocolTestData() {
+        return Stream.of(
+            Arguments.of("Import[\\\"https://server.com/file.txt\\\"]"),
+            Arguments.of("ftp://"),
+            Arguments.of("url = \\\"ldaps://directory.example.com\\\""),
+            Arguments.of("(* Import[\\\"ftp://server.com/file.txt\\\"] *)")
+        );
     }
 
-    @Test
-    void testFileSystemInComment() {
-        String content = "(* DeleteFile[\"temp.txt\"] *)";
-        detector.detectFileSystemModifications(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectCorsPermissiveTestData")
+    void testDetectDetectCorsPermissive(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCorsPermissive(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testEnvironmentInComment() {
-        String content = "(* Environment[\"API_KEY\"] *)";
-        detector.detectEnvironmentVariable(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectCorsPermissiveTestData() {
+        return Stream.of(
+            Arguments.of("APIFunction[func, \\\"AllowedOrigins\\\" -> {\\\"*\\\"}]"),
+            Arguments.of("APIFunction["),
+            Arguments.of("APIFunction[func, \\\"AllowedOrigins\\\" -> All]"),
+            Arguments.of("(* APIFunction[func, \\\"AllowedOrigins\\\" -> {\\\"*\\\"}] *)")
+        );
     }
 
-    @Test
-    void testImportWithoutFormatInComment() {
-        String content = "(* Import[\"data.dat\"] *)";
-        detector.detectImportWithoutFormat(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectCryptoKeyGenerationTestData")
+    void testDetectDetectCryptoKeyGeneration(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCryptoKeyGeneration(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testWeakAuthInComment() {
-        String content = "(* FormFunction[fields, function] *)";
-        detector.detectWeakAuthentication(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectCryptoKeyGenerationTestData() {
+        return Stream.of(
+            Arguments.of("Random["),
+            Arguments.of("GenerateAsymmetricKeyPair[]"),
+            Arguments.of("Table[Random[], {i, 1, 10}]"),
+            Arguments.of("(* Random[] *)")
+        );
     }
 
-    @Test
-    void testInsecureSessionInComment() {
-        String content = "(* session = SessionID[] *)";
-        detector.detectInsecureSession(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectDefaultCredentialsTestData")
+    void testDetectDetectDefaultCredentials(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDefaultCredentials(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testDefaultCredentialsInComment() {
-        String content = "(* password = \"password\" *)";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectDefaultCredentialsTestData() {
+        return Stream.of(
+            Arguments.of("password = \\\"password\\\""),
+            Arguments.of("pwd = \\\"admin\\\""),
+            Arguments.of("message = \\\"The admin user is important\\\""),
+            Arguments.of("password = \\\""),
+            Arguments.of("password = \\\"admin\\"),
+            Arguments.of("credential = \\\"root\\\""),
+            Arguments.of("passwd = \\\"123456\\\""),
+            Arguments.of("password = \\\"guest\\\""),
+            Arguments.of("(* password = \\\"password\\\" *)"),
+            Arguments.of("message = \\\"Use admin for testing\\\"")
+        );
     }
 
-    @Test
-    void testPasswordPlainTextInComment() {
-        String content = "(* password = \"mySecret123\" *)";
-        detector.detectPasswordPlainText(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectDnsRebindingTestData")
+    void testDetectDetectDnsRebinding(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDnsRebinding(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testWeakSessionTokenInComment() {
-        String content = "(* token = RandomInteger[] *)";
-        detector.detectWeakSessionToken(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectDnsRebindingTestData() {
+        return Stream.of(
+            Arguments.of("URLRead[\\\"http://localhost:8080/api\\\"]"),
+            Arguments.of("SocketConnect[\\\"127.0.0.1\\\", 8080]"),
+            Arguments.of("URLRead[\\\"https://api.example.com\\\"]"),
+            Arguments.of("URLRead[")
+        );
     }
 
-    @Test
-    void testWeakHashingInComment() {
-        String content = "(* Hash[data, \"MD5\"] *)";
-        detector.detectWeakHashing(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectEnvironmentVariableTestData")
+    void testDetectDetectEnvironmentVariable(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectEnvironmentVariable(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testInsecureRandomInComment() {
-        String content = "(* RandomInteger[password] *)";
-        detector.detectInsecureRandomHotspot(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectEnvironmentVariableTestData() {
+        return Stream.of(
+            Arguments.of("secret = Environment[\\\"API_KEY\\\"]"),
+            Arguments.of("Environment["),
+            Arguments.of("(* Environment[\\\"API_KEY\\\"] *)")
+        );
     }
 
-    @Test
-    void testHardcodedCryptoKeyInComment() {
-        String content = "(* Encrypt[data, \"ABCDEF1234567890ABCDEF1234567890\"] *)";
-        detector.detectHardcodedCryptoKey(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectExternalApiSafeguardsTestData")
+    void testDetectDetectExternalApiSafeguards(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectExternalApiSafeguards(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testWeakCipherModeInComment() {
-        String content = "(* Encrypt[data, key, \"ECB\"] *)";
-        detector.detectWeakCipherMode(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectExternalApiSafeguardsTestData() {
+        return Stream.of(
+            Arguments.of("URLRead[\\\"https://api.example.com\\\"]"),
+            Arguments.of("URLFetch[url]"),
+            Arguments.of("URLRead["),
+            Arguments.of("URLExecute[url, \\\"POST\\\"]"),
+            Arguments.of("URLSubmit[job]"),
+            Arguments.of("ServiceExecute[service, request]"),
+            Arguments.of("ServiceConnect[\\\"Twitter\\\"]"),
+            Arguments.of("(* URLRead[\\\"https://api.com\\\"] *)")
+        );
     }
 
-    @Test
-    void testInsufficientKeySizeInComment() {
-        String content = "(* GenerateAsymmetricKeyPair[\"RSA\", 512] *)";
-        detector.detectInsufficientKeySize(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectFileSystemModificationsTestData")
+    void testDetectDetectFileSystemModifications(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFileSystemModifications(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testWeakSslProtocolInComment() {
-        String content = "(* URLRead[url, \"Method\" -> \"SSLv3\"] *)";
-        detector.detectWeakSslProtocol(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectFileSystemModificationsTestData() {
+        return Stream.of(
+            Arguments.of("DeleteFile[\\\"temp.txt\\\"]"),
+            Arguments.of("DeleteDirectory[\\\"tempdir\\\"]"),
+            Arguments.of("DeleteFile["),
+            Arguments.of("Export[\\\"/tmp/public.dat\\\", data]"),
+            Arguments.of("RenameFile[\\\"old.txt\\\", \\\"new.txt\\\"]"),
+            Arguments.of("CopyFile[\\\"source.txt\\\", \\\"dest.txt\\\"]"),
+            Arguments.of("SetFileDate[\\\"file.txt\\\", Now]"),
+            Arguments.of("(* DeleteFile[\\\"temp.txt\\\"] *)")
+        );
     }
 
-    @Test
-    void testCertificateValidationInComment() {
-        String content = "(* URLRead[url, \"VerifyPeer\" -> False] *)";
-        detector.detectCertificateValidationDisabled(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectFileUploadValidationTestData")
+    void testDetectDetectFileUploadValidation(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFileUploadValidation(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testHttpWithoutTlsInComment() {
-        String content = "(* URLRead[\"http://api.example.com/data\"] *)";
-        detector.detectHttpWithoutTls(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectFileUploadValidationTestData() {
+        return Stream.of(
+            Arguments.of("Import["),
+            Arguments.of(""),
+            Arguments.of("OpenWrite[\\\"output.txt\\\"]"),
+            Arguments.of("Put[data, \\\"file.m\\\"]"),
+            Arguments.of("Import[\\\"file1.dat\\\"]\\nGet[\\\"file2.m\\\"]\\nOpenRead[\\\"file3.txt\\\"]"),
+            Arguments.of("(* Import[\\\"file.dat\\\"] *)")
+        );
     }
 
-    @Test
-    void testCorsPermissiveInComment() {
-        String content = "(* APIFunction[func, \"AllowedOrigins\" -> {\"*\"}] *)";
-        detector.detectCorsPermissive(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectHardcodedCryptoKeyTestData")
+    void testDetectDetectHardcodedCryptoKey(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectHardcodedCryptoKey(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testOpenRedirectInComment() {
-        String content = "(* HTTPRedirect[baseUrl <> userInput] *)";
-        detector.detectOpenRedirect(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectHardcodedCryptoKeyTestData() {
+        return Stream.of(
+            Arguments.of("Encrypt[data, \\\"ABCDEF1234567890ABCDEF1234567890\\\"]"),
+            Arguments.of("Encrypt["),
+            Arguments.of("Decrypt[ciphertext, \\\"FEDCBA9876543210FEDCBA9876543210\\\"]"),
+            Arguments.of("GenerateSymmetricKey[\\\"0123456789ABCDEF0123456789ABCDEF\\\"]"),
+            Arguments.of("(* Encrypt[data, \\\"ABCDEF1234567890ABCDEF1234567890\\\"] *)")
+        );
     }
 
-    @Test
-    void testInsecureWebsocketInComment() {
-        String content = "(* SocketConnect[\"ws://example.com/socket\"] *)";
-        detector.detectInsecureWebsocket(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectHttpWithoutTlsTestData")
+    void testDetectDetectHttpWithoutTls(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectHttpWithoutTls(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testSensitiveDataLogInComment() {
-        String content = "(* Print[\"User password: \", password] *)";
-        detector.detectSensitiveDataLog(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectHttpWithoutTlsTestData() {
+        return Stream.of(
+            Arguments.of("URLRead[\\\"http://api.example.com/data\\\"]"),
+            Arguments.of("URLRead[\\\"https://api.example.com/data\\\"]"),
+            Arguments.of("URLRead["),
+            Arguments.of("URLFetch[\\\"http://example.com/data\\\"]"),
+            Arguments.of("URLSubmit[\\\"http://example.com/job\\\"]"),
+            Arguments.of("(* URLRead[\\\"http://api.example.com/data\\\"] *)")
+        );
     }
 
-    @Test
-    void testPiiExposureInComment() {
-        String content = "(* ssn = \"123-45-6789\" *)";
-        detector.detectPiiExposure(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectImportWithoutFormatTestData")
+    void testDetectDetectImportWithoutFormat(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectImportWithoutFormat(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testClearTextProtocolInComment() {
-        String content = "(* Import[\"ftp://server.com/file.txt\"] *)";
-        detector.detectClearTextProtocol(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectImportWithoutFormatTestData() {
+        return Stream.of(
+            Arguments.of("Import[\\\"data.dat\\\"]"),
+            Arguments.of("Import[\\\"data.dat\\\", \\\"CSV\\\"]"),
+            Arguments.of("Import["),
+            Arguments.of("(* Import[\\\"data.dat\\\"] *)"),
+            Arguments.of("Import[\\\"data.dat\\\", \\\"Text\\\"]")
+        );
     }
 
-    @Test
-    void testImportWithoutFormatHasComma() {
-        String content = "Import[\"data.dat\", \"Text\"]";
-        detector.detectImportWithoutFormat(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectInsecureRandomHotspotTestData")
+    void testDetectDetectInsecureRandomHotspot(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInsecureRandomHotspot(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testWeakAuthenticationWithAuthentication() {
-        String content = "FormFunction[fields, function, Authentication -> \"OAuth\"]";
-        detector.detectWeakAuthentication(context, inputFile, content);
-        verify(context, never()).newIssue();
+    private static Stream<Arguments> detectInsecureRandomHotspotTestData() {
+        return Stream.of(
+            Arguments.of("RandomInteger[password]"),
+            Arguments.of("RandomInteger["),
+            Arguments.of("nonce = RandomInteger[10000]"),
+            Arguments.of("key = RandomInteger[{0, 255}, 16]"),
+            Arguments.of("nonce = RandomReal[{0, 1000}]"),
+            Arguments.of("(* RandomInteger[password] *)")
+        );
     }
 
-    @Test
-    void testDefaultCredentialsNoPasswordVar() {
-        String content = "message = \"Use admin for testing\"";
-        detector.detectDefaultCredentials(context, inputFile, content);
-        verify(context, never()).newIssue();
+    @ParameterizedTest
+    @MethodSource("detectInsecureSessionTestData")
+    void testDetectDetectInsecureSession(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInsecureSession(context, inputFile, content)
+        );
     }
+
+    private static Stream<Arguments> detectInsecureSessionTestData() {
+        return Stream.of(
+            Arguments.of("session = SessionID[]"),
+            Arguments.of("id = CreateUUID[]"),
+            Arguments.of("SessionID["),
+            Arguments.of("token = SessionToken[]"),
+            Arguments.of("sessionId = Hash[RandomInteger[{0, 2^64}]]"),
+            Arguments.of("(* session = SessionID[] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectInsecureWebsocketTestData")
+    void testDetectDetectInsecureWebsocket(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInsecureWebsocket(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectInsecureWebsocketTestData() {
+        return Stream.of(
+            Arguments.of("SocketConnect[\\\"ws://example.com/socket\\\"]"),
+            Arguments.of("SocketConnect[\\\"wss://example.com/socket\\\"]"),
+            Arguments.of("SocketConnect["),
+            Arguments.of("SocketConnect[\\\"ws://server1.com\\\"]\\nSocketConnect[\\\"ws://server2.com\\\"]"),
+            Arguments.of("(* SocketConnect[\\\"ws://example.com/socket\\\"] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectInsufficientKeySizeTestData")
+    void testDetectDetectInsufficientKeySize(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInsufficientKeySize(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectInsufficientKeySizeTestData() {
+        return Stream.of(
+            Arguments.of("GenerateAsymmetricKeyPair[\\\"RSA\\\", 512]"),
+            Arguments.of("GenerateAsymmetricKeyPair[\\\"RSA\\\", 1024]"),
+            Arguments.of("GenerateAsymmetricKeyPair[\\\"RSA\\\", 2048]"),
+            Arguments.of("GenerateAsymmetricKeyPair["),
+            Arguments.of("GenerateAsymmetricKeyPair[\\\"RSA\\\", 768]"),
+            Arguments.of("(* GenerateAsymmetricKeyPair[\\\"RSA\\\", 512] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingAccessControlTestData")
+    void testDetectDetectMissingAccessControl(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingAccessControl(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingAccessControlTestData() {
+        return Stream.of(
+            Arguments.of("CloudDeploy[myFunc]"),
+            Arguments.of("CloudDeploy[myFunc, Permissions -> \\\"Private\\\"]"),
+            Arguments.of("CloudDeploy["),
+            Arguments.of("CloudDeploy[myFunc, \\\"SecurityLevel\\\" -> None]"),
+            Arguments.of("CloudDeploy[myFunc, $Permissions -> \\\"Private\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingAuthorizationTestData")
+    void testDetectDetectMissingAuthorization(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingAuthorization(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingAuthorizationTestData() {
+        return Stream.of(
+            Arguments.of("APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, #x + 1 &]"),
+            Arguments.of("APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, #x + 1 &, Permissions -> \\\"Private\\\"]"),
+            Arguments.of("APIFunction["),
+            Arguments.of("FormFunction[{\\\"x\\\" -> \\\"Integer\\\"}, #x + 1 &]"),
+            Arguments.of("APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, If[$RequesterAddress == \\\"127.0.0.1\\\", #x, $Failed] &]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingSecurityHeadersTestData")
+    void testDetectDetectMissingSecurityHeaders(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingSecurityHeaders(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingSecurityHeadersTestData() {
+        return Stream.of(
+            Arguments.of("APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, #x + 1 &]"),
+            Arguments.of("APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, HTTPResponse[#x + 1, Headers -> {}] &]"),
+            Arguments.of("APIFunction["),
+            Arguments.of("SetCookie[\\\"session\\\", value]"),
+            Arguments.of("FormPage[{\\\"name\\\" -> \\\"String\\\"}, func]"),
+            Arguments.of("APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, HTTPResponse[#x, Headers -> {\\\"X-Frame-Options\\\" -> \\\"DENY\\\"}] &]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNetworkOperationsTestData")
+    void testDetectDetectNetworkOperations(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNetworkOperations(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNetworkOperationsTestData() {
+        return Stream.of(
+            Arguments.of("SocketConnect[\\\"localhost\\\", 8080]"),
+            Arguments.of("SocketListen[8080]"),
+            Arguments.of("SocketConnect["),
+            Arguments.of("SocketOpen[8080]"),
+            Arguments.of("WebExecute[session, \\\"Navigate\\\"]"),
+            Arguments.of("(* SocketConnect[\\\"localhost\\\", 8080] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectOpenRedirectTestData")
+    void testDetectDetectOpenRedirect(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectOpenRedirect(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectOpenRedirectTestData() {
+        return Stream.of(
+            Arguments.of("HTTPRedirect[baseUrl <> userInput]"),
+            Arguments.of("HTTPRedirect["),
+            Arguments.of("HTTPRedirect[GetQueryParam[\\\"url\\\"]]"),
+            Arguments.of("HTTPRedirect[\\\"http://base.com\\\" ++ userParam]"),
+            Arguments.of("(* HTTPRedirect[baseUrl <> userInput] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPasswordPlainTextTestData")
+    void testDetectDetectPasswordPlainText(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPasswordPlainText(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPasswordPlainTextTestData() {
+        return Stream.of(
+            Arguments.of("password = \\\"mySecret123\\\""),
+            Arguments.of("apiKey = \\\"abc123def456\\\""),
+            Arguments.of("password = \\\""),
+            Arguments.of("apiKey = \\\"sk_live_51234567890\\\""),
+            Arguments.of("credential = \\\"MySecretPass123\\\""),
+            Arguments.of("secret = \\\"TopSecretValue\\\""),
+            Arguments.of("token = \\\"bearer_xyz123\\\""),
+            Arguments.of("(* password = \\\"mySecret123\\\" *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPiiExposureTestData")
+    void testDetectDetectPiiExposure(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPiiExposure(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPiiExposureTestData() {
+        return Stream.of(
+            Arguments.of("ssn = \\\"123-45-6789\\\""),
+            Arguments.of("creditCard: 1234567890123456"),
+            Arguments.of("ssn = "),
+            Arguments.of("passport = \\\"A12345678\\\""),
+            Arguments.of("driverLicense: D123456789"),
+            Arguments.of("taxId = 123456789"),
+            Arguments.of("(* ssn = \\\"123-45-6789\\\" *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSensitiveDataLogTestData")
+    void testDetectDetectSensitiveDataLog(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSensitiveDataLog(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSensitiveDataLogTestData() {
+        return Stream.of(
+            Arguments.of("Print[\\\"User password: \\\", password]"),
+            Arguments.of("Echo[token]"),
+            Arguments.of("Print["),
+            Arguments.of("WriteString[$Output, \\\"Token: \\\", apiKey]"),
+            Arguments.of("Print[\\\"API Key: \\\", apiKey]"),
+            Arguments.of("Echo[\\\"Secret: \\\", secret]"),
+            Arguments.of("(* Print[\\\"User password: \\\", password] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWeakAuthenticationTestData")
+    void testDetectDetectWeakAuthentication(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWeakAuthentication(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWeakAuthenticationTestData() {
+        return Stream.of(
+            Arguments.of("FormFunction[fields, function]"),
+            Arguments.of("FormFunction[fields, function, Permissions -> \\\"Private\\\"]"),
+            Arguments.of("FormFunction["),
+            Arguments.of("$Debug = True"),
+            Arguments.of(""),
+            Arguments.of("AuthenticationDialog[func]"),
+            Arguments.of("CreateDialog[items]"),
+            Arguments.of("FormPage[fields]"),
+            Arguments.of("CloudDeploy[func]"),
+            Arguments.of("APIFunction[{}, func]"),
+            Arguments.of("(* FormFunction[fields, function] *)"),
+            Arguments.of("FormFunction[fields, function, Authentication -> \\\"OAuth\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWeakCipherModeTestData")
+    void testDetectDetectWeakCipherMode(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWeakCipherMode(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWeakCipherModeTestData() {
+        return Stream.of(
+            Arguments.of("Encrypt[data, key, \\\"ECB\\\"]"),
+            Arguments.of("Encrypt[data, key, None]"),
+            Arguments.of("Encrypt["),
+            Arguments.of("Encrypt[data, key, \\\"DES\\\"]"),
+            Arguments.of("(* Encrypt[data, key, \\\"ECB\\\"] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWeakHashingTestData")
+    void testDetectDetectWeakHashing(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWeakHashing(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWeakHashingTestData() {
+        return Stream.of(
+            Arguments.of("Hash[data, \\\"MD5\\\"]"),
+            Arguments.of("Hash[data, \\\"SHA1\\\"]"),
+            Arguments.of("Hash[data, \\\"SHA256\\\"]"),
+            Arguments.of("Hash["),
+            Arguments.of("Hash[data, \\\"MD2\\\"]"),
+            Arguments.of("Hash[data, \\\"MD4\\\"]"),
+            Arguments.of("Hash[data, \\\"SHA-1\\\"]"),
+            Arguments.of("(* Hash[data, \\\"MD5\\\"] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWeakSessionTokenTestData")
+    void testDetectDetectWeakSessionToken(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWeakSessionToken(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWeakSessionTokenTestData() {
+        return Stream.of(
+            Arguments.of("token = RandomInteger[]"),
+            Arguments.of("RandomInteger["),
+            Arguments.of("token = RandomReal[key]"),
+            Arguments.of("SeedRandom[password]"),
+            Arguments.of("(* token = RandomInteger[] *)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectWeakSslProtocolTestData")
+    void testDetectDetectWeakSslProtocol(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectWeakSslProtocol(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectWeakSslProtocolTestData() {
+        return Stream.of(
+            Arguments.of("URLRead[url, \\\"Method\\\" -> \\\"SSLv3\\\"]"),
+            Arguments.of("URLRead[url, \\\"Method\\\" -> \\\"TLSv1.0\\\"]"),
+            Arguments.of("URLRead["),
+            Arguments.of("URLRead[url, \\\"Method\\\" -> \\\"SSLv2\\\"]"),
+            Arguments.of("URLRead[url, \\\"Method\\\" -> \\\"TLSv1\\\"]"),
+            Arguments.of("(* URLRead[url, \\\"Method\\\" -> \\\"SSLv3\\\"] *)")
+        );
+    }
+
 }

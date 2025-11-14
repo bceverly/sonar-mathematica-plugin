@@ -31,28 +31,27 @@ class BugDetectorTest {
 
     // ===== PHASE 1: CRITICAL BUG DETECTION TESTS =====
 
-    @Test
-    void testDetectDivisionByZero() {
-        String content = "result = x / 0;";
-        assertDoesNotThrow(() ->
-            detector.detectDivisionByZero(context, inputFile, content)
+    @ParameterizedTest
+    @MethodSource("criticalBugDetectionTestData")
+    void testCriticalBugDetection(DetectorMethod method, String content) {
+        assertDoesNotThrow(() -> method.detect(detector, context, inputFile, content));
+    }
+
+    private static Stream<Arguments> criticalBugDetectionTestData() {
+        return Stream.of(
+            Arguments.of((DetectorMethod) BugDetector::detectDivisionByZero, "result = x / 0;"),
+            Arguments.of((DetectorMethod) BugDetector::detectAssignmentInConditional, "If[x = 5, True, False]"),
+            Arguments.of((DetectorMethod) BugDetector::detectListIndexOutOfBounds, "result = list[[100]];"),
+            Arguments.of((DetectorMethod) BugDetector::detectUnreachablePatterns, "f[x_] := 1;\nf[y_Integer] := 2;"),
+            Arguments.of((DetectorMethod) BugDetector::detectFloatingPointEquality, "If[1.5 == 1.5, True, False]"),
+            Arguments.of((DetectorMethod) BugDetector::detectFunctionWithoutReturn, "f[x_] := (y = x + 1;)"),
+            Arguments.of((DetectorMethod) BugDetector::detectVariableBeforeAssignment, "result = undefinedVar + 5;")
         );
     }
 
-    @Test
-    void testDetectAssignmentInConditional() {
-        String content = "If[x = 5, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectAssignmentInConditional(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectListIndexOutOfBounds() {
-        String content = "result = list[[100]];";
-        assertDoesNotThrow(() ->
-            detector.detectListIndexOutOfBounds(context, inputFile, content)
-        );
+    @FunctionalInterface
+    interface DetectorMethod {
+        void detect(BugDetector detector, SensorContext context, InputFile inputFile, String content);
     }
 
     @ParameterizedTest
@@ -71,200 +70,152 @@ class BugDetectorTest {
         );
     }
 
-    @Test
-    void testDetectUnreachablePatterns() {
-        String content = "f[x_] := 1;\nf[y_Integer] := 2;";
-        assertDoesNotThrow(() ->
-            detector.detectUnreachablePatterns(context, inputFile, content)
-        );
+    @ParameterizedTest
+    @MethodSource("additionalBugDetectionTestData")
+    void testAdditionalBugDetection(DetectorMethod method, String content) {
+        assertDoesNotThrow(() -> method.detect(detector, context, inputFile, content));
     }
 
-    @Test
-    void testDetectFloatingPointEquality() {
-        String content = "If[1.5 == 1.5, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectFloatingPointEquality(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionWithoutReturn() {
-        String content = "f[x_] := (y = x + 1;)";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionWithoutReturn(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableBeforeAssignment() {
-        String content = "result = undefinedVar + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableBeforeAssignment(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectOffByOne() {
-        String content = "Do[expr, {i, 0, n}]";
-        assertDoesNotThrow(() ->
-            detector.detectOffByOne(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInfiniteLoop() {
-        String content = "While[True, Print[\"loop\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectInfiniteLoop(context, inputFile, content)
+    private static Stream<Arguments> additionalBugDetectionTestData() {
+        return Stream.of(
+            Arguments.of((DetectorMethod) BugDetector::detectOffByOne, "Do[expr, {i, 0, n}]"),
+            Arguments.of((DetectorMethod) BugDetector::detectInfiniteLoop, "While[True, Print[\"loop\"]]"),
+            Arguments.of((DetectorMethod) BugDetector::detectMismatchedDimensions, "result = Transpose[matrix];"),
+            Arguments.of((DetectorMethod) BugDetector::detectTypeMismatch, "result = \"string\" + 5;")
         );
     }
 
     // ===== PHASE 2: TYPE AND DIMENSION CHECKS =====
 
-    @Test
-    void testDetectMismatchedDimensions() {
-        String content = "result = Transpose[matrix];";
-        assertDoesNotThrow(() ->
-            detector.detectMismatchedDimensions(context, inputFile, content)
-        );
+    @ParameterizedTest
+    @MethodSource("patternAndTypeTestData")
+    void testPatternAndTypeDetection(DetectorMethod method, String content) {
+        assertDoesNotThrow(() -> method.detect(detector, context, inputFile, content));
     }
 
-    @Test
-    void testDetectTypeMismatch() {
-        String content = "result = \"string\" + 5;";
-        assertDoesNotThrow(() ->
-            detector.detectTypeMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSuspiciousPattern() {
-        String content = "f[___] := 1;";
-        assertDoesNotThrow(() ->
-            detector.detectSuspiciousPattern(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingPatternTest() {
-        String content = "f[x_] := Sqrt[x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingPatternTest(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternBlanksMisuse() {
-        String content = "f[x__] := Length[x];";
-        assertDoesNotThrow(() ->
-            detector.detectPatternBlanksMisuse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSetDelayedConfusion() {
-        String content = "f[x_] = x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectSetDelayedConfusion(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolNameCollision() {
-        String content = "N[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolNameCollision(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBlockModuleMisuse() {
-        String content = "Block[{x = 5}, x + 1]";
-        assertDoesNotThrow(() ->
-            detector.detectBlockModuleMisuse(context, inputFile, content)
+    private static Stream<Arguments> patternAndTypeTestData() {
+        return Stream.of(
+            Arguments.of((DetectorMethod) BugDetector::detectSuspiciousPattern, "f[___] := 1;"),
+            Arguments.of((DetectorMethod) BugDetector::detectMissingPatternTest, "f[x_] := Sqrt[x];"),
+            Arguments.of((DetectorMethod) BugDetector::detectPatternBlanksMisuse, "f[x__] := Length[x];"),
+            Arguments.of((DetectorMethod) BugDetector::detectSetDelayedConfusion, "f[x_] = x + 1;"),
+            Arguments.of((DetectorMethod) BugDetector::detectSymbolNameCollision, "N[x_] := x + 1;"),
+            Arguments.of((DetectorMethod) BugDetector::detectBlockModuleMisuse, "Block[{x = 5}, x + 1]")
         );
     }
 
     // ===== PHASE 3: RESOURCE MANAGEMENT =====
 
-    @Test
-    void testDetectUnclosedFileHandle() {
-        String content = "stream = OpenRead[\"file.txt\"];";
-        assertDoesNotThrow(() ->
-            detector.detectUnclosedFileHandle(context, inputFile, content)
-        );
+    @ParameterizedTest
+    @MethodSource("resourceManagementTestData")
+    void testResourceManagement(DetectorMethod method, String content) {
+        assertDoesNotThrow(() -> method.detect(detector, context, inputFile, content));
     }
 
-    @Test
-    void testDetectGrowingDefinitionChain() {
-        String content = "Do[f[i] = i, {i, 1, 100}];";
-        assertDoesNotThrow(() ->
-            detector.detectGrowingDefinitionChain(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStreamNotClosed() {
-        String content = "stream = OpenWrite[\"output.txt\"];\nWrite[stream, data];";
-        assertDoesNotThrow(() ->
-            detector.detectStreamNotClosed(context, inputFile, content)
+    private static Stream<Arguments> resourceManagementTestData() {
+        return Stream.of(
+            Arguments.of((DetectorMethod) BugDetector::detectUnclosedFileHandle, "stream = OpenRead[\"file.txt\"];"),
+            Arguments.of((DetectorMethod) BugDetector::detectGrowingDefinitionChain, "Do[f[i] = i, {i, 1, 100}];"),
+            Arguments.of((DetectorMethod) BugDetector::detectStreamNotClosed, "stream = OpenWrite[\"output.txt\"];\nWrite[stream, data];")
         );
     }
 
     // Additional tests to push coverage over 80%
-    @Test
-    void testDetectUnreachablePatternsWithMultiple() {
-        String content = "f[x_] := 1;\nf[y_Real] := 2;\nf[z_Integer] := 3;";
+    @ParameterizedTest
+    @MethodSource("unreachablePatternsTestData")
+    void testDetectUnreachablePatterns(String content) {
         assertDoesNotThrow(() ->
             detector.detectUnreachablePatterns(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectFloatingPointEqualityWithVariables() {
-        String content = "x = 1.0; y = 1.0; If[x == y, True, False]";
+    private static Stream<Arguments> unreachablePatternsTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := 1;\nf[y_Real] := 2;\nf[z_Integer] := 3;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("floatingPointEqualityTestData")
+    void testDetectFloatingPointEquality(String content) {
         assertDoesNotThrow(() ->
             detector.detectFloatingPointEquality(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectDivisionByZeroWithVariable() {
-        String content = "x = 0; result = 10 / x;";
+    private static Stream<Arguments> floatingPointEqualityTestData() {
+        return Stream.of(
+            Arguments.of("x = 1.0; y = 1.0; If[x == y, True, False]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("divisionByZeroTestData")
+    void testDetectDivisionByZero(String content) {
         assertDoesNotThrow(() ->
             detector.detectDivisionByZero(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectAssignmentInConditionalWhile() {
-        String content = "While[x = ReadLine[stream], Print[x]]";
+    private static Stream<Arguments> divisionByZeroTestData() {
+        return Stream.of(
+            Arguments.of("x = 0; result = 10 / x;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("assignmentInConditionalTestData")
+    void testDetectAssignmentInConditional(String content) {
         assertDoesNotThrow(() ->
             detector.detectAssignmentInConditional(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectListIndexOutOfBoundsNegative() {
-        String content = "result = list[[-100]];";
+    private static Stream<Arguments> assignmentInConditionalTestData() {
+        return Stream.of(
+            Arguments.of("While[x = ReadLine[stream], Print[x]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("listIndexOutOfBoundsTestData")
+    void testDetectListIndexOutOfBounds(String content) {
         assertDoesNotThrow(() ->
             detector.detectListIndexOutOfBounds(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectOffByOneWithZeroStart() {
-        String content = "Do[Print[i], {i, 0, Length[list]}]";
+    private static Stream<Arguments> listIndexOutOfBoundsTestData() {
+        return Stream.of(
+            Arguments.of("result = list[[-100]];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("offByOneTestData")
+    void testDetectOffByOne(String content) {
         assertDoesNotThrow(() ->
             detector.detectOffByOne(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectInfiniteLoopWhileFalse() {
-        String content = "i = 0; While[i < 10, Print[i]]";
+    private static Stream<Arguments> offByOneTestData() {
+        return Stream.of(
+            Arguments.of("Do[Print[i], {i, 0, Length[list]}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("infiniteLoopTestData")
+    void testDetectInfiniteLoop(String content) {
         assertDoesNotThrow(() ->
             detector.detectInfiniteLoop(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> infiniteLoopTestData() {
+        return Stream.of(
+            Arguments.of("i = 0; While[i < 10, Print[i]]")
         );
     }
 

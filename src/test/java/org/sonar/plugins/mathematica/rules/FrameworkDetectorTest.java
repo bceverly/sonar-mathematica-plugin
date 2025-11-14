@@ -45,31 +45,7 @@ class FrameworkDetectorTest {
         );
     }
 
-    @Test
-    void testDetectNotebookCellSizeSmall() {
-        String content = "Cell[\"Small cell content\"]";
-        assertDoesNotThrow(() ->
-            detector.detectNotebookCellSize(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNotebookUnorganized() {
-        String content = "Cell[BoxData[code := 5]];\nVerificationTest[test];\n(* scratch test work *)";
-        assertDoesNotThrow(() ->
-            detector.detectNotebookUnorganized(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNotebookOrganized() {
-        String content = "Cell[BoxData[code := 5]];\nSection[\"Tests\"];\nVerificationTest[test];";
-        assertDoesNotThrow(() ->
-            detector.detectNotebookUnorganized(context, inputFile, content)
-        );
-    }
-
-    @Test
+                @Test
     void testDetectNotebookNoSections() {
         StringBuilder content = new StringBuilder("Notebook[{");
         for (int i = 0; i < 15; i++) {
@@ -82,31 +58,7 @@ class FrameworkDetectorTest {
         );
     }
 
-    @Test
-    void testDetectNotebookWithSections() {
-        String content = "Notebook[{\nSection[\"Main\"],\nCell[code1],\nCell[code2],\nSubsection[\"Details\"]\n}]";
-        assertDoesNotThrow(() ->
-            detector.detectNotebookNoSections(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNotebookInitCellMisuse() {
-        String content = "Cell[BoxData[InitializationCell -> True, Integrate[f[x], x]]]";
-        assertDoesNotThrow(() ->
-            detector.detectNotebookInitCellMisuse(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNotebookInitCellProper() {
-        String content = "Cell[BoxData[InitializationCell -> True, a = 5; b = 10;]]";
-        assertDoesNotThrow(() ->
-            detector.detectNotebookInitCellMisuse(context, inputFile, content)
-        );
-    }
-
-    // ===== MANIPULATE/DYNAMIC FRAMEWORK TESTS =====
+                // ===== MANIPULATE/DYNAMIC FRAMEWORK TESTS =====
 
     private static Stream<Arguments> manipulatePerformanceTestData() {
         return Stream.of(
@@ -140,23 +92,7 @@ class FrameworkDetectorTest {
         );
     }
 
-    @Test
-    void testDetectDynamicNoTracking() {
-        String content = "Dynamic[var1 + var2 + var3 + var4 + var5]";
-        assertDoesNotThrow(() ->
-            detector.detectDynamicNoTracking(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDynamicWithTracking() {
-        String content = "Dynamic[a + b + c + d, TrackedSymbols :> {a, b}]";
-        assertDoesNotThrow(() ->
-            detector.detectDynamicNoTracking(context, inputFile, content)
-        );
-    }
-
-    @Test
+            @Test
     void testDetectManipulateTooComplex() {
         StringBuilder content = new StringBuilder("Manipulate[Plot[f[");
         for (int i = 0; i < 15; i++) {
@@ -173,15 +109,7 @@ class FrameworkDetectorTest {
         );
     }
 
-    @Test
-    void testDetectManipulateSimple() {
-        String content = "Manipulate[Plot[Sin[a*x], {x, 0, 10}], {a, 1, 5}]";
-        assertDoesNotThrow(() ->
-            detector.detectManipulateTooComplex(context, inputFile, content)
-        );
-    }
-
-    // ===== PACKAGE FRAMEWORK TESTS =====
+        // ===== PACKAGE FRAMEWORK TESTS =====
 
     private static Stream<Arguments> packageNoBeginTestData() {
         return Stream.of(
@@ -199,109 +127,9 @@ class FrameworkDetectorTest {
         );
     }
 
-    @Test
-    void testDetectPackagePublicPrivateMix() {
-        String content = "BeginPackage[\"MyPackage`\"];\nBegin[`Private`];\nPublicFunc[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectPackagePublicPrivateMix(context, inputFile, content)
-        );
-    }
+                            // ===== PARALLEL FRAMEWORK TESTS =====
 
-    @Test
-    void testDetectPackageProperPublicPrivate() {
-        String content = "BeginPackage[\"MyPackage`\"];\nPublicFunc[x_] := helper[x];\nBegin[`Private`];\nhelper[x_] := x * 2;";
-        assertDoesNotThrow(() ->
-            detector.detectPackagePublicPrivateMix(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageNoUsage() {
-        String content = "BeginPackage[\"MyPackage`\"];\nPublicFunc[x_] := x + 1;\nBegin[`Private`];";
-        assertDoesNotThrow(() ->
-            detector.detectPackageNoUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageWithUsage() {
-        String content = "BeginPackage[\"MyPackage`\"];\nPublicFunc::usage = \"Adds 1 to x\";\nPublicFunc[x_] := x + 1;";
-        assertDoesNotThrow(() ->
-            detector.detectPackageNoUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageCircularDependency() {
-        when(inputFile.filename()).thenReturn("MyPackage.wl");
-        String content = "BeginPackage[\"MyPackage`\"];\nNeeds[\"MyPackage`Submodule`\"];";
-
-        assertDoesNotThrow(() ->
-            detector.detectPackageCircularDependency(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageNoCircularDependency() {
-        when(inputFile.filename()).thenReturn("MyPackage.wl");
-        String content = "BeginPackage[\"MyPackage`\"];\nNeeds[\"OtherPackage`\"];";
-
-        assertDoesNotThrow(() ->
-            detector.detectPackageCircularDependency(context, inputFile, content)
-        );
-    }
-
-    // ===== PARALLEL FRAMEWORK TESTS =====
-
-    @Test
-    void testDetectParallelNoGain() {
-        String content = "ParallelTable[i + 1, {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelNoGain(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParallelWithHeavyWork() {
-        String content = "ParallelTable[Integrate[Sin[i*x], x], {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelNoGain(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParallelRaceCondition() {
-        String content = "results = {};\nParallelDo[AppendTo[results, i^2], {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelRaceCondition(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParallelWithCriticalSection() {
-        String content = "results = {};\nParallelDo[CriticalSection[AppendTo[results, i^2]], {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelRaceCondition(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParallelSharedState() {
-        String content = "SetSharedVariable[counter];\nParallelDo[counter++, {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelSharedState(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParallelNoSharedState() {
-        String content = "ParallelTable[i^2, {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelSharedState(context, inputFile, content)
-        );
-    }
-
-    // ===== CLOUD FRAMEWORK TESTS =====
+                            // ===== CLOUD FRAMEWORK TESTS =====
 
     private static Stream<Arguments> cloudApiMissingAuthTestData() {
         return Stream.of(
@@ -319,99 +147,9 @@ class FrameworkDetectorTest {
         );
     }
 
-    @Test
-    void testDetectCloudPermissionsTooOpen() {
-        String content = "CloudDeploy[notebook, Permissions -> \"Public\"]";
-        assertDoesNotThrow(() ->
-            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
-        );
-    }
+                    // ===== COMPREHENSIVE TESTS =====
 
-    @Test
-    void testDetectCloudPermissionsPrivate() {
-        String content = "CloudDeploy[notebook, Permissions -> \"Private\"]";
-        assertDoesNotThrow(() ->
-            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCloudDeployNoValidation() {
-        String content = "CloudDeploy[APIFunction[{\"x\"}, #x^2 &]]";
-        assertDoesNotThrow(() ->
-            detector.detectCloudDeployNoValidation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCloudDeployWithValidation() {
-        String content = "CloudDeploy[APIFunction[{\"x\" -> \"Integer\"}, If[IntegerQ[#x], #x^2, $Failed] &]]";
-        assertDoesNotThrow(() ->
-            detector.detectCloudDeployNoValidation(context, inputFile, content)
-        );
-    }
-
-    // ===== COMPREHENSIVE TESTS =====
-
-    @Test
-    void testAllNotebookMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectNotebookCellSize(context, inputFile, content);
-            detector.detectNotebookUnorganized(context, inputFile, content);
-            detector.detectNotebookNoSections(context, inputFile, content);
-            detector.detectNotebookInitCellMisuse(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllManipulateMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectManipulatePerformance(context, inputFile, content);
-            detector.detectDynamicHeavyComputation(context, inputFile, content);
-            detector.detectDynamicNoTracking(context, inputFile, content);
-            detector.detectManipulateTooComplex(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllPackageMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectPackageNoBegin(context, inputFile, content);
-            detector.detectPackagePublicPrivateMix(context, inputFile, content);
-            detector.detectPackageNoUsage(context, inputFile, content);
-            detector.detectPackageCircularDependency(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllParallelMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectParallelNoGain(context, inputFile, content);
-            detector.detectParallelRaceCondition(context, inputFile, content);
-            detector.detectParallelSharedState(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testAllCloudMethodsWithEmptyContent() {
-        String content = "";
-
-        assertDoesNotThrow(() -> {
-            detector.detectCloudApiMissingAuth(context, inputFile, content);
-            detector.detectCloudPermissionsTooOpen(context, inputFile, content);
-            detector.detectCloudDeployNoValidation(context, inputFile, content);
-        });
-    }
-
-    @Test
+                        @Test
     void testComplexNotebookWithMultipleIssues() {
         StringBuilder content = new StringBuilder("Notebook[{\n");
         // Large cell
@@ -464,41 +202,7 @@ class FrameworkDetectorTest {
         });
     }
 
-    @Test
-    void testComplexCloudWithIssues() {
-        String content = "CloudDeploy[APIFunction[{\"x\"}, #x^2 &, Permissions -> \"Public\"]]";
-
-        assertDoesNotThrow(() -> {
-            detector.detectCloudApiMissingAuth(context, inputFile, content);
-            detector.detectCloudPermissionsTooOpen(context, inputFile, content);
-            detector.detectCloudDeployNoValidation(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testNonNotebookFile() {
-        String content = "f[x_] := x + 1;\ng[y_] := y * 2;";
-
-        assertDoesNotThrow(() -> {
-            detector.detectNotebookCellSize(context, inputFile, content);
-            detector.detectNotebookUnorganized(context, inputFile, content);
-            detector.detectNotebookNoSections(context, inputFile, content);
-            detector.detectNotebookInitCellMisuse(context, inputFile, content);
-        });
-    }
-
-    @Test
-    void testNonPackageFile() {
-        String content = "f[x_] := x + 1;\ng[y_] := y * 2;";
-
-        assertDoesNotThrow(() -> {
-            detector.detectPackageNoBegin(context, inputFile, content);
-            detector.detectPackagePublicPrivateMix(context, inputFile, content);
-            detector.detectPackageNoUsage(context, inputFile, content);
-        });
-    }
-
-    @Test
+                @Test
     void testMultipleDynamicIssues() {
         String content = "Dynamic[Integrate[f[x, a, b, c, d, e], x]];\n"
                 + "Dynamic[NDSolve[{y'[x] == y[x], y[0] == 1}, y, {x, 0, 10}]];";
@@ -534,96 +238,273 @@ class FrameworkDetectorTest {
 
     // ===== ADDITIONAL EDGE CASES FOR 80%+ COVERAGE =====
 
-    @Test
-    void testDetectDynamicWithSingleVariable() {
-        String content = "Dynamic[x]";
+                                    // Additional branch coverage tests
+
+    // ===== PARAMETERIZED TESTS =====
+
+    @ParameterizedTest
+    @MethodSource("detectCloudApiMissingAuthTestData")
+    void testDetectDetectCloudApiMissingAuth(String content) {
         assertDoesNotThrow(() ->
-            detector.detectDynamicNoTracking(context, inputFile, content)
+            detector.detectCloudApiMissingAuth(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectManipulateWithSolve() {
-        String content = "Manipulate[DSolve[y'[x] == a*y[x], y, x], {a, 1, 5}]";
-        assertDoesNotThrow(() ->
-            detector.detectManipulatePerformance(context, inputFile, content)
+    private static Stream<Arguments> detectCloudApiMissingAuthTestData() {
+        return Stream.of(
+            Arguments.of(""),
+            Arguments.of("CloudDeploy[APIFunction[{\\\"x\\\"}, #x^2 &, Permissions -> \\\"Public\\\"]]")
         );
     }
 
-    @Test
-    void testDetectCloudDeployFormFunction() {
-        String content = "CloudDeploy[FormFunction[{\"name\", \"age\"}, #name &]]";
+    @ParameterizedTest
+    @MethodSource("detectCloudDeployNoValidationTestData")
+    void testDetectDetectCloudDeployNoValidation(String content) {
         assertDoesNotThrow(() ->
             detector.detectCloudDeployNoValidation(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectParallelMapWithSimpleOp() {
-        String content = "ParallelMap[#^2 &, Range[1000]]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelNoGain(context, inputFile, content)
+    private static Stream<Arguments> detectCloudDeployNoValidationTestData() {
+        return Stream.of(
+            Arguments.of("CloudDeploy[APIFunction[{\\\"x\\\"}, #x^2 &]]"),
+            Arguments.of("CloudDeploy[APIFunction[{\\\"x\\\" -> \\\"Integer\\\"}, If[IntegerQ[#x], #x^2, $Failed] &]]"),
+            Arguments.of("CloudDeploy[FormFunction[{\\\"name\\\", \\\"age\\\"}, #name &]]")
         );
     }
 
-    @Test
-    void testDetectManipulateWithThreeControls() {
-        String content = "Manipulate[f[a], {a, 0, 1}, {b, 0, 1}, {c, 0, 1}]";
+    @ParameterizedTest
+    @MethodSource("detectCloudPermissionsTooOpenTestData")
+    void testDetectDetectCloudPermissionsTooOpen(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectCloudPermissionsTooOpenTestData() {
+        return Stream.of(
+            Arguments.of("CloudDeploy[notebook, Permissions -> \\\"Public\\\"]"),
+            Arguments.of("CloudDeploy[notebook, Permissions -> \\\"Private\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDynamicNoTrackingTestData")
+    void testDetectDetectDynamicNoTracking(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDynamicNoTracking(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDynamicNoTrackingTestData() {
+        return Stream.of(
+            Arguments.of("Dynamic[var1 + var2 + var3 + var4 + var5]"),
+            Arguments.of("Dynamic[a + b + c + d, TrackedSymbols :> {a, b}]"),
+            Arguments.of("Dynamic[x]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectManipulatePerformanceTestData")
+    void testDetectDetectManipulatePerformance(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectManipulatePerformance(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectManipulatePerformanceTestData() {
+        return Stream.of(
+            Arguments.of(""),
+            Arguments.of("Manipulate[DSolve[y'[x] == a*y[x], y, x], {a, 1, 5}]"),
+            Arguments.of("(* Manipulate[x, {x, 0, 1}] *) (* DynamicModule[{x}, x] *)"),
+            Arguments.of("str = \\\"Manipulate[x, {x, 0, 1}]\\"),
+            Arguments.of("result = computation[];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectManipulateTooComplexTestData")
+    void testDetectDetectManipulateTooComplex(String content) {
         assertDoesNotThrow(() ->
             detector.detectManipulateTooComplex(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectParallelDoWithAppendTo() {
-        String content = "global = {};\nParallelDo[global = Append[global, i], {i, 1, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectParallelRaceCondition(context, inputFile, content)
+    private static Stream<Arguments> detectManipulateTooComplexTestData() {
+        return Stream.of(
+            Arguments.of("Manipulate[Plot[Sin[a*x], {x, 0, 10}], {a, 1, 5}]"),
+            Arguments.of("Manipulate[f[a], {a, 0, 1}, {b, 0, 1}, {c, 0, 1}]")
         );
     }
 
-    @Test
-    void testDetectNotebookWithMultipleCells() {
-        String content = "Notebook[{Cell[code1], Cell[code2], Cell[code3]}]";
+    @ParameterizedTest
+    @MethodSource("detectNotebookCellSizeTestData")
+    void testDetectDetectNotebookCellSize(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNotebookCellSizeTestData() {
+        return Stream.of(
+            Arguments.of("Cell[\\\"Small cell content\\\"]"),
+            Arguments.of(""),
+            Arguments.of("f[x_] := x + 1;\\ng[y_] := y * 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNotebookInitCellMisuseTestData")
+    void testDetectDetectNotebookInitCellMisuse(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNotebookInitCellMisuse(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNotebookInitCellMisuseTestData() {
+        return Stream.of(
+            Arguments.of("Cell[BoxData[InitializationCell -> True, Integrate[f[x], x]]]"),
+            Arguments.of("Cell[BoxData[InitializationCell -> True, a = 5; b = 10;]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNotebookNoSectionsTestData")
+    void testDetectDetectNotebookNoSections(String content) {
         assertDoesNotThrow(() ->
             detector.detectNotebookNoSections(context, inputFile, content)
         );
     }
 
-    @Test
-    void testDetectPackageWithGet() {
-        String content = "BeginPackage[\"MyPackage`\"];\nGet[\"Helper.m\"];";
+    private static Stream<Arguments> detectNotebookNoSectionsTestData() {
+        return Stream.of(
+            Arguments.of("Notebook[{\\nSection[\\\"Main\\\"],\\nCell[code1],\\nCell[code2],\\nSubsection[\\\"Details\\\"]\\n}]"),
+            Arguments.of("Notebook[{Cell[code1], Cell[code2], Cell[code3]}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNotebookUnorganizedTestData")
+    void testDetectDetectNotebookUnorganized(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNotebookUnorganizedTestData() {
+        return Stream.of(
+            Arguments.of("Cell[BoxData[code := 5]];\\nVerificationTest[test];\\n(* scratch test work *)"),
+            Arguments.of("Cell[BoxData[code := 5]];\\nSection[\\\"Tests\\\"];\\nVerificationTest[test];")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPackageCircularDependencyTestData")
+    void testDetectDetectPackageCircularDependency(String content) {
         assertDoesNotThrow(() ->
             detector.detectPackageCircularDependency(context, inputFile, content)
         );
     }
 
-    // Additional branch coverage tests
-    @Test
-    void testDetectInComment() {
-        String content = "(* Manipulate[x, {x, 0, 1}] *) (* DynamicModule[{x}, x] *)";
-        assertDoesNotThrow(() -> {
-            detector.detectManipulatePerformance(context, inputFile, content);
-            detector.detectDynamicHeavyComputation(context, inputFile, content);
-        });
+    private static Stream<Arguments> detectPackageCircularDependencyTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nNeeds[\\\"MyPackage`Submodule`\\\"];"),
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nNeeds[\\\"OtherPackage`\\\"];"),
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nGet[\\\"Helper.m\\\"];")
+        );
     }
 
-    @Test
-    void testDetectInStringLiteral() {
-        String content = "str = \"Manipulate[x, {x, 0, 1}]\"; str2 = \"Dynamic[x]\";";
-        assertDoesNotThrow(() -> {
-            detector.detectManipulatePerformance(context, inputFile, content);
-            detector.detectDynamicHeavyComputation(context, inputFile, content);
-        });
+    @ParameterizedTest
+    @MethodSource("detectPackageNoBeginTestData")
+    void testDetectDetectPackageNoBegin(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPackageNoBegin(context, inputFile, content)
+        );
     }
 
-    @Test
-    void testDetectEdgeCases() {
-        String content = "result = computation[];";
-        assertDoesNotThrow(() -> {
-            detector.detectManipulatePerformance(context, inputFile, content);
-            detector.detectDynamicHeavyComputation(context, inputFile, content);
-            detector.detectPackageCircularDependency(context, inputFile, content);
-        });
+    private static Stream<Arguments> detectPackageNoBeginTestData() {
+        return Stream.of(
+            Arguments.of(""),
+            Arguments.of("f[x_] := x + 1;\\ng[y_] := y * 2;")
+        );
     }
+
+    @ParameterizedTest
+    @MethodSource("detectPackageNoUsageTestData")
+    void testDetectDetectPackageNoUsage(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPackageNoUsage(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPackageNoUsageTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nPublicFunc[x_] := x + 1;\\nBegin[`Private`];"),
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nPublicFunc::usage = \\\"Adds 1 to x\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPackagePublicPrivateMixTestData")
+    void testDetectDetectPackagePublicPrivateMix(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPackagePublicPrivateMix(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPackagePublicPrivateMixTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nBegin[`Private`];\\nPublicFunc[x_] := x + 1;"),
+            Arguments.of("BeginPackage[\\\"MyPackage`\\\"];\\nPublicFunc[x_] := helper[x];\\nBegin[`Private`];\\nhelper[x_] := x * 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectParallelNoGainTestData")
+    void testDetectDetectParallelNoGain(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectParallelNoGain(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectParallelNoGainTestData() {
+        return Stream.of(
+            Arguments.of("ParallelTable[i + 1, {i, 1, 100}]"),
+            Arguments.of("ParallelTable[Integrate[Sin[i*x], x], {i, 1, 100}]"),
+            Arguments.of(""),
+            Arguments.of("ParallelMap[#^2 &, Range[1000]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectParallelRaceConditionTestData")
+    void testDetectDetectParallelRaceCondition(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectParallelRaceCondition(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectParallelRaceConditionTestData() {
+        return Stream.of(
+            Arguments.of("results = {};\\nParallelDo[AppendTo[results, i^2], {i, 1, 100}]"),
+            Arguments.of("results = {};\\nParallelDo[CriticalSection[AppendTo[results, i^2]], {i, 1, 100}]"),
+            Arguments.of("global = {};\\nParallelDo[global = Append[global, i], {i, 1, 100}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectParallelSharedStateTestData")
+    void testDetectDetectParallelSharedState(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectParallelSharedState(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectParallelSharedStateTestData() {
+        return Stream.of(
+            Arguments.of("SetSharedVariable[counter];\\nParallelDo[counter++, {i, 1, 100}]"),
+            Arguments.of("ParallelTable[i^2, {i, 1, 100}]")
+        );
+    }
+
 }

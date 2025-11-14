@@ -4,6 +4,7 @@ package org.sonar.plugins.mathematica.rules;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
 import org.sonar.api.batch.sensor.SensorContext;
@@ -84,39 +85,7 @@ class StyleAndConventionsDetectorTest {
     }
 
     // Complexity Detection Methods
-    @Test
-    void testDetectTooManyParameters() {
-        String content = "MyFunction[a, b, c, d, e, f, g, h] := a + b + c + d + e + f + g + h";
-        assertDoesNotThrow(() ->
-            detector.detectTooManyParameters(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTooManyReturnPoints() {
-        String content = "Func[x] := Module[{}, Return[1]; Return[2]; Return[3]; Return[4]; Return[5]; Return[6]]";
-        assertDoesNotThrow(() ->
-            detector.detectTooManyReturnPoints(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectExpressionTooComplex() {
-        String content = "result = a + b - c * d / e + f - g * h / i + j - k * l / m + n - o * p / q + r - s * t / u + v";
-        assertDoesNotThrow(() ->
-            detector.detectExpressionTooComplex(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTooManyVariables() {
-        String content = "Module[{a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q}, a + b + c]";
-        assertDoesNotThrow(() ->
-            detector.detectTooManyVariables(context, inputFile, content)
-        );
-    }
-
-    @Test
+                    @Test
     void testDetectTooManyVariablesInBlock() {
         String content = "Block[{var1, var2, var3, var4, var5, var6, var7, var8, var9, "
 
@@ -126,15 +95,7 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectNestingTooDeep() {
-        String content = "If[a, If[b, If[c, If[d, If[e, If[f, True]]]]]]";
-        assertDoesNotThrow(() ->
-            detector.detectNestingTooDeep(context, inputFile, content)
-        );
-    }
-
-    @Test
+        @Test
     void testDetectFileTooManyFunctions() {
         String content = "f1[]:=1; f2[]:=2; f3[]:=3; f4[]:=4; f5[]:=5; f6[]:=6; f7[]:=7; f8[]:=8; f9[]:=9; f10[]:=10; "
          + "f11[]:=11; f12[]:=12; f13[]:=13; f14[]:=14; f15[]:=15; f16[]:=16; f17[]:=17; f18[]:=18; "
@@ -154,64 +115,8 @@ class StyleAndConventionsDetectorTest {
     }
 
     // Maintainability Detection Methods
-    @Test
-    void testDetectGlobalStateModification() {
-        String content = "GlobalVar = 42;";
-        assertDoesNotThrow(() ->
-            detector.detectGlobalStateModification(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIncompletePatternMatch() {
-        String content = "Switch[x, 1, \"one\", 2, \"two\"]";
-        assertDoesNotThrow(() ->
-            detector.detectIncompletePatternMatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingOptionDefault() {
-        String content = "value = OptionValue[\"MyOption\"]";
-        assertDoesNotThrow(() ->
-            detector.detectMissingOptionDefault(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSideEffectInExpression() {
-        String content = "result = x + (y = 5)";
-        assertDoesNotThrow(() ->
-            detector.detectSideEffectInExpression(context, inputFile, content)
-        );
-    }
-
-    // Best Practices Detection Methods
-    @Test
-    void testDetectEmptyCatchBlock() {
-        String content = "Catch[someExpression]";
-        assertDoesNotThrow(() ->
-            detector.detectEmptyCatchBlock(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCatchWithoutThrow() {
-        String content = "result = Catch[someExpression]; otherCode;";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectListQueryInefficient() {
-        String content = "Do[result = MemberQ[bigList, x], {x, items}]";
-        assertDoesNotThrow(() ->
-            detector.detectListQueryInefficient(context, inputFile, content)
-        );
-    }
-
-    @Test
+                    // Best Practices Detection Methods
+                @Test
     void testDetectGraphicsOptionsExcessive() {
         String content = "Graphics[point, opt1->1, opt2->2, opt3->3, opt4->4, opt5->5, opt6->6, opt7->7, opt8->8, "
          + "opt9->9, opt10->10, opt11->11, opt12->12, opt13->13, opt14->14, opt15->15, opt16->16, "
@@ -221,15 +126,7 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectPlotWithoutLabels() {
-        String content = "Plot[x^2, {x, 0, 10}]";
-        assertDoesNotThrow(() ->
-            detector.detectPlotWithoutLabels(context, inputFile, content)
-        );
-    }
-
-    @Test
+        @Test
     void testDetectDatasetWithoutHeaders() {
         String content = "Dataset[{{1, 2, 3}, {4, 5, 6}}]";
         assertDoesNotThrow(() ->
@@ -237,40 +134,8 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectAssociationKeyNotString() {
-        String content = "assoc = Association[1 -> \"value\", 2 -> \"other\"]";
-        assertDoesNotThrow(() ->
-            detector.detectAssociationKeyNotString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTestVsCondition() {
-        String content = "f[x_ /; IntegerQ[x]] := x + 1";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTestVsCondition(context, inputFile, content)
-        );
-    }
-
-    // Naming Detection Methods
-    @Test
-    void testDetectBooleanNameNonDescriptive() {
-        String content = "valid = True; flag = False;";
-        assertDoesNotThrow(() ->
-            detector.detectBooleanNameNonDescriptive(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectConstantNotUppercase() {
-        String content = "MaxValue = 100; MinValue = 0;";
-        assertDoesNotThrow(() ->
-            detector.detectConstantNotUppercase(context, inputFile, content)
-        );
-    }
-
-    @Test
+            // Naming Detection Methods
+            @Test
     void testDetectVariableNameMatchesBuiltin() {
         String content = "C = 5; D = 10; E = 2.718; I = Sqrt[-1];";
         assertDoesNotThrow(() ->
@@ -278,99 +143,11 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectParameterNameSameAsFunction() {
-        String content = "MyFunc[myFunc_] := myFunc + 1";
-        assertDoesNotThrow(() ->
-            detector.detectParameterNameSameAsFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectHungarianNotation() {
-        String content = "strName = \"John\"; intCount = 5; boolFlag = True;";
-        assertDoesNotThrow(() ->
-            detector.detectHungarianNotation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAbbreviationUnclear() {
-        String content = "tmp = 5; val = 10; cnt = 0; msg = \"hello\";";
-        assertDoesNotThrow(() ->
-            detector.detectAbbreviationUnclear(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNegatedBooleanName() {
-        String content = "notValid = False; isNotEnabled = True;";
-        assertDoesNotThrow(() ->
-            detector.detectNegatedBooleanName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGenericName() {
-        String content = "data = {1, 2, 3}; temp = 5; value = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectGenericName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNumberInName() {
-        String content = "var1 = 5; var2 = 10; temp3 = 15;";
-        assertDoesNotThrow(() ->
-            detector.detectNumberInName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentNamingStyle() {
-        String content = "camelCase = 1; snake_case = 2; PascalCase = 3;";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentNamingStyle(context, inputFile, content)
-        );
-    }
-
-    // Style & Formatting Detection Methods
-    @Test
-    void testDetectTrailingWhitespace() {
-        String content = "x = 5;   \ny = 10;\t\n";
-        assertDoesNotThrow(() ->
-            detector.detectTrailingWhitespace(context, inputFile, content)
-        );
-    }
-
-    // REMOVED: testDetectCommaSpacing() and testDetectOperatorSpacing() tests
+                                // Style & Formatting Detection Methods
+        // REMOVED: testDetectCommaSpacing() and testDetectOperatorSpacing() tests
     // The corresponding rules have been permanently removed from the codebase
 
-    @Test
-    void testDetectBracketSpacing() {
-        String content = "f [x]";
-        assertDoesNotThrow(() ->
-            detector.detectBracketSpacing(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSemicolonStyle() {
-        String content = "a = 1;; b = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectSemicolonStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParenthesesUnnecessary() {
-        String content = "result = (((x + y)))";
-        assertDoesNotThrow(() ->
-            detector.detectParenthesesUnnecessary(context, inputFile, content)
-        );
-    }
-
-    @Test
+                @Test
     void testDetectLongStringLiteral() {
         String content = "msg = \"This is a very long string literal that exceeds one hundred characters "
          + "and should trigger the detection rule for overly long string literals in the code\"";
@@ -379,88 +156,8 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectAcronymStyle() {
-        String content = "XMLParser = 1; HttpRequest = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectAcronymStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageNameCase() {
-        String content = "BeginPackage[\"my_package`Utils\"]";
-        assertDoesNotThrow(() ->
-            detector.detectPackageNameCase(context, inputFile, content)
-        );
-    }
-
-    // Additional Coverage Methods
-    @Test
-    void testDetectBooleanComparison() {
-        String content = "If[flag == True, doSomething[]]";
-        assertDoesNotThrow(() ->
-            detector.detectBooleanComparison(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNegatedBooleanComparison() {
-        String content = "If[Not[flag == True], doSomething[]]";
-        assertDoesNotThrow(() ->
-            detector.detectNegatedBooleanComparison(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectRedundantConditional() {
-        String content = "If[x > 5, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectRedundantConditional(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectEqualityCheckOnReals() {
-        String content = "If[1.0 == 2.0, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectEqualityCheckOnReals(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectStringConcatenationInLoop() {
-        String content = "Do[str = str <> ToString[i], {i, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectStringConcatenationInLoop(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeprecatedOptionUsage() {
-        String content = "Plot[x, {x, 0, 1}, PlotRange -> Automatic]";
-        assertDoesNotThrow(() ->
-            detector.detectDeprecatedOptionUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolicVsNumericMismatch() {
-        String content = "Solve[x^2 + 1.5*x + 1 == 0, x]";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolicVsNumericMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectOptionNameUnclear() {
-        String content = "MyFunction[OptionPattern[{opt1 -> 1}]]";
-        assertDoesNotThrow(() ->
-            detector.detectOptionNameUnclear(context, inputFile, content)
-        );
-    }
-
-    // Additional High-Priority Coverage Tests
+            // Additional Coverage Methods
+                                    // Additional High-Priority Coverage Tests
     @Test
     void testDetectAlignmentInconsistent() {
         String content = "longList = {veryLongItemName1, veryLongItemName2, veryLongItemName3, veryLongItemName4};\n"
@@ -481,87 +178,7 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectBooleanExpressionTooComplex() {
-        String content = "result = a && b || c && d || e && f || g && h || i && j || k";
-        assertDoesNotThrow(() ->
-            detector.detectBooleanExpressionTooComplex(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentIndentation() {
-        String content = "f[x_] := Module[{y},\n\ty = x + 1;\n    z = x + 2;\n\ty + z\n]";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentIndentation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDuplicateCodeBlock() {
-        String content = "a = 1;\nb = 2;\nc = 3;\nd = 4;\ne = 5;\n\nf = 10;\n\na = 1;\nb = 2;\nc = 3;\nd = 4;\ne = 5;";
-        assertDoesNotThrow(() ->
-            detector.detectDuplicateCodeBlock(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPrimitiveObsession() {
-        String content = "MyFunc[str1_, str2_, str3_, int1_, int2_, int3_, flag1_, flag2_] := str1 <> str2";
-        assertDoesNotThrow(() ->
-            detector.detectPrimitiveObsession(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionNameTooLong() {
-        String content = "ThisIsAnExtremelyLongFunctionNameThatExceedsFiftyCharactersInLength[x_] := x + 1";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionNameTooShort() {
-        String content = "a[x_] := x + 1; b[y_] := y * 2;";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionNameTooShort(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMultipleBlankLines() {
-        String content = "x = 1;\n\n\n\ny = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectMultipleBlankLines(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNestedBracketsExcessive() {
-        String content = "result = f[g[h[i[j[k[l[x]]]]]]]";
-        assertDoesNotThrow(() ->
-            detector.detectNestedBracketsExcessive(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMagicString() {
-        String content = "If[status == \"active\", Print[\"active\"], Print[\"inactive\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectMagicString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDuplicateStringLiteral() {
-        String content = "a = \"constant\"; b = \"constant\"; c = \"constant\"; d = \"constant\";";
-        assertDoesNotThrow(() ->
-            detector.detectDuplicateStringLiteral(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                            @Test
     void testDetectGodFunction() {
         StringBuilder longFunction = new StringBuilder("MyFunc[x_] := Module[{},\n");
         for (int i = 0; i < 110; i++) {
@@ -574,95 +191,7 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectChainedCallsTooLong() {
-        String content = "result = data // func1 // func2 // func3 // func4 // func5 // func6";
-        assertDoesNotThrow(() ->
-            detector.detectChainedCallsTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectConditionalComplexity() {
-        String content = "If[a > 0 && b < 10 || c == 5 && d != 3 || e >= 1 && f <= 100, result = True]";
-        assertDoesNotThrow(() ->
-            detector.detectConditionalComplexity(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIdenticalIfBranches() {
-        String content = "If[condition, doSomething[], doSomething[]]";
-        assertDoesNotThrow(() ->
-            detector.detectIdenticalIfBranches(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFeatureEnvy() {
-        String content = "MyFunc[obj_] := obj@field1 + obj@field2 + obj@field3 + obj@field4 + obj@field5 + obj@field6";
-        assertDoesNotThrow(() ->
-            detector.detectFeatureEnvy(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectHardcodedPath() {
-        String content = "file = Import[\"/Users/username/Documents/data.csv\"]";
-        assertDoesNotThrow(() ->
-            detector.detectHardcodedPath(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectHardcodedUrl() {
-        String content = "data = URLFetch[\"http://example.com/api/data\"]";
-        assertDoesNotThrow(() ->
-            detector.detectHardcodedUrl(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNameTooShort() {
-        String content = "a = 5; b = 10; c = 15;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNameTooShort(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBraceStyle() {
-        String content = "If[condition,\n{\n  x = 1\n}\n,\n{\n  x = 2\n}\n]";
-        assertDoesNotThrow(() ->
-            detector.detectBraceStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFileEndsWithoutNewline() {
-        String content = "x = 1; y = 2;";  // No newline at end
-        assertDoesNotThrow(() ->
-            detector.detectFileEndsWithoutNewline(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFileEndsWithNewline() {
-        String content = "x = 1; y = 2;\n";  // Has newline at end
-        assertDoesNotThrow(() ->
-            detector.detectFileEndsWithoutNewline(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingBlankLineAfterFunction() {
-        String content = "Func1[x_] := x + 1\nFunc2[y_] := y + 2";
-        assertDoesNotThrow(() ->
-            detector.detectMissingBlankLineAfterFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                                @Test
     void testDetectLineTooLong() {
         StringBuilder longLine = new StringBuilder();
         for (int i = 0; i < 160; i++) {
@@ -683,39 +212,7 @@ class StyleAndConventionsDetectorTest {
     }
 
     // Test negative paths for complexity methods
-    @Test
-    void testDetectTooManyParametersWithoutIssue() {
-        String content = "MyFunction[a, b, c] := a + b + c";
-        assertDoesNotThrow(() ->
-            detector.detectTooManyParameters(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTooManyVariablesWithoutIssue() {
-        String content = "Module[{a, b, c}, a + b + c]";
-        assertDoesNotThrow(() ->
-            detector.detectTooManyVariables(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNestingTooDeepWithoutIssue() {
-        String content = "If[a, If[b, If[c, True]]]";
-        assertDoesNotThrow(() ->
-            detector.detectNestingTooDeep(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNestedBracketsExcessiveWithoutIssue() {
-        String content = "result = f[g[h[i[j[x]]]]]";
-        assertDoesNotThrow(() ->
-            detector.detectNestedBracketsExcessive(context, inputFile, content)
-        );
-    }
-
-    @Test
+                    @Test
     void testDetectFileTooManyFunctionsWithoutIssue() {
         String content = "f1[]:=1; f2[]:=2; f3[]:=3;";
         assertDoesNotThrow(() ->
@@ -723,31 +220,7 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectPackageTooManyExportsWithoutBeginPackage() {
-        String content = "e1[]:=1; e2[]:=2; e3[]:=3;";
-        assertDoesNotThrow(() ->
-            detector.detectPackageTooManyExports(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageTooManyExportsWithoutIssue() {
-        String content = "BeginPackage[\"Test`\"]; Func1[x_]:=x+1; Func2[y_]:=y+2;";
-        assertDoesNotThrow(() ->
-            detector.detectPackageTooManyExports(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectExpressionTooComplexWithoutIssue() {
-        String content = "result = a + b * c";
-        assertDoesNotThrow(() ->
-            detector.detectExpressionTooComplex(context, inputFile, content)
-        );
-    }
-
-    @Test
+                @Test
     void testDetectSwitchTooManyCasesWithoutIssue() {
         String content = "Switch[x, 1, \"one\", 2, \"two\"]";
         assertDoesNotThrow(() ->
@@ -755,209 +228,9 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectBooleanExpressionTooComplexWithoutIssue() {
-        String content = "result = a && b || c";
-        assertDoesNotThrow(() ->
-            detector.detectBooleanExpressionTooComplex(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectChainedCallsTooLongWithoutIssue() {
-        String content = "result = data // func1 // func2";
-        assertDoesNotThrow(() ->
-            detector.detectChainedCallsTooLong(context, inputFile, content)
-        );
-    }
-
-    // Test negative paths for naming methods
-    @Test
-    void testDetectFunctionNameTooShortWithValidNames() {
-        String content = "f[x_] := x + 1; g[y_] := y + 2; h[z_] := z + 3;";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionNameTooShort(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectFunctionNameTooLongWithoutIssue() {
-        String content = "GoodFunctionName[x_] := x + 1";
-        assertDoesNotThrow(() ->
-            detector.detectFunctionNameTooLong(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectVariableNameTooShortWithValidNames() {
-        String content = "i = 1; j = 2; k = 3;";
-        assertDoesNotThrow(() ->
-            detector.detectVariableNameTooShort(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBooleanNameNonDescriptiveWithGoodNames() {
-        String content = "isValid = True; hasData = False; canExecute = True;";
-        assertDoesNotThrow(() ->
-            detector.detectBooleanNameNonDescriptive(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectConstantNotUppercaseWithGoodNames() {
-        String content = "MAXVALUE = 100; MINVALUE = 0;";
-        assertDoesNotThrow(() ->
-            detector.detectConstantNotUppercase(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPackageNameCaseWithGoodNames() {
-        String content = "BeginPackage[\"MyPackage`Utils\"]";
-        assertDoesNotThrow(() ->
-            detector.detectPackageNameCase(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAcronymStyleWithoutIssue() {
-        String content = "XmlParser = 1; HttpRequest = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectAcronymStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentNamingStyleOnlyCamelCase() {
-        String content = "camelCase = 1; anotherCamelCase = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentNamingStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentNamingStyleOnlySnakeCase() {
-        String content = "snake_case = 1; another_snake = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentNamingStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNumberInNameWithCoordinates() {
-        String content = "x1 = 5; y2 = 10; z3 = 15;";
-        assertDoesNotThrow(() ->
-            detector.detectNumberInName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectHungarianNotationWithoutIssue() {
-        String content = "name = \"John\"; count = 5; flag = True;";
-        assertDoesNotThrow(() ->
-            detector.detectHungarianNotation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAbbreviationUnclearWithLongNames() {
-        String content = "temporary = 5; value = 10; counter = 0; message = \"hello\";";
-        assertDoesNotThrow(() ->
-            detector.detectAbbreviationUnclear(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGenericNameWithoutIssue() {
-        String content = "customerData = {1, 2, 3}; userId = 5; productPrice = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectGenericName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNegatedBooleanNameWithoutIssue() {
-        String content = "isValid = False; isEnabled = True;";
-        assertDoesNotThrow(() ->
-            detector.detectNegatedBooleanName(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParameterNameSameAsFunctionWithoutIssue() {
-        String content = "MyFunc[param_] := param + 1";
-        assertDoesNotThrow(() ->
-            detector.detectParameterNameSameAsFunction(context, inputFile, content)
-        );
-    }
-
-    // Test negative paths for maintainability methods
-    @Test
-    void testDetectMagicStringWithoutDuplication() {
-        String content = "If[status == \"active\", Print[\"running\"], Print[\"stopped\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectMagicString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMagicStringWithShortStrings() {
-        String content = "a = \"x\"; b = \"y\"; c = \"z\";";
-        assertDoesNotThrow(() ->
-            detector.detectMagicString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDuplicateStringLiteralWithoutIssue() {
-        String content = "a = \"value1\"; b = \"value2\"; c = \"value3\";";
-        assertDoesNotThrow(() ->
-            detector.detectDuplicateStringLiteral(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectHardcodedPathWithoutIssue() {
-        String content = "file = Import[\"data.csv\"]";
-        assertDoesNotThrow(() ->
-            detector.detectHardcodedPath(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectHardcodedUrlWithoutIssue() {
-        String content = "data = URLFetch[localUrl]";
-        assertDoesNotThrow(() ->
-            detector.detectHardcodedUrl(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectConditionalComplexityWithoutIssue() {
-        String content = "If[a > 0 && b < 10, result = True]";
-        assertDoesNotThrow(() ->
-            detector.detectConditionalComplexity(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIdenticalIfBranchesWithoutIssue() {
-        String content = "If[condition, doSomething[], doOtherThing[]]";
-        assertDoesNotThrow(() ->
-            detector.detectIdenticalIfBranches(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDuplicateCodeBlockWithoutIssue() {
-        String content = "a = 1;\nb = 2;\nc = 3;";
-        assertDoesNotThrow(() ->
-            detector.detectDuplicateCodeBlock(context, inputFile, content)
-        );
-    }
-
-    @Test
+            // Test negative paths for naming methods
+                                                                // Test negative paths for maintainability methods
+                                    @Test
     void testDetectGodFunctionWithoutIssue() {
         String content = "MyFunc[x_] := Module[{}, x + 1]";
         assertDoesNotThrow(() ->
@@ -965,184 +238,8 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectFeatureEnvyWithoutIssue() {
-        String content = "MyFunc[obj_] := obj + 1";
-        assertDoesNotThrow(() ->
-            detector.detectFeatureEnvy(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPrimitiveObsessionWithoutIssue() {
-        String content = "MyFunc[str1_, str2_] := str1 <> str2";
-        assertDoesNotThrow(() ->
-            detector.detectPrimitiveObsession(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPrimitiveObsessionWithTypeHints() {
-        String content = "MyFunc[str1_String, str2_Integer, flag_?IntegerQ] := str1 <> ToString[str2]";
-        assertDoesNotThrow(() ->
-            detector.detectPrimitiveObsession(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectGlobalStateModificationWithinModule() {
-        String content = "Module[{GlobalVar}, GlobalVar = 42;]";
-        assertDoesNotThrow(() ->
-            detector.detectGlobalStateModification(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSideEffectInExpressionWithoutIssue() {
-        String content = "result = x + y";
-        assertDoesNotThrow(() ->
-            detector.detectSideEffectInExpression(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSideEffectInExpressionWithDelayedAssignment() {
-        String content = "result[x_] := Module[{y = x + 1}, y]";
-        assertDoesNotThrow(() ->
-            detector.detectSideEffectInExpression(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectIncompletePatternMatchWithDefault() {
-        String content = "Switch[x, 1, \"one\", 2, \"two\", _, \"default\"]";
-        assertDoesNotThrow(() ->
-            detector.detectIncompletePatternMatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingOptionDefaultWithDefault() {
-        String content = "value = OptionValue[\"MyOption\", defaultValue]";
-        assertDoesNotThrow(() ->
-            detector.detectMissingOptionDefault(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectOptionNameUnclearWithGoodName() {
-        String content = "MyFunction[OptionPattern[{backgroundColor -> White}]]";
-        assertDoesNotThrow(() ->
-            detector.detectOptionNameUnclear(context, inputFile, content)
-        );
-    }
-
-    // Test negative paths for best practices methods
-    @Test
-    void testDetectStringConcatenationInLoopWithoutIssue() {
-        String content = "Do[result = Calculate[i], {i, 100}]";
-        assertDoesNotThrow(() ->
-            detector.detectStringConcatenationInLoop(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBooleanComparisonWithoutIssue() {
-        String content = "If[flag, doSomething[]]";
-        assertDoesNotThrow(() ->
-            detector.detectBooleanComparison(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectNegatedBooleanComparisonWithoutIssue() {
-        String content = "If[x != y, doSomething[]]";
-        assertDoesNotThrow(() ->
-            detector.detectNegatedBooleanComparison(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectRedundantConditionalWithoutIssue() {
-        String content = "If[x > 5, doSomething[], doOtherThing[]]";
-        assertDoesNotThrow(() ->
-            detector.detectRedundantConditional(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectEmptyCatchBlockWithHandler() {
-        String content = "Check[someExpression, errorHandler]";
-        assertDoesNotThrow(() ->
-            detector.detectEmptyCatchBlock(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCatchWithoutThrowWithThrow() {
-        String content = "result = Catch[Throw[value]];";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectCatchWithoutThrowNoCatch() {
-        String content = "result = someValue;";
-        assertDoesNotThrow(() ->
-            detector.detectCatchWithoutThrow(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDeprecatedOptionUsageWithoutIssue() {
-        String content = "Plot[x, {x, 0, 1}, Frame -> True]";
-        assertDoesNotThrow(() ->
-            detector.detectDeprecatedOptionUsage(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectListQueryInefficientWithoutLoop() {
-        String content = "result = MemberQ[bigList, x]";
-        assertDoesNotThrow(() ->
-            detector.detectListQueryInefficient(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectEqualityCheckOnRealsWithoutIssue() {
-        String content = "If[x == y, True, False]";
-        assertDoesNotThrow(() ->
-            detector.detectEqualityCheckOnReals(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolicVsNumericMismatchOnlySymbolic() {
-        String content = "Solve[x^2 + x + 1 == 0, x]";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolicVsNumericMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolicVsNumericMismatchOnlyNumeric() {
-        String content = "NSolve[x^2 + x + 1 == 0, x]";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolicVsNumericMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSymbolicVsNumericMismatchNeither() {
-        String content = "x = 5; y = 10;";
-        assertDoesNotThrow(() ->
-            detector.detectSymbolicVsNumericMismatch(context, inputFile, content)
-        );
-    }
-
-    @Test
+                                        // Test negative paths for best practices methods
+                                                        @Test
     void testDetectGraphicsOptionsExcessiveWithoutIssue() {
         String content = "Graphics[point, PlotStyle -> Red]";
         assertDoesNotThrow(() ->
@@ -1150,88 +247,8 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectPlotWithoutLabelsWithLabels() {
-        String content = "Plot[x^2, {x, 0, 10}, AxesLabel -> {\"x\", \"y\"}]";
-        assertDoesNotThrow(() ->
-            detector.detectPlotWithoutLabels(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPlotWithoutLabelsWithFrameLabel() {
-        String content = "Plot[x^2, {x, 0, 10}, FrameLabel -> {\"x\", \"y\"}]";
-        assertDoesNotThrow(() ->
-            detector.detectPlotWithoutLabels(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDatasetWithoutHeadersWithHeaders() {
-        String content = "Dataset[<|\"col1\" -> 1, \"col2\" -> 2|>]";
-        assertDoesNotThrow(() ->
-            detector.detectDatasetWithoutHeaders(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectDatasetWithoutHeadersWithAssociation() {
-        String content = "Dataset[Association[\"key\" -> \"value\"]]";
-        assertDoesNotThrow(() ->
-            detector.detectDatasetWithoutHeaders(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAssociationKeyNotStringWithStringKeys() {
-        String content = "assoc = Association[\"key1\" -> \"value\", \"key2\" -> \"other\"]";
-        assertDoesNotThrow(() ->
-            detector.detectAssociationKeyNotString(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectPatternTestVsConditionWithPatternTest() {
-        String content = "f[x_?IntegerQ] := x + 1";
-        assertDoesNotThrow(() ->
-            detector.detectPatternTestVsCondition(context, inputFile, content)
-        );
-    }
-
-    // Test style formatting negative paths
-    @Test
-    void testDetectTrailingWhitespaceWithoutIssue() {
-        String content = "x = 5;\ny = 10;\n";
-        assertDoesNotThrow(() ->
-            detector.detectTrailingWhitespace(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBracketSpacingWithoutIssue() {
-        String content = "f[x]";
-        assertDoesNotThrow(() ->
-            detector.detectBracketSpacing(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectSemicolonStyleWithoutIssue() {
-        String content = "a = 1; b = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectSemicolonStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectParenthesesUnnecessaryWithoutIssue() {
-        String content = "result = (x + y)";
-        assertDoesNotThrow(() ->
-            detector.detectParenthesesUnnecessary(context, inputFile, content)
-        );
-    }
-
-    @Test
+                            // Test style formatting negative paths
+                    @Test
     void testDetectLongStringLiteralWithoutIssue() {
         String content = "msg = \"Short string\"";
         assertDoesNotThrow(() ->
@@ -1239,111 +256,7 @@ class StyleAndConventionsDetectorTest {
         );
     }
 
-    @Test
-    void testDetectMultipleBlankLinesWithoutIssue() {
-        String content = "x = 1;\n\ny = 2;";
-        assertDoesNotThrow(() ->
-            detector.detectMultipleBlankLines(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAlignmentInconsistentWithShortList() {
-        String content = "list = {1, 2, 3}";
-        assertDoesNotThrow(() ->
-            detector.detectAlignmentInconsistent(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectAlignmentInconsistentWithConsistentAlignment() {
-        String content = "list = {item1, item2, item3, item4, item5, item6, item7, item8}";
-        assertDoesNotThrow(() ->
-            detector.detectAlignmentInconsistent(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentIndentationOnlyTabs() {
-        String content = "f[x_] := Module[{y},\n\ty = x + 1;\n\tz = x + 2;\n\ty + z\n]";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentIndentation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentIndentationOnlySpaces() {
-        String content = "f[x_] := Module[{y},\n  y = x + 1;\n  z = x + 2;\n  y + z\n]";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentIndentation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectInconsistentIndentationEmptyLines() {
-        String content = "f[x_] := Module[{y},\n\n\n  y = x + 1\n]";
-        assertDoesNotThrow(() ->
-            detector.detectInconsistentIndentation(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBraceStyleConsistentSameLine() {
-        String content = "f[x_] := {x + 1}; g[y_] := {y + 2}; h[z_] := {z + 3};";
-        assertDoesNotThrow(() ->
-            detector.detectBraceStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBraceStyleConsistentNewLine() {
-        String content = "f[x_] :=\n{x + 1};\ng[y_] :=\n{y + 2};\nh[z_] :=\n{z + 3};";
-        assertDoesNotThrow(() ->
-            detector.detectBraceStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectBraceStyleFewOccurrences() {
-        String content = "f[x_] := {x + 1}; g[y_] :=\n{y + 2};";
-        assertDoesNotThrow(() ->
-            detector.detectBraceStyle(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectTooManyReturnPointsWithoutIssue() {
-        String content = "Func[x] := Module[{}, If[x > 0, Return[1]]; Return[0]]";
-        assertDoesNotThrow(() ->
-            detector.detectTooManyReturnPoints(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingBlankLineAfterFunctionWithComment() {
-        String content = "Func1[x_] := x + 1\n(* Comment *)\nFunc2[y_] := y + 2";
-        assertDoesNotThrow(() ->
-            detector.detectMissingBlankLineAfterFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingBlankLineAfterFunctionWithBlankLine() {
-        String content = "Func1[x_] := x + 1\n\nFunc2[y_] := y + 2";
-        assertDoesNotThrow(() ->
-            detector.detectMissingBlankLineAfterFunction(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingBlankLineAfterFunctionLastLine() {
-        String content = "Func1[x_] := x + 1";
-        assertDoesNotThrow(() ->
-            detector.detectMissingBlankLineAfterFunction(context, inputFile, content)
-        );
-    }
-
-    // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
+                                                        // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
 
     @Test
     void testDetectInconsistentIndentationTriggered() {
@@ -1523,8 +436,8 @@ class StyleAndConventionsDetectorTest {
     // ===== EXCEPTION HANDLING TESTS FOR ALL 68 CATCH BLOCKS =====
 
     @Test
-    void testAllDetectMethodsWithMalformedInput() {
-        // Target all 68 catch blocks with null content to trigger exceptions
+    void testAllDetectMethodsWithMalformedInputPart1() {
+        // Test methods 1-23 with null content to trigger exception handlers
         String content = null;
         assertDoesNotThrow(() -> detector.detectLineTooLong(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectInconsistentIndentation(context, inputFile, content));
@@ -1549,6 +462,12 @@ class StyleAndConventionsDetectorTest {
         assertDoesNotThrow(() -> detector.detectVariableNameMatchesBuiltin(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectParameterNameSameAsFunction(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectInconsistentNamingStyle(context, inputFile, content));
+    }
+
+    @Test
+    void testAllDetectMethodsWithMalformedInputPart2() {
+        // Test methods 24-46 with null content to trigger exception handlers
+        String content = null;
         assertDoesNotThrow(() -> detector.detectNumberInName(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectHungarianNotation(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectAbbreviationUnclear(context, inputFile, content));
@@ -1572,6 +491,12 @@ class StyleAndConventionsDetectorTest {
         assertDoesNotThrow(() -> detector.detectIdenticalIfBranches(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectDuplicateCodeBlock(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectGodFunction(context, inputFile, content));
+    }
+
+    @Test
+    void testAllDetectMethodsWithMalformedInputPart3() {
+        // Test methods 47-68 with null content to trigger exception handlers
+        String content = null;
         assertDoesNotThrow(() -> detector.detectFeatureEnvy(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectPrimitiveObsession(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectGlobalStateModification(context, inputFile, content));
@@ -1595,4 +520,936 @@ class StyleAndConventionsDetectorTest {
         assertDoesNotThrow(() -> detector.detectAssociationKeyNotString(context, inputFile, content));
         assertDoesNotThrow(() -> detector.detectPatternTestVsCondition(context, inputFile, content));
     }
+
+    // ===== PARAMETERIZED TESTS =====
+
+    @ParameterizedTest
+    @MethodSource("detectAbbreviationUnclearTestData")
+    void testDetectDetectAbbreviationUnclear(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAbbreviationUnclear(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAbbreviationUnclearTestData() {
+        return Stream.of(
+            Arguments.of("tmp = 5; val = 10; cnt = 0; msg = \\\"hello\\"),
+            Arguments.of("temporary = 5; value = 10; counter = 0; message = \\\"hello\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectAcronymStyleTestData")
+    void testDetectDetectAcronymStyle(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAcronymStyle(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAcronymStyleTestData() {
+        return Stream.of(
+            Arguments.of("XMLParser = 1; HttpRequest = 2;"),
+            Arguments.of("XmlParser = 1; HttpRequest = 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectAlignmentInconsistentTestData")
+    void testDetectDetectAlignmentInconsistent(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAlignmentInconsistent(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAlignmentInconsistentTestData() {
+        return Stream.of(
+            Arguments.of("list = {1, 2, 3}"),
+            Arguments.of("list = {item1, item2, item3, item4, item5, item6, item7, item8}")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectAssociationKeyNotStringTestData")
+    void testDetectDetectAssociationKeyNotString(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectAssociationKeyNotString(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectAssociationKeyNotStringTestData() {
+        return Stream.of(
+            Arguments.of("assoc = Association[1 -> \\\"value\\\", 2 -> \\\"other\\\"]"),
+            Arguments.of("assoc = Association[\\\"key1\\\" -> \\\"value\\\", \\\"key2\\\" -> \\\"other\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectBooleanComparisonTestData")
+    void testDetectDetectBooleanComparison(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectBooleanComparison(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectBooleanComparisonTestData() {
+        return Stream.of(
+            Arguments.of("If[flag == True, doSomething[]]"),
+            Arguments.of("If[flag, doSomething[]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectBooleanExpressionTooComplexTestData")
+    void testDetectDetectBooleanExpressionTooComplex(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectBooleanExpressionTooComplex(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectBooleanExpressionTooComplexTestData() {
+        return Stream.of(
+            Arguments.of("result = a && b || c && d || e && f || g && h || i && j || k"),
+            Arguments.of("result = a && b || c")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectBooleanNameNonDescriptiveTestData")
+    void testDetectDetectBooleanNameNonDescriptive(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectBooleanNameNonDescriptive(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectBooleanNameNonDescriptiveTestData() {
+        return Stream.of(
+            Arguments.of("valid = True; flag = False;"),
+            Arguments.of("isValid = True; hasData = False; canExecute = True;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectBraceStyleTestData")
+    void testDetectDetectBraceStyle(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectBraceStyle(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectBraceStyleTestData() {
+        return Stream.of(
+            Arguments.of("If[condition,\\n{\\n  x = 1\\n}\\n,\\n{\\n  x = 2\\n}\\n]"),
+            Arguments.of("f[x_] := {x + 1}; g[y_] := {y + 2}; h[z_] := {z + 3};"),
+            Arguments.of("f[x_] :=\\n{x + 1};\\ng[y_] :=\\n{y + 2};\\nh[z_] :=\\n{z + 3};"),
+            Arguments.of("f[x_] := {x + 1}; g[y_] :=\\n{y + 2};")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectBracketSpacingTestData")
+    void testDetectDetectBracketSpacing(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectBracketSpacing(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectBracketSpacingTestData() {
+        return Stream.of(
+            Arguments.of("f [x]"),
+            Arguments.of("f[x]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectCatchWithoutThrowTestData")
+    void testDetectDetectCatchWithoutThrow(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectCatchWithoutThrow(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectCatchWithoutThrowTestData() {
+        return Stream.of(
+            Arguments.of("result = Catch[someExpression]; otherCode;"),
+            Arguments.of("result = Catch[Throw[value]];"),
+            Arguments.of("result = someValue;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectChainedCallsTooLongTestData")
+    void testDetectDetectChainedCallsTooLong(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectChainedCallsTooLong(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectChainedCallsTooLongTestData() {
+        return Stream.of(
+            Arguments.of("result = data // func1 // func2 // func3 // func4 // func5 // func6"),
+            Arguments.of("result = data // func1 // func2")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectConditionalComplexityTestData")
+    void testDetectDetectConditionalComplexity(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectConditionalComplexity(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectConditionalComplexityTestData() {
+        return Stream.of(
+            Arguments.of("If[a > 0 && b < 10 || c == 5 && d != 3 || e >= 1 && f <= 100, result = True]"),
+            Arguments.of("If[a > 0 && b < 10, result = True]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectConstantNotUppercaseTestData")
+    void testDetectDetectConstantNotUppercase(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectConstantNotUppercase(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectConstantNotUppercaseTestData() {
+        return Stream.of(
+            Arguments.of("MaxValue = 100; MinValue = 0;"),
+            Arguments.of("MAXVALUE = 100; MINVALUE = 0;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDatasetWithoutHeadersTestData")
+    void testDetectDetectDatasetWithoutHeaders(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDatasetWithoutHeaders(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDatasetWithoutHeadersTestData() {
+        return Stream.of(
+            Arguments.of("Dataset[<|\\\"col1\\\" -> 1, \\\"col2\\\" -> 2|>]"),
+            Arguments.of("Dataset[Association[\\\"key\\\" -> \\\"value\\\"]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDeprecatedOptionUsageTestData")
+    void testDetectDetectDeprecatedOptionUsage(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDeprecatedOptionUsage(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDeprecatedOptionUsageTestData() {
+        return Stream.of(
+            Arguments.of("Plot[x, {x, 0, 1}, PlotRange -> Automatic]"),
+            Arguments.of("Plot[x, {x, 0, 1}, Frame -> True]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDuplicateCodeBlockTestData")
+    void testDetectDetectDuplicateCodeBlock(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDuplicateCodeBlock(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDuplicateCodeBlockTestData() {
+        return Stream.of(
+            Arguments.of("a = 1;\\nb = 2;\\nc = 3;\\nd = 4;\\ne = 5;\\n\\nf = 10;\\n\\na = 1;\\nb = 2;\\nc = 3;\\nd = 4;\\ne = 5;"),
+            Arguments.of("a = 1;\\nb = 2;\\nc = 3;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectDuplicateStringLiteralTestData")
+    void testDetectDetectDuplicateStringLiteral(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectDuplicateStringLiteral(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectDuplicateStringLiteralTestData() {
+        return Stream.of(
+            Arguments.of("a = \\\"constant\\"),
+            Arguments.of("a = \\\"value1\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectEmptyCatchBlockTestData")
+    void testDetectDetectEmptyCatchBlock(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectEmptyCatchBlock(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectEmptyCatchBlockTestData() {
+        return Stream.of(
+            Arguments.of("Catch[someExpression]"),
+            Arguments.of("Check[someExpression, errorHandler]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectEqualityCheckOnRealsTestData")
+    void testDetectDetectEqualityCheckOnReals(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectEqualityCheckOnReals(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectEqualityCheckOnRealsTestData() {
+        return Stream.of(
+            Arguments.of("If[1.0 == 2.0, True, False]"),
+            Arguments.of("If[x == y, True, False]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectExpressionTooComplexTestData")
+    void testDetectDetectExpressionTooComplex(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectExpressionTooComplex(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectExpressionTooComplexTestData() {
+        return Stream.of(
+            Arguments.of("result = a + b - c * d / e + f - g * h / i + j - k * l / m + n - o * p / q + r - s * t / u + v"),
+            Arguments.of("result = a + b * c")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectFeatureEnvyTestData")
+    void testDetectDetectFeatureEnvy(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFeatureEnvy(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectFeatureEnvyTestData() {
+        return Stream.of(
+            Arguments.of("MyFunc[obj_] := obj@field1 + obj@field2 + obj@field3 + obj@field4 + obj@field5 + obj@field6"),
+            Arguments.of("MyFunc[obj_] := obj + 1")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectFileEndsWithoutNewlineTestData")
+    void testDetectDetectFileEndsWithoutNewline(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFileEndsWithoutNewline(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectFileEndsWithoutNewlineTestData() {
+        return Stream.of(
+            Arguments.of("x = 1; y = 2;"),
+            Arguments.of("x = 1; y = 2;\\n")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectFunctionNameTooLongTestData")
+    void testDetectDetectFunctionNameTooLong(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFunctionNameTooLong(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectFunctionNameTooLongTestData() {
+        return Stream.of(
+            Arguments.of("ThisIsAnExtremelyLongFunctionNameThatExceedsFiftyCharactersInLength[x_] := x + 1"),
+            Arguments.of("GoodFunctionName[x_] := x + 1")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectFunctionNameTooShortTestData")
+    void testDetectDetectFunctionNameTooShort(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectFunctionNameTooShort(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectFunctionNameTooShortTestData() {
+        return Stream.of(
+            Arguments.of("a[x_] := x + 1; b[y_] := y * 2;"),
+            Arguments.of("f[x_] := x + 1; g[y_] := y + 2; h[z_] := z + 3;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectGenericNameTestData")
+    void testDetectDetectGenericName(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectGenericName(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectGenericNameTestData() {
+        return Stream.of(
+            Arguments.of("data = {1, 2, 3}; temp = 5; value = 10;"),
+            Arguments.of("customerData = {1, 2, 3}; userId = 5; productPrice = 10;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectGlobalStateModificationTestData")
+    void testDetectDetectGlobalStateModification(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectGlobalStateModification(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectGlobalStateModificationTestData() {
+        return Stream.of(
+            Arguments.of("GlobalVar = 42;"),
+            Arguments.of("Module[{GlobalVar}, GlobalVar = 42;]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectHardcodedPathTestData")
+    void testDetectDetectHardcodedPath(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectHardcodedPath(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectHardcodedPathTestData() {
+        return Stream.of(
+            Arguments.of("file = Import[\\\"/Users/username/Documents/data.csv\\\"]"),
+            Arguments.of("file = Import[\\\"data.csv\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectHardcodedUrlTestData")
+    void testDetectDetectHardcodedUrl(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectHardcodedUrl(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectHardcodedUrlTestData() {
+        return Stream.of(
+            Arguments.of("data = URLFetch[\\\"http://example.com/api/data\\\"]"),
+            Arguments.of("data = URLFetch[localUrl]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectHungarianNotationTestData")
+    void testDetectDetectHungarianNotation(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectHungarianNotation(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectHungarianNotationTestData() {
+        return Stream.of(
+            Arguments.of("strName = \\\"John\\"),
+            Arguments.of("name = \\\"John\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectIdenticalIfBranchesTestData")
+    void testDetectDetectIdenticalIfBranches(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectIdenticalIfBranches(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectIdenticalIfBranchesTestData() {
+        return Stream.of(
+            Arguments.of("If[condition, doSomething[], doSomething[]]"),
+            Arguments.of("If[condition, doSomething[], doOtherThing[]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectIncompletePatternMatchTestData")
+    void testDetectDetectIncompletePatternMatch(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectIncompletePatternMatch(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectIncompletePatternMatchTestData() {
+        return Stream.of(
+            Arguments.of("Switch[x, 1, \\\"one\\\", 2, \\\"two\\\"]"),
+            Arguments.of("Switch[x, 1, \\\"one\\\", 2, \\\"two\\\", _, \\\"default\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectInconsistentIndentationTestData")
+    void testDetectDetectInconsistentIndentation(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInconsistentIndentation(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectInconsistentIndentationTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := Module[{y},\\n\\ty = x + 1;\\n    z = x + 2;\\n\\ty + z\\n]"),
+            Arguments.of("f[x_] := Module[{y},\\n\\ty = x + 1;\\n\\tz = x + 2;\\n\\ty + z\\n]"),
+            Arguments.of("f[x_] := Module[{y},\\n  y = x + 1;\\n  z = x + 2;\\n  y + z\\n]"),
+            Arguments.of("f[x_] := Module[{y},\\n\\n\\n  y = x + 1\\n]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectInconsistentNamingStyleTestData")
+    void testDetectDetectInconsistentNamingStyle(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectInconsistentNamingStyle(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectInconsistentNamingStyleTestData() {
+        return Stream.of(
+            Arguments.of("camelCase = 1; snake_case = 2; PascalCase = 3;"),
+            Arguments.of("camelCase = 1; anotherCamelCase = 2;"),
+            Arguments.of("snake_case = 1; another_snake = 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectListQueryInefficientTestData")
+    void testDetectDetectListQueryInefficient(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectListQueryInefficient(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectListQueryInefficientTestData() {
+        return Stream.of(
+            Arguments.of("Do[result = MemberQ[bigList, x], {x, items}]"),
+            Arguments.of("result = MemberQ[bigList, x]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMagicStringTestData")
+    void testDetectDetectMagicString(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMagicString(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMagicStringTestData() {
+        return Stream.of(
+            Arguments.of("If[status == \\\"active\\\", Print[\\\"active\\\"], Print[\\\"inactive\\\"]]"),
+            Arguments.of("If[status == \\\"active\\\", Print[\\\"running\\\"], Print[\\\"stopped\\\"]]"),
+            Arguments.of("a = \\\"x\\")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingBlankLineAfterFunctionTestData")
+    void testDetectDetectMissingBlankLineAfterFunction(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingBlankLineAfterFunction(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingBlankLineAfterFunctionTestData() {
+        return Stream.of(
+            Arguments.of("Func1[x_] := x + 1\\nFunc2[y_] := y + 2"),
+            Arguments.of("Func1[x_] := x + 1\\n(* Comment *)\\nFunc2[y_] := y + 2"),
+            Arguments.of("Func1[x_] := x + 1\\n\\nFunc2[y_] := y + 2"),
+            Arguments.of("Func1[x_] := x + 1")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMissingOptionDefaultTestData")
+    void testDetectDetectMissingOptionDefault(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMissingOptionDefault(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMissingOptionDefaultTestData() {
+        return Stream.of(
+            Arguments.of("value = OptionValue[\\\"MyOption\\\"]"),
+            Arguments.of("value = OptionValue[\\\"MyOption\\\", defaultValue]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectMultipleBlankLinesTestData")
+    void testDetectDetectMultipleBlankLines(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectMultipleBlankLines(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectMultipleBlankLinesTestData() {
+        return Stream.of(
+            Arguments.of("x = 1;\\n\\n\\n\\ny = 2;"),
+            Arguments.of("x = 1;\\n\\ny = 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNegatedBooleanComparisonTestData")
+    void testDetectDetectNegatedBooleanComparison(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNegatedBooleanComparison(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNegatedBooleanComparisonTestData() {
+        return Stream.of(
+            Arguments.of("If[Not[flag == True], doSomething[]]"),
+            Arguments.of("If[x != y, doSomething[]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNegatedBooleanNameTestData")
+    void testDetectDetectNegatedBooleanName(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNegatedBooleanName(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNegatedBooleanNameTestData() {
+        return Stream.of(
+            Arguments.of("notValid = False; isNotEnabled = True;"),
+            Arguments.of("isValid = False; isEnabled = True;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNestedBracketsExcessiveTestData")
+    void testDetectDetectNestedBracketsExcessive(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNestedBracketsExcessive(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNestedBracketsExcessiveTestData() {
+        return Stream.of(
+            Arguments.of("result = f[g[h[i[j[k[l[x]]]]]]]"),
+            Arguments.of("result = f[g[h[i[j[x]]]]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNestingTooDeepTestData")
+    void testDetectDetectNestingTooDeep(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNestingTooDeep(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNestingTooDeepTestData() {
+        return Stream.of(
+            Arguments.of("If[a, If[b, If[c, If[d, If[e, If[f, True]]]]]]"),
+            Arguments.of("If[a, If[b, If[c, True]]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectNumberInNameTestData")
+    void testDetectDetectNumberInName(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectNumberInName(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectNumberInNameTestData() {
+        return Stream.of(
+            Arguments.of("var1 = 5; var2 = 10; temp3 = 15;"),
+            Arguments.of("x1 = 5; y2 = 10; z3 = 15;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectOptionNameUnclearTestData")
+    void testDetectDetectOptionNameUnclear(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectOptionNameUnclear(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectOptionNameUnclearTestData() {
+        return Stream.of(
+            Arguments.of("MyFunction[OptionPattern[{opt1 -> 1}]]"),
+            Arguments.of("MyFunction[OptionPattern[{backgroundColor -> White}]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPackageNameCaseTestData")
+    void testDetectDetectPackageNameCase(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPackageNameCase(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPackageNameCaseTestData() {
+        return Stream.of(
+            Arguments.of("BeginPackage[\\\"my_package`Utils\\\"]"),
+            Arguments.of("BeginPackage[\\\"MyPackage`Utils\\\"]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPackageTooManyExportsTestData")
+    void testDetectDetectPackageTooManyExports(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPackageTooManyExports(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPackageTooManyExportsTestData() {
+        return Stream.of(
+            Arguments.of("e1[]:=1; e2[]:=2; e3[]:=3;"),
+            Arguments.of("BeginPackage[\\\"Test`\\\"]; Func1[x_]:=x+1; Func2[y_]:=y+2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectParameterNameSameAsFunctionTestData")
+    void testDetectDetectParameterNameSameAsFunction(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectParameterNameSameAsFunction(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectParameterNameSameAsFunctionTestData() {
+        return Stream.of(
+            Arguments.of("MyFunc[myFunc_] := myFunc + 1"),
+            Arguments.of("MyFunc[param_] := param + 1")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectParenthesesUnnecessaryTestData")
+    void testDetectDetectParenthesesUnnecessary(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectParenthesesUnnecessary(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectParenthesesUnnecessaryTestData() {
+        return Stream.of(
+            Arguments.of("result = (((x + y)))"),
+            Arguments.of("result = (x + y)")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPatternTestVsConditionTestData")
+    void testDetectDetectPatternTestVsCondition(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPatternTestVsCondition(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPatternTestVsConditionTestData() {
+        return Stream.of(
+            Arguments.of("f[x_ /; IntegerQ[x]] := x + 1"),
+            Arguments.of("f[x_?IntegerQ] := x + 1")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPlotWithoutLabelsTestData")
+    void testDetectDetectPlotWithoutLabels(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPlotWithoutLabels(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPlotWithoutLabelsTestData() {
+        return Stream.of(
+            Arguments.of("Plot[x^2, {x, 0, 10}]"),
+            Arguments.of("Plot[x^2, {x, 0, 10}, AxesLabel -> {\\\"x\\\", \\\"y\\\"}]"),
+            Arguments.of("Plot[x^2, {x, 0, 10}, FrameLabel -> {\\\"x\\\", \\\"y\\\"}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectPrimitiveObsessionTestData")
+    void testDetectDetectPrimitiveObsession(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectPrimitiveObsession(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectPrimitiveObsessionTestData() {
+        return Stream.of(
+            Arguments.of("MyFunc[str1_, str2_, str3_, int1_, int2_, int3_, flag1_, flag2_] := str1 <> str2"),
+            Arguments.of("MyFunc[str1_, str2_] := str1 <> str2"),
+            Arguments.of("MyFunc[str1_String, str2_Integer, flag_?IntegerQ] := str1 <> ToString[str2]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectRedundantConditionalTestData")
+    void testDetectDetectRedundantConditional(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectRedundantConditional(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectRedundantConditionalTestData() {
+        return Stream.of(
+            Arguments.of("If[x > 5, True, False]"),
+            Arguments.of("If[x > 5, doSomething[], doOtherThing[]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSemicolonStyleTestData")
+    void testDetectDetectSemicolonStyle(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSemicolonStyle(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSemicolonStyleTestData() {
+        return Stream.of(
+            Arguments.of("a = 1;; b = 2;"),
+            Arguments.of("a = 1; b = 2;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSideEffectInExpressionTestData")
+    void testDetectDetectSideEffectInExpression(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSideEffectInExpression(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSideEffectInExpressionTestData() {
+        return Stream.of(
+            Arguments.of("result = x + (y = 5)"),
+            Arguments.of("result = x + y"),
+            Arguments.of("result[x_] := Module[{y = x + 1}, y]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectStringConcatenationInLoopTestData")
+    void testDetectDetectStringConcatenationInLoop(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectStringConcatenationInLoop(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectStringConcatenationInLoopTestData() {
+        return Stream.of(
+            Arguments.of("Do[str = str <> ToString[i], {i, 100}]"),
+            Arguments.of("Do[result = Calculate[i], {i, 100}]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectSymbolicVsNumericMismatchTestData")
+    void testDetectDetectSymbolicVsNumericMismatch(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectSymbolicVsNumericMismatch(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectSymbolicVsNumericMismatchTestData() {
+        return Stream.of(
+            Arguments.of("Solve[x^2 + 1.5*x + 1 == 0, x]"),
+            Arguments.of("Solve[x^2 + x + 1 == 0, x]"),
+            Arguments.of("NSolve[x^2 + x + 1 == 0, x]"),
+            Arguments.of("x = 5; y = 10;")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTooManyParametersTestData")
+    void testDetectDetectTooManyParameters(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTooManyParameters(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTooManyParametersTestData() {
+        return Stream.of(
+            Arguments.of("MyFunction[a, b, c, d, e, f, g, h] := a + b + c + d + e + f + g + h"),
+            Arguments.of("MyFunction[a, b, c] := a + b + c")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTooManyReturnPointsTestData")
+    void testDetectDetectTooManyReturnPoints(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTooManyReturnPoints(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTooManyReturnPointsTestData() {
+        return Stream.of(
+            Arguments.of("Func[x] := Module[{}, Return[1]; Return[2]; Return[3]; Return[4]; Return[5]; Return[6]]"),
+            Arguments.of("Func[x] := Module[{}, If[x > 0, Return[1]]; Return[0]]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTooManyVariablesTestData")
+    void testDetectDetectTooManyVariables(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTooManyVariables(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTooManyVariablesTestData() {
+        return Stream.of(
+            Arguments.of("Module[{a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q}, a + b + c]"),
+            Arguments.of("Module[{a, b, c}, a + b + c]")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectTrailingWhitespaceTestData")
+    void testDetectDetectTrailingWhitespace(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectTrailingWhitespace(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectTrailingWhitespaceTestData() {
+        return Stream.of(
+            Arguments.of("x = 5;   \\ny = 10;\\t\\n"),
+            Arguments.of("x = 5;\\ny = 10;\\n")
+        );
+    }
+
+    @ParameterizedTest
+    @MethodSource("detectVariableNameTooShortTestData")
+    void testDetectDetectVariableNameTooShort(String content) {
+        assertDoesNotThrow(() ->
+            detector.detectVariableNameTooShort(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> detectVariableNameTooShortTestData() {
+        return Stream.of(
+            Arguments.of("a = 5; b = 10; c = 15;"),
+            Arguments.of("i = 1; j = 2; k = 3;")
+        );
+    }
+
 }
