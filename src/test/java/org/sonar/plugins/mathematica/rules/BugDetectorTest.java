@@ -866,7 +866,24 @@ class BugDetectorTest {
             // Map (/@) - apply function to each element
             Arguments.of("outList = Sort[FileBaseName /@ FileBaseName /@ FileNames[\"*.html\"]];"),
             Arguments.of("inList = Sort[FileBaseName /@ buildList];"),
-            Arguments.of("result = f /@ {1, 2, 3};")
+            Arguments.of("result = f /@ {1, 2, 3};"),
+
+            // Condition (/;) - pattern matching with conditions
+            Arguments.of("f_ /; StringContainsQ[f, excluded, IgnoreCase -> True]"),
+            Arguments.of("x_ /; x > 0 := Sqrt[x]"),
+            Arguments.of("pattern /; test := value"),
+
+            // TagSet (/:) - assign with tag
+            Arguments.of("f /: g[f[x_]] := x"),
+            Arguments.of("symbol /: definition = value"),
+
+            // ReplaceRepeated (//.) - repeated rule application
+            Arguments.of("expr //. {a -> b, b -> c}"),
+            Arguments.of("tree //. Node[x_] :> x"),
+
+            // ApplyTo (//=) - apply and assign
+            Arguments.of("data //= f"),
+            Arguments.of("result //= Simplify")
         );
     }
 }

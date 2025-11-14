@@ -178,56 +178,68 @@ public class InitializationTrackingVisitor implements AstVisitor {
      * - First argument is a list of variable declarations
      * - Variables can be uninitialized (just name) or initialized (name = value)
      * - Second argument is the body where these variables are used
-     *
-     * This method:
-     * 1. Extracts variable declarations from the first argument (ListNode)
-     * 2. For each declaration:
-     *    - If it's just an identifier: declare but don't mark as assigned
-     *    - If it's an assignment (Set): declare AND mark as assigned
-     * 3. Visits the body with the updated scope
      */
     private void handleScopingConstruct(FunctionCallNode node) {
         if (currentFunction == null) {
-            return; // Only track within function scope
+            return;
         }
 
         AstNode declarationList = node.getArguments().get(0);
         AstNode body = node.getArguments().get(1);
 
-        // Parse the declaration list {x, y = 5, z}
         if (declarationList instanceof ListNode) {
-            ListNode listNode = (ListNode) declarationList;
-            for (AstNode element : listNode.getElements()) {
-                if (element instanceof IdentifierNode) {
-                    // Uninitialized variable: Module[{x}, ...]
-                    // Don't add to currentlyAssigned - will be flagged if used before assignment
-                    String varName = ((IdentifierNode) element).getName();
-                    declaredVariables.get(currentFunction).add(varName);
-                } else if (element instanceof FunctionCallNode) {
-                    FunctionCallNode funcCall = (FunctionCallNode) element;
-                    // Initialized variable: Module[{x = 5}, ...]
-                    if (isAssignment(funcCall.getFunctionName())
-                        && funcCall.getArguments() != null
-                        && !funcCall.getArguments().isEmpty()) {
-                        AstNode firstArg = funcCall.getArguments().get(0);
-                        if (firstArg instanceof IdentifierNode) {
-                            String varName = ((IdentifierNode) firstArg).getName();
-                            declaredVariables.get(currentFunction).add(varName);
-                            currentlyAssigned.add(varName); // Mark as initialized
-                            assignedVariables.get(currentFunction).add(varName);
-                        }
-                        // Visit the initializer expression (right side of =)
-                        if (funcCall.getArguments().size() > 1) {
-                            funcCall.getArguments().get(1).accept(this);
-                        }
-                    }
-                }
-            }
+            processDeclarationList((ListNode) declarationList);
         }
 
-        // Now visit the body with the updated scope
         if (body != null) {
             body.accept(this);
+        }
+    }
+
+    /**
+     * Process the declaration list from Module/Block/With constructs.
+     * Handles both uninitialized ({x}) and initialized ({x = 5}) variables.
+     */
+    private void processDeclarationList(ListNode listNode) {
+        for (AstNode element : listNode.getElements()) {
+            if (element instanceof IdentifierNode) {
+                processUninitializedVariable((IdentifierNode) element);
+            } else if (element instanceof FunctionCallNode) {
+                processInitializedVariable((FunctionCallNode) element);
+            }
+        }
+    }
+
+    /**
+     * Process an uninitialized variable declaration: Module[{x}, ...]
+     */
+    private void processUninitializedVariable(IdentifierNode identifierNode) {
+        String varName = identifierNode.getName();
+        declaredVariables.get(currentFunction).add(varName);
+    }
+
+    /**
+     * Process an initialized variable declaration: Module[{x = 5}, ...]
+     */
+    private void processInitializedVariable(FunctionCallNode funcCall) {
+        if (!isAssignment(funcCall.getFunctionName()) || funcCall.getArguments() == null) {
+            return;
+        }
+
+        if (funcCall.getArguments().isEmpty()) {
+            return;
+        }
+
+        AstNode firstArg = funcCall.getArguments().get(0);
+        if (firstArg instanceof IdentifierNode) {
+            String varName = ((IdentifierNode) firstArg).getName();
+            declaredVariables.get(currentFunction).add(varName);
+            currentlyAssigned.add(varName);
+            assignedVariables.get(currentFunction).add(varName);
+        }
+
+        if (funcCall.getArguments().size() > 1) {
+            funcCall.getArguments().get(1).accept(this);
         }
     }
 
