@@ -41,7 +41,7 @@ public class MathematicaMetricsSensor implements Sensor {
     // Pre-compiled patterns for statement estimation (PERFORMANCE OPTIMIZATION)
     // NOTE: COMMENT_REMOVAL_PATTERN removed - using character-based parser to avoid catastrophic backtracking
     private static final Pattern DELAYED_ASSIGN_PATTERN = Pattern.compile(":=");
-    private static final Pattern ASSIGN_PATTERN = Pattern.compile("\\s=\\s");
+    private static final Pattern ASSIGN_PATTERN = Pattern.compile("\\s=(?![=!:])\\s");
     private static final Pattern FUNCTION_CALL_PATTERN = Pattern.compile("[a-zA-Z]\\w*\\[");
 
     @Override

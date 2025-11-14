@@ -956,7 +956,7 @@ public class QuickFixProvider {
             .message("Add $Failed check");
 
         String originalText = content.substring(start, end);
-        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=\\s*+(Import|Get)\\s*+\\[");
+        Pattern pattern = Pattern.compile("([a-zA-Z]\\w*)\\s*+=(?![=!:])\\s*+(Import|Get)\\s*+\\[");
         Matcher matcher = pattern.matcher(originalText);
 
         if (matcher.find()) {

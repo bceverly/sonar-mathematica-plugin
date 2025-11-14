@@ -75,7 +75,7 @@ public class AdvancedAnalysisDetector extends BaseDetector {
     private static final Pattern THROW = Pattern.compile("Throw\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern ABORT = Pattern.compile("Abort\\s*+\\[\\s*+\\]"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern MESSAGE_CALL = Pattern.compile("Message\\s*+\\[\\s*+(\\w++)::(\\w++)"); //NOSONAR
-    private static final Pattern MESSAGE_DEF = Pattern.compile("(\\w++)::(\\w++)\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
+    private static final Pattern MESSAGE_DEF = Pattern.compile("(\\w++)::(\\w++)\\s*+=(?![=!:])"); //NOSONAR - Possessive quantifiers prevent backtracking
 
     // Compilation patterns
     private static final Pattern COMPILE = Pattern.compile("Compile\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking

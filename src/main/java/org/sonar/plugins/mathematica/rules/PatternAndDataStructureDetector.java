@@ -22,7 +22,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
 
     // Pre-compiled patterns for Pattern System Rules
     // Note: Cannot use possessive on \w+ before _ since \w includes _, and [^]]* needs backtracking in bracket contexts
-    private static final Pattern UNRESTRICTED_BLANK = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*\\b\\w+_\\b[^\\]]*)\\]\\s*+:?+="); //NOSONAR
+    private static final Pattern UNRESTRICTED_BLANK = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*\\b\\w+_\\b[^\\]]*)\\]\\s*+:?+=(?![=!:])"); //NOSONAR
     //NOSONAR - Possessive quantifiers prevent backtracking
     // Note: \w+ before _ must be non-possessive since \w includes _
     private static final Pattern PATTERN_TEST_CONDITION = Pattern.compile("\\b(\\w+)_\\s*+/;\\s*+(\\w+Q)\\[\\1\\]"); //NOSONAR
@@ -32,7 +32,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern PATTERN_ALTERNATIVES = Pattern.compile("(\\w+)_([a-zA-Z]\\w*)\\s*+\\|\\s*+\\1_"); //NOSONAR
     private static final Pattern PATTERN_TEST_PURE = Pattern.compile("\\w+_\\?\\(\\s*+#"); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern OPTIONS_PATTERN_USAGE = Pattern.compile("\\b\\w+___(?!\\s*:?+\\s*+OptionsPattern)"); //NOSONAR
-    private static final Pattern FUNCTION_DEFINITION = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+)\\]\\s*+:?+="); //NOSONAR
+    private static final Pattern FUNCTION_DEFINITION = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[([^\\]]*+)\\]\\s*+:?+=(?![=!:])"); //NOSONAR
     private static final Pattern VERBATIM_USAGE = Pattern.compile("\\bVerbatim\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
     private static final Pattern HOLDPATTERN_USAGE = Pattern.compile("\\bHoldPattern\\s*+\\[([^\\]]*+)\\]"); //NOSONAR
     private static final Pattern LONGEST_SHORTEST = Pattern.compile("\\b(Longest|Shortest)\\s*+\\["); //NOSONAR
@@ -60,7 +60,7 @@ public class PatternAndDataStructureDetector extends BaseDetector {
     private static final Pattern ASSOC_POSITIONAL = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[\\[\\s*+\\d++\\s*+\\]\\]"); //NOSONAR
     private static final Pattern SELECT_KEYS = Pattern.compile("Select\\s*+\\[\\s*+Keys\\s*+\\[\\s*+(\\w++)\\s*+\\]"); //NOSONAR
     private static final Pattern QUERY_USAGE = Pattern.compile("Query\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern ASSOC_DIRECT_ASSIGN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[\\s*+\"[^\"]+\"\\s*+\\]\\s*+="); //NOSONAR
+    private static final Pattern ASSOC_DIRECT_ASSIGN = Pattern.compile("([a-zA-Z]\\w*+)\\s*+\\[\\s*+\"[^\"]+\"\\s*+\\]\\s*+=(?![=!:])"); //NOSONAR
     private static final Pattern MERGE_USAGE = Pattern.compile("Merge\\s*+\\[\\s*+\\{[^}]+\\}\\s*+\\](?!\\s*,)"); //NOSONAR
     private static final Pattern ASSOCIATETO_USAGE = Pattern.compile("AssociateTo\\s*+\\[\\s*+(<\\|[^|]+\\|>)"); //NOSONAR
     private static final Pattern KEYDROP_CHAIN = Pattern.compile("KeyDrop\\s*+\\[\\s*+KeyDrop\\s*+\\["); //NOSONAR

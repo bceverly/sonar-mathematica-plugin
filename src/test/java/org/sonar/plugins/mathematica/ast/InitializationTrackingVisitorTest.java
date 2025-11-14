@@ -15,7 +15,6 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -70,9 +69,43 @@ class InitializationTrackingVisitorTest {
 
         visitor.visit(funcNode);
 
-        // param1 is used before assignment (declared as parameter but not assigned)
+        // param1 is a function parameter, so it should NOT be flagged as used before assignment
+        // Parameters are pre-initialized by the function caller
         Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
-        assertTrue(uninitVars.contains("param1"), "param1 should be detected as used before assignment");
+        assertFalse(uninitVars.contains("param1"), "param1 is a parameter and should not be flagged");
+    }
+
+    @Test
+    void testFunctionParametersArePreInitialized() {
+        // Regression test for false positive: "Parameter 'outputDir' in function 'makeMathematicaNotebook'
+        // may be used before assignment" - this was incorrectly flagged because parameters
+        // were not treated as pre-initialized.
+
+        // Simulate makeMathematicaNotebook[inputDir_, outputDir_, language_, filename_, ...] := ...
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "makeMathematicaNotebook",
+            Arrays.asList("inputDir", "outputDir", "highAndLowResolution", "language", "filename", "releaseVersion"),
+            new CompoundExpressionNode(
+                Arrays.asList(
+                    new IdentifierNode("outputDir", 2, 0, 2, 9),      // Using outputDir
+                    new IdentifierNode("language", 3, 0, 3, 8),       // Using language
+                    new IdentifierNode("filename", 4, 0, 4, 8)        // Using filename
+                ),
+                false, 1, 0, 5, 0
+            ),
+            false,
+            1, 0, 5, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("makeMathematicaNotebook");
+
+        // All parameters should be treated as pre-initialized, so none should be flagged
+        assertFalse(uninitVars.contains("outputDir"), "outputDir is a parameter - should not be flagged");
+        assertFalse(uninitVars.contains("language"), "language is a parameter - should not be flagged");
+        assertFalse(uninitVars.contains("filename"), "filename is a parameter - should not be flagged");
+        assertTrue(uninitVars.isEmpty(), "No parameters should be flagged as uninitialized");
     }
 
     // ===== TEST GROUP 2: visit(FunctionCallNode) - Assignment Detection (Lines 71-80) =====
@@ -198,10 +231,12 @@ class InitializationTrackingVisitorTest {
     @Test
     void testVisitIdentifierNodeUsedBeforeAssignment() {
         // Test Line 99-104: Complete used-before-assigned detection logic
+        // NOTE: Function parameters should NOT be flagged - they are pre-initialized
+        // This test now verifies that parameters are correctly treated as initialized
         FunctionDefNode funcNode = new FunctionDefNode(
             "myFunc",
-            Arrays.asList("uninitVar"),  // Declared but not assigned
-            new IdentifierNode("uninitVar", 1, 10, 1, 19),  // Used here
+            Arrays.asList("paramVar"),  // Parameter - pre-initialized by caller
+            new IdentifierNode("paramVar", 1, 10, 1, 18),  // Used here
             false,
             1, 0, 1, 25
         );
@@ -209,8 +244,8 @@ class InitializationTrackingVisitorTest {
         visitor.visit(funcNode);
 
         Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("myFunc");
-        assertTrue(uninitVars.contains("uninitVar"),
-            "uninitVar should be detected as used before assignment");
+        assertFalse(uninitVars.contains("paramVar"),
+            "paramVar is a parameter and should not be flagged as used before assignment");
     }
 
     @Test
@@ -315,7 +350,8 @@ class InitializationTrackingVisitorTest {
 
     @Test
     void testIsLikelyFalsePositiveLongLowercaseVariable() {
-        // Long variable starting with lowercase should NOT be filtered
+        // NOTE: Function parameters are now pre-initialized, so they won't be flagged
+        // regardless of their name. This test verifies parameters are not flagged.
         String longVar = "veryLongLowercaseVariableName";  // 29 chars, starts with lowercase
         FunctionDefNode funcNode = new FunctionDefNode(
             "testFunc",
@@ -328,8 +364,8 @@ class InitializationTrackingVisitorTest {
         visitor.visit(funcNode);
 
         Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
-        assertTrue(uninitVars.contains(longVar),
-            "Long lowercase variable should NOT be filtered (should be detected)");
+        assertFalse(uninitVars.contains(longVar),
+            "Long lowercase parameter should not be flagged - parameters are pre-initialized");
     }
 
     // ===== TEST GROUP 5: visit(LiteralNode) - Lines 151-153 =====
@@ -360,32 +396,21 @@ class InitializationTrackingVisitorTest {
 
     @Test
     void testGetAllVariablesUsedBeforeAssignmentMultipleFunctions() {
-        // Test Line 175-187: Iteration over all functions with uninitialized variables
-        // Function 1 with 2 uninitialized variables
+        // Test Line 175-187: Iteration over all functions
+        // NOTE: With parameters now pre-initialized, these functions won't have uninitialized vars
         FunctionDefNode func1 = createFunctionWithUninitializedVars("func1", "var1", "var2");
         visitor.visit(func1);
 
-        // Function 2 with 1 uninitialized variable
         FunctionDefNode func2 = createFunctionWithUninitializedVars("func2", "var3");
         visitor.visit(func2);
 
-        // Function 3 with no uninitialized variables (all assigned)
         FunctionDefNode func3 = createFunctionWithAssignments("func3", "var4");
         visitor.visit(func3);
 
         Map<String, Set<String>> allUninit = visitor.getAllVariablesUsedBeforeAssignment();
 
-        assertEquals(2, allUninit.size(), "Should return 2 functions with uninitialized vars");
-        assertTrue(allUninit.containsKey("func1"));
-        assertTrue(allUninit.containsKey("func2"));
-        assertFalse(allUninit.containsKey("func3"), "func3 has no uninitialized vars, should not be included");
-
-        assertEquals(2, allUninit.get("func1").size());
-        assertTrue(allUninit.get("func1").contains("var1"));
-        assertTrue(allUninit.get("func1").contains("var2"));
-
-        assertEquals(1, allUninit.get("func2").size());
-        assertTrue(allUninit.get("func2").contains("var3"));
+        // All variables are parameters, so they're pre-initialized - no functions should be flagged
+        assertTrue(allUninit.isEmpty(), "Parameters are pre-initialized, so no uninitialized vars should be detected");
     }
 
     @Test
@@ -402,15 +427,14 @@ class InitializationTrackingVisitorTest {
     @Test
     void testGetVariablesUsedBeforeAssignmentSpecificFunction() {
         // Test the simpler getter for a specific function
-        FunctionDefNode func = createFunctionWithUninitializedVars("targetFunc", "uninit1", "uninit2");
+        // NOTE: Parameters are now pre-initialized, so no variables will be flagged
+        FunctionDefNode func = createFunctionWithUninitializedVars("targetFunc", "param1", "param2");
         visitor.visit(func);
 
         Set<String> vars = visitor.getVariablesUsedBeforeAssignment("targetFunc");
 
         assertNotNull(vars);
-        assertEquals(2, vars.size());
-        assertTrue(vars.contains("uninit1"));
-        assertTrue(vars.contains("uninit2"));
+        assertTrue(vars.isEmpty(), "Parameters are pre-initialized, so no uninitialized vars");
     }
 
     @Test
@@ -436,18 +460,18 @@ class InitializationTrackingVisitorTest {
     }
 
     private FunctionDefNode createFunctionWithUninitializedVars(String funcName, String... varNames) {
-        // Create a function that uses variables without assigning them first
+        // NOTE: With the fix for parameters being pre-initialized, this helper now creates
+        // functions where parameters are used (and are correctly pre-initialized).
+        // These tests now verify that parameters are NOT incorrectly flagged.
         List<String> params = Arrays.asList(varNames);
 
         // Create a CompoundExpressionNode that contains all variable usages
-        // This ensures the identifiers are visited while the function context is still active
         List<AstNode> expressions = new ArrayList<>();
         for (String varName : varNames) {
             expressions.add(new IdentifierNode(varName, 1, 0, 1, varName.length()));
         }
 
         // Use first identifier as body (or create CompoundExpression if that class exists)
-        // For simplicity, just use the first identifier - the visitor will still track it
         AstNode body;
         if (expressions.isEmpty()) {
             body = null;
@@ -499,12 +523,13 @@ class InitializationTrackingVisitorTest {
     @Test
     void testCompleteWorkflow() {
         // Test a complete workflow: function definition -> assignments -> usages
+        // NOTE: var1 and var2 are PARAMETERS, so they are pre-initialized by the caller
         List<AstNode> body = new ArrayList<>();
 
-        // Use var1 before assignment (should be detected)
+        // Use var1 (it's a parameter, so it's already initialized)
         body.add(new IdentifierNode("var1", 2, 0, 2, 4));
 
-        // Assign var2
+        // Assign var2 (even though it's already initialized as a parameter)
         body.add(new FunctionCallNode(
             "Set",
             Arrays.asList(
@@ -514,7 +539,7 @@ class InitializationTrackingVisitorTest {
             3, 0, 3, 9
         ));
 
-        // Use var2 after assignment (should NOT be detected)
+        // Use var2 after assignment
         body.add(new IdentifierNode("var2", 4, 0, 4, 4));
 
         FunctionDefNode funcNode = new FunctionDefNode(
@@ -534,9 +559,10 @@ class InitializationTrackingVisitorTest {
 
         Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("complexFunc");
 
-        assertTrue(uninitVars.contains("var1"),
-            "var1 should be detected as used before assignment");
+        // Both var1 and var2 are parameters, so they're pre-initialized - neither should be flagged
+        assertFalse(uninitVars.contains("var1"),
+            "var1 is a parameter and should not be flagged");
         assertFalse(uninitVars.contains("var2"),
-            "var2 should NOT be detected since it was assigned before use");
+            "var2 is a parameter and should not be flagged");
     }
 }

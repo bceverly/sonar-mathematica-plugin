@@ -33,7 +33,7 @@ public class MathematicaParser {
     // PERFORMANCE FIX: Possessive quantifier (*+) prevents catastrophic backtracking on long strings
     private static final Pattern STRING_PATTERN = Pattern.compile("\"(?:[^\"\\\\]|\\\\.)*+\"");
     private static final Pattern FUNCTION_DEF_PATTERN = Pattern.compile(
-        "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\[([^\\]]*+)\\]\\s*+(:?=)"
+        "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\[([^\\]]*+)\\]\\s*+(:?=)(?![=!:])"
     );
     private static final Pattern FUNCTION_CALL_PATTERN = Pattern.compile(
         "([a-zA-Z$][a-zA-Z0-9$]*+)\\s*+\\[([^\\]]*+)\\]"

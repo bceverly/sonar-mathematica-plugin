@@ -266,4 +266,49 @@ class MathematicaParserTest {
             assertFalse(funcNode.isDelayed(), "Should be immediate assignment (=)");
         }
     }
+
+    // ===== TEST GROUP 7: Comparison Operators (Not Function Definitions) =====
+
+    @ParameterizedTest
+    @ValueSource(strings = {
+        "Head[indexer] =!= SomeSymbol",       // UnsameQ
+        "Head[x] === SomeType",               // SameQ
+        "f[x] == 5",                          // Equal
+        "g[y] != 10"                          // Unequal
+    })
+    void testComparisonOperatorsNotParsedAsFunctionDefinitions(String code) {
+        List<AstNode> nodes = parser.parse(code);
+
+        // These should NOT be parsed as function definitions
+        // because ==, ===, =!=, != are comparison operators, not assignments
+        assertNotNull(nodes);
+        assertTrue(nodes.isEmpty() || !(nodes.get(0) instanceof FunctionDefNode),
+            "Comparison operators should not create function definitions");
+    }
+
+    @Test
+    void testRealWorldFalsePositiveCase() {
+        // This is the actual false positive case that was reported:
+        // indexer is used in comparison expressions, not function definitions
+        String code = "someFunc[indexer_] := If[\n"
+            + "  indexer === DocumentationSearch`DocumentationNotebookIndexer[$Failed],\n"
+            + "  Print[\"Failed\"],\n"
+            + "  Head[indexer] =!= DocumentationSearch`DocumentationNotebookIndexer,\n"
+            + "  Print[\"Wrong type\"]\n"
+            + "]";
+
+        List<AstNode> nodes = parser.parse(code);
+
+        // Should parse exactly ONE function definition (someFunc), not incorrectly
+        // identify "Head[indexer] =!=" as another function definition
+        assertNotNull(nodes);
+        assertEquals(1, nodes.size(), "Should parse exactly one function definition");
+
+        if (nodes.get(0) instanceof FunctionDefNode) {
+            FunctionDefNode funcNode = (FunctionDefNode) nodes.get(0);
+            assertEquals("someFunc", funcNode.getFunctionName());
+            assertEquals(1, funcNode.getParameters().size());
+            assertTrue(funcNode.getParameters().contains("indexer"));
+        }
+    }
 }

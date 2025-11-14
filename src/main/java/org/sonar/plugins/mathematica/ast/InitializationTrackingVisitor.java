@@ -42,14 +42,17 @@ public class InitializationTrackingVisitor implements AstVisitor {
         // Enter function scope
         currentFunction = node.getFunctionName();
 
-        // Track declared parameters (these are declared but not yet assigned)
+        // Track declared parameters
         Set<String> declared = new HashSet<>(node.getParameters());
         declaredVariables.put(currentFunction, declared);
         assignedVariables.put(currentFunction, new HashSet<>());
         usedBeforeAssigned.put(currentFunction, new HashSet<>());
 
-        // Clear currently assigned for this function
+        // FIX: Parameters are pre-initialized by function call
+        // In Mathematica, function parameters are bound when the function is called,
+        // so they should be treated as "already assigned" when entering the function body
         currentlyAssigned.clear();
+        currentlyAssigned.addAll(node.getParameters());
 
         // Visit function body
         if (node.getBody() != null) {

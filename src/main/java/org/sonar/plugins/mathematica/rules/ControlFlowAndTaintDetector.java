@@ -57,9 +57,9 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
     private static final Pattern XML_IMPORT = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"XML\""); //NOSONAR
     private static final Pattern IMPORT_MX = Pattern.compile("\\bImport\\s*+\\[[^,]+,\\s*+\"MX\""); //NOSONAR
     private static final Pattern URL_FETCH = Pattern.compile("\\bURLFetch\\s*+\\["); //NOSONAR - Possessive quantifiers prevent backtracking
-    private static final Pattern RANDOM_INTEGER_SECURITY = Pattern.compile("(token|session|key|secret|password|nonce)\\w*\\s*+=\\s*+RandomInteger"); //NOSONAR
+    private static final Pattern RANDOM_INTEGER_SECURITY = Pattern.compile("(token|session|key|secret|password|nonce)\\w*\\s*+=(?![=!:])\\s*+RandomInteger"); //NOSONAR
     private static final Pattern WEAK_HASH = Pattern.compile("\\bHash\\s*+\\[[^,]+,\\s*+\"(MD5|SHA1|SHA-1)\""); //NOSONAR
-    private static final Pattern HARDCODED_PASSWORD = Pattern.compile("(password|passwd|pwd|secret|apikey|api_key)\\s*+=\\s*+\"[^\"]+\""); //NOSONAR
+    private static final Pattern HARDCODED_PASSWORD = Pattern.compile("(password|passwd|pwd|secret|apikey|api_key)\\s*+=(?![=!:])\\s*+\"[^\"]+\""); //NOSONAR
     private static final Pattern PRINT_PASSWORD = Pattern.compile("\\bPrint\\s*+\\[([^\\]]*)(password|token|secret|key|credential)"); //NOSONAR
     private static final Pattern REGEX_FROM_INPUT = Pattern.compile("RegularExpression\\s*+\\[([^\\]]+)\\]"); //NOSONAR
 
@@ -85,7 +85,7 @@ public class ControlFlowAndTaintDetector extends BaseDetector {
             // Find variable assignment: var = Import[...]
             int lineStart = content.lastIndexOf('\n', start) + 1;
             String line = content.substring(lineStart, Math.min(start + 100, content.length()));
-            Pattern assignPattern = Pattern.compile("([a-z]\\w*)\\s*+="); //NOSONAR - Possessive quantifiers prevent backtracking
+            Pattern assignPattern = Pattern.compile("([a-z]\\w*)\\s*+=(?![=!:])"); //NOSONAR - Possessive quantifiers prevent backtracking
             Matcher assignMatcher = assignPattern.matcher(line);
             if (assignMatcher.find()) {
                 taintedVariables.put(assignMatcher.group(1), true);
