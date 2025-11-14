@@ -220,7 +220,9 @@ public class InitializationTrackingVisitor implements AstVisitor {
     private void processDeclarationList(ListNode listNode) {
         for (AstNode element : listNode.getElements()) {
             if (element instanceof IdentifierNode) {
-                processUninitializedVariable((IdentifierNode) element);
+                // Uninitialized Module variables (e.g., Module[{x}, ...])
+                // Module creates its own scope, so we don't track these variables
+                // in the parent function's declaredVariables.
             } else if (element instanceof FunctionCallNode) {
                 processInitializedVariable((FunctionCallNode) element);
             }
@@ -228,20 +230,9 @@ public class InitializationTrackingVisitor implements AstVisitor {
     }
 
     /**
-     * Process an uninitialized variable declaration: Module[{x}, ...]
-     * Note: In Mathematica, "uninitialized" Module variables are actually initialized
-     * to unique symbols, so they should be treated as "assigned" for our analysis.
-     */
-    private void processUninitializedVariable(IdentifierNode identifierNode) {
-        String varName = identifierNode.getName();
-        declaredVariables.get(currentFunction).add(varName);
-        // Module variables are automatically initialized, even if no explicit value is given
-        currentlyAssigned.add(varName);
-        assignedVariables.get(currentFunction).add(varName);
-    }
-
-    /**
      * Process an initialized variable declaration: Module[{x = 5}, ...]
+     * Module creates its own scope, so these variables should NOT be tracked
+     * as part of the parent function's variables.
      */
     private void processInitializedVariable(FunctionCallNode funcCall) {
         if (!isAssignment(funcCall.getFunctionName()) || funcCall.getArguments() == null) {
@@ -252,17 +243,13 @@ public class InitializationTrackingVisitor implements AstVisitor {
             return;
         }
 
-        AstNode firstArg = funcCall.getArguments().get(0);
-        if (firstArg instanceof IdentifierNode) {
-            String varName = ((IdentifierNode) firstArg).getName();
-            declaredVariables.get(currentFunction).add(varName);
-            currentlyAssigned.add(varName);
-            assignedVariables.get(currentFunction).add(varName);
-        }
-
+        // Visit the value being assigned (right-hand side) to check for any issues there
         if (funcCall.getArguments().size() > 1) {
             funcCall.getArguments().get(1).accept(this);
         }
+
+        // Note: We don't add Module-local variables to declaredVariables or currentlyAssigned
+        // because they're in a separate scope from the parent function.
     }
 
     /**
