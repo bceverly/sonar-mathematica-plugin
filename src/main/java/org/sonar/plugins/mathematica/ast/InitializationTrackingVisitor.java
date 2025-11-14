@@ -28,6 +28,7 @@ public class InitializationTrackingVisitor implements AstVisitor {
     private final Map<String, Set<String>> usedBeforeAssigned;  // function -> vars used before init
     private String currentFunction;
     private final Set<String> currentlyAssigned;  // Track what's assigned in current function
+    private final Set<ListNode> processedDeclarationLists;  // Track declaration lists we've manually processed
 
     public InitializationTrackingVisitor() {
         this.declaredVariables = new HashMap<>();
@@ -35,6 +36,7 @@ public class InitializationTrackingVisitor implements AstVisitor {
         this.usedBeforeAssigned = new HashMap<>();
         this.currentFunction = null;
         this.currentlyAssigned = new HashSet<>();
+        this.processedDeclarationLists = new HashSet<>();
     }
 
     @Override
@@ -162,6 +164,18 @@ public class InitializationTrackingVisitor implements AstVisitor {
         // Literals don't affect variable tracking
     }
 
+    @Override
+    public void visit(ListNode node) {
+        // Skip visiting children if this is a declaration list we've already manually processed.
+        // This prevents false positives where declaration identifiers get visited as "uses".
+        if (processedDeclarationLists.contains(node)) {
+            return;  // Already processed - don't visit children again
+        }
+
+        // For regular lists (not declaration lists), visit children normally
+        visitChildren(node);
+    }
+
     /**
      * Check if a function name represents a scoping construct (Module, Block, With).
      */
@@ -188,7 +202,10 @@ public class InitializationTrackingVisitor implements AstVisitor {
         AstNode body = node.getArguments().get(1);
 
         if (declarationList instanceof ListNode) {
-            processDeclarationList((ListNode) declarationList);
+            ListNode listNode = (ListNode) declarationList;
+            // Mark this declaration list as processed so visit(ListNode) won't visit it again
+            processedDeclarationLists.add(listNode);
+            processDeclarationList(listNode);
         }
 
         if (body != null) {

@@ -813,4 +813,88 @@ class InitializationTrackingVisitorTest {
         assertFalse(uninitVars.contains("const"),
             "const is initialized in With declaration - should not be flagged");
     }
+
+    @Test
+    void testModuleUninitializedVariableAssignedInBody() {
+        // This is the exact scenario from the user's false positive:
+        // Module[{subdirsPatt},
+        //     subdirsPatt = Alternatives @@ (...);
+        // ]
+        // subdirsPatt is declared but not initialized, then assigned as first statement in body.
+        // This should NOT be flagged as used-before-assigned.
+
+        // Module declaration list with uninitialized variable
+        IdentifierNode uninitVar = new IdentifierNode("subdirsPatt", 2, 0, 2, 11);
+        ListNode moduleVars = new ListNode(Arrays.asList(uninitVar), 2, 0, 2, 20);
+
+        // Body: assignment to subdirsPatt
+        IdentifierNode lhs = new IdentifierNode("subdirsPatt", 3, 0, 3, 11);
+        IdentifierNode rhs = new IdentifierNode("someValue", 3, 15, 3, 24);
+        FunctionCallNode assignment = new FunctionCallNode(
+            "Set",
+            Arrays.asList(lhs, rhs),
+            3, 0, 3, 30
+        );
+
+        // Module[{subdirsPatt}, subdirsPatt = someValue]
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(moduleVars, assignment),
+            2, 0, 3, 30
+        );
+
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "copyDirectoryNoCVS",
+            Arrays.asList("srcDir", "destDir", "subdirsToInclude"),
+            moduleNode,
+            false,
+            1, 0, 4, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("copyDirectoryNoCVS");
+
+        assertFalse(uninitVars.contains("subdirsPatt"),
+            "subdirsPatt is assigned in Module body before use - should not be flagged");
+    }
+
+    @Test
+    void testModuleDirectVisitDoesNotCauseFalsePositive() {
+        // Test what happens if the Module node itself is visited directly
+        // (simulating potential real-world parsing scenarios)
+
+        IdentifierNode uninitVar = new IdentifierNode("subdirsPatt", 2, 0, 2, 11);
+        ListNode moduleVars = new ListNode(Arrays.asList(uninitVar), 2, 0, 2, 20);
+
+        IdentifierNode lhs = new IdentifierNode("subdirsPatt", 3, 0, 3, 11);
+        IdentifierNode rhs = new IdentifierNode("someValue", 3, 15, 3, 24);
+        FunctionCallNode assignment = new FunctionCallNode(
+            "Set",
+            Arrays.asList(lhs, rhs),
+            3, 0, 3, 30
+        );
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(moduleVars, assignment),
+            2, 0, 3, 30
+        );
+
+        // Use a fresh visitor for this test
+        InitializationTrackingVisitor freshVisitor = new InitializationTrackingVisitor();
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "copyDirectoryNoCVS",
+            Arrays.asList("srcDir", "destDir", "subdirsToInclude"),
+            moduleNode,
+            false,
+            1, 0, 4, 0
+        );
+        freshVisitor.visit(funcNode);
+
+        Set<String> uninitVars = freshVisitor.getVariablesUsedBeforeAssignment("copyDirectoryNoCVS");
+
+        assertFalse(uninitVars.contains("subdirsPatt"),
+            "subdirsPatt should not be flagged even when Module is visited directly");
+    }
 }
