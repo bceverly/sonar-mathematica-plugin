@@ -177,18 +177,26 @@ class MathematicaParserTest {
 
     // ===== TEST GROUP 6: Expression Parsing =====
 
+    @Test
+    void testParseExpressionEmptyOrWhitespace() {
+        List<AstNode> nodes1 = parser.parse("f[] := ");
+        assertNotNull(nodes1);
+
+        List<AstNode> nodes2 = parser.parse("f[x_] :=    \n\t  ");
+        assertNotNull(nodes2);
+    }
+
     @ParameterizedTest
     @ValueSource(strings = {
-        "f[] := ",                      // Empty expression
-        "f[x_] :=    \n\t  ",          // Whitespace only
         "f[x_] := 42",                 // Number literal
         "f[x_] := \"Hello, World!\"",  // String literal
         "f[x_] := Sin[x]",             // Function call
         "f[x_] := myVariable"          // Identifier
     })
-    void testParseExpression(String code) {
+    void testParseExpressionWithContent(String code) {
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
+        assertFalse(nodes.isEmpty(), "Expression with content should produce non-empty AST");
     }
 
     // ===== INTEGRATION TESTS =====
