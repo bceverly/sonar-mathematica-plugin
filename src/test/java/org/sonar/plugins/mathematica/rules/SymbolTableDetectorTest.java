@@ -298,67 +298,61 @@ class SymbolTableDetectorTest {
         );
     }
 
-    @Test
-    void testDetectTypeInconsistency() {
-        Symbol symbol = createMockSymbol("mixed", 10, false, false);
-        SymbolReference stringRef = createMockReference(15, "mixed + \"text\"");
-        SymbolReference numberRef = createMockReference(20, "mixed + 5");
-        SymbolReference listRef = createMockReference(25, "mixed[[1]]");
+    @ParameterizedTest
+    @MethodSource("symbolTableDetectorTestData")
+    void testSymbolTableDetectorMethods(String testName, SymbolTableSetup setup, SymbolTableDetectorMethod method) {
+        setup.setupMocks(symbolTable);
+        assertDoesNotThrow(() -> method.execute(context, inputFile, symbolTable));
+    }
 
-        when(symbol.getAllReferencesSorted()).thenReturn(List.of(stringRef, numberRef, listRef));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+    private static Stream<Arguments> symbolTableDetectorTestData() {
+        return Stream.of(
+            Arguments.of("TypeInconsistency", (SymbolTableSetup) (table) -> {
+                Symbol symbol = createMockSymbol("mixed", 10, false, false);
+                SymbolReference stringRef = createMockReference(15, "mixed + \"text\"");
+                SymbolReference numberRef = createMockReference(20, "mixed + 5");
+                SymbolReference listRef = createMockReference(25, "mixed[[1]]");
+                when(symbol.getAllReferencesSorted()).thenReturn(List.of(stringRef, numberRef, listRef));
+                when(table.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+            }, (SymbolTableDetectorMethod) SymbolTableDetector::detectTypeInconsistency),
 
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+            Arguments.of("VariableReuseWithDifferentSemantics", (SymbolTableSetup) (table) -> {
+                Symbol symbol = createMockSymbol("temp", 10, false, false);
+                SymbolReference assign1 = createMockReference(10, "temp = list");
+                SymbolReference assign2 = createMockReference(50, "temp = counter");
+                when(symbol.getAssignments()).thenReturn(List.of(assign1, assign2));
+                when(table.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+            }, (SymbolTableDetectorMethod) SymbolTableDetector::detectVariableReuseWithDifferentSemantics),
+
+            Arguments.of("IncorrectClosureCapture", (SymbolTableSetup) (table) -> {
+                Scope loopScope = createMockScope(1, 50, ScopeType.MODULE);
+                when(loopScope.getName()).thenReturn("Do");
+                Scope functionScope = createMockScope(20, 30, ScopeType.FUNCTION);
+                when(loopScope.getChildren()).thenReturn(Collections.singletonList(functionScope));
+                Symbol loopVar = createMockSymbolWithScope("i", 5, false, true, loopScope);
+                SymbolReference ref = createMockReference(25, "i + 1");
+                when(loopVar.getReferences()).thenReturn(Collections.singletonList(ref));
+                when(table.getAllSymbols()).thenReturn(Collections.singletonList(loopVar));
+            }, (SymbolTableDetectorMethod) SymbolTableDetector::detectIncorrectClosureCapture),
+
+            Arguments.of("ScopeLeakThroughDynamicEvaluation", (SymbolTableSetup) (table) -> {
+                Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
+                Symbol symbol = createMockSymbolWithScope("dynamic", 10, false, true, moduleScope);
+                SymbolReference ref = createMockReference(20, "ToExpression[\"dynamic\"]");
+                when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(ref));
+                when(table.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+            }, (SymbolTableDetectorMethod) SymbolTableDetector::detectScopeLeakThroughDynamicEvaluation)
         );
     }
 
-    @Test
-    void testDetectVariableReuseWithDifferentSemantics() {
-        Symbol symbol = createMockSymbol("temp", 10, false, false);
-        SymbolReference assign1 = createMockReference(10, "temp = list");
-        SymbolReference assign2 = createMockReference(50, "temp = counter");
-
-        when(symbol.getAssignments()).thenReturn(List.of(assign1, assign2));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectVariableReuseWithDifferentSemantics(context, inputFile, symbolTable)
-        );
+    @FunctionalInterface
+    private interface SymbolTableSetup {
+        void setupMocks(SymbolTable table);
     }
 
-    @Test
-    void testDetectIncorrectClosureCapture() {
-        Scope loopScope = createMockScope(1, 50, ScopeType.MODULE);
-        when(loopScope.getName()).thenReturn("Do");
-
-        Scope functionScope = createMockScope(20, 30, ScopeType.FUNCTION);
-        when(loopScope.getChildren()).thenReturn(Collections.singletonList(functionScope));
-
-        Symbol loopVar = createMockSymbolWithScope("i", 5, false, true, loopScope);
-        SymbolReference ref = createMockReference(25, "i + 1");
-
-        when(loopVar.getReferences()).thenReturn(Collections.singletonList(ref));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(loopVar));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectIncorrectClosureCapture(context, inputFile, symbolTable)
-        );
-    }
-
-    @Test
-    void testDetectScopeLeakThroughDynamicEvaluation() {
-        Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
-        Symbol symbol = createMockSymbolWithScope("dynamic", 10, false, true, moduleScope);
-
-        SymbolReference ref = createMockReference(20, "ToExpression[\"dynamic\"]");
-
-        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(ref));
-        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
-
-        assertDoesNotThrow(() ->
-            SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable)
-        );
+    @FunctionalInterface
+    private interface SymbolTableDetectorMethod {
+        void execute(SensorContext context, InputFile file, SymbolTable table);
     }
 
     // ===== EDGE CASES AND COMPREHENSIVE TESTS =====
@@ -878,7 +872,7 @@ class SymbolTableDetectorTest {
 
     // Helper methods
 
-    private Symbol createMockSymbol(String name, int line, boolean isParameter, boolean isModuleVariable) {
+    private static Symbol createMockSymbol(String name, int line, boolean isParameter, boolean isModuleVariable) {
         Symbol symbol = mock(Symbol.class);
         when(symbol.getName()).thenReturn(name);
         when(symbol.getDeclarationLine()).thenReturn(line);
@@ -894,21 +888,21 @@ class SymbolTableDetectorTest {
         return symbol;
     }
 
-    private Symbol createMockSymbolWithScope(String name, int line, boolean isParameter,
+    private static Symbol createMockSymbolWithScope(String name, int line, boolean isParameter,
                                             boolean isModuleVariable, Scope scope) {
         Symbol symbol = createMockSymbol(name, line, isParameter, isModuleVariable);
         when(symbol.getScope()).thenReturn(scope);
         return symbol;
     }
 
-    private SymbolReference createMockReference(int line, String context) {
+    private static SymbolReference createMockReference(int line, String context) {
         SymbolReference ref = mock(SymbolReference.class);
         when(ref.getLine()).thenReturn(line);
         when(ref.getContext()).thenReturn(context);
         return ref;
     }
 
-    private Scope createMockScope(int startLine, int endLine, ScopeType type) {
+    private static Scope createMockScope(int startLine, int endLine, ScopeType type) {
         Scope scope = mock(Scope.class);
         when(scope.getStartLine()).thenReturn(startLine);
         when(scope.getEndLine()).thenReturn(endLine);

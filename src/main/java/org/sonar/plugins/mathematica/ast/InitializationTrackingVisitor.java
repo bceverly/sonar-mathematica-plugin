@@ -96,11 +96,59 @@ public class InitializationTrackingVisitor implements AstVisitor {
             Set<String> declared = declaredVariables.get(currentFunction);
 
             // If variable is declared but not yet assigned, mark as used-before-assigned
+            // DEFENSIVE: Exclude common false positives to reduce noise
             if (declared != null && declared.contains(varName)
-                && !currentlyAssigned.contains(varName)) {
+                && !currentlyAssigned.contains(varName)
+                && !isLikelyFalsePositive(varName)) {
                 usedBeforeAssigned.get(currentFunction).add(varName);
             }
         }
+    }
+
+    /**
+     * Check if a variable is likely a false positive that should be excluded from
+     * "used before assignment" detection.
+     *
+     * This includes:
+     * - Common Mathematica built-in symbols that might be shadowed as parameters
+     * - Variables with pattern syntax (e.g., file_ might create "file" parameter)
+     * - Very short variable names that are likely iterators with implicit initialization
+     */
+    private boolean isLikelyFalsePositive(String varName) {
+        if (varName == null || varName.isEmpty()) {
+            return true;
+        }
+
+        // Skip very short names (i, j, k, x, y, z, etc.) - often loop variables or math variables
+        if (varName.length() == 1) {
+            return true;
+        }
+
+        // Skip common Mathematica built-ins that might appear as parameters
+        // but are actually global symbols
+        String[] commonGlobals = {
+            "True", "False", "None", "Null", "All", "Automatic",
+            "Left", "Right", "Top", "Bottom", "Center",
+            "Red", "Blue", "Green", "Black", "White",
+            "Input", "Output", "Print", "Message",
+            "Hold", "HoldAll", "HoldFirst", "HoldRest",
+            "Listable", "Flat", "OneIdentity", "Orderless",
+            "Protected", "Locked", "ReadProtected"
+        };
+
+        for (String global : commonGlobals) {
+            if (global.equals(varName)) {
+                return true;
+            }
+        }
+
+        // Skip variables that look like they might be global configuration or state
+        // (typically capitalized or very descriptive names)
+        if (varName.length() > 15 && Character.isUpperCase(varName.charAt(0))) {
+            return true;
+        }
+
+        return false;
     }
 
     @Override

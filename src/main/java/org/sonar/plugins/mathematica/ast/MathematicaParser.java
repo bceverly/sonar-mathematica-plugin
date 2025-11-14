@@ -172,9 +172,17 @@ public class MathematicaParser {
         for (String part : parts) {
             String param = part.trim();
             if (!param.isEmpty()) {
-                // Extract parameter name (before _ or ?)
+                // Extract parameter name (before _ or ? or : or =)
+                // Examples:
+                // - file_ -> file
+                // - x_Integer -> x
+                // - opt:value -> opt
+                // - default:val -> default
+                // - x_:0 -> x
                 int underscorePos = param.indexOf('_');
                 int questionPos = param.indexOf('?');
+                int colonPos = param.indexOf(':');
+                int equalsPos = param.indexOf('=');
                 int endPos = param.length();
 
                 if (underscorePos > 0) {
@@ -183,12 +191,47 @@ public class MathematicaParser {
                 if (questionPos > 0) {
                     endPos = Math.min(endPos, questionPos);
                 }
+                if (colonPos > 0) {
+                    endPos = Math.min(endPos, colonPos);
+                }
+                if (equalsPos > 0) {
+                    endPos = Math.min(endPos, equalsPos);
+                }
 
-                parameters.add(param.substring(0, endPos).trim());
+                String extractedName = param.substring(0, endPos).trim();
+
+                // Only add if it looks like a valid identifier
+                if (!extractedName.isEmpty() && isValidIdentifier(extractedName)) {
+                    parameters.add(extractedName);
+                }
             }
         }
 
         return parameters;
+    }
+
+    /**
+     * Check if a string is a valid Mathematica identifier.
+     */
+    private boolean isValidIdentifier(String name) {
+        if (name == null || name.isEmpty()) {
+            return false;
+        }
+
+        // Must start with a letter or $
+        if (!Character.isLetter(name.charAt(0)) && name.charAt(0) != '$') {
+            return false;
+        }
+
+        // Rest must be letters, digits, or $
+        for (int i = 1; i < name.length(); i++) {
+            char c = name.charAt(i);
+            if (!Character.isLetterOrDigit(c) && c != '$') {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

@@ -261,28 +261,28 @@ class CodeSmellDetectorTest {
         ).doesNotThrowAnyException();
     }
 
-                                @Test
-    void testDetectLongFunctionsShortFunction() {
-        String content = "ShortFunc[x_] := x + 1";
+    @ParameterizedTest
+    @MethodSource("noExceptionTestData")
+    void testDetectorMethodsDoNotThrowExceptions(String testName, String content, DetectorMethod method) {
         assertThatCode(() ->
-            detector.detectLongFunctions(mockContext, mockInputFile, content)
+            method.execute(detector, mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
     }
 
-                                        @Test
-    void testDetectUncompiledNumericalWithCompileNearbyBefore() {
-        String content = "f = Compile[{{x}}, x]; Do[sum += i, {i, 100}]";
-        assertThatCode(() ->
-            detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> noExceptionTestData() {
+        return Stream.of(
+            Arguments.of("LongFunctions with short function", "ShortFunc[x_] := x + 1",
+                (DetectorMethod) (det, ctx, file, content) -> det.detectLongFunctions(ctx, file, content)),
+            Arguments.of("UncompiledNumerical with Compile nearby", "f = Compile[{{x}}, x]; Do[sum += i, {i, 100}]",
+                (DetectorMethod) (det, ctx, file, content) -> det.detectUncompiledNumerical(ctx, file, content)),
+            Arguments.of("LargeCommentedBlock with small comment", "(* Short comment *)",
+                (DetectorMethod) (det, ctx, file, content) -> det.detectLargeCommentedBlock(ctx, file, content))
+        );
     }
 
-        @Test
-    void testDetectLargeCommentedBlockSmallComment() {
-        String content = "(* Short comment *)";
-        assertThatCode(() ->
-            detector.detectLargeCommentedBlock(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    @FunctionalInterface
+    private interface DetectorMethod {
+        void execute(CodeSmellDetector detector, SensorContext context, InputFile file, String content);
     }
 
                                     // ===== EXCEPTION HANDLING TESTS FOR ALL 71 CATCH BLOCKS =====

@@ -500,14 +500,39 @@ public final class SymbolTableDetector {
     }
 
     /**
-     * Removes string literals and comments from context to avoid false positives.
-     * Replaces strings with spaces to preserve word boundaries.
+     * Removes string literals, comments, and comparison expressions from context to avoid false positives.
+     * Replaces removed content with spaces to preserve word boundaries.
      */
     private static String removeStringsAndComments(String context) {
         StringBuilder result = new StringBuilder(context);
         removeStringLiterals(result);
         String withoutStrings = result.toString();
-        return removeComments(withoutStrings);
+        String withoutComments = removeComments(withoutStrings);
+        return removeComparisonExpressions(withoutComments);
+    }
+
+    /**
+     * Removes comparison expressions to avoid false circular dependencies.
+     * Example: "webmQ = pacletName === \"webMathematica\"" should not treat pacletName as a dependency
+     * since it's only used in a comparison, not in a computational dependency.
+     */
+    private static String removeComparisonExpressions(String context) {
+        // Remove patterns like: variable === value, variable == value, variable != value, variable =!= value
+        // Also handles: value === variable, value == variable, etc.
+        String result = context;
+
+        // Match comparison operators with surrounding content
+        // Use possessive quantifiers to prevent backtracking
+        result = result.replaceAll("\\w++\\s*+===\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+==\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+!=\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+=!=\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+>\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+<\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+>=\\s*+\\S++", "   "); //NOSONAR
+        result = result.replaceAll("\\w++\\s*+<=\\s*+\\S++", "   "); //NOSONAR
+
+        return result;
     }
 
     /**
