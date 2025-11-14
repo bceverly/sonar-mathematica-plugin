@@ -307,7 +307,7 @@ class SymbolTableDetectorTest {
 
     private static Stream<Arguments> symbolTableDetectorTestData() {
         return Stream.of(
-            Arguments.of("TypeInconsistency", (SymbolTableSetup) (table) -> {
+            Arguments.of("TypeInconsistency", (SymbolTableSetup) table -> {
                 Symbol symbol = createMockSymbol("mixed", 10, false, false);
                 SymbolReference stringRef = createMockReference(15, "mixed + \"text\"");
                 SymbolReference numberRef = createMockReference(20, "mixed + 5");
@@ -316,7 +316,7 @@ class SymbolTableDetectorTest {
                 when(table.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
             }, (SymbolTableDetectorMethod) SymbolTableDetector::detectTypeInconsistency),
 
-            Arguments.of("VariableReuseWithDifferentSemantics", (SymbolTableSetup) (table) -> {
+            Arguments.of("VariableReuseWithDifferentSemantics", (SymbolTableSetup) table -> {
                 Symbol symbol = createMockSymbol("temp", 10, false, false);
                 SymbolReference assign1 = createMockReference(10, "temp = list");
                 SymbolReference assign2 = createMockReference(50, "temp = counter");
@@ -324,7 +324,7 @@ class SymbolTableDetectorTest {
                 when(table.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
             }, (SymbolTableDetectorMethod) SymbolTableDetector::detectVariableReuseWithDifferentSemantics),
 
-            Arguments.of("IncorrectClosureCapture", (SymbolTableSetup) (table) -> {
+            Arguments.of("IncorrectClosureCapture", (SymbolTableSetup) table -> {
                 Scope loopScope = createMockScope(1, 50, ScopeType.MODULE);
                 when(loopScope.getName()).thenReturn("Do");
                 Scope functionScope = createMockScope(20, 30, ScopeType.FUNCTION);
@@ -335,7 +335,7 @@ class SymbolTableDetectorTest {
                 when(table.getAllSymbols()).thenReturn(Collections.singletonList(loopVar));
             }, (SymbolTableDetectorMethod) SymbolTableDetector::detectIncorrectClosureCapture),
 
-            Arguments.of("ScopeLeakThroughDynamicEvaluation", (SymbolTableSetup) (table) -> {
+            Arguments.of("ScopeLeakThroughDynamicEvaluation", (SymbolTableSetup) table -> {
                 Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
                 Symbol symbol = createMockSymbolWithScope("dynamic", 10, false, true, moduleScope);
                 SymbolReference ref = createMockReference(20, "ToExpression[\"dynamic\"]");

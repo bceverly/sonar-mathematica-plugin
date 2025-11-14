@@ -40,7 +40,6 @@ class InitializationTrackingVisitorTest {
 
     @Test
     void testVisitFunctionDefNodeWithNullBody() {
-        // Test Line 54-56: if (node.getBody() != null) check
         FunctionDefNode funcNode = new FunctionDefNode(
             "testFunc",
             Arrays.asList("param1", "param2"),
@@ -153,7 +152,6 @@ class InitializationTrackingVisitorTest {
 
     @Test
     void testVisitFunctionCallNodeNullArguments() {
-        // Test Line 83-87: if (node.getArguments() != null) check
         setupFunctionContext();
 
         FunctionCallNode funcNode = new FunctionCallNode(
@@ -182,7 +180,6 @@ class InitializationTrackingVisitorTest {
 
     @Test
     void testVisitFunctionCallNodeNonIdentifierFirstArg() {
-        // Test Line 73-74: if (firstArg instanceof IdentifierNode) check
         setupFunctionContext();
 
         LiteralNode literalNode = new LiteralNode(5, LiteralNode.LiteralType.INTEGER, 1, 0, 1, 1);
@@ -393,7 +390,6 @@ class InitializationTrackingVisitorTest {
 
     @Test
     void testGetAllVariablesUsedBeforeAssignmentEmptyVariableSetsFiltered() {
-        // Test Line 177: if (!vars.isEmpty()) check - empty sets should be filtered
         FunctionDefNode funcWithNoUninit = createFunctionWithAssignments("emptyFunc", "assigned");
         visitor.visit(funcWithNoUninit);
 
@@ -462,15 +458,13 @@ class InitializationTrackingVisitorTest {
             body = new CompoundExpressionNode(expressions, false, 1, 0, 1, 50);
         }
 
-        FunctionDefNode funcNode = new FunctionDefNode(
+        return new FunctionDefNode(
             funcName,
             params,
             body,
             false,
             1, 0, 1, 50
         );
-
-        return funcNode;
     }
 
     private FunctionDefNode createFunctionWithAssignments(String funcName, String... varNames) {

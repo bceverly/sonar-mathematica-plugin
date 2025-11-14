@@ -31,7 +31,6 @@ class MathematicaParserTest {
 
     @Test
     void testParseSlowParsingThreshold() {
-        // Test Line 84-87: if (totalTime > 1000) profiling log
         // Create large content to trigger slow parsing (>1000ms threshold)
         StringBuilder largeContent = new StringBuilder();
         for (int i = 0; i < 500; i++) {
@@ -45,7 +44,6 @@ class MathematicaParserTest {
 
     @Test
     void testParseFunctionDefinitionsManyFunctions() {
-        // Test Line 152-155: if (funcCount > 100) profiling log
         // Create content with >100 functions to trigger profiling
         StringBuilder manyFunctions = new StringBuilder();
         for (int i = 0; i < 150; i++) {
@@ -63,7 +61,6 @@ class MathematicaParserTest {
     @NullAndEmptySource
     @ValueSource(strings = {"   ", "\t", "\n"})
     void testParseParametersNullOrEmpty(String params) {
-        // Test Line 166-168: if (parametersStr == null || parametersStr.trim().isEmpty())
         String code = "f[" + (params != null ? params : "") + "] := 1";
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
@@ -71,7 +68,6 @@ class MathematicaParserTest {
 
     @Test
     void testParseParametersWithValidParameters() {
-        // Test Line 173-177: Non-empty parameter check
         String code = "f[x_, y_Integer, z_Real] := x + y + z";
         List<AstNode> nodes = parser.parse(code);
 
@@ -92,7 +88,6 @@ class MathematicaParserTest {
 
     @Test
     void testParseParametersWithEmptyParametersBetweenCommas() {
-        // Test parameter filtering: if (!param.isEmpty())
         String code = "f[x_, , y_] := x + y";  // Empty parameter between commas
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
@@ -170,7 +165,6 @@ class MathematicaParserTest {
     @ParameterizedTest
     @ValueSource(strings = {"", "   ", "\t\n"})
     void testIsValidIdentifierNullOrEmpty(String name) {
-        // Test Line 234-253: if (name == null || name.isEmpty())
         String code = "f[" + name + "] := 1";
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
@@ -178,7 +172,6 @@ class MathematicaParserTest {
 
     @Test
     void testIsValidIdentifierStartsWithDigit() {
-        // Test Line 240-242: Must start with letter or $
         String code = "f[1invalid] := 1";  // Invalid: starts with digit
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
@@ -200,7 +193,6 @@ class MathematicaParserTest {
 
     @Test
     void testIsValidIdentifierContainsInvalidCharacters() {
-        // Test Line 245-250: Character validation loop
         String code = "f[invalid-name] := 1";  // Invalid: contains hyphen
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
@@ -223,7 +215,6 @@ class MathematicaParserTest {
 
     @Test
     void testBinarySearchNextEmptyContent() {
-        // Test Line 280-282: if (positions == null || positions.length == 0)
         // This is tested indirectly by parsing empty or minimal content
         String code = "";
         List<AstNode> nodes = parser.parse(code);
@@ -246,7 +237,6 @@ class MathematicaParserTest {
 
     @Test
     void testParseExpressionEmptyExpression() {
-        // Test Line 306-308: if (expr.isEmpty()) return null
         String code = "f[] := ";  // Empty body after :=
         List<AstNode> nodes = parser.parse(code);
         assertNotNull(nodes);
