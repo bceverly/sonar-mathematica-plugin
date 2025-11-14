@@ -68,6 +68,13 @@ public class InitializationTrackingVisitor implements AstVisitor {
         // Check if this is an assignment (looks like "Set[x, value]" or similar)
         String functionName = node.getFunctionName();
 
+        // Handle Module/Block/With scoping constructs
+        // These declare local variables: Module[{x, y = 5}, body]
+        if (isScopingConstruct(functionName) && node.getArguments() != null && node.getArguments().size() >= 2) {
+            handleScopingConstruct(node);
+            return; // Don't visit arguments normally - we handle them specially
+        }
+
         // Handle assignment patterns
         // In Mathematica AST, we'd need to detect patterns like:
         // - x = value (parsed as Set[x, value])
@@ -153,6 +160,75 @@ public class InitializationTrackingVisitor implements AstVisitor {
     @Override
     public void visit(LiteralNode node) {
         // Literals don't affect variable tracking
+    }
+
+    /**
+     * Check if a function name represents a scoping construct (Module, Block, With).
+     */
+    private boolean isScopingConstruct(String functionName) {
+        return "Module".equals(functionName)
+               || "Block".equals(functionName)
+               || "With".equals(functionName);
+    }
+
+    /**
+     * Handle Module/Block/With scoping constructs.
+     *
+     * Syntax: Module[{x, y = 5, z}, body]
+     * - First argument is a list of variable declarations
+     * - Variables can be uninitialized (just name) or initialized (name = value)
+     * - Second argument is the body where these variables are used
+     *
+     * This method:
+     * 1. Extracts variable declarations from the first argument (ListNode)
+     * 2. For each declaration:
+     *    - If it's just an identifier: declare but don't mark as assigned
+     *    - If it's an assignment (Set): declare AND mark as assigned
+     * 3. Visits the body with the updated scope
+     */
+    private void handleScopingConstruct(FunctionCallNode node) {
+        if (currentFunction == null) {
+            return; // Only track within function scope
+        }
+
+        AstNode declarationList = node.getArguments().get(0);
+        AstNode body = node.getArguments().get(1);
+
+        // Parse the declaration list {x, y = 5, z}
+        if (declarationList instanceof ListNode) {
+            ListNode listNode = (ListNode) declarationList;
+            for (AstNode element : listNode.getElements()) {
+                if (element instanceof IdentifierNode) {
+                    // Uninitialized variable: Module[{x}, ...]
+                    // Don't add to currentlyAssigned - will be flagged if used before assignment
+                    String varName = ((IdentifierNode) element).getName();
+                    declaredVariables.get(currentFunction).add(varName);
+                } else if (element instanceof FunctionCallNode) {
+                    FunctionCallNode funcCall = (FunctionCallNode) element;
+                    // Initialized variable: Module[{x = 5}, ...]
+                    if (isAssignment(funcCall.getFunctionName())
+                        && funcCall.getArguments() != null
+                        && !funcCall.getArguments().isEmpty()) {
+                        AstNode firstArg = funcCall.getArguments().get(0);
+                        if (firstArg instanceof IdentifierNode) {
+                            String varName = ((IdentifierNode) firstArg).getName();
+                            declaredVariables.get(currentFunction).add(varName);
+                            currentlyAssigned.add(varName); // Mark as initialized
+                            assignedVariables.get(currentFunction).add(varName);
+                        }
+                        // Visit the initializer expression (right side of =)
+                        if (funcCall.getArguments().size() > 1) {
+                            funcCall.getArguments().get(1).accept(this);
+                        }
+                    }
+                }
+            }
+        }
+
+        // Now visit the body with the updated scope
+        if (body != null) {
+            body.accept(this);
+        }
     }
 
     /**

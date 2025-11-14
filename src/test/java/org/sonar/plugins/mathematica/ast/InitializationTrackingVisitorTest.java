@@ -565,4 +565,252 @@ class InitializationTrackingVisitorTest {
         assertFalse(uninitVars.contains("var2"),
             "var2 is a parameter and should not be flagged");
     }
+
+    // ===== TEST GROUP 7: Module/Block/With Scoping Constructs =====
+
+    @Test
+    void testModuleWithUninitializedVariable() {
+        // Regression test: Module[{entries}, entries = ...; use entries]
+        // "entries" in the declaration list should NOT be flagged as used before assignment
+
+        // Create Module[{entries}, body] structure
+        ListNode declarationList = new ListNode(
+            Arrays.asList(new IdentifierNode("entries", 1, 10, 1, 17)),
+            1, 9, 1, 18
+        );
+
+        // Body: entries = value; use entries
+        List<AstNode> bodyStatements = new ArrayList<>();
+        bodyStatements.add(new FunctionCallNode(
+            "Set",
+            Arrays.asList(
+                new IdentifierNode("entries", 2, 4, 2, 11),
+                new LiteralNode(42, LiteralNode.LiteralType.INTEGER, 2, 14, 2, 16)
+            ),
+            2, 4, 2, 16
+        ));
+        bodyStatements.add(new IdentifierNode("entries", 3, 4, 3, 11));
+
+        CompoundExpressionNode body = new CompoundExpressionNode(bodyStatements, false, 2, 0, 3, 11);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 4, 0
+        );
+
+        // Wrap in a function
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList("param1"),
+            moduleNode,
+            false,
+            1, 0, 4, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // "entries" is declared in Module and assigned before use - should NOT be flagged
+        assertFalse(uninitVars.contains("entries"),
+            "entries is declared in Module and assigned before use - should not be flagged");
+    }
+
+    @Test
+    void testModuleWithInitializedVariable() {
+        // Test: Module[{x = 5}, use x]
+        // Variable is initialized in declaration - should NOT be flagged
+
+        // Create Module[{x = 5}, body] structure
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new FunctionCallNode(
+                    "Set",
+                    Arrays.asList(
+                        new IdentifierNode("x", 1, 11, 1, 12),
+                        new LiteralNode(5, LiteralNode.LiteralType.INTEGER, 1, 15, 1, 16)
+                    ),
+                    1, 11, 1, 16
+                )
+            ),
+            1, 9, 1, 17
+        );
+
+        // Body: use x
+        IdentifierNode body = new IdentifierNode("x", 2, 4, 2, 5);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 3, 0
+        );
+
+        // Wrap in a function
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList("param1"),
+            moduleNode,
+            false,
+            1, 0, 3, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // "x" is initialized in Module declaration - should NOT be flagged
+        assertFalse(uninitVars.contains("x"),
+            "x is initialized in Module declaration - should not be flagged");
+    }
+
+    @Test
+    void testModuleWithMixedVariables() {
+        // Test: Module[{uninit, init = 10}, use uninit; uninit = 5; use init]
+        // uninit is used before assignment (should be flagged)
+        // init is initialized in declaration (should NOT be flagged)
+
+        // Create Module[{uninit, init = 10}, body] structure
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new IdentifierNode("uninit", 1, 11, 1, 17),
+                new FunctionCallNode(
+                    "Set",
+                    Arrays.asList(
+                        new IdentifierNode("init", 1, 19, 1, 23),
+                        new LiteralNode(10, LiteralNode.LiteralType.INTEGER, 1, 26, 1, 28)
+                    ),
+                    1, 19, 1, 28
+                )
+            ),
+            1, 9, 1, 29
+        );
+
+        // Body: use uninit; uninit = 5; use init
+        List<AstNode> bodyStatements = new ArrayList<>();
+        bodyStatements.add(new IdentifierNode("uninit", 2, 4, 2, 10));  // Use uninit before assignment
+        bodyStatements.add(new FunctionCallNode(
+            "Set",
+            Arrays.asList(
+                new IdentifierNode("uninit", 3, 4, 3, 10),
+                new LiteralNode(5, LiteralNode.LiteralType.INTEGER, 3, 13, 3, 14)
+            ),
+            3, 4, 3, 14
+        ));
+        bodyStatements.add(new IdentifierNode("init", 4, 4, 4, 8));  // Use init (already initialized)
+
+        CompoundExpressionNode body = new CompoundExpressionNode(bodyStatements, false, 2, 0, 4, 8);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 5, 0
+        );
+
+        // Wrap in a function
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList("param1"),
+            moduleNode,
+            false,
+            1, 0, 5, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // "uninit" is used before assignment - SHOULD be flagged
+        assertTrue(uninitVars.contains("uninit"),
+            "uninit is used before assignment - should be flagged");
+        // "init" is initialized in declaration - should NOT be flagged
+        assertFalse(uninitVars.contains("init"),
+            "init is initialized in Module declaration - should not be flagged");
+    }
+
+    @Test
+    void testBlockScopingConstruct() {
+        // Test that Block[] works the same as Module[]
+        ListNode declarationList = new ListNode(
+            Arrays.asList(new IdentifierNode("temp", 1, 10, 1, 14)),
+            1, 9, 1, 15
+        );
+
+        // Body: temp = 42; use temp
+        List<AstNode> bodyStatements = new ArrayList<>();
+        bodyStatements.add(new FunctionCallNode(
+            "Set",
+            Arrays.asList(
+                new IdentifierNode("temp", 2, 4, 2, 8),
+                new LiteralNode(42, LiteralNode.LiteralType.INTEGER, 2, 11, 2, 13)
+            ),
+            2, 4, 2, 13
+        ));
+        bodyStatements.add(new IdentifierNode("temp", 3, 4, 3, 8));
+
+        CompoundExpressionNode body = new CompoundExpressionNode(bodyStatements, false, 2, 0, 3, 8);
+
+        FunctionCallNode blockNode = new FunctionCallNode(
+            "Block",
+            Arrays.asList(declarationList, body),
+            1, 0, 4, 0
+        );
+
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList("param1"),
+            blockNode,
+            false,
+            1, 0, 4, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        assertFalse(uninitVars.contains("temp"),
+            "temp is assigned before use in Block - should not be flagged");
+    }
+
+    @Test
+    void testWithScopingConstruct() {
+        // Test that With[] works the same as Module[]
+        // With[{const = 5}, use const]
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new FunctionCallNode(
+                    "Set",
+                    Arrays.asList(
+                        new IdentifierNode("const", 1, 11, 1, 16),
+                        new LiteralNode(5, LiteralNode.LiteralType.INTEGER, 1, 19, 1, 20)
+                    ),
+                    1, 11, 1, 20
+                )
+            ),
+            1, 9, 1, 21
+        );
+
+        IdentifierNode body = new IdentifierNode("const", 2, 4, 2, 9);
+
+        FunctionCallNode withNode = new FunctionCallNode(
+            "With",
+            Arrays.asList(declarationList, body),
+            1, 0, 3, 0
+        );
+
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList("param1"),
+            withNode,
+            false,
+            1, 0, 3, 0
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        assertFalse(uninitVars.contains("const"),
+            "const is initialized in With declaration - should not be flagged");
+    }
 }
