@@ -323,8 +323,10 @@ public final class SymbolTableBuilder {
         Matcher matcher = VARIABLE_REFERENCE.matcher(line);
         while (matcher.find()) {
             int position = matcher.start();
-            // Skip matches inside comments or string literals
-            if (isInsideComment(line, position) || isInsideStringLiteral(line, position)) {
+            // Skip matches inside comments, string literals, or Module/Block/With declarations
+            if (isInsideComment(line, position)
+                || isInsideStringLiteral(line, position)
+                || isInsideScopingDeclaration(line, position)) {
                 continue;
             }
             processReference(matcher, lineNumber, trimmedLine, scope, cache, positions);
@@ -523,6 +525,71 @@ public final class SymbolTableBuilder {
             }
         }
         return depth > 0;
+    }
+
+    /**
+     * Check if a position is inside a Module/Block/With declaration list.
+     * For example, in "Module[{x, y}, ...]", positions of x and y should return true.
+     */
+    private static boolean isInsideScopingDeclaration(String line, int position) {
+        // Check if line contains Module/Block/With pattern
+        String[] scopingKeywords = {"Module", "Block", "With"};
+
+        for (String keyword : scopingKeywords) {
+            if (isInsideScopingKeywordDeclaration(line, position, keyword)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static boolean isInsideScopingKeywordDeclaration(String line, int position, String keyword) {
+        int keywordPos = line.indexOf(keyword);
+        if (keywordPos == -1 || keywordPos >= position) {
+            return false;
+        }
+
+        // Find the opening bracket after the keyword
+        int openBracket = line.indexOf('[', keywordPos);
+        if (openBracket == -1 || openBracket >= position) {
+            return false;
+        }
+
+        // Find the opening brace for the declaration list
+        int openBrace = line.indexOf('{', openBracket);
+        if (openBrace == -1 || openBrace >= position) {
+            return false;
+        }
+
+        // Find the matching closing brace
+        int closeBrace = findMatchingBrace(line, openBrace);
+        if (closeBrace == -1) {
+            return false;
+        }
+
+        // Check if position is inside the braces
+        // (position > openBrace is already guaranteed by earlier check at line 561)
+        return position < closeBrace;
+    }
+
+    /**
+     * Find the matching closing brace for an opening brace.
+     */
+    private static int findMatchingBrace(String line, int openPos) {
+        int depth = 0;
+        for (int i = openPos; i < line.length(); i++) {
+            char c = line.charAt(i);
+            if (c == '{') {
+                depth++;
+            } else if (c == '}') {
+                depth--;
+                if (depth == 0) {
+                    return i;
+                }
+            }
+        }
+        return -1; // No matching brace found
     }
 
     /**

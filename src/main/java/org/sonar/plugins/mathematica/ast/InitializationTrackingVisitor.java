@@ -29,6 +29,7 @@ public class InitializationTrackingVisitor implements AstVisitor {
     private String currentFunction;
     private final Set<String> currentlyAssigned;  // Track what's assigned in current function
     private final Set<ListNode> processedDeclarationLists;  // Track declaration lists we've manually processed
+    private final Set<IdentifierNode> declarationIdentifiers;  // Track identifiers in Module/Block/With declarations
 
     public InitializationTrackingVisitor() {
         this.declaredVariables = new HashMap<>();
@@ -37,6 +38,7 @@ public class InitializationTrackingVisitor implements AstVisitor {
         this.currentFunction = null;
         this.currentlyAssigned = new HashSet<>();
         this.processedDeclarationLists = new HashSet<>();
+        this.declarationIdentifiers = new HashSet<>();
     }
 
     @Override
@@ -102,6 +104,12 @@ public class InitializationTrackingVisitor implements AstVisitor {
 
     @Override
     public void visit(IdentifierNode node) {
+        // Skip identifiers that are part of Module/Block/With declaration lists
+        // These are declarations, not uses, and should never be checked
+        if (declarationIdentifiers.contains(node)) {
+            return;
+        }
+
         // Variable use
         if (currentFunction != null) {
             String varName = node.getName();
@@ -221,6 +229,8 @@ public class InitializationTrackingVisitor implements AstVisitor {
         for (AstNode element : listNode.getElements()) {
             if (element instanceof IdentifierNode) {
                 // Uninitialized Module variables (e.g., Module[{x}, ...])
+                // Mark this identifier as a declaration so visit(IdentifierNode) skips it
+                declarationIdentifiers.add((IdentifierNode) element);
                 // Module creates its own scope, so we don't track these variables
                 // in the parent function's declaredVariables.
             } else if (element instanceof FunctionCallNode) {
@@ -241,6 +251,12 @@ public class InitializationTrackingVisitor implements AstVisitor {
 
         if (funcCall.getArguments().isEmpty()) {
             return;
+        }
+
+        // Mark the variable being declared as a declaration identifier
+        AstNode firstArg = funcCall.getArguments().get(0);
+        if (firstArg instanceof IdentifierNode) {
+            declarationIdentifiers.add((IdentifierNode) firstArg);
         }
 
         // Visit the value being assigned (right-hand side) to check for any issues there

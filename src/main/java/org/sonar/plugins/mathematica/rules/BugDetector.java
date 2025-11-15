@@ -296,6 +296,11 @@ public class BugDetector extends BaseDetector {
                 String functionName = defMatcher.group(1);
                 int defStart = defMatcher.start();
 
+                // Skip if this is inside a comment (e.g., In[24]:= in documentation)
+                if (isInsideComment(content, defStart)) {
+                    continue;
+                }
+
                 if (isRecursiveFunction(content, functionName, defStart)) {
                     checkRecursionHasBaseCase(context, inputFile, content, functionName, defStart, baseCaseCache);
                 }

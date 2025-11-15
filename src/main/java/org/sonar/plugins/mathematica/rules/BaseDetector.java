@@ -248,7 +248,7 @@ public abstract class BaseDetector {
      * Uses both forward scanning and context checking for robustness.
      */
     protected boolean isInsideStringLiteral(String content, int position) {
-        if (position >= content.length()) {
+        if (position >= content.length() || position < 0) {
             return false;
         }
 
@@ -256,13 +256,30 @@ public abstract class BaseDetector {
         // on the same line and no closing quote between the quote and position,
         // we're likely inside a string
         int lineStart = content.lastIndexOf('\n', position) + 1;
+        // Defensive: ensure lineStart is not after position
+        if (lineStart > position) {
+            lineStart = 0;
+        }
         String linePrefix = content.substring(lineStart, position);
 
         // Count unescaped quotes in the line up to this position
+        int quoteCount = countUnescapedQuotes(linePrefix);
+
+        // If we have an odd number of quotes before this position on this line,
+        // we're inside a string
+        if (quoteCount % 2 == 1) {
+            return true;
+        }
+
+        // For multi-line strings, do full scan from beginning
+        return isInsideMultiLineString(content, position);
+    }
+
+    private int countUnescapedQuotes(String text) {
         int quoteCount = 0;
         boolean escaped = false;
-        for (int i = 0; i < linePrefix.length(); i++) {
-            char c = linePrefix.charAt(i);
+        for (int i = 0; i < text.length(); i++) {
+            char c = text.charAt(i);
             if (escaped) {
                 escaped = false;
                 continue;
@@ -273,16 +290,12 @@ public abstract class BaseDetector {
                 quoteCount++;
             }
         }
+        return quoteCount;
+    }
 
-        // If we have an odd number of quotes before this position on this line,
-        // we're inside a string
-        if (quoteCount % 2 == 1) {
-            return true;
-        }
-
-        // For multi-line strings, do full scan from beginning
+    private boolean isInsideMultiLineString(String content, int position) {
         boolean insideString = false;
-        escaped = false;
+        boolean escaped = false;
 
         for (int i = 0; i < position; i++) {
             char c = content.charAt(i);
