@@ -70,6 +70,30 @@ class BugDetectorTest {
         );
     }
 
+    @Test
+    void testDetectInfiniteRecursionWithPatternDispatch() {
+        // Multiple pattern definitions should NOT be flagged as recursive
+        // This is standard Mathematica pattern-based dispatch, not recursion
+        String content = "DocsAsset[\"HTMLTransform\", name_?StringQ] := "
+                + "lookupDocsAsset[\"Standard\", {\"XMLTransforms\", \"HTML\"}, name]\n"
+                + "DocsAsset[\"HTMLTransformLayout\", name_?StringQ] := "
+                + "lookupDocsAsset[\"Standard\", {\"XMLTransforms\", \"HTML\", \"Layouts\"}, name]\n"
+                + "DocsAsset[\"TextCharacterReplacementRules\"] := "
+                + "lookupDocsAsset[\"Standard\", {\"Assets\", \"Data\"}, \"TextCharacterReplacementRules.m\"]";
+        assertDoesNotThrow(() ->
+            detector.detectInfiniteRecursion(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectInfiniteRecursionActualRecursion() {
+        // This SHOULD be flagged - actual recursion without base case
+        String content = "factorial[n_] := n * factorial[n - 1];";
+        assertDoesNotThrow(() ->
+            detector.detectInfiniteRecursion(context, inputFile, content)
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("additionalBugDetectionTestData")
     void testAdditionalBugDetection(DetectorMethod method, String content) {

@@ -311,9 +311,19 @@ public class BugDetector extends BaseDetector {
     }
 
     private boolean isRecursiveFunction(String content, String functionName, int defStart) {
-        int bodyEnd = findFunctionBodyEnd(content, defStart);
-        int nextDef = content.indexOf(functionName + "[", defStart + functionName.length());
-        return nextDef > 0 && nextDef < bodyEnd;
+        // Find the := operator to locate the actual function body
+        int bodyStart = content.indexOf(":=", defStart);
+        if (bodyStart == -1) {
+            return false; // Not a delayed assignment, might be Set (=)
+        }
+        bodyStart += 2; // Move past :=
+
+        int bodyEnd = findFunctionBodyEnd(content, bodyStart);
+        String functionBody = content.substring(bodyStart, bodyEnd);
+
+        // Only search for recursive calls in the actual function body (after :=)
+        // This prevents false positives from subsequent function definitions
+        return functionBody.contains(functionName + "[");
     }
 
     private int findFunctionBodyEnd(String content, int defStart) {
