@@ -1175,7 +1175,7 @@ public class UnusedAndNamingDetector extends BaseDetector {
     public void detectTempVariableNotTemp(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = TEMP_VAR.matcher(content);
-            Map<String, Integer> tempVarCount = new HashMap<>();
+            Map<String, java.util.List<Integer>> tempVarPositions = new HashMap<>();
 
             while (matcher.find()) {
                 int position = matcher.start();
@@ -1184,17 +1184,17 @@ public class UnusedAndNamingDetector extends BaseDetector {
                     continue;
                 }
                 String varName = matcher.group(1);
-                tempVarCount.put(varName, tempVarCount.getOrDefault(varName, 0) + 1);
+                tempVarPositions.computeIfAbsent(varName, k -> new java.util.ArrayList<>()).add(position);
             }
 
-            for (Map.Entry<String, Integer> entry : tempVarCount.entrySet()) {
-                if (entry.getValue() > 2) {
-                    reportIssue(context, inputFile, 1,
-                        MathematicaRulesDefinition.TEMP_VARIABLE_NOT_TEMP_KEY,
-                        String.format("Variable '%s' named 'temp/tmp' but used %d times. Give it a descriptive name.",
-                            entry.getKey(), entry.getValue()));
-                }
-            }
+            // Use generic helper to report with secondary locations
+            reportDuplicatesFromPositions(
+                context, inputFile, content, tempVarPositions, 3,
+                MathematicaRulesDefinition.TEMP_VARIABLE_NOT_TEMP_KEY,
+                (varName, count) -> String.format(
+                    "Variable '%s' named 'temp/tmp' but used %d times. Give it a descriptive name.",
+                    varName, count)
+            );
         } catch (Exception e) {
             LOG.debug("Error detecting temp variables not temp in {}", inputFile.filename(), e);
         }

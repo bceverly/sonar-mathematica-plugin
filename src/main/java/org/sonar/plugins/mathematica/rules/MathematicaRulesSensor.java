@@ -575,7 +575,7 @@ public class MathematicaRulesSensor implements Sensor {
             long analysisStart = System.currentTimeMillis();
 
             // NO SIZE LIMITS - Analyze all files completely
-            performUnifiedAstAnalysis(inputFile, content, analysisStart);
+            performUnifiedAstAnalysis(context, inputFile, content, analysisStart);
 
             long analysisTime = System.currentTimeMillis() - analysisStart;
 
@@ -646,14 +646,14 @@ public class MathematicaRulesSensor implements Sensor {
      * Performs unified AST-based analysis to avoid nested try blocks.
      * Extracted to avoid nested try block code smell.
      */
-    private void performUnifiedAstAnalysis(InputFile inputFile, String content, long analysisStart) {
+    private void performUnifiedAstAnalysis(SensorContext context, InputFile inputFile, String content, long analysisStart) {
         try {
             // STEP 1: Parse once to build complete AST
             ComprehensiveParser parser = new ComprehensiveParser();
             List<AstNode> ast = parser.parse(content);
 
             // STEP 2: Single visitor traversal checks ALL rules
-            UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(inputFile, this);
+            UnifiedRuleVisitor visitor = new UnifiedRuleVisitor(context, inputFile, this);
             for (AstNode node : ast) {
                 node.accept(visitor);
             }

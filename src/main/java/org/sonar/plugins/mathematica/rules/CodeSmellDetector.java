@@ -129,22 +129,56 @@ public class CodeSmellDetector extends BaseDetector {
             Matcher numberMatcher = NUMBER_PATTERN.matcher(content);
             while (numberMatcher.find()) {
                 String number = numberMatcher.group();
-                // Skip common non-magic numbers
-                if (!"0".equals(number) && !"1".equals(number) && !"2".equals(number)) {
-                    int position = numberMatcher.start();
+                int position = numberMatcher.start();
 
-                    // Skip if in comment or string or is association mapping
-                    if (!isInsideComment(position, commentRanges) && !isInsideStringLiteral(content, position)
-                        && !isAssociationMapping(content, position)) {
-                        int line = calculateLineNumber(content, position);
-                        reportIssue(context, inputFile, line, MathematicaRulesDefinition.MAGIC_NUMBER_KEY,
-                            "Replace this magic number with a named constant.");
-                    }
+                // Skip if in comment, string, or is a standard idiom
+                if (isInsideComment(position, commentRanges)
+                    || isInsideStringLiteral(content, position)
+                    || isAssociationMapping(content, position)
+                    || isCommonIdiom(content, position, number)) {
+                    continue;
                 }
+
+                int line = calculateLineNumber(content, position);
+                reportIssue(context, inputFile, line, MathematicaRulesDefinition.MAGIC_NUMBER_KEY,
+                    "Replace this magic number with a named constant.");
             }
         } catch (Exception e) {
             LOG.warn("Skipping magic number detection due to error in file: {}", inputFile.filename());
         }
+    }
+
+    /**
+     * Checks if a number is part of a common Mathematica idiom and should not be flagged.
+     * Examples:
+     * - 0, 1, 2 (common values)
+     * - 1 in {1, Length[x]} (list start index)
+     * - Small integers in Round, Ceiling, Floor precision arguments
+     * - -1 (common sentinel value)
+     */
+    private boolean isCommonIdiom(String content, int position, String number) {
+        // Skip 0, 1, 2, -1 (extremely common, almost never "magic")
+        if ("0".equals(number) || "1".equals(number) || "2".equals(number) || "-1".equals(number)) {
+            return true;
+        }
+
+        // Check context before and after the number
+        int contextStart = Math.max(0, position - 20);
+        int contextEnd = Math.min(content.length(), position + number.length() + 20);
+        String context = content.substring(contextStart, contextEnd).toLowerCase();
+
+        // Check for list/range idioms where number starts a list
+        if (context.matches(".*\\{\\s*" + number + "\\s*,.*")) {
+            return true;
+        }
+
+        // Check for rounding/precision functions with numeric argument
+        if (context.matches(".*(round|ceiling|floor)\\s*\\[.*,\\s*" + number + ".*")) {
+            return true;
+        }
+
+        // Check for array indexing patterns
+        return context.matches(".*(part|\\[\\[).*" + number + ".*");
     }
 
     /**
@@ -495,29 +529,32 @@ public class CodeSmellDetector extends BaseDetector {
 
     public void detectExpressionTooComplex(SensorContext context, InputFile inputFile, String content, List<int[]> commentRanges) {
         try {
-            String[] lines = content.split("\n");
+            String[] lines = content.split("\n", -1);
             int currentPos = 0;
 
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
 
-                // Skip if this line is inside a comment
-                boolean inComment = false;
-                for (int[] range : commentRanges) {
-                    // Check if the start of this line is within a comment range
-                    if (currentPos >= range[0] && currentPos < range[1]) {
-                        inComment = true;
-                        break;
+                // Count operators that are NOT inside comments or strings
+                int operatorCount = 0;
+                for (int j = 0; j < line.length(); j++) {
+                    char c = line.charAt(j);
+                    // Check if this is an operator character
+                    if (c == '-' || c == '+' || c == '*' || c == '/' || c == '^'
+                        || c == '&' || c == '|' || c == '<' || c == '>' || c == '=' || c == '!') {
+
+                        int absolutePos = currentPos + j;
+                        // Only count if NOT in comment or string
+                        if (!isInsideComment(absolutePos, commentRanges)
+                            && !isInsideStringLiteral(content, absolutePos)) {
+                            operatorCount++;
+                        }
                     }
                 }
 
-                if (!inComment) {
-                    int operatorCount = countOccurrences(line, "[-+*/^&|<>=!]");
-
-                    if (operatorCount > 10) {
-                        reportIssue(context, inputFile, i + 1, MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY,
-                            String.format("Expression has %d operators (max 10 allowed).", operatorCount));
-                    }
+                if (operatorCount > 10) {
+                    reportIssue(context, inputFile, i + 1, MathematicaRulesDefinition.EXPRESSION_TOO_COMPLEX_KEY,
+                        String.format("Expression has %d operators (max 10 allowed).", operatorCount));
                 }
 
                 // Move position forward (line length + newline character)
@@ -586,7 +623,7 @@ public class CodeSmellDetector extends BaseDetector {
 
     public void detectRepeatedFunctionCalls(SensorContext context, InputFile inputFile, String content) {
         try {
-            Map<String, Integer> callCounts = new java.util.HashMap<>();
+            Map<String, java.util.List<Integer>> callPositions = new java.util.HashMap<>();
             Matcher matcher = FUNCTION_CALL_EXTRACTION_PATTERN.matcher(content);
 
             while (matcher.find()) {
@@ -596,16 +633,19 @@ public class CodeSmellDetector extends BaseDetector {
                     continue;
                 }
                 String call = matcher.group(0).trim();
-                callCounts.put(call, callCounts.getOrDefault(call, 0) + 1);
-            }
-
-            for (Map.Entry<String, Integer> entry : callCounts.entrySet()) {
-                if (entry.getValue() >= 3 && entry.getKey().matches(".*(?:Solve|NSolve|Integrate|NIntegrate).*")) { //NOSONAR
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY,
-                        String.format("Expensive function call '%s' repeated %d times - consider caching.",
-                            entry.getKey(), entry.getValue()));
+                // Only track expensive function calls
+                if (call.matches(".*(?:Solve|NSolve|Integrate|NIntegrate).*")) { //NOSONAR
+                    callPositions.computeIfAbsent(call, k -> new java.util.ArrayList<>()).add(position);
                 }
             }
+
+            // Use generic helper to report with secondary locations
+            reportDuplicatesFromPositions(
+                context, inputFile, content, callPositions, 3,
+                MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY,
+                (call, count) -> String.format(
+                    "Expensive function call '%s' repeated %d times - consider caching.", call, count)
+            );
         } catch (Exception e) {
             LOG.warn("Skipping repeated function calls detection due to error in file: {}", inputFile.filename());
         }

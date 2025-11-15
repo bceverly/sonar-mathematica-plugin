@@ -3,6 +3,10 @@ package org.sonar.plugins.mathematica.ast;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.TextRange;
+import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.issue.NewIssue;
+import org.sonar.api.batch.sensor.issue.NewIssueLocation;
 import org.sonar.plugins.mathematica.rules.MathematicaRulesSensor;
 
 import java.util.Arrays;
@@ -17,18 +21,35 @@ import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 class UnifiedRuleVisitorTest {
 
+    private SensorContext context;
     private InputFile inputFile;
     private MathematicaRulesSensor sensor;
     private UnifiedRuleVisitor visitor;
 
     @BeforeEach
     void setUp() {
+        context = mock(SensorContext.class);
         inputFile = mock(InputFile.class);
         sensor = mock(MathematicaRulesSensor.class);
-        visitor = new UnifiedRuleVisitor(inputFile, sensor);
+
+        // Mock the issue creation chain for secondary locations
+        NewIssue newIssue = mock(NewIssue.class);
+        NewIssueLocation newLocation = mock(NewIssueLocation.class);
+        TextRange textRange = mock(TextRange.class);
+
+        when(context.newIssue()).thenReturn(newIssue);
+        when(newIssue.forRule(any())).thenReturn(newIssue);
+        when(newIssue.newLocation()).thenReturn(newLocation);
+        when(newLocation.on(any())).thenReturn(newLocation);
+        when(newLocation.at(any())).thenReturn(newLocation);
+        when(newLocation.message(anyString())).thenReturn(newLocation);
+        when(inputFile.selectLine(anyInt())).thenReturn(textRange);
+
+        visitor = new UnifiedRuleVisitor(context, inputFile, sensor);
     }
 
     // ========== Test visit(AssignmentNode) - Lines 127-134 ==========
@@ -250,7 +271,7 @@ class UnifiedRuleVisitorTest {
 
         // Reset sensor for clean test
         sensor = mock(MathematicaRulesSensor.class);
-        visitor = new UnifiedRuleVisitor(inputFile, sensor);
+        visitor = new UnifiedRuleVisitor(context, inputFile, sensor);
 
         assertDoesNotThrow(() -> visitor.visit(funcDef));
     }
@@ -663,7 +684,8 @@ class UnifiedRuleVisitorTest {
         visitor.visit(call4);
         visitor.performPostTraversalChecks();
 
-        verify(sensor, atLeastOnce()).queueIssue(any(), anyInt(), anyString(), anyString());
+        // Verify that an issue with secondary locations is created (not queued)
+        verify(context, atLeastOnce()).newIssue();
     }
 
     @Test
@@ -684,7 +706,7 @@ class UnifiedRuleVisitorTest {
 
     @Test
     void testNullSensorDoesNotThrowException() {
-        UnifiedRuleVisitor nullSensorVisitor = new UnifiedRuleVisitor(inputFile, null);
+        UnifiedRuleVisitor nullSensorVisitor = new UnifiedRuleVisitor(context, inputFile, null);
 
         FunctionCallNode call = new FunctionCallNode(
             "Run",

@@ -8,6 +8,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -22,27 +23,46 @@ public class UnifiedRuleVisitor implements AstVisitor {
 
     private static final String FUNCTION_PREFIX = "Function '";
     private static final String IMPORT = "Import";
+    private static final String EXPORT = "Export";
     private static final String RANDOM = "Random";
+    private static final String RANDOM_INTEGER = "RandomInteger";
+    private static final String TO_EXPRESSION = "ToExpression";
     private static final String CLOUD_DEPLOY = "CloudDeploy";
     private static final String GET = "Get";
     private static final String PART = "Part";
     private static final String PUT = "Put";
     private static final String REVIEW_PREFIX = "Review: ";
 
+    // Common ECL and domain-specific lightweight functions
+    private static final Set<String> ECL_LIGHTWEIGHT_FUNCTIONS = Set.of(
+        "Download", "Upload", "Test", "Example", "ValidQ",
+        "Unitless", "Widget", "Field", "Adder", "ToList",
+        "DefineOptions", "ReplaceRule", "SamplesIn",
+        "Lookup", "SafeLookup", "Packet"
+    );
+
+    // Mathematica built-in functions from System` context
+    // Based on Wolfram Language documentation - ~6000+ built-in functions
+    // Only truly expensive functions (Solve, Integrate, NDSolve, etc.) should be flagged for caching
+    private static final Set<String> MATHEMATICA_BUILTIN_FUNCTIONS = createBuiltinFunctionsSet();
+
+    private final org.sonar.api.batch.sensor.SensorContext context;
     private final InputFile inputFile;
     private final MathematicaRulesSensor sensor;
 
     // State tracking for various analyses
     private final Set<String> definedFunctions = new HashSet<>();
     private final Set<String> calledFunctions = new HashSet<>();
-    private final Map<String, Integer> functionCallCounts = new HashMap<>();
+    private final Map<String, java.util.List<Integer>> functionCallPositions = new HashMap<>();
     private final Map<String, Integer> variableAssignments = new HashMap<>();
     private final Map<String, Integer> operatorCounts = new HashMap<>();
 
     // Scope tracking
     private final Deque<Set<String>> scopeStack = new ArrayDeque<>();
 
-    public UnifiedRuleVisitor(InputFile inputFile, MathematicaRulesSensor sensor) {
+    public UnifiedRuleVisitor(org.sonar.api.batch.sensor.SensorContext context, InputFile inputFile,
+                             MathematicaRulesSensor sensor) {
+        this.context = context;
         this.inputFile = inputFile;
         this.sensor = sensor;
 
@@ -73,8 +93,13 @@ public class UnifiedRuleVisitor implements AstVisitor {
         String funcName = node.getFunctionName();
         calledFunctions.add(funcName);
 
-        // Track call frequency for repeated call detection
-        functionCallCounts.merge(funcName, 1, Integer::sum);
+        // Track call positions for repeated call detection
+        // Only track if arguments are empty or all literals (for identical call detection)
+        String signature = buildFunctionSignature(node);
+        if (signature != null) {
+            functionCallPositions.computeIfAbsent(signature, k -> new java.util.ArrayList<>())
+                .add(node.getStartLine());
+        }
 
         // Check for specific vulnerability patterns
         checkCommandInjection(node);
@@ -185,14 +210,85 @@ public class UnifiedRuleVisitor implements AstVisitor {
             }
         }
 
-        // Check for repeated function calls
-        // Exclude property accessors and lightweight built-in functions
-        for (Map.Entry<String, Integer> entry : functionCallCounts.entrySet()) {
-            if (entry.getValue() > 3 && !isPropertyAccessorOrLightweight(entry.getKey())) {
-                reportIssue(1, MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY,
-                    FUNCTION_PREFIX + entry.getKey() + "' is called " + entry.getValue() + " times. Consider caching the result.");
+        // Check for repeated function calls with identical arguments
+        // Only flags when same function is called with identical constant arguments
+        for (Map.Entry<String, java.util.List<Integer>> entry : functionCallPositions.entrySet()) {
+            String signature = entry.getKey();
+            String funcName = extractFunctionName(signature);
+
+            if (entry.getValue().size() > 3 && !isPropertyAccessorOrLightweight(funcName)) {
+                java.util.List<Integer> allLineNumbers = entry.getValue();
+                int primaryLine = allLineNumbers.get(0);
+                String message = "Function call '" + signature + "' is repeated " + allLineNumbers.size()
+                    + " times with identical arguments. Consider caching the result.";
+
+                // Report with secondary locations showing all duplicates
+                reportIssueWithSecondaryLocations(primaryLine,
+                    MathematicaRulesDefinition.REPEATED_FUNCTION_CALLS_KEY, message, allLineNumbers);
             }
         }
+    }
+
+    /**
+     * Builds a function signature string including arguments if all are literals.
+     * Returns null if arguments contain non-literals (variables, expressions).
+     * This ensures we only flag repeated calls with identical constant arguments.
+     *
+     * Examples:
+     * - DatabaseConnection[] -> "DatabaseConnection[]"
+     * - Solve[x^2 + 1 == 0, x] -> null (contains variables)
+     * - Sqrt[2] -> "Sqrt[2]"
+     * - Sqrt[x] -> null (contains variable)
+     */
+    private String buildFunctionSignature(FunctionCallNode node) {
+        String funcName = node.getFunctionName();
+        List<AstNode> args = node.getArguments();
+
+        // No arguments - track it
+        if (args == null || args.isEmpty()) {
+            return funcName + "[]";
+        }
+
+        // Check if all arguments are literals
+        StringBuilder signature = new StringBuilder(funcName);
+        signature.append("[");
+
+        for (int i = 0; i < args.size(); i++) {
+            AstNode arg = args.get(i);
+
+            // Only track if argument is a literal
+            if (!(arg instanceof LiteralNode)) {
+                return null; // Contains non-literal, don't track
+            }
+
+            LiteralNode literal = (LiteralNode) arg;
+            if (i > 0) {
+                signature.append(", ");
+            }
+
+            // Add literal value to signature
+            Object value = literal.getValue();
+            if (literal.getLiteralType() == LiteralNode.LiteralType.STRING) {
+                signature.append("\"").append(value).append("\"");
+            } else {
+                signature.append(value);
+            }
+        }
+
+        signature.append("]");
+        return signature.toString();
+    }
+
+    /**
+     * Extracts function name from a signature string.
+     * Example: "Sqrt[2]" -> "Sqrt"
+     */
+    private String extractFunctionName(String signature) {
+        int bracketIndex = signature.indexOf('[');
+        if (bracketIndex > 0) {
+            return signature.substring(0, bracketIndex);
+        }
+        return signature;
     }
 
     // ========== Rule Implementation Methods ==========
@@ -210,66 +306,255 @@ public class UnifiedRuleVisitor implements AstVisitor {
      *
      * Only flag TRULY expensive computational functions like Solve, Integrate, etc.
      */
+    /**
+     * Creates the set of Mathematica built-in functions.
+     * Separated into static methods to avoid creating the large set on every call.
+     */
+    private static Set<String> createBuiltinFunctionsSet() {
+        Set<String> functions = new HashSet<>();
+        addCoreBuiltinFunctions(functions);
+        addExtendedBuiltinFunctions(functions);
+        return functions;
+    }
+
+    /**
+     * Adds core Mathematica built-in functions (control flow, list ops, etc.).
+     */
+    private static void addCoreBuiltinFunctions(Set<String> functions) {
+        // Control flow
+        functions.addAll(Set.of(
+            "If", "Which", "Switch", "Do", "While", "For", "Return", "Break", "Continue",
+            "Throw", "Catch", "CheckAbort", "TimeConstrained", "MemoryConstrained",
+            "Goto", "Label", "Abort", "Interrupt"
+        ));
+
+        // Functional programming
+        functions.addAll(Set.of(
+            "Map", "MapAt", "MapIndexed", "MapThread", "Apply", "Scan", "Fold", "FoldList",
+            "Nest", "NestList", "NestWhile", "FixedPoint", "FixedPointList", "NestWhileList",
+            "Compose", "Composition", "RightComposition", "Identity", "Through"
+        ));
+
+        // Scoping
+        functions.addAll(Set.of(
+            "Module", "Block", "With", "Function", "DynamicModule", "Unique", "Temporary"
+        ));
+
+        // List operations
+        functions.addAll(Set.of(
+            "Table", "Range", "Array", "List", "Join", "Append", "Prepend", "AppendTo", "PrependTo",
+            "Insert", "Delete", "Take", "Drop", "Part", "Extract", "Select", "Cases", "DeleteCases"
+        ));
+        functions.addAll(Set.of(
+            "Flatten", "Partition", "Split", "Riffle", "Thread", "Transpose", "Reverse",
+            "DeleteDuplicates", "Union", "Intersection", "Complement", "Subsets", "Tuples"
+        ));
+        functions.addAll(Set.of(
+            "ConstantArray", "Normal", "Total", "Accumulate", "Differences", "Ratios",
+            "Tally", "Sort", "SortBy", "Ordering", "OrderedQ", "Permutations", "GroupBy"
+        ));
+        functions.addAll(Set.of(
+            "Merge", "JoinAcross", "AssociationThread", "AssociationMap", "Counts"
+        ));
+
+        // List queries
+        functions.addAll(Set.of(
+            "Length", "First", "Last", "Rest", "Most", "MemberQ", "FreeQ", "Count",
+            "Position", "FirstPosition", "Depth", "ArrayDepth", "Dimensions", "TensorRank"
+        ));
+
+        // Type checking
+        functions.addAll(Set.of(
+            "Head", "AtomQ", "ListQ", "NumberQ", "IntegerQ", "RealQ", "StringQ", "SymbolQ",
+            "VectorQ", "MatrixQ", "ArrayQ", "NumericQ", "ExactNumberQ", "InexactNumberQ",
+            "EvenQ", "OddQ", "PrimeQ", "PolynomialQ", "QuantityQ"
+        ));
+
+        // Association/property access
+        functions.addAll(Set.of(
+            "Key", "Lookup", "Keys", "Values", "KeyExistsQ", "Association", "AssociationQ",
+            "KeySort", "KeyTake", "KeyDrop", "KeyMap", "KeyValueMap"
+        ));
+
+        // String operations
+        functions.addAll(Set.of(
+            "StringJoin", "StringLength", "StringTake", "StringDrop", "ToString", TO_EXPRESSION,
+            "StringReverse", "StringInsert", "StringDelete", "StringReplace", "StringSplit"
+        ));
+        functions.addAll(Set.of(
+            "StringPosition", "StringContainsQ", "StringStartsQ", "StringEndsQ", "StringMatchQ",
+            "StringCount", "StringCases", "StringQ", "DigitQ", "LetterQ", "UpperCaseQ", "LowerCaseQ"
+        ));
+        functions.addAll(Set.of(
+            "StringRiffle", "StringPadLeft", "StringPadRight", "StringTrim", "StringRepeat"
+        ));
+
+        // Basic math (cheap operations)
+        functions.addAll(Set.of(
+            "Plus", "Times", "Subtract", "Divide", "Power", "Mod", "Quotient", "Divisors",
+            "Min", "Max", "Abs", "Sign", "Round", "Floor", "Ceiling", "Clip", "Rescale"
+        ));
+        functions.addAll(Set.of(
+            "N", "Rationalize", "Numerator", "Denominator", "Re", "Im", "Conjugate", "Arg",
+            "RealAbs", "Chop", "GCD", "LCM", "FactorInteger", "Prime", "PrimePi"
+        ));
+
+        // Mathematical functions (common, not expensive)
+        functions.addAll(Set.of(
+            "Sqrt", "Exp", "Log", "Log10", "Log2", "Sin", "Cos", "Tan", "Csc", "Sec", "Cot",
+            "ArcSin", "ArcCos", "ArcTan", "ArcCsc", "ArcSec", "ArcCot", "ArcTan2"
+        ));
+        functions.addAll(Set.of(
+            "Sinh", "Cosh", "Tanh", "Csch", "Sech", "Coth", "ArcSinh", "ArcCosh", "ArcTanh",
+            "Factorial", "Binomial", "Multinomial", "Pochhammer"
+        ));
+
+        // Comparison
+        functions.addAll(Set.of(
+            "Equal", "Unequal", "Less", "Greater", "LessEqual", "GreaterEqual",
+            "SameQ", "UnsameQ", "MatchQ", "Order", "OrderedQ", "Positive", "Negative",
+            "NonPositive", "NonNegative"
+        ));
+
+        // Logic
+        functions.addAll(Set.of(
+            "And", "Or", "Not", "Xor", "Nand", "Nor", "Implies", "Equivalent",
+            "TrueQ", "BooleanQ"
+        ));
+
+        // Constants
+        functions.addAll(Set.of(
+            "True", "False", "Null", "None", "All", "Automatic", "Identity", "Missing",
+            "Indeterminate", "Infinity", "ComplexInfinity", "Pi", "E", "EulerGamma",
+            "GoldenRatio", "Degree", "I"
+        ));
+
+        // Pattern matching
+        functions.addAll(Set.of(
+            "Replace", "ReplaceAll", "ReplaceRepeated", "Rule", "RuleDelayed",
+            "Alternatives", "Except", "Optional", "Repeated", "RepeatedNull"
+        ));
+        functions.addAll(Set.of(
+            "Longest", "Shortest", "PatternTest", "Condition", "Blank", "BlankSequence",
+            "BlankNullSequence", "Pattern", "Verbatim", "HoldPattern"
+        ));
+    }
+
+    /**
+     * Adds extended Mathematica built-in functions (eval, attributes, display, etc.).
+     */
+    private static void addExtendedBuiltinFunctions(Set<String> functions) {
+        // Evaluation and holding
+        functions.addAll(Set.of(
+            "Evaluate", "Hold", "HoldForm", "HoldComplete", "ReleaseHold", "Unevaluated",
+            "Defer", "Inactivate", "Activate"
+        ));
+
+        // Attributes and properties
+        functions.addAll(Set.of(
+            "Attributes", "SetAttributes", "ClearAttributes", "Protect", "Unprotect",
+            "Options", "SetOptions", "OptionValue", "FilterRules", "AbsoluteOptions"
+        ));
+
+        // Symbols and contexts
+        functions.addAll(Set.of(
+            "Symbol", "SymbolName", "SymbolQ", "Context", "Contexts", "Begin", "BeginPackage",
+            "End", "EndPackage", "Remove", "Clear", "ClearAll", "Names"
+        ));
+
+        // Messages and errors
+        functions.addAll(Set.of(
+            "Message", "MessageName", "Check", "Quiet", "Off", "On", "Print", "PrintTemporary",
+            "Echo", "EchoFunction"
+        ));
+
+        // Dynamic and frontend
+        functions.addAll(Set.of(
+            "Dynamic", "DynamicWrapper", "Refresh", "UpdateInterval", "TrackedSymbols"
+        ));
+
+        // Data import/export (lightweight operations)
+        functions.addAll(Set.of(
+            IMPORT, EXPORT, GET, PUT, "Read", "Write", "OpenRead", "OpenWrite",
+            "Close", "ReadList", "ReadString", "WriteString"
+        ));
+
+        // Graphics primitives (not rendering)
+        functions.addAll(Set.of(
+            "Point", "Line", "Circle", "Disk", "Rectangle", "Polygon", "Arrow",
+            "Text", "Inset", "GeometricTransformation"
+        ));
+
+        // Colors and styling
+        functions.addAll(Set.of(
+            "RGBColor", "Hue", "GrayLevel", "CMYKColor", "Opacity", "ColorData",
+            "Directive", "Style", "FontSize", "FontFamily", "FontWeight", "FontColor"
+        ));
+
+        // Formatting and display
+        functions.addAll(Set.of(
+            "Row", "Column", "Grid", "Item", "Spacer", "Pane", "Panel", "Framed",
+            "Labeled", "Legended", "Placed", "Tooltip"
+        ));
+
+        // Date and time (simple operations)
+        functions.addAll(Set.of(
+            "DateList", "DateString", "DateObject", "TimeObject", "Now", "Today",
+            "AbsoluteTime", "DateDifference", "DatePlus"
+        ));
+
+        // File operations (lightweight)
+        functions.addAll(Set.of(
+            "FileNameJoin", "FileNameSplit", "FileBaseName", "FileExtension",
+            "DirectoryName", "FileExistsQ", "DirectoryQ", "FileNames", "FileNameTake"
+        ));
+
+        // Randomness (cheap random operations)
+        functions.addAll(Set.of(
+            RANDOM_INTEGER, "RandomReal", "RandomChoice", "RandomSample", "SeedRandom"
+        ));
+
+        // Events and triggers
+        functions.addAll(Set.of(
+            "WhenEvent", "EventHandler", "EventData"
+        ));
+
+        // Quantities and units (lightweight operations)
+        functions.addAll(Set.of(
+            "Quantity", "QuantityMagnitude", "QuantityUnit", "UnitConvert", "UnitDimensions"
+        ));
+
+        // Interpolation and numerical (cheap operations)
+        functions.addAll(Set.of(
+            "InterpolatingFunction", "Interpolation"
+        ));
+
+        // Pure list processing
+        functions.addAll(Set.of(
+            "Pick", "PadLeft", "PadRight", "RotateLeft", "RotateRight", "ArrayPad",
+            "ArrayReshape", "ArrayFlatten", "ArrayRules", "SparseArray"
+        ));
+    }
+
     private boolean isPropertyAccessorOrLightweight(String funcName) {
         // Property accessors (object-oriented patterns)
         if (funcName.startsWith("$")) {
             return true; // $This, $Self, $Context, etc.
         }
 
-        // ALL common Mathematica built-in functions
-        // These are fundamental language features, not expensive computations
-        Set<String> builtinFunctions = Set.of(
-            // Control flow
-            "If", "Which", "Switch", "Do", "While", "For", "Return", "Break", "Continue",
+        // ECL pattern validators (lightweight pattern constructors ending in P)
+        // Examples: RangeP, GreaterP, LessP, ObjectP, QuantityArrayP, etc.
+        if (funcName.endsWith("P") && funcName.length() > 1 && Character.isUpperCase(funcName.charAt(0))) {
+            return true;
+        }
 
-            // Functional programming
-            "Map", "MapAt", "MapIndexed", "MapThread", "Apply", "Scan", "Fold", "FoldList",
-            "Nest", "NestList", "NestWhile", "FixedPoint", "FixedPointList",
+        // Check ECL lightweight functions
+        if (ECL_LIGHTWEIGHT_FUNCTIONS.contains(funcName)) {
+            return true;
+        }
 
-            // Scoping
-            "Module", "Block", "With", "Function", "DynamicModule",
-
-            // List operations
-            "Table", "Range", "Array", "List", "Join", "Append", "Prepend", "AppendTo", "PrependTo",
-            "Insert", "Delete", "Take", "Drop", "Part", "Extract", "Select", "Cases", "DeleteCases",
-            "Flatten", "Partition", "Split", "Riffle", "Thread", "Transpose", "Reverse",
-
-            // List queries
-            "Length", "First", "Last", "Rest", "Most", "MemberQ", "FreeQ", "Count",
-            "Position", "FirstPosition",
-
-            // Type checking
-            "Head", "AtomQ", "ListQ", "NumberQ", "IntegerQ", "RealQ", "StringQ", "SymbolQ",
-            "VectorQ", "MatrixQ", "ArrayQ",
-
-            // Association/property access
-            "Key", "Lookup", "Keys", "Values", "KeyExistsQ", "Association",
-
-            // String operations
-            "StringJoin", "StringLength", "StringTake", "StringDrop", "ToString",
-
-            // Basic math (cheap operations)
-            "Plus", "Times", "Subtract", "Divide", "Power", "Mod",
-            "Min", "Max", "Abs", "Sign", "Round", "Floor", "Ceiling",
-
-            // Comparison
-            "Equal", "Unequal", "Less", "Greater", "LessEqual", "GreaterEqual",
-            "SameQ", "UnsameQ", "MatchQ",
-
-            // Logic
-            "And", "Or", "Not", "Xor", "Nand", "Nor",
-
-            // Constants
-            "True", "False", "Null", "None", "All", "Automatic", "Identity",
-
-            // Pattern matching
-            "Replace", "ReplaceAll", "ReplaceRepeated", "Rule", "RuleDelayed",
-
-            // Set operations
-            "Union", "Intersection", "Complement", "Subsets", "Tuples"
-        );
-
-        return builtinFunctions.contains(funcName);
+        // Check Mathematica built-in functions
+        return MATHEMATICA_BUILTIN_FUNCTIONS.contains(funcName);
     }
 
     private void checkFunctionNaming(FunctionDefNode node, String funcName) {
@@ -441,14 +726,14 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkCodeInjection(FunctionCallNode node) {
-        if (node.getFunctionName().equals("ToExpression") && !node.getArguments().isEmpty()) {
+        if (node.getFunctionName().equals(TO_EXPRESSION) && !node.getArguments().isEmpty()) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.CODE_INJECTION_KEY,
                 "Potential code injection via ToExpression. Validate and sanitize input.");
         }
     }
 
     private void checkPathTraversal(FunctionCallNode node) {
-        Set<String> fileOps = Set.of(IMPORT, "Export", GET, PUT, "DeleteFile", "RenameFile", "CopyFile");
+        Set<String> fileOps = Set.of(IMPORT, EXPORT, GET, PUT, "DeleteFile", "RenameFile", "CopyFile");
         if (fileOps.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.PATH_TRAVERSAL_KEY,
                 "Potential path traversal. Validate file paths in " + node.getFunctionName() + ".");
@@ -496,7 +781,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkInsecureRandom(FunctionCallNode node) {
-        if (node.getFunctionName().equals(RANDOM) || node.getFunctionName().equals("RandomInteger")) {
+        if (node.getFunctionName().equals(RANDOM) || node.getFunctionName().equals(RANDOM_INTEGER)) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.INSECURE_RANDOM_EXPANDED_KEY,
                 "Use RandomCrypto for cryptographic random numbers instead of Random/RandomInteger.");
         }
@@ -517,7 +802,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkToExpressionOnInput(FunctionCallNode node) {
-        if (node.getFunctionName().equals("ToExpression")) {
+        if (node.getFunctionName().equals(TO_EXPRESSION)) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.TOEXPRESSION_ON_INPUT_KEY,
                 "ToExpression on user input is dangerous. Use safer alternatives.");
         }
@@ -550,7 +835,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkExposingSensitiveData(FunctionCallNode node) {
-        Set<String> exposeFuncs = Set.of(CLOUD_DEPLOY, "Export", PUT);
+        Set<String> exposeFuncs = Set.of(CLOUD_DEPLOY, EXPORT, PUT);
         if (exposeFuncs.contains(node.getFunctionName())) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.EXPOSING_SENSITIVE_DATA_KEY,
                 "Ensure no sensitive data is exposed via " + node.getFunctionName() + ".");
@@ -588,7 +873,7 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkCryptoKeyGeneration(FunctionCallNode node) {
-        Set<String> keyFuncs = Set.of("RandomInteger", RANDOM, "GenerateSymmetricKey", "GenerateAsymmetricKeyPair");
+        Set<String> keyFuncs = Set.of(RANDOM_INTEGER, RANDOM, "GenerateSymmetricKey", "GenerateAsymmetricKeyPair");
         if (keyFuncs.contains(node.getFunctionName())) {
             String message;
             if (node.getFunctionName().equals(RANDOM)) {
@@ -638,5 +923,37 @@ public class UnifiedRuleVisitor implements AstVisitor {
         if (sensor != null) {
             sensor.queueIssue(inputFile, line, ruleKey, message);
         }
+    }
+
+    /**
+     * Reports an issue with secondary locations showing all related occurrences.
+     * Used for duplicate detection to show all duplicate locations.
+     */
+    private void reportIssueWithSecondaryLocations(int primaryLine, String ruleKey, String message,
+                                                   java.util.List<Integer> allLines) {
+        org.sonar.api.batch.sensor.issue.NewIssue issue = context.newIssue()
+            .forRule(org.sonar.api.rule.RuleKey.of(
+                org.sonar.plugins.mathematica.rules.MathematicaRulesDefinition.REPOSITORY_KEY, ruleKey));
+
+        // Primary location (first occurrence)
+        org.sonar.api.batch.sensor.issue.NewIssueLocation primaryLocation = issue.newLocation()
+            .on(inputFile)
+            .at(inputFile.selectLine(primaryLine))
+            .message(message);
+
+        issue.at(primaryLocation);
+
+        // Add secondary locations for all other duplicates
+        for (int i = 1; i < allLines.size(); i++) {
+            int secondaryLine = allLines.get(i);
+            org.sonar.api.batch.sensor.issue.NewIssueLocation secondaryLocation = issue.newLocation()
+                .on(inputFile)
+                .at(inputFile.selectLine(secondaryLine))
+                .message("Duplicate #" + (i + 1));
+
+            issue.addLocation(secondaryLocation);
+        }
+
+        issue.save();
     }
 }

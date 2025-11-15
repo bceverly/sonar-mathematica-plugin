@@ -47,7 +47,9 @@ public final class StyleAndConventionsRulesDefinition {
         repository.createRule(MathematicaRulesDefinition.LINE_TOO_LONG_KEY)
             .setName("Lines should not be too long")
             .setHtmlDescription("<p>Long lines are hard to read and often indicate complex code.</p>"
-                + "<p>Split lines over 150 characters into multiple lines.</p>")
+                + "<p>The default maximum line length is 256 characters, but this can be configured "
+                + "via the <code>sonar.mathematica.line.maximumLength</code> property in the SonarQube web UI "
+                + "under Administration > General Settings > Mathematica > Code Quality.</p>")
             .addDefaultImpact(SoftwareQuality.MAINTAINABILITY, Severity.LOW)
             .setTags(TAG_STYLE, TAG_FORMATTING, TAG_READABILITY)
             .setStatus(RuleStatus.READY);

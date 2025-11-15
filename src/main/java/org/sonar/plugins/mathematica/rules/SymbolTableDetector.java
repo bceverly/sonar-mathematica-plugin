@@ -209,15 +209,87 @@ public final class SymbolTableDetector {
     /**
      * Rule 6: Unused function parameter.
      * Detects function parameters that are never used in the function body.
+     *
+     * NOTE: This rule has known limitations with:
+     * - Pattern destructuring: guesses:{a_, b_, c_} creates variables that may not be detected
+     * - Association returns: <|key -> value|> where values use parameters
+     * - Complex Mathematica constructs (MapThread, Table, WhenEvent, etc.)
+     *
+     * To reduce false positives, we skip functions that:
+     * - Return Associations (contain <| ... |>)
+     * - Use pattern destructuring in parameters
      */
     public static void detectUnusedParameter(SensorContext context, InputFile file, SymbolTable table) {
-        for (Symbol symbol : table.getAllSymbols()) {
-            if (symbol.isParameter() && symbol.isUnused()) {
-                createIssue(context, file, "UnusedParameter", symbol.getDeclarationLine(),
-                    String.format("Parameter '%s' is never used in function body",
-                        symbol.getName())
-                ).save();
+        try {
+            String content = file.contents();
+
+            for (Symbol symbol : table.getAllSymbols()) {
+                // Skip if: not an unused parameter, in Association-returning function, or pattern destructuring
+                boolean shouldSkip = !symbol.isParameter()
+                    || !symbol.isUnused()
+                    || isInAssociationReturningFunction(content, symbol)
+                    || isPartOfPatternDestructuring(content, symbol);
+
+                if (!shouldSkip) {
+                    createIssue(context, file, "UnusedParameter", symbol.getDeclarationLine(),
+                        String.format("Parameter '%s' is never used in function body",
+                            symbol.getName())
+                    ).save();
+                }
             }
+        } catch (Exception e) {
+            // Silently skip on error to avoid breaking analysis
+        }
+    }
+
+    /**
+     * Checks if a parameter is in a function that returns an Association.
+     * Association syntax often confuses simple text-based symbol detection.
+     */
+    private static boolean isInAssociationReturningFunction(String content, Symbol symbol) {
+        try {
+            String[] lines = content.split("\n");
+            int line = symbol.getDeclarationLine();
+
+            if (line <= 0 || line > lines.length) {
+                return false;
+            }
+
+            // Get function definition line and next few lines
+            StringBuilder funcBody = new StringBuilder();
+            for (int i = line - 1; i < Math.min(line + 20, lines.length); i++) {
+                funcBody.append(lines[i]).append("\n");
+            }
+
+            String body = funcBody.toString();
+            // Check if function returns Association
+            return body.contains("<|") && body.contains("|>");
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks if a parameter is part of pattern destructuring like guesses:{a_, b_, c_}.
+     * The individual variables (a, b, c) may not be detected as parameters by simple parsing.
+     */
+    private static boolean isPartOfPatternDestructuring(String content, Symbol symbol) {
+        try {
+            String[] lines = content.split("\n");
+            int line = symbol.getDeclarationLine();
+
+            if (line <= 0 || line > lines.length) {
+                return false;
+            }
+
+            String funcLine = lines[line - 1];
+            String paramName = symbol.getName();
+
+            // Check if parameter appears in pattern destructuring syntax
+            // This indicates it's extracted from a structured parameter
+            return funcLine.matches(".*\\{[^}]*" + java.util.regex.Pattern.quote(paramName) + "_[^}]*\\}.*");
+        } catch (Exception e) {
+            return false;
         }
     }
 
@@ -265,22 +337,50 @@ public final class SymbolTableDetector {
         for (Symbol symbol : table.getAllSymbols()) {
             List<SymbolReference> assignments = symbol.getAssignments();
 
-            for (int i = 0; i < assignments.size() - 1; i++) {
-                SymbolReference assign1 = assignments.get(i);
-                SymbolReference assign2 = assignments.get(i + 1);
+            // Deduplicate assignments - same line/column might be tracked twice due to parsing
+            List<SymbolReference> uniqueAssignments = deduplicateAssignments(assignments);
 
-                // Simple heuristic: if contexts are very similar, likely redundant
-                String ctx1 = assign1.getContext().replaceAll("\\s+", "");
-                String ctx2 = assign2.getContext().replaceAll("\\s+", "");
+            // Need at least 2 distinct assignments
+            if (uniqueAssignments.size() < 2) {
+                continue;
+            }
 
-                if (ctx1.equals(ctx2)) {
-                    createIssue(context, file, "RedundantAssignment", assign2.getLine(),
-                        String.format("Variable '%s' assigned same value twice", symbol.getName())
-                    ).save();
-                    break; // Only report once per symbol
+            for (int i = 0; i < uniqueAssignments.size() - 1; i++) {
+                SymbolReference assign1 = uniqueAssignments.get(i);
+                SymbolReference assign2 = uniqueAssignments.get(i + 1);
+
+                // Check if assignments are on different lines and have same context
+                if (assign1.getLine() != assign2.getLine()) {
+                    String ctx1 = assign1.getContext().replaceAll("\\s+", "");
+                    String ctx2 = assign2.getContext().replaceAll("\\s+", "");
+
+                    if (ctx1.equals(ctx2)) {
+                        createIssue(context, file, "RedundantAssignment", assign2.getLine(),
+                            String.format("Variable '%s' assigned same value twice", symbol.getName())
+                        ).save();
+                        break; // Only report once per symbol
+                    }
                 }
             }
         }
+    }
+
+    /**
+     * Deduplicates assignments that might be tracked multiple times due to parsing.
+     * Uses line + column as unique key.
+     */
+    private static List<SymbolReference> deduplicateAssignments(List<SymbolReference> assignments) {
+        Set<String> seen = new java.util.HashSet<>();
+        List<SymbolReference> unique = new java.util.ArrayList<>();
+
+        for (SymbolReference assignment : assignments) {
+            String key = assignment.getLine() + ":" + assignment.getColumn();
+            if (seen.add(key)) {
+                unique.add(assignment);
+            }
+        }
+
+        return unique;
     }
 
     /**

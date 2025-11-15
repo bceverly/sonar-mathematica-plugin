@@ -16,6 +16,7 @@ import org.sonar.plugins.mathematica.sca.PacletSCASensor;
 public class MathematicaPlugin implements Plugin {
 
     private static final String CATEGORY_MATHEMATICA = "Mathematica";
+    private static final String SUBCATEGORY_CODE_QUALITY = "Code Quality";
 
     @Override
     public void define(Context context) {
@@ -82,7 +83,7 @@ public class MathematicaPlugin implements Plugin {
                 .description("Maximum number of lines allowed in a function. Default: 150")
                 .defaultValue("150")
                 .category(CATEGORY_MATHEMATICA)
-                .subCategory("Code Quality")
+                .subCategory(SUBCATEGORY_CODE_QUALITY)
                 .type(PropertyType.INTEGER)
                 .build()
         );
@@ -93,7 +94,7 @@ public class MathematicaPlugin implements Plugin {
                 .description("Maximum number of lines allowed in a file. Default: 1000")
                 .defaultValue("1000")
                 .category(CATEGORY_MATHEMATICA)
-                .subCategory("Code Quality")
+                .subCategory(SUBCATEGORY_CODE_QUALITY)
                 .type(PropertyType.INTEGER)
                 .build()
         );
@@ -105,6 +106,17 @@ public class MathematicaPlugin implements Plugin {
                 .defaultValue("coverage/coverage.json")
                 .category(CATEGORY_MATHEMATICA)
                 .subCategory("Coverage")
+                .build()
+        );
+
+        context.addExtension(
+            PropertyDefinition.builder("sonar.mathematica.line.maximumLength")
+                .name("Maximum Line Length")
+                .description("Maximum number of characters allowed in a line. Default: 256")
+                .defaultValue("256")
+                .category(CATEGORY_MATHEMATICA)
+                .subCategory(SUBCATEGORY_CODE_QUALITY)
+                .type(PropertyType.INTEGER)
                 .build()
         );
     }

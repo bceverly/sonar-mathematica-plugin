@@ -182,6 +182,38 @@ public abstract class BaseDetector {
     }
 
     /**
+     * Reports an issue with secondary locations showing all related occurrences.
+     * Used for duplicate code detection to show all duplicate locations.
+     */
+    protected void reportIssueWithSecondaryLocations(SensorContext context, InputFile inputFile,
+                                                     int primaryLine, String ruleKey, String message,
+                                                     java.util.List<Integer> allLines) {
+        NewIssue issue = context.newIssue()
+            .forRule(RuleKey.of(MathematicaRulesDefinition.REPOSITORY_KEY, ruleKey));
+
+        // Primary location (first occurrence)
+        NewIssueLocation primaryLocation = issue.newLocation()
+            .on(inputFile)
+            .at(inputFile.selectLine(primaryLine))
+            .message(message);
+
+        issue.at(primaryLocation);
+
+        // Add secondary locations for all other duplicates
+        for (int i = 1; i < allLines.size(); i++) {
+            int secondaryLine = allLines.get(i);
+            NewIssueLocation secondaryLocation = issue.newLocation()
+                .on(inputFile)
+                .at(inputFile.selectLine(secondaryLine))
+                .message("Duplicate #" + (i + 1));
+
+            issue.addLocation(secondaryLocation);
+        }
+
+        issue.save();
+    }
+
+    /**
      * Reports an issue with Quick Fix data.
      *
      * @param context Sensor context
@@ -222,6 +254,76 @@ public abstract class BaseDetector {
         } else {
             // Fallback: report without fix
             reportIssue(context, issueData.inputFile, issueData.line, issueData.ruleKey, issueData.message);
+        }
+    }
+
+    /**
+     * Generic helper for reporting duplicate occurrences with secondary locations.
+     * Converts character positions to line numbers and reports with secondary locations.
+     *
+     * @param context Sensor context
+     * @param inputFile The file with the duplicates
+     * @param content File content (for position-to-line conversion)
+     * @param positionsMap Map of item -> list of character positions
+     * @param threshold Minimum occurrences to report (e.g., 3 for "duplicated 3+ times")
+     * @param ruleKey Rule key to report
+     * @param messageFormatter Function to create the message: (item, count) -> message
+     * @param <T> Type of the duplicated item (String, etc.)
+     */
+    protected <T> void reportDuplicatesFromPositions(
+            SensorContext context,
+            InputFile inputFile,
+            String content,
+            java.util.Map<T, java.util.List<Integer>> positionsMap,
+            int threshold,
+            String ruleKey,
+            java.util.function.BiFunction<T, Integer, String> messageFormatter) {
+
+        for (java.util.Map.Entry<T, java.util.List<Integer>> entry : positionsMap.entrySet()) {
+            if (entry.getValue().size() >= threshold) {
+                // Convert positions to line numbers
+                List<Integer> allLineNumbers = entry.getValue().stream()
+                    .map(pos -> calculateLineNumber(content, pos))
+                    .collect(java.util.stream.Collectors.toList());
+
+                int primaryLine = allLineNumbers.get(0);
+                String message = messageFormatter.apply(entry.getKey(), entry.getValue().size());
+
+                // Report with secondary locations showing all duplicates
+                reportIssueWithSecondaryLocations(context, inputFile, primaryLine, ruleKey, message, allLineNumbers);
+            }
+        }
+    }
+
+    /**
+     * Generic helper for reporting duplicate occurrences with secondary locations.
+     * Uses line numbers directly (no position conversion needed).
+     *
+     * @param context Sensor context
+     * @param inputFile The file with the duplicates
+     * @param lineNumbersMap Map of item -> list of line numbers
+     * @param threshold Minimum occurrences to report
+     * @param ruleKey Rule key to report
+     * @param messageFormatter Function to create the message: (item, count) -> message
+     * @param <T> Type of the duplicated item (String, etc.)
+     */
+    protected <T> void reportDuplicatesFromLineNumbers(
+            SensorContext context,
+            InputFile inputFile,
+            java.util.Map<T, java.util.List<Integer>> lineNumbersMap,
+            int threshold,
+            String ruleKey,
+            java.util.function.BiFunction<T, Integer, String> messageFormatter) {
+
+        for (java.util.Map.Entry<T, java.util.List<Integer>> entry : lineNumbersMap.entrySet()) {
+            if (entry.getValue().size() >= threshold) {
+                int primaryLine = entry.getValue().get(0);
+                String message = messageFormatter.apply(entry.getKey(), entry.getValue().size());
+
+                // Report with secondary locations showing all duplicates
+                reportIssueWithSecondaryLocations(context, inputFile, primaryLine, ruleKey,
+                    message, entry.getValue());
+            }
         }
     }
 
@@ -478,5 +580,52 @@ public abstract class BaseDetector {
             || funcDef.contains("_Image")
             || funcDef.contains("_Graphics")
             || funcDef.contains("_Graph");
+    }
+
+    /**
+     * Checks if a string literal at the given position is being used in an idiomatic Mathematica context
+     * where extracting to a constant would reduce readability.
+     *
+     * Excludes:
+     * - Association keys: <|"key" -> value|> or assoc["key"]
+     * - Option values: option -> "value"
+     * - Dataset column names
+     * - Very short strings (1-3 chars) often used as labels/keys
+     *
+     * @param content File content
+     * @param position Position of the string literal
+     * @param literal The string literal itself (including quotes)
+     * @return true if the string is being used idiomatically and should not be extracted
+     */
+    protected boolean isIdiomaticStringUsage(String content, int position, String literal) {
+        // Very short strings (1-3 chars without quotes) are often keys/labels
+        String withoutQuotes = literal.substring(1, literal.length() - 1);
+        if (withoutQuotes.length() <= 3) {
+            return true;
+        }
+
+        // Get surrounding context (100 chars before and after)
+        int contextStart = Math.max(0, position - 100);
+        int contextEnd = Math.min(content.length(), position + literal.length() + 100);
+        String context = content.substring(contextStart, contextEnd);
+
+        // Check for Association key patterns using safe substring checks
+        // Pattern: <|"key" -> ... (Association definition with quote and arrow)
+        if (context.contains("<|") && context.contains("\"") && context.contains("->")) {
+            return true;
+        }
+
+        // Pattern: assoc["key"] (Association/Dataset access)
+        if (context.contains("[\"") && context.contains("\"]")) {
+            return true;
+        }
+
+        // Pattern: opt -> "value" or "key" -> value (Rule/Option patterns)
+        if (context.contains("->") && context.contains("\"")) {
+            return true;
+        }
+
+        // Pattern: {"key" -> value or , "key" -> value (comma/brace patterns)
+        return (context.contains(",") || context.contains("{")) && context.contains("\"") && context.contains("->");
     }
 }

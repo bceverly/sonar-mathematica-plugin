@@ -100,10 +100,16 @@ public class StyleAndConventionsDetector extends BaseDetector {
     // ===== STYLE & FORMATTING DETECTION METHODS (15 methods) =====
 
     /**
-     * Detect lines longer than 150 characters.
+     * Detect lines longer than the configured maximum length.
+     * Default is 256 characters, but can be configured via sonar.mathematica.line.maximumLength.
      */
     public void detectLineTooLong(SensorContext context, InputFile inputFile, String content) {
         try {
+            // Get maximum line length from configuration (default: 256)
+            int maxLineLength = context.config()
+                .getInt("sonar.mathematica.line.maximumLength")
+                .orElse(256);
+
             String[] lines = linesCache.get();
             if (lines == null) {
                 lines = content.split("\n", -1);
@@ -111,9 +117,10 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
             for (int i = 0; i < lines.length; i++) {
                 String line = lines[i];
-                if (line.length() > 150) {
+                if (line.length() > maxLineLength) {
                     reportIssue(context, inputFile, i + 1, MathematicaRulesDefinition.LINE_TOO_LONG_KEY,
-                        String.format("Line is %d characters long (max 150). Break into multiple lines.", line.length()));
+                        String.format("Line is %d characters long (max %d). Break into multiple lines.",
+                            line.length(), maxLineLength));
                 }
             }
         } catch (Exception e) {
@@ -1158,23 +1165,25 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
             while (matcher.find()) {
                 int position = matcher.start();
-                // Skip matches inside comments or string literals
-                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
-                    continue;
-                }
                 String literal = matcher.group();
-                if (literal.length() > 5) { // Ignore very short strings
+
+                // Skip if: inside comments/strings, very short, or idiomatic usage
+                boolean shouldSkip = isInsideComment(content, position)
+                    || isInsideStringLiteral(content, position)
+                    || literal.length() <= 5
+                    || isIdiomaticStringUsage(content, position, literal);
+
+                if (!shouldSkip) {
                     stringOccurrences.computeIfAbsent(literal, k -> new ArrayList<>()).add(matcher.start());
                 }
             }
 
-            for (Map.Entry<String, List<Integer>> entry : stringOccurrences.entrySet()) {
-                if (entry.getValue().size() >= 2) {
-                    int lineNumber = calculateLineNumber(content, entry.getValue().get(0));
-                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.MAGIC_STRING_KEY,
-                        String.format("Magic string used %d times. Define as named constant.", entry.getValue().size()));
-                }
-            }
+            // Use generic helper to report duplicates with secondary locations
+            reportDuplicatesFromPositions(
+                context, inputFile, content, stringOccurrences, 2,
+                MathematicaRulesDefinition.MAGIC_STRING_KEY,
+                (literal, count) -> String.format("Magic string used %d times. Define as named constant.", count)
+            );
         } catch (Exception e) {
             LOG.warn("Skipping magic string detection: {}", inputFile.filename());
         }
@@ -1185,26 +1194,31 @@ public class StyleAndConventionsDetector extends BaseDetector {
      */
     public void detectDuplicateStringLiteral(SensorContext context, InputFile inputFile, String content) {
         try {
-            Map<String, Integer> stringCounts = new HashMap<>();
+            // Track all positions where each string appears
+            Map<String, java.util.List<Integer>> stringPositions = new HashMap<>();
             Matcher matcher = STRING_LITERAL_PATTERN.matcher(content);
 
             while (matcher.find()) {
                 int position = matcher.start();
-                // Skip matches inside comments or string literals
-                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
-                    continue;
-                }
                 String literal = matcher.group();
-                stringCounts.put(literal, stringCounts.getOrDefault(literal, 0) + 1);
+
+                // Skip if: inside comments/strings or idiomatic usage
+                boolean shouldSkip = isInsideComment(content, position)
+                    || isInsideStringLiteral(content, position)
+                    || isIdiomaticStringUsage(content, position, literal);
+
+                if (!shouldSkip) {
+                    stringPositions.computeIfAbsent(literal, k -> new java.util.ArrayList<>()).add(position);
+                }
             }
 
-            for (Map.Entry<String, Integer> entry : stringCounts.entrySet()) {
-                if (entry.getValue() >= 3) {
-                    reportIssue(context, inputFile, 1, MathematicaRulesDefinition.DUPLICATE_STRING_LITERAL_KEY,
-                        String.format("String '%s' duplicated %d times. Extract to constant.",
-                            entry.getKey().substring(0, Math.min(30, entry.getKey().length())), entry.getValue()));
-                }
-            }
+            // Use generic helper to report duplicates with secondary locations
+            reportDuplicatesFromPositions(
+                context, inputFile, content, stringPositions, 3,
+                MathematicaRulesDefinition.DUPLICATE_STRING_LITERAL_KEY,
+                (literal, count) -> String.format("String '%s' duplicated %d times. Extract to constant.",
+                    literal.substring(0, Math.min(30, literal.length())), count)
+            );
         } catch (Exception e) {
             LOG.warn("Skipping duplicate string detection: {}", inputFile.filename());
         }
@@ -1333,13 +1347,21 @@ public class StyleAndConventionsDetector extends BaseDetector {
                 }
             }
 
+            // Convert 0-based indices to 1-based line numbers
+            Map<String, List<Integer>> blockLineNumbers = new HashMap<>();
             for (Map.Entry<String, List<Integer>> entry : blockHashes.entrySet()) {
-                if (entry.getValue().size() >= 2) {
-                    int lineNumber = entry.getValue().get(0) + 1;
-                    reportIssue(context, inputFile, lineNumber, MathematicaRulesDefinition.DUPLICATE_CODE_BLOCK_KEY,
-                        String.format("Duplicate code block found at %d locations. Extract to function.", entry.getValue().size()));
-                }
+                List<Integer> lineNumbers = entry.getValue().stream()
+                    .map(i -> i + 1)
+                    .collect(java.util.stream.Collectors.toList());
+                blockLineNumbers.put(entry.getKey(), lineNumbers);
             }
+
+            // Use generic helper to report duplicates with secondary locations
+            reportDuplicatesFromLineNumbers(
+                context, inputFile, blockLineNumbers, 2,
+                MathematicaRulesDefinition.DUPLICATE_CODE_BLOCK_KEY,
+                (block, count) -> String.format("Duplicate code block found at %d locations. Extract to function.", count)
+            );
         } catch (Exception e) {
             LOG.warn("Skipping duplicate code detection: {}", inputFile.filename());
         }
