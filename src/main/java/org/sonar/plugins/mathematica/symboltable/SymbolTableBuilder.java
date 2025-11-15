@@ -269,10 +269,16 @@ public final class SymbolTableBuilder {
         Matcher matcher = ASSIGNMENT_PATTERN.matcher(line);
         while (matcher.find()) {
             int position = matcher.start();
-            // Skip matches inside comments or string literals
-            if (isInsideComment(line, position) || isInsideStringLiteral(line, position)) {
+
+            // Skip matches inside comments, strings, or Module/Block/With variable lists
+            boolean shouldSkip = isInsideComment(line, position)
+                || isInsideStringLiteral(line, position)
+                || isInsideScopingVariableList(line, position);
+
+            if (shouldSkip) {
                 continue;
             }
+
             processAssignment(table, matcher, lineNumber, trimmedLine, scope, cache, positions);
         }
     }
@@ -440,6 +446,28 @@ public final class SymbolTableBuilder {
 
         // If not found, assume rest of file
         return lines.length;
+    }
+
+    /**
+     * Checks if a position is inside a Module/Block/With variable list.
+     * E.g., Module[{x=1, y=2}, ...] - returns true for positions inside {x=1, y=2}
+     * This prevents false circular dependencies from variable initializations.
+     */
+    private static boolean isInsideScopingVariableList(String line, int position) {
+        // Look for Module[{, Block[{, or With[{ before the position
+        Pattern scopingStart = Pattern.compile("\\b(?:Module|Block|With)\\s*+\\[\\s*+\\{");
+        Matcher matcher = scopingStart.matcher(line);
+
+        while (matcher.find()) {
+            int varListStart = matcher.end(); // Start of variable list content
+            int varListEnd = findMatchingBrace(line, matcher.end() - 1); // End of variable list
+
+            if (varListEnd > 0 && position >= varListStart && position < varListEnd) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

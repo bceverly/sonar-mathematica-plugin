@@ -380,11 +380,19 @@ class BugDetectorTest {
         );
     }
 
-    @Test
-    void testDetectMissingSpecialCaseHandling() {
-        String content = "f[x_] := x / (x - 1);";
+    @ParameterizedTest
+    @MethodSource("missingSpecialCaseHandlingTestData")
+    void testDetectMissingSpecialCaseHandling(String content) {
         assertDoesNotThrow(() ->
             detector.detectMissingSpecialCaseHandling(context, inputFile, content)
+        );
+    }
+
+    private static Stream<Arguments> missingSpecialCaseHandlingTestData() {
+        return Stream.of(
+            Arguments.of("f[x_] := x / (x - 1);"),
+            Arguments.of("MyFunc[x_] := Which[x === 0, 0, x === Infinity, Infinity, True, 1/x];"),
+            Arguments.of("DetermineNotebookAction[args___] := DocsError[\"bad arguments\", {args}];")
         );
     }
 
@@ -559,23 +567,6 @@ class BugDetectorTest {
         String content = "Block[{y = 10}, body]";
         assertDoesNotThrow(() ->
             detector.detectIncorrectSetInScoping(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingSpecialCaseHandlingWithWhich() {
-        String content = "MyFunc[x_] := Which[x === 0, 0, x === Infinity, Infinity, True, 1/x];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingSpecialCaseHandling(context, inputFile, content)
-        );
-    }
-
-    @Test
-    void testDetectMissingSpecialCaseHandlingWithCatchAllPattern() {
-        // Functions with catch-all ___ pattern should be skipped (not flagged)
-        String content = "DetermineNotebookAction[args___] := DocsError[\"bad arguments\", {args}];";
-        assertDoesNotThrow(() ->
-            detector.detectMissingSpecialCaseHandling(context, inputFile, content)
         );
     }
 

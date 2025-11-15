@@ -817,6 +817,21 @@ class CodeSmellDetectorTest {
         );
     }
 
+    @Test
+    void testDetectMagicNumbersSkipsTestFiles() {
+        // Test files should be skipped - they legitimately use literal values for testing
+        InputFile testFile = Mockito.mock(InputFile.class);
+        Mockito.when(testFile.filename()).thenReturn("axonf_test.m");
+        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create("file:///path/to/tests/axonf_test.m"));
+
+        String content = "Print@getFunVector[10]\\nPrint@getFunVector[15]\\nPrint@getFunVector[20]";
+        List<int[]> commentRanges = new ArrayList<>();
+
+        assertDoesNotThrow(() ->
+            detector.detectMagicNumbers(mockContext, testFile, content, commentRanges)
+        );
+    }
+
     @ParameterizedTest
     @MethodSource("detectMissingCopyrightTestData")
     void testDetectDetectMissingCopyright(String content) {

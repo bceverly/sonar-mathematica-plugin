@@ -65,6 +65,25 @@ class SymbolTableDetectorTest {
     }
 
     @Test
+    void testDetectUnusedVariableWithClumpAssignment() throws IOException {
+        // Clump assignments should NOT be flagged as unused variables
+        // These are template/registration definitions
+        Symbol clumpSymbol = createMockSymbol("AnalysisFunctionClumplate", 1, false, false);
+        when(symbolTable.getUnusedSymbols()).thenReturn(Collections.singletonList(clumpSymbol));
+
+        // Mock file contents for isSideEffectAssignment check
+        String fileContents = "AnalysisFunctionClumplate = Clump[{\n"
+                + "    SaveAs -> \"AnalyzeFunction\",\n"
+                + "    Clumplate->True\n"
+                + "}];";
+        when(inputFile.contents()).thenReturn(fileContents);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectUnusedVariable(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
     void testDetectAssignedButNeverRead() {
         Symbol symbol = createMockSymbol("assigned", 15, false, false);
         when(symbolTable.getAssignedButNeverReadSymbols()).thenReturn(Collections.singletonList(symbol));
@@ -139,6 +158,45 @@ class SymbolTableDetectorTest {
         when(symbol.getAssignments()).thenReturn(Collections.singletonList(assign));
         when(symbol.getReferences()).thenReturn(Collections.emptyList());
         when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectWriteOnlyVariable(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testDetectWriteOnlyVariableWithClumpAssignment() throws IOException {
+        // Clump assignments should NOT be flagged as write-only variables
+        // These are template/registration definitions, not dead stores
+        Symbol symbol = createMockSymbol("AnalysisFunctionClumplate", 1, false, false);
+        SymbolReference assign = createMockReference(1, "AnalysisFunctionClumplate = Clump[{...}]");
+
+        when(symbol.getAssignments()).thenReturn(Collections.singletonList(assign));
+        when(symbol.getReferences()).thenReturn(Collections.emptyList());
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        // Mock file contents for isSideEffectAssignment check
+        String fileContents = "AnalysisFunctionClumplate = Clump[{\n"
+                + "    SaveAs -> \"AnalyzeFunction\",\n"
+                + "    Clumplate->True\n"
+                + "}];";
+        when(inputFile.contents()).thenReturn(fileContents);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectWriteOnlyVariable(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testDetectWriteOnlyVariableWithModuleVariable() {
+        // Module/Block/With variables should NOT be flagged as write-only
+        // These are local scope variables that may be used within their scope
+        Symbol moduleVar = createMockSymbol("sf", 10, false, true); // isModuleVariable = true
+        SymbolReference assign = createMockReference(10, "sf = $This[StaticFigure, {#}]");
+
+        when(moduleVar.getAssignments()).thenReturn(Collections.singletonList(assign));
+        when(moduleVar.getReferences()).thenReturn(Collections.emptyList());
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(moduleVar));
 
         assertDoesNotThrow(() ->
             SymbolTableDetector.detectWriteOnlyVariable(context, inputFile, symbolTable)
@@ -672,6 +730,24 @@ class SymbolTableDetectorTest {
 
         when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbolA));
         when(symbolTable.getSymbolByName("a")).thenReturn(symbolA);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testCircularDependenciesModuleVariableInitializations() {
+        // Module variable initializations should NOT create false circular dependencies
+        // E.g., Module[{panelWidth=1000, panelHeight=650}, ...] - these are independent initializations
+        Scope moduleScope = createMockScope(10, 50, ScopeType.MODULE);
+        Symbol panelWidth = createMockSymbol("panelWidth", 10, false, true); // Module variable
+        Symbol panelHeight = createMockSymbol("panelHeight", 10, false, true); // Module variable
+        when(panelWidth.getScope()).thenReturn(moduleScope);
+        when(panelHeight.getScope()).thenReturn(moduleScope);
+
+        // These should be excluded due to being module variables
+        when(symbolTable.getAllSymbols()).thenReturn(List.of(panelWidth, panelHeight));
 
         assertDoesNotThrow(() ->
             SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)

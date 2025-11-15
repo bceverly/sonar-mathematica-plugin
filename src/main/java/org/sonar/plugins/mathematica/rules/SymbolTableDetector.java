@@ -29,17 +29,33 @@ public final class SymbolTableDetector {
     /**
      * Rule 1: Variable declared but never used.
      * Detects variables that are never referenced anywhere.
+     *
+     * NOTE: Excludes side-effect assignments (e.g., Clump definitions, package declarations)
+     * where the assignment itself is the meaningful action, not preparing a value for later use.
      */
     public static void detectUnusedVariable(SensorContext context, InputFile file, SymbolTable table) {
-        for (Symbol symbol : table.getUnusedSymbols()) {
-            // Skip parameters (they might be required by interface)
-            if (symbol.isParameter()) {
-                continue;
-            }
+        try {
+            String content = file.contents();
+            String[] lines = content.split("\n");
 
-            createIssue(context, file, "UnusedVariable", symbol.getDeclarationLine(),
-                String.format("Variable '%s' is declared but never used", symbol.getName())
-            ).save();
+            for (Symbol symbol : table.getUnusedSymbols()) {
+                int lineNum = symbol.getDeclarationLine();
+
+                // Skip parameters and side-effect assignments
+                boolean shouldSkip = symbol.isParameter()
+                    || (lineNum > 0 && lineNum <= lines.length
+                        && isSideEffectAssignment(lines[lineNum - 1], symbol.getName()));
+
+                if (shouldSkip) {
+                    continue;
+                }
+
+                createIssue(context, file, "UnusedVariable", lineNum,
+                    String.format("Variable '%s' is declared but never used", symbol.getName())
+                ).save();
+            }
+        } catch (Exception e) {
+            // If we can't read the file, skip this check
         }
     }
 
@@ -208,23 +224,37 @@ public final class SymbolTableDetector {
     /**
      * Rule 7: Variable only written, never read (enhanced version of Rule 2).
      * More sophisticated analysis considering all code paths.
+     *
+     * NOTE: Excludes side-effect assignments (e.g., Clump definitions, package declarations)
+     * where the assignment itself is the meaningful action, not preparing a value for later use.
      */
     public static void detectWriteOnlyVariable(SensorContext context, InputFile file, SymbolTable table) {
-        for (Symbol symbol : table.getAllSymbols()) {
-            if (symbol.isParameter()) {
-                continue;
-            }
+        try {
+            String content = file.contents();
+            String[] lines = content.split("\n");
 
-            List<SymbolReference> assignments = symbol.getAssignments();
-            List<SymbolReference> references = symbol.getReferences();
+            for (Symbol symbol : table.getAllSymbols()) {
+                List<SymbolReference> assignments = symbol.getAssignments();
+                List<SymbolReference> references = symbol.getReferences();
+                int lineNum = symbol.getDeclarationLine();
 
-            // Has assignments but no reads
-            if (!assignments.isEmpty() && references.isEmpty()) {
-                createIssue(context, file, "WriteOnlyVariable", symbol.getDeclarationLine(),
+                // Skip parameters, local variables, and side-effect assignments
+                boolean shouldSkip = symbol.isParameter()
+                    || symbol.isModuleVariable()
+                    || (lineNum > 0 && lineNum <= lines.length
+                        && isSideEffectAssignment(lines[lineNum - 1], symbol.getName()));
+
+                if (shouldSkip || assignments.isEmpty() || !references.isEmpty()) {
+                    continue;
+                }
+
+                createIssue(context, file, "WriteOnlyVariable", lineNum,
                     String.format("Variable '%s' is only written to, never read",
                         symbol.getName())
                 ).save();
             }
+        } catch (Exception e) {
+            // If we can't read the file, skip this check
         }
     }
 

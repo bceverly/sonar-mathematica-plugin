@@ -57,8 +57,8 @@ public class MathematicaPlugin implements Plugin {
         context.addExtension(
             PropertyDefinition.builder("sonar.cpd.mathematica.minimumTokens")
                 .name("Minimum Tokens")
-                .description("Minimum number of tokens for duplication detection. Default: 250")
-                .defaultValue("250")
+                .description("Minimum number of tokens for duplication detection. Default: 75")
+                .defaultValue("75")
                 .category(CATEGORY_MATHEMATICA)
                 .subCategory("Duplication")
                 .type(PropertyType.INTEGER)
@@ -68,8 +68,8 @@ public class MathematicaPlugin implements Plugin {
         context.addExtension(
             PropertyDefinition.builder("sonar.cpd.mathematica.minimumLines")
                 .name("Minimum Lines")
-                .description("Minimum number of lines for duplication detection. Default: 25")
-                .defaultValue("25")
+                .description("Minimum number of lines for duplication detection. Default: 8")
+                .defaultValue("8")
                 .category(CATEGORY_MATHEMATICA)
                 .subCategory("Duplication")
                 .type(PropertyType.INTEGER)

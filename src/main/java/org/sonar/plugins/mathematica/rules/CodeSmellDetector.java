@@ -121,6 +121,11 @@ public class CodeSmellDetector extends BaseDetector {
         "([a-zA-Z]\\w*+)\\s*+\\[[^\\]]*\\]\\s*+:=\\s*+(?:Module|Block)?+\\s*+\\[[^\\]]*If\\[");
     public void detectMagicNumbers(SensorContext context, InputFile inputFile, String content, List<int[]> commentRanges) {
         try {
+            // Skip test files - tests legitimately use literal values for testing specific behaviors
+            if (isTestFile(inputFile)) {
+                return;
+            }
+
             Matcher numberMatcher = NUMBER_PATTERN.matcher(content);
             while (numberMatcher.find()) {
                 String number = numberMatcher.group();
@@ -140,6 +145,24 @@ public class CodeSmellDetector extends BaseDetector {
         } catch (Exception e) {
             LOG.warn("Skipping magic number detection due to error in file: {}", inputFile.filename());
         }
+    }
+
+    /**
+     * Checks if a file is a test file based on naming conventions.
+     */
+    private boolean isTestFile(InputFile file) {
+        String filename = file.filename().toLowerCase();
+        String path = file.uri().getPath().toLowerCase();
+
+        // Common test file patterns
+        return filename.endsWith("_test.m")
+            || filename.endsWith("_tests.m")
+            || filename.endsWith("test.m")
+            || filename.startsWith("test_")
+            || path.contains("/tests/")
+            || path.contains("/test/")
+            || path.contains("\\tests\\")
+            || path.contains("\\test\\");
     }
 
     public void detectEmptyBlocks(SensorContext context, InputFile inputFile, String content) {
