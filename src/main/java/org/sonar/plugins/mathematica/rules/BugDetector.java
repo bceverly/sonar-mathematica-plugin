@@ -317,8 +317,30 @@ public class BugDetector extends BaseDetector {
     }
 
     private int findFunctionBodyEnd(String content, int defStart) {
-        int bodyEnd = content.indexOf(";", defStart);
-        return (bodyEnd == -1) ? content.length() : bodyEnd;
+        // In Mathematica, function bodies can end with:
+        // 1. Semicolon (;)
+        // 2. Newline followed by another function definition
+        // 3. End of file
+
+        int semicolonEnd = content.indexOf(";", defStart);
+        int newlineEnd = content.indexOf("\n", defStart);
+
+        // If we find a newline, check if the next non-whitespace line starts a new definition
+        if (newlineEnd != -1) {
+            int nextLineStart = newlineEnd + 1;
+            while (nextLineStart < content.length()
+                   && Character.isWhitespace(content.charAt(nextLineStart))
+                   && content.charAt(nextLineStart) != '\n') {
+                nextLineStart++;
+            }
+            // If next line looks like a function definition, use that as the end
+            if (nextLineStart < content.length()
+                && Character.isUpperCase(content.charAt(nextLineStart))) {
+                return newlineEnd;
+            }
+        }
+
+        return (semicolonEnd == -1) ? content.length() : semicolonEnd;
     }
 
     private void checkRecursionHasBaseCase(SensorContext context, InputFile inputFile, String content,
@@ -1084,6 +1106,13 @@ public class BugDetector extends BaseDetector {
             while (matcher.find()) {
                 String funcName = matcher.group(1);
                 int pos = matcher.start();
+                String funcDef = matcher.group(0);
+
+                // Skip if inside a comment, has non-numeric parameter types, or uses catch-all pattern
+                if (isInsideComment(content, pos) || hasNonNumericParameters(funcDef) || funcDef.contains("___")) {
+                    continue;
+                }
+
                 String funcBody = content.substring(pos, Math.min(pos + 500, content.length()));
 
                 if (!funcBody.contains("Which[") && !funcBody.contains("Switch[")

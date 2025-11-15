@@ -733,20 +733,29 @@ public final class SymbolTableDetector {
             }
 
             // Then check how it's used
+            String varName = symbol.getName();
             for (SymbolReference ref : symbol.getAllReferencesSorted()) {
                 String contextStr = ref.getContext();
 
-                // Heuristics for type detection
-                if (contextStr.matches(".*\\+\\s*+\".*") || contextStr.matches(".*\".*\\+.*")) { //NOSONAR
+                // Heuristics for type detection - require variable to be directly involved
+                // String concatenation: var + "text" or "text" + var
+                if (contextStr.matches(".*" + varName + "\\s*\\+\\s*\".*")
+                    || contextStr.matches(".*\".*\\+\\s*" + varName + ".*")) { //NOSONAR
                     suspectedTypes.add("string");
-                } else if (contextStr.matches(".*\\[\\[.*\\]\\].*") || contextStr.matches(".*Part\\[.*")) { //NOSONAR
+                } else if (contextStr.matches(".*" + varName + "\\[\\[.*")
+                         || contextStr.matches(".*Part\\s*\\[\\s*" + varName + "\\s*,.*")) { //NOSONAR
+                    // List indexing: var[[...]] or Part[var, ...]
                     suspectedTypes.add("list");
-                } else if (contextStr.matches(".*[\\+\\-\\*/]\\s*+\\d+.*")) { //NOSONAR
+                } else if (contextStr.matches(".*" + varName + "\\s*[\\+\\-\\*/]\\s*\\d+.*")
+                         || contextStr.matches(".*\\d+\\s*[\\+\\-\\*/]\\s*" + varName + ".*")) { //NOSONAR
+                    // Arithmetic: var + 1, var * 2, etc. (but NOT function args like Func[..., -1])
                     suspectedTypes.add("number");
                 }
             }
 
-            if (suspectedTypes.size() > 1) {
+            // Require 3+ different types for strong evidence of inconsistency
+            // (2 types can easily be false positives from heuristics)
+            if (suspectedTypes.size() > 2) {
                 createIssue(context, file, "TypeInconsistency", symbol.getDeclarationLine(),
                     String.format("Variable '%s' used inconsistently as: %s",
                         symbol.getName(), String.join(", ", suspectedTypes))

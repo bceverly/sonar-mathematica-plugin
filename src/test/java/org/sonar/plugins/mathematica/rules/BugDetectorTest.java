@@ -547,6 +547,15 @@ class BugDetectorTest {
     }
 
     @Test
+    void testDetectMissingSpecialCaseHandlingWithCatchAllPattern() {
+        // Functions with catch-all ___ pattern should be skipped (not flagged)
+        String content = "DetermineNotebookAction[args___] := DocsError[\"bad arguments\", {args}];";
+        assertDoesNotThrow(() ->
+            detector.detectMissingSpecialCaseHandling(context, inputFile, content)
+        );
+    }
+
+    @Test
     void testDetectIncorrectAssociationOperationsWithJoin() {
         String content = "assoc1 = <|\"a\" -> 1|>;\nassoc2 = <|\"b\" -> 2|>;\nresult = Join[assoc1, assoc2];";
         assertDoesNotThrow(() ->

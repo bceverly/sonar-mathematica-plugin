@@ -453,4 +453,30 @@ public abstract class BaseDetector {
         }
         return depth > 0;
     }
+
+    /**
+     * Check if a function definition has non-numeric parameter types.
+     * Useful for rules that should only apply to numeric functions.
+     *
+     * Returns true if parameters are typed as String, List, Association, etc.
+     * Detects patterns like:
+     * - _String, _?StringQ (string parameters)
+     * - _List, {___} (list parameters)
+     * - _Association, _Symbol, _Image, _Graphics, _Graph
+     *
+     * @param funcDef The function definition string to check
+     * @return true if function has non-numeric parameters
+     */
+    protected boolean hasNonNumericParameters(String funcDef) {
+        // Check for explicit non-numeric type patterns
+        return funcDef.contains("_String")
+            || funcDef.contains("_?StringQ")     // String with predicate
+            || funcDef.contains("_List")
+            || funcDef.contains("{___")          // List pattern {___?StringQ}, {___}, etc.
+            || funcDef.contains("_Association")
+            || funcDef.contains("_Symbol")
+            || funcDef.contains("_Image")
+            || funcDef.contains("_Graphics")
+            || funcDef.contains("_Graph");
+    }
 }
