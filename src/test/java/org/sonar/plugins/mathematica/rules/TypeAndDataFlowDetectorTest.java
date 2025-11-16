@@ -182,70 +182,38 @@ class TypeAndDataFlowDetectorTest {
 
             // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
 
-    @Test
-    void testDetectNumericOperationOnStringTriggered() {
-        String code = "result = \"hello\" + 5";
-        assertDoesNotThrow(() -> detector.detectNumericOperationOnString(context, inputFile, code));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("triggeredTestData")
+    void testDetectorTriggered(String testName, String code, DetectorMethod method) {
+        assertDoesNotThrow(() -> method.execute(detector, context, inputFile, code));
     }
 
-    @Test
-    void testDetectStringOperationOnNumberTriggered() {
-        String code = "result = StringJoin[42, \"world\"]";
-        assertDoesNotThrow(() -> detector.detectStringOperationOnNumber(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectWrongArgumentTypeTriggered() {
-        String code = "result = Map[f, 42]";
-        assertDoesNotThrow(() -> detector.detectWrongArgumentType(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectMixedNumericTypesTriggered() {
-        String code = "result = 3.14 + 42";
-        assertDoesNotThrow(() -> detector.detectMixedNumericTypes(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectIntegerDivisionExpectingRealTriggered() {
-        String code = "result = 5/2";
-        assertDoesNotThrow(() -> detector.detectIntegerDivisionExpectingReal(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectUninitializedVariableUseEnhancedTriggered() {
-        String code = "Module[{x}, y = x + 1]";
-        assertDoesNotThrow(() -> detector.detectUninitializedVariableUseEnhanced(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectDeadStoreTriggered() {
-        String code = "Module[{x}, x = 1; x = 2; x = 3]";
-        assertDoesNotThrow(() -> detector.detectDeadStore(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectModificationOfLoopIteratorTriggered() {
-        String code = "Do[i = i + 1; Print[i], {i, 1, 10}]";
-        assertDoesNotThrow(() -> detector.detectModificationOfLoopIterator(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectMutationInPureFunctionTriggered() {
-        String code = "Map[(counter++ &), {1, 2, 3}]";
-        assertDoesNotThrow(() -> detector.detectMutationInPureFunction(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectSharedMutableStateTriggered() {
-        String code = "globalCounter = 0;\nf[x_] := globalCounter = globalCounter + x;\ng[y_] := globalCounter = globalCounter - y;";
-        assertDoesNotThrow(() -> detector.detectSharedMutableState(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectAssignmentInConditionEnhancedTriggered() {
-        String code = "If[x = 5, True, False]";
-        assertDoesNotThrow(() -> detector.detectAssignmentInConditionEnhanced(context, inputFile, code));
+    private static Stream<Arguments> triggeredTestData() {
+        return Stream.of(
+            Arguments.of("NumericOperationOnString", "result = \"hello\" + 5",
+                (DetectorMethod) TypeAndDataFlowDetector::detectNumericOperationOnString),
+            Arguments.of("StringOperationOnNumber", "result = StringJoin[42, \"world\"]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectStringOperationOnNumber),
+            Arguments.of("WrongArgumentType", "result = Map[f, 42]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectWrongArgumentType),
+            Arguments.of("MixedNumericTypes", "result = 3.14 + 42",
+                (DetectorMethod) TypeAndDataFlowDetector::detectMixedNumericTypes),
+            Arguments.of("IntegerDivisionExpectingReal", "result = 5/2",
+                (DetectorMethod) TypeAndDataFlowDetector::detectIntegerDivisionExpectingReal),
+            Arguments.of("UninitializedVariableUseEnhanced", "Module[{x}, y = x + 1]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectUninitializedVariableUseEnhanced),
+            Arguments.of("DeadStore", "Module[{x}, x = 1; x = 2; x = 3]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectDeadStore),
+            Arguments.of("ModificationOfLoopIterator", "Do[i = i + 1; Print[i], {i, 1, 10}]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectModificationOfLoopIterator),
+            Arguments.of("MutationInPureFunction", "Map[(counter++ &), {1, 2, 3}]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectMutationInPureFunction),
+            Arguments.of("SharedMutableState",
+                "globalCounter = 0;\nf[x_] := globalCounter = globalCounter + x;\ng[y_] := globalCounter = globalCounter - y;",
+                (DetectorMethod) TypeAndDataFlowDetector::detectSharedMutableState),
+            Arguments.of("AssignmentInConditionEnhanced", "If[x = 5, True, False]",
+                (DetectorMethod) TypeAndDataFlowDetector::detectAssignmentInConditionEnhanced)
+        );
     }
 
     // ===== EXCEPTION HANDLING TESTS - TARGET CATCH BLOCKS =====
@@ -1146,6 +1114,325 @@ class TypeAndDataFlowDetectorTest {
             Arguments.of("(* result = VertexList[{{1, 2}, {2, 3}}]; *)"),
             Arguments.of("data = {{1,2},{2,3}}; result = VertexCount[data];")
         );
+    }
+
+    // ===== TARGETED COVERAGE TESTS FOR UNCOVERED BRANCHES =====
+
+    @Test
+    void testDetectNumericOperationOnStringInComment() {
+        String code = "(* result = \"hello\" + 5 *)";
+        assertDoesNotThrow(() -> detector.detectNumericOperationOnString(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectNumericOperationOnStringInString() {
+        String code = "str = \"result = \\\"hello\\\" + 5\"";
+        assertDoesNotThrow(() -> detector.detectNumericOperationOnString(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectStringOperationOnNumberInComment() {
+        String code = "(* result = StringJoin[42, \"world\"] *)";
+        assertDoesNotThrow(() -> detector.detectStringOperationOnNumber(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectStringOperationOnNumberInString() {
+        String code = "str = \"result = StringJoin[42, world]\"";
+        assertDoesNotThrow(() -> detector.detectStringOperationOnNumber(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectFunctionReturnsWrongTypeInComment() {
+        String code = "(* f[x_] := (If[x > 0, 5, \"error\"]) *)";
+        assertDoesNotThrow(() -> detector.detectFunctionReturnsWrongType(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectFunctionReturnsWrongTypeInString() {
+        String code = "str = \"f[x_] := (If[x > 0, 5, error])\"";
+        assertDoesNotThrow(() -> detector.detectFunctionReturnsWrongType(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectComparisonIncompatibleTypesInComment() {
+        String code = "(* result = \"hello\" > 5 *)";
+        assertDoesNotThrow(() -> detector.detectComparisonIncompatibleTypes(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectComparisonIncompatibleTypesInString() {
+        String code = "str = \"result = \\\"hello\\\" > 5\"";
+        assertDoesNotThrow(() -> detector.detectComparisonIncompatibleTypes(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectMixedNumericTypesInComment() {
+        String code = "(* result = 1/2 + 3.5 *)";
+        assertDoesNotThrow(() -> detector.detectMixedNumericTypes(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectMixedNumericTypesInString() {
+        String code = "str = \"result = 1/2 + 3.5\"";
+        assertDoesNotThrow(() -> detector.detectMixedNumericTypes(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectIntegerDivisionExpectingRealInComment() {
+        String code = "(* result = 5/2 *)";
+        assertDoesNotThrow(() -> detector.detectIntegerDivisionExpectingReal(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectIntegerDivisionExpectingRealInString() {
+        String code = "str = \"result = 5/2\"";
+        assertDoesNotThrow(() -> detector.detectIntegerDivisionExpectingReal(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectListFunctionOnAssociationInComment() {
+        String code = "(* result = Append[<|a -> 1|>, b -> 2] *)";
+        assertDoesNotThrow(() -> detector.detectListFunctionOnAssociation(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectListFunctionOnAssociationInString() {
+        String code = "str = \"result = Append[<|a -> 1|>, b -> 2]\"";
+        assertDoesNotThrow(() -> detector.detectListFunctionOnAssociation(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectOptionalTypeInconsistentInComment() {
+        String code = "(* f[x_Integer : 1.5] := x + 1 *)";
+        assertDoesNotThrow(() -> detector.detectOptionalTypeInconsistent(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectOptionalTypeInconsistentInString() {
+        String code = "str = \"f[x_Integer : 1.5] := x + 1\"";
+        assertDoesNotThrow(() -> detector.detectOptionalTypeInconsistent(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectNullAssignmentToTypedVariableInComment() {
+        String code = "(* x = Null; result = x + 5 *)";
+        assertDoesNotThrow(() -> detector.detectNullAssignmentToTypedVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectNullAssignmentToTypedVariableInString() {
+        String code = "str = \"x = Null; result = x + 5\"";
+        assertDoesNotThrow(() -> detector.detectNullAssignmentToTypedVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectTypeCastWithoutValidationInComment() {
+        String code = "(* result = ToExpression[userInput] *)";
+        assertDoesNotThrow(() -> detector.detectTypeCastWithoutValidation(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectTypeCastWithoutValidationInString() {
+        String code = "str = \"result = ToExpression[userInput]\"";
+        assertDoesNotThrow(() -> detector.detectTypeCastWithoutValidation(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectImplicitTypeConversionInComment() {
+        String code = "(* result = ToString[\"already a string\"] *)";
+        assertDoesNotThrow(() -> detector.detectImplicitTypeConversion(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectImplicitTypeConversionInString() {
+        String code = "str = \"result = ToString[already a string]\"";
+        assertDoesNotThrow(() -> detector.detectImplicitTypeConversion(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectGraphicsObjectInNumericContextInComment() {
+        String code = "(* result = Plot[x^2, {x, 0, 1}] + 5 *)";
+        assertDoesNotThrow(() -> detector.detectGraphicsObjectInNumericContext(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectGraphicsObjectInNumericContextInString() {
+        String code = "str = \"result = Plot[x^2, {x, 0, 1}] + 5\"";
+        assertDoesNotThrow(() -> detector.detectGraphicsObjectInNumericContext(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSymbolInNumericContextInComment() {
+        String code = "(* result = undefinedVar + 5 *)";
+        assertDoesNotThrow(() -> detector.detectSymbolInNumericContext(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSymbolInNumericContextInString() {
+        String code = "str = \"result = undefinedVar + 5\"";
+        assertDoesNotThrow(() -> detector.detectSymbolInNumericContext(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectImageOperationOnNonImageInComment() {
+        String code = "(* result = ImageData[{{1, 2}, {3, 4}}] *)";
+        assertDoesNotThrow(() -> detector.detectImageOperationOnNonImage(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectImageOperationOnNonImageInString() {
+        String code = "str = \"result = ImageData[{{1, 2}, {3, 4}}]\"";
+        assertDoesNotThrow(() -> detector.detectImageOperationOnNonImage(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSoundOperationOnNonSoundInComment() {
+        String code = "(* result = AudioData[{0.1, 0.2, 0.3}] *)";
+        assertDoesNotThrow(() -> detector.detectSoundOperationOnNonSound(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSoundOperationOnNonSoundInString() {
+        String code = "str = \"result = AudioData[{0.1, 0.2, 0.3}]\"";
+        assertDoesNotThrow(() -> detector.detectSoundOperationOnNonSound(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDatasetOperationOnListInComment() {
+        String code = "(* data = {{1, 2}, {3, 4}}; result = data[All] *)";
+        assertDoesNotThrow(() -> detector.detectDatasetOperationOnList(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDatasetOperationOnListInString() {
+        String code = "str = \"data = {{1, 2}, {3, 4}}; result = data[All]\"";
+        assertDoesNotThrow(() -> detector.detectDatasetOperationOnList(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectGraphOperationOnNonGraphInComment() {
+        String code = "(* result = VertexList[{{1, 2}, {2, 3}}] *)";
+        assertDoesNotThrow(() -> detector.detectGraphOperationOnNonGraph(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectGraphOperationOnNonGraphInString() {
+        String code = "str = \"result = VertexList[{{1, 2}, {2, 3}}]\"";
+        assertDoesNotThrow(() -> detector.detectGraphOperationOnNonGraph(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDeadStoreInComment() {
+        String code = "(* x = 1; x = 2; x = 3 *)";
+        assertDoesNotThrow(() -> detector.detectDeadStore(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDeadStoreInString() {
+        String code = "str = \"x = 1; x = 2; x = 3\"";
+        assertDoesNotThrow(() -> detector.detectDeadStore(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectVariableAliasingIssueInComment() {
+        String code = "(* list1 = list2; list1[[1]] = 5 *)";
+        assertDoesNotThrow(() -> detector.detectVariableAliasingIssue(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectVariableAliasingIssueInString() {
+        String code = "str = \"list1 = list2; list1[[1]] = 5\"";
+        assertDoesNotThrow(() -> detector.detectVariableAliasingIssue(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectModificationOfLoopIteratorInComment() {
+        String code = "(* Do[i = i + 1; Print[i], {i, 1, 10}] *)";
+        assertDoesNotThrow(() -> detector.detectModificationOfLoopIterator(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectModificationOfLoopIteratorInString() {
+        String code = "str = \"Do[i = i + 1; Print[i], {i, 1, 10}]\"";
+        assertDoesNotThrow(() -> detector.detectModificationOfLoopIterator(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUseOfIteratorOutsideLoopInComment() {
+        String code = "(* Do[Print[i], {i, 1, 10}]; y = i *)";
+        assertDoesNotThrow(() -> detector.detectUseOfIteratorOutsideLoop(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUseOfIteratorOutsideLoopInString() {
+        String code = "str = \"Do[Print[i], {i, 1, 10}]; y = i\"";
+        assertDoesNotThrow(() -> detector.detectUseOfIteratorOutsideLoop(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectReadingUnsetVariableInComment() {
+        String code = "(* Clear[x]; y = x *)";
+        assertDoesNotThrow(() -> detector.detectReadingUnsetVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectReadingUnsetVariableInString() {
+        String code = "str = \"Clear[x]; y = x\"";
+        assertDoesNotThrow(() -> detector.detectReadingUnsetVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDoubleAssignmentSameValueInComment() {
+        String code = "(* x = 5; y = 10; x = 5 *)";
+        assertDoesNotThrow(() -> detector.detectDoubleAssignmentSameValue(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDoubleAssignmentSameValueInString() {
+        String code = "str = \"x = 5; y = 10; x = 5\"";
+        assertDoesNotThrow(() -> detector.detectDoubleAssignmentSameValue(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectMutationInPureFunctionInComment() {
+        String code = "(* Map[(counter++ &), {1, 2, 3}] *)";
+        assertDoesNotThrow(() -> detector.detectMutationInPureFunction(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectMutationInPureFunctionInString() {
+        String code = "str = \"Map[(counter++ &), {1, 2, 3}]\"";
+        assertDoesNotThrow(() -> detector.detectMutationInPureFunction(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSharedMutableStateInComment() {
+        String code = "(* globalCounter = 0; f[x_] := globalCounter = globalCounter + x; g[y_] := globalCounter = globalCounter - y *)";
+        assertDoesNotThrow(() -> detector.detectSharedMutableState(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSharedMutableStateInString() {
+        String code = "str = \"globalCounter = 0; f[x_] := globalCounter = globalCounter + x\"";
+        assertDoesNotThrow(() -> detector.detectSharedMutableState(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectVariableScopeEscapeInComment() {
+        String code = "(* Module[{x}, x] *)";
+        assertDoesNotThrow(() -> detector.detectVariableScopeEscape(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectVariableScopeEscapeInString() {
+        String code = "str = \"Module[{x}, x]\"";
+        assertDoesNotThrow(() -> detector.detectVariableScopeEscape(context, inputFile, code));
+    }
+
+    @FunctionalInterface
+    private interface DetectorMethod {
+        void execute(TypeAndDataFlowDetector detector, SensorContext context, InputFile file, String content);
     }
 
 }

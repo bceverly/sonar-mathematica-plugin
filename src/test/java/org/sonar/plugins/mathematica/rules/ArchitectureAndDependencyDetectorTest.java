@@ -330,21 +330,21 @@ class ArchitectureAndDependencyDetectorTest {
     void testGetPackageDependenciesSize() {
         String content = "BeginPackage[\"Pkg1`\"];\nNeeds[\"Pkg2`\"];\nEndPackage[];";
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
-        assertThat(ArchitectureAndDependencyDetector.getPackageDependenciesSize()).isGreaterThan(0);
+        assertThat(ArchitectureAndDependencyDetector.getPackageDependenciesSize()).isPositive();
     }
 
     @Test
     void testGetSymbolDefinitionsSize() {
         String content = "BeginPackage[\"MyPackage`\"];\nMyFunc[x_] := x;\nEndPackage[];";
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
-        assertThat(ArchitectureAndDependencyDetector.getSymbolDefinitionsSize()).isGreaterThanOrEqualTo(0);
+        assertThat(ArchitectureAndDependencyDetector.getSymbolDefinitionsSize()).isNotNegative();
     }
 
     @Test
     void testGetSymbolUsagesSize() {
         String content = "BeginPackage[\"MyPackage`\"];\nMyFunc[x_] := OtherFunc[x];\nEndPackage[];";
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
-        assertThat(ArchitectureAndDependencyDetector.getSymbolUsagesSize()).isGreaterThanOrEqualTo(0);
+        assertThat(ArchitectureAndDependencyDetector.getSymbolUsagesSize()).isNotNegative();
     }
 
     // Additional Comprehensive Tests for Remaining Detection Methods
@@ -665,4 +665,327 @@ class ArchitectureAndDependencyDetectorTest {
         ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
         assertDoesNotThrow(ArchitectureAndDependencyDetector::clearCaches);
     }
+
+    // ===== ADDITIONAL TESTS FOR LOW COVERAGE METHODS =====
+
+    @Test
+    void testDetectUnusedPackageImportWithUnusedImport() {
+        // Set up a package that exports symbols
+        InputFile pkgFile = mock(InputFile.class);
+        when(pkgFile.filename()).thenReturn("UtilityPkg.m");
+        String pkgContent = "BeginPackage[\"Utility`\"];\nHelperFunc::usage = \"Helper function\";\n"
+                          + "HelperFunc[x_] := x + 1;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkgFile, pkgContent);
+
+        // Import the package but don't use any symbols from it
+        String content = "BeginPackage[\"MyPkg`\"];\nNeeds[\"Utility`\"];\n"
+                       + "MyFunc[x_] := x * 2;\nEndPackage[];";
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedPackageImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedPackageImportWithUsedImport() {
+        // Set up a package that exports symbols
+        InputFile pkgFile = mock(InputFile.class);
+        when(pkgFile.filename()).thenReturn("UtilityPkg.m");
+        String pkgContent = "BeginPackage[\"Utility`\"];\nHelperFunc::usage = \"Helper function\";\n"
+                          + "HelperFunc[x_] := x + 1;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkgFile, pkgContent);
+
+        when(inputFile.filename()).thenReturn("MyFile.m");
+
+        // Import the package AND use a symbol from it
+        String content = "BeginPackage[\"MyPkg`\"];\nNeeds[\"Utility`\"];\n"
+                       + "MyFunc[x_] := HelperFunc[x] * 2;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedPackageImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedPackageImportNoExportsKnown() {
+        // Import a package that we don't have export info for
+        String content = "BeginPackage[\"MyPkg`\"];\nNeeds[\"UnknownPackage`\"];\nMyFunc[] := 1;\nEndPackage[];";
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedPackageImport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageVersionMismatchWithMismatch() {
+        // Set up packages with version info
+        InputFile pkg1 = mock(InputFile.class);
+        InputFile pkg2 = mock(InputFile.class);
+        when(pkg1.filename()).thenReturn("Package1.m");
+        when(pkg2.filename()).thenReturn("Package2.m");
+
+        String content1 = "BeginPackage[\"Pkg1`\"];\nNeeds[\"Dependency`\" -> \"1.0.0\"];\nEndPackage[];";
+        String content2 = "BeginPackage[\"Dependency`\"];\nVersion -> \"2.0.0\";\nEndPackage[];";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg2, content2);
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg1, content1);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectPackageVersionMismatch(context, pkg1, content1)
+        );
+    }
+
+    @Test
+    void testDetectPackageVersionMismatchWithMatch() {
+        // Set up packages with matching versions
+        InputFile pkg1 = mock(InputFile.class);
+        InputFile pkg2 = mock(InputFile.class);
+        when(pkg1.filename()).thenReturn("Package1.m");
+        when(pkg2.filename()).thenReturn("Package2.m");
+
+        String content1 = "BeginPackage[\"Pkg1`\"];\nNeeds[\"Dependency`\" -> \"1.0.0\"];\nEndPackage[];";
+        String content2 = "BeginPackage[\"Dependency`\"];\nVersion -> \"1.0.0\";\nEndPackage[];";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg2, content2);
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg1, content1);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectPackageVersionMismatch(context, pkg1, content1)
+        );
+    }
+
+    @Test
+    void testDetectPackageVersionMismatchNoVersionInfo() {
+        // Package dependency without version requirement
+        String content = "BeginPackage[\"Pkg1`\"];\nNeeds[\"Dependency`\"];\nEndPackage[];";
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectPackageVersionMismatch(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectDeadPackageWithNoDependents() {
+        // Set up a package with no dependents
+        when(inputFile.filename()).thenReturn("DeadPackage.m");
+        String content = "BeginPackage[\"Dead`\"];\nFunc[] := 1;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectDeadPackage(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectDeadPackageWithDependents() {
+        // Set up a package with dependents
+        InputFile pkg1 = mock(InputFile.class);
+        InputFile pkg2 = mock(InputFile.class);
+        when(pkg1.filename()).thenReturn("Used.m");
+        when(pkg2.filename()).thenReturn("User.m");
+
+        String content1 = "BeginPackage[\"Used`\"];\nFunc[] := 1;\nEndPackage[];";
+        String content2 = "BeginPackage[\"User`\"];\nNeeds[\"Used`\"];\nMyFunc[] := 2;\nEndPackage[];";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg1, content1);
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg2, content2);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectDeadPackage(context, pkg1, content1)
+        );
+    }
+
+    @Test
+    void testDetectDeadPackageExcludeTests() {
+        // Test files should be excluded from dead package detection
+        when(inputFile.filename()).thenReturn("TestPackage.m");
+        String content = "BeginPackage[\"TestSuite`\"];\nTestFunc[] := Assert[True];\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectDeadPackage(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedExportWithUnusedSymbol() {
+        // Set up a package that exports symbols that aren't used
+        when(inputFile.filename()).thenReturn("UnusedExport.m");
+        String content = "BeginPackage[\"MyPkg`\"];\nUnusedFunc::usage = \"Not used anywhere\";\n"
+                       + "UnusedFunc[x_] := x;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedExport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedExportWithUsedSymbol() {
+        // Set up a package that exports symbols that ARE used
+        InputFile pkg1 = mock(InputFile.class);
+        InputFile pkg2 = mock(InputFile.class);
+        when(pkg1.filename()).thenReturn("ExportPkg.m");
+        when(pkg2.filename()).thenReturn("UserPkg.m");
+
+        String content1 = "BeginPackage[\"Export`\"];\nUsedFunc::usage = \"Used function\";\n"
+                        + "UsedFunc[x_] := x;\nEndPackage[];";
+        String content2 = "BeginPackage[\"User`\"];\nNeeds[\"Export`\"];\n"
+                        + "MyFunc[] := UsedFunc[5];\nEndPackage[];";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg1, content1);
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg2, content2);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedExport(context, pkg1, content1)
+        );
+    }
+
+    @Test
+    void testDetectUnusedExportNoExports() {
+        // Package with no exports
+        when(inputFile.filename()).thenReturn("NoExports.m");
+        String content = "BeginPackage[\"NoExports`\"];\nPrivateFunc[x_] := x;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedExport(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedPublicFunctionWithUnused() {
+        // Public function that's not used
+        when(inputFile.filename()).thenReturn("PublicFunc.m");
+        String content = "BeginPackage[\"Pkg`\"];\nPublicFunc::usage = \"Public but unused\";\n"
+                       + "PublicFunc[] := 1;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedPublicFunction(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectUnusedPublicFunctionWithUsed() {
+        // Public function that IS used
+        InputFile pkg1 = mock(InputFile.class);
+        InputFile pkg2 = mock(InputFile.class);
+        when(pkg1.filename()).thenReturn("PublicPkg.m");
+        when(pkg2.filename()).thenReturn("UserPkg.m");
+
+        String content1 = "BeginPackage[\"Public`\"];\nPublicFunc::usage = \"Public and used\";\n"
+                        + "PublicFunc[] := 1;\nEndPackage[];";
+        String content2 = "BeginPackage[\"User`\"];\nresult = Public`PublicFunc[];\nEndPackage[];";
+
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg1, content1);
+        ArchitectureAndDependencyDetector.buildCrossFileData(pkg2, content2);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectUnusedPublicFunction(context, pkg1, content1)
+        );
+    }
+
+    @Test
+    void testDetectPackageLoadedButNotListedInMetadataPositive() {
+        // Package is loaded but not listed
+        String content = "BeginPackage[\"MyPkg`\"];\nNeeds[\"UnlistedDependency`\"];\nEndPackage[];";
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectPackageLoadedButNotListedInMetadata(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectPackageLoadedButNotListedInMetadataNegative() {
+        // Package is loaded AND listed
+        String content = "BeginPackage[\"MyPkg`\", {\"ListedDependency`\"}];\n"
+                       + "Needs[\"ListedDependency`\"];\nEndPackage[];";
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectPackageLoadedButNotListedInMetadata(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectLayerViolationWithViolation() {
+        // Utilities layer depending on Application layer (violation)
+        when(inputFile.filename()).thenReturn("Utilities.m");
+        String content = "BeginPackage[\"Utilities`\"];\nFunc[] := Application`Main[];\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectLayerViolation(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectLayerViolationNoViolation() {
+        // Application layer depending on Utilities layer (allowed)
+        when(inputFile.filename()).thenReturn("Application.m");
+        String content = "BeginPackage[\"Application`\"];\nFunc[] := Utilities`Helper[];\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectLayerViolation(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectIncompletePublicAPIWithIncompleteAPI() {
+        // Public function without usage message
+        when(inputFile.filename()).thenReturn("IncompleteAPI.m");
+        String content = "BeginPackage[\"API`\"];\nPublicFunc[x_] := x;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectIncompletePublicAPI(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectIncompletePublicAPIWithCompleteAPI() {
+        // Public function with usage message
+        when(inputFile.filename()).thenReturn("CompleteAPI.m");
+        String content = "BeginPackage[\"API`\"];\nPublicFunc::usage = \"Public function\";\n"
+                       + "PublicFunc[x_] := x;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectIncompletePublicAPI(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectOverAbstractedAPIWithManyAbstractions() {
+        // Package with many layers of abstraction
+        when(inputFile.filename()).thenReturn("OverAbstracted.m");
+        String content = "BeginPackage[\"API`\"];\n"
+                       + "Level1[x_] := Level2[x];\n"
+                       + "Level2[x_] := Level3[x];\n"
+                       + "Level3[x_] := Level4[x];\n"
+                       + "Level4[x_] := Level5[x];\n"
+                       + "Level5[x_] := x;\n"
+                       + "EndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectOverAbstractedAPI(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectInternalImplementationExposedWithExposed() {
+        // Internal implementation details exposed
+        when(inputFile.filename()).thenReturn("ExposedImpl.m");
+        String content = "BeginPackage[\"API`\"];\nInternalHelper::usage = \"Should be private\";\n"
+                       + "InternalHelper[x_] := x;\nEndPackage[];";
+        ArchitectureAndDependencyDetector.buildCrossFileData(inputFile, content);
+
+        assertDoesNotThrow(() ->
+            ArchitectureAndDependencyDetector.detectInternalImplementationExposed(context, inputFile, content)
+        );
+    }
+
 }

@@ -218,112 +218,52 @@ class UnusedAndNamingDetectorTest {
                                                     // Additional branch coverage tests
                 // ===== ISSUE DETECTION TESTS - TRIGGER ACTUAL VIOLATIONS =====
 
-    @Test
-    void testDetectUnusedPrivateFunctionTriggered() {
-        String code = "MyFunc`Private`unusedFunc[x_] := x + 1;";
-        assertDoesNotThrow(() -> detector.detectUnusedPrivateFunction(context, inputFile, code));
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("triggeredTestData")
+    void testDetectorTriggered(String testName, String code, DetectorMethod method) {
+        assertDoesNotThrow(() -> method.execute(detector, context, inputFile, code));
     }
 
-    @Test
-    void testDetectUnusedFunctionParameterTriggered() {
-        String code = "MyFunc[x_, y_, z_] := x + y";
-        assertDoesNotThrow(() -> detector.detectUnusedFunctionParameter(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectUnusedModuleVariableTriggered() {
-        String code = "Module[{x, y, z}, x + y]";
-        assertDoesNotThrow(() -> detector.detectUnusedModuleVariable(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectDeadCodeAfterReturnTriggered() {
-        String code = "MyFunc[x_] := (Return[x]; y = x + 1; Print[y])";
-        assertDoesNotThrow(() -> detector.detectDeadCodeAfterReturn(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectUnreachableAfterAbortThrowTriggered() {
-        String code = "MyFunc[x_] := (Throw[x]; y = x + 1)";
-        assertDoesNotThrow(() -> detector.detectUnreachableAfterAbortThrow(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectAssignmentNeverReadTriggered() {
-        String code = "Module[{x}, x = 1; x = 2; x = 3]";
-        assertDoesNotThrow(() -> detector.detectAssignmentNeverRead(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectSymbolNameTooShortTriggered() {
-        String code = "x[a_] := a + 1";
-        assertDoesNotThrow(() -> detector.detectSymbolNameTooShort(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectSymbolNameTooLongTriggered() {
-        String code = "ThisIsAReallyLongFunctionNameThatExceedsTheMaximumAllowedLengthForSymbolNames[x_] := x";
-        assertDoesNotThrow(() -> detector.detectSymbolNameTooLong(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectLocalShadowsGlobalTriggered() {
-        String code = "globalVar = 1;\nMyFunc[x_] := Module[{globalVar}, globalVar = 2]";
-        assertDoesNotThrow(() -> detector.detectLocalShadowsGlobal(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectParameterShadowsBuiltinTriggered() {
-        String code = "MyFunc[Sin_] := Sin + 1";
-        assertDoesNotThrow(() -> detector.detectParameterShadowsBuiltin(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectMultipleDefinitionsSameSymbolTriggered() {
-        String code = "MyFunc[x_] := x + 1;\nMyFunc[x_] := x * 2;";
-        assertDoesNotThrow(() -> detector.detectMultipleDefinitionsSameSymbol(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectMismatchedBeginEndTriggered() {
-        String code = "BeginPackage[\"MyPackage`\"];\nBegin[\"Private`\"];\nEnd[];";
-        assertDoesNotThrow(() -> detector.detectMismatchedBeginEnd(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectSymbolAfterEndPackageTriggered() {
-        String code = "BeginPackage[\"Test`\"];\nEndPackage[];\nOrphanFunc[x_] := x;";
-        assertDoesNotThrow(() -> detector.detectSymbolAfterEndPackage(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectTempVariableNotTempTriggered() {
-        String code = "temp = 42; (* Global temp variable *)";
-        assertDoesNotThrow(() -> detector.detectTempVariableNotTemp(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectTypoInBuiltinNameTriggered() {
-        String code = "result = Tabel[i, {i, 10}]";
-        assertDoesNotThrow(() -> detector.detectTypoInBuiltinName(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectWrongCapitalizationTriggered() {
-        String code = "result = table[i, {i, 10}]";
-        assertDoesNotThrow(() -> detector.detectWrongCapitalization(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectMissingImportTriggered() {
-        String code = "result = SomePackage`PublicFunction[x]";
-        assertDoesNotThrow(() -> detector.detectMissingImport(context, inputFile, code));
-    }
-
-    @Test
-    void testDetectContextNotFoundTriggered() {
-        String code = "Needs[\"NonExistent`Package`\"]";
-        assertDoesNotThrow(() -> detector.detectContextNotFound(context, inputFile, code));
+    private static Stream<Arguments> triggeredTestData() {
+        return Stream.of(
+            Arguments.of("UnusedPrivateFunction", "MyFunc`Private`unusedFunc[x_] := x + 1;",
+                (DetectorMethod) UnusedAndNamingDetector::detectUnusedPrivateFunction),
+            Arguments.of("UnusedFunctionParameter", "MyFunc[x_, y_, z_] := x + y",
+                (DetectorMethod) UnusedAndNamingDetector::detectUnusedFunctionParameter),
+            Arguments.of("UnusedModuleVariable", "Module[{x, y, z}, x + y]",
+                (DetectorMethod) UnusedAndNamingDetector::detectUnusedModuleVariable),
+            Arguments.of("DeadCodeAfterReturn", "MyFunc[x_] := (Return[x]; y = x + 1; Print[y])",
+                (DetectorMethod) UnusedAndNamingDetector::detectDeadCodeAfterReturn),
+            Arguments.of("UnreachableAfterAbortThrow", "MyFunc[x_] := (Throw[x]; y = x + 1)",
+                (DetectorMethod) UnusedAndNamingDetector::detectUnreachableAfterAbortThrow),
+            Arguments.of("AssignmentNeverRead", "Module[{x}, x = 1; x = 2; x = 3]",
+                (DetectorMethod) UnusedAndNamingDetector::detectAssignmentNeverRead),
+            Arguments.of("SymbolNameTooShort", "x[a_] := a + 1",
+                (DetectorMethod) UnusedAndNamingDetector::detectSymbolNameTooShort),
+            Arguments.of("SymbolNameTooLong",
+                "ThisIsAReallyLongFunctionNameThatExceedsTheMaximumAllowedLengthForSymbolNames[x_] := x",
+                (DetectorMethod) UnusedAndNamingDetector::detectSymbolNameTooLong),
+            Arguments.of("LocalShadowsGlobal", "globalVar = 1;\nMyFunc[x_] := Module[{globalVar}, globalVar = 2]",
+                (DetectorMethod) UnusedAndNamingDetector::detectLocalShadowsGlobal),
+            Arguments.of("ParameterShadowsBuiltin", "MyFunc[Sin_] := Sin + 1",
+                (DetectorMethod) UnusedAndNamingDetector::detectParameterShadowsBuiltin),
+            Arguments.of("MultipleDefinitionsSameSymbol", "MyFunc[x_] := x + 1;\nMyFunc[x_] := x * 2;",
+                (DetectorMethod) UnusedAndNamingDetector::detectMultipleDefinitionsSameSymbol),
+            Arguments.of("MismatchedBeginEnd", "BeginPackage[\"MyPackage`\"];\nBegin[\"Private`\"];\nEnd[];",
+                (DetectorMethod) UnusedAndNamingDetector::detectMismatchedBeginEnd),
+            Arguments.of("SymbolAfterEndPackage", "BeginPackage[\"Test`\"];\nEndPackage[];\nOrphanFunc[x_] := x;",
+                (DetectorMethod) UnusedAndNamingDetector::detectSymbolAfterEndPackage),
+            Arguments.of("TempVariableNotTemp", "temp = 42; (* Global temp variable *)",
+                (DetectorMethod) UnusedAndNamingDetector::detectTempVariableNotTemp),
+            Arguments.of("TypoInBuiltinName", "result = Tabel[i, {i, 10}]",
+                (DetectorMethod) UnusedAndNamingDetector::detectTypoInBuiltinName),
+            Arguments.of("WrongCapitalization", "result = table[i, {i, 10}]",
+                (DetectorMethod) UnusedAndNamingDetector::detectWrongCapitalization),
+            Arguments.of("MissingImport", "result = SomePackage`PublicFunction[x]",
+                (DetectorMethod) UnusedAndNamingDetector::detectMissingImport),
+            Arguments.of("ContextNotFound", "Needs[\"NonExistent`Package`\"]",
+                (DetectorMethod) UnusedAndNamingDetector::detectContextNotFound)
+        );
     }
 
     // ===== EXCEPTION HANDLING TESTS FOR CATCH BLOCKS =====
@@ -1028,6 +968,229 @@ class UnusedAndNamingDetectorTest {
             Arguments.of("Module[{myList = {1, 2, 3}}, myList[[1]]]"),
             Arguments.of("(* Module[{List = {1, 2, 3}}, List[[1]]] *)")
         );
+    }
+
+    // ===== TARGETED COVERAGE TESTS FOR UNCOVERED BRANCHES =====
+
+    @Test
+    void testDetectUnusedFunctionParameterInComment() {
+        String code = "(* f[x_, y_] := x + 1; *)";
+        assertDoesNotThrow(() -> detector.detectUnusedFunctionParameter(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedFunctionParameterInString() {
+        String code = "str = \"f[x_, y_] := x + 1;\"";
+        assertDoesNotThrow(() -> detector.detectUnusedFunctionParameter(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedModuleVariableInComment() {
+        String code = "(* Module[{x, y}, x] *)";
+        assertDoesNotThrow(() -> detector.detectUnusedModuleVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedModuleVariableInString() {
+        String code = "str = \"Module[{x, y}, x]\"";
+        assertDoesNotThrow(() -> detector.detectUnusedModuleVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedWithVariableInComment() {
+        String code = "(* With[{x = 1, y = 2}, x] *)";
+        assertDoesNotThrow(() -> detector.detectUnusedWithVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedWithVariableInString() {
+        String code = "str = \"With[{x = 1, y = 2}, x]\"";
+        assertDoesNotThrow(() -> detector.detectUnusedWithVariable(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedImportInComment() {
+        String code = "(* Needs[\"UnusedPackage`\"]; *)";
+        assertDoesNotThrow(() -> detector.detectUnusedImport(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedImportInString() {
+        String code = "str = \"Needs[\\\"UnusedPackage`\\\"];\"";
+        assertDoesNotThrow(() -> detector.detectUnusedImport(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedPatternNameInComment() {
+        String code = "(* f[x_] := 1; *)";
+        assertDoesNotThrow(() -> detector.detectUnusedPatternName(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedPatternNameInString() {
+        String code = "str = \"f[x_] := 1;\"";
+        assertDoesNotThrow(() -> detector.detectUnusedPatternName(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedOptionalParameterInComment() {
+        String code = "(* f[x_, y___ := 10] := x; *)";
+        assertDoesNotThrow(() -> detector.detectUnusedOptionalParameter(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnusedOptionalParameterInString() {
+        String code = "str = \"f[x_, y___ := 10] := x;\"";
+        assertDoesNotThrow(() -> detector.detectUnusedOptionalParameter(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDeadCodeAfterReturnInComment() {
+        String code = "(* f[x_] := (Return[x]; Print[\"dead\"]) *)";
+        assertDoesNotThrow(() -> detector.detectDeadCodeAfterReturn(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectDeadCodeAfterReturnInString() {
+        String code = "str = \"f[x_] := (Return[x]; Print[dead])\"";
+        assertDoesNotThrow(() -> detector.detectDeadCodeAfterReturn(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnreachableAfterAbortThrowInComment() {
+        String code = "(* f[x_] := (Throw[x]; y = 1) *)";
+        assertDoesNotThrow(() -> detector.detectUnreachableAfterAbortThrow(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectUnreachableAfterAbortThrowInString() {
+        String code = "str = \"f[x_] := (Throw[x]; y = 1)\"";
+        assertDoesNotThrow(() -> detector.detectUnreachableAfterAbortThrow(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectAssignmentNeverReadInComment() {
+        String code = "(* Module[{x}, x = 1; x = 2; x = 3] *)";
+        assertDoesNotThrow(() -> detector.detectAssignmentNeverRead(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectAssignmentNeverReadInString() {
+        String code = "str = \"Module[{x}, x = 1; x = 2; x = 3]\"";
+        assertDoesNotThrow(() -> detector.detectAssignmentNeverRead(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectFunctionDefinedButNeverCalledInComment() {
+        String code = "(* UnusedFunc[x_] := x + 1; *)";
+        assertDoesNotThrow(() -> detector.detectFunctionDefinedButNeverCalled(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectFunctionDefinedButNeverCalledInString() {
+        String code = "str = \"UnusedFunc[x_] := x + 1;\"";
+        assertDoesNotThrow(() -> detector.detectFunctionDefinedButNeverCalled(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectRedefinedWithoutUseInComment() {
+        String code = "(* x = 5; x = 10; *)";
+        assertDoesNotThrow(() -> detector.detectRedefinedWithoutUse(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectRedefinedWithoutUseInString() {
+        String code = "str = \"x = 5; x = 10;\"";
+        assertDoesNotThrow(() -> detector.detectRedefinedWithoutUse(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectLoopVariableUnusedInComment() {
+        String code = "(* Do[Print[\"hello\"], {i, 1, 10}] *)";
+        assertDoesNotThrow(() -> detector.detectLoopVariableUnused(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectLoopVariableUnusedInString() {
+        String code = "str = \"Do[Print[hello], {i, 1, 10}]\"";
+        assertDoesNotThrow(() -> detector.detectLoopVariableUnused(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectConditionAlwaysFalseInComment() {
+        String code = "(* If[False, result, other] *)";
+        assertDoesNotThrow(() -> detector.detectConditionAlwaysFalse(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectConditionAlwaysFalseInString() {
+        String code = "str = \"If[False, result, other]\"";
+        assertDoesNotThrow(() -> detector.detectConditionAlwaysFalse(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectParameterShadowsBuiltinInComment() {
+        String code = "(* f[List_] := List + 1; *)";
+        assertDoesNotThrow(() -> detector.detectParameterShadowsBuiltin(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectParameterShadowsBuiltinInString() {
+        String code = "str = \"f[List_] := List + 1;\"";
+        assertDoesNotThrow(() -> detector.detectParameterShadowsBuiltin(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectMultipleDefinitionsSameSymbolInComment() {
+        String code = "(* f[x_] := x + 1; f[x_] := x * 2; *)";
+        assertDoesNotThrow(() -> detector.detectMultipleDefinitionsSameSymbol(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectMultipleDefinitionsSameSymbolInString() {
+        String code = "str = \"f[x_] := x + 1; f[x_] := x * 2;\"";
+        assertDoesNotThrow(() -> detector.detectMultipleDefinitionsSameSymbol(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSymbolNameTooLongInComment() {
+        String code = "(* veryLongSymbolNameThatExceedsFiftyCharactersInLength = 5; *)";
+        assertDoesNotThrow(() -> detector.detectSymbolNameTooLong(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectSymbolNameTooLongInString() {
+        String code = "str = \"veryLongSymbolNameThatExceedsFiftyCharactersInLength = 5;\"";
+        assertDoesNotThrow(() -> detector.detectSymbolNameTooLong(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectInconsistentNamingConventionInComment() {
+        String code = "(* camelCaseVar = 1; snake_case_var = 2; PascalCase = 3; *)";
+        assertDoesNotThrow(() -> detector.detectInconsistentNamingConvention(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectInconsistentNamingConventionInString() {
+        String code = "str = \"camelCaseVar = 1; snake_case_var = 2; PascalCase = 3;\"";
+        assertDoesNotThrow(() -> detector.detectInconsistentNamingConvention(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectBuiltinNameInLocalScopeInComment() {
+        String code = "(* Module[{List = {1, 2, 3}}, List[[1]]] *)";
+        assertDoesNotThrow(() -> detector.detectBuiltinNameInLocalScope(context, inputFile, code));
+    }
+
+    @Test
+    void testDetectBuiltinNameInLocalScopeInString() {
+        String code = "str = \"Module[{List = {1, 2, 3}}, List[[1]]]\"";
+        assertDoesNotThrow(() -> detector.detectBuiltinNameInLocalScope(context, inputFile, code));
+    }
+
+    @FunctionalInterface
+    private interface DetectorMethod {
+        void execute(UnusedAndNamingDetector detector, SensorContext context, InputFile file, String content);
     }
 
 }

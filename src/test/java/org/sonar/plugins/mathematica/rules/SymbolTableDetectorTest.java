@@ -966,4 +966,494 @@ class SymbolTableDetectorTest {
         when(scope.getParent()).thenReturn(null);
         return scope;
     }
+
+    // ===== ADDITIONAL EDGE CASE TESTS FOR IMPROVED COVERAGE =====
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+        "DefineClass",
+        "RegisterComponent",
+        "DefineModule",
+        "CreateTemplate",
+        "DeclareType"
+    })
+    void testSideEffectAssignmentVariousFunctions(String functionName) throws IOException {
+        Symbol symbol = createMockSymbol("MyVar", 1, false, false);
+        when(symbolTable.getAssignedButNeverReadSymbols()).thenReturn(Collections.singletonList(symbol));
+        when(inputFile.contents()).thenReturn("MyVar = " + functionName + "[params]");
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectAssignedButNeverRead(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testUnusedParameterInAssociationReturningFunction() throws IOException {
+        Symbol param = createMockSymbol("x", 5, true, false);
+        when(param.isUnused()).thenReturn(true);
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(param));
+
+        // Function returns Association
+        String fileContents = "f[x_, y_] := <|\n"
+                + "  \"key1\" -> y,\n"
+                + "  \"key2\" -> y * 2\n"
+                + "|>";
+        when(inputFile.contents()).thenReturn(fileContents);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectUnusedParameter(context, inputFile, symbolTable)
+        );
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("unusedParameterEdgeCasesData")
+    void testUnusedParameterEdgeCases(String testName, String symbolName, int lineNumber,
+                                      String fileContents) throws IOException {
+        Symbol param = createMockSymbol(symbolName, lineNumber, true, false);
+        when(param.isUnused()).thenReturn(true);
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(param));
+        when(inputFile.contents()).thenReturn(fileContents);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectUnusedParameter(context, inputFile, symbolTable)
+        );
+    }
+
+    private static Stream<Arguments> unusedParameterEdgeCasesData() {
+        return Stream.of(
+            Arguments.of("PatternDestructuring", "a", 5,
+                "f[guesses:{a_, b_, c_}] := guesses[[1]] + guesses[[2]]"),
+            Arguments.of("LineBeyondFileLength", "x", 1000, "f[x_] := x + 1"),
+            Arguments.of("InvalidLineNumber", "x", 0, "f[x_] := x + 1")
+        );
+    }
+
+    @Test
+    void testCircularDependenciesWithComparisonExpressions() {
+        Scope globalScope = createMockScope(1, 100, ScopeType.GLOBAL);
+
+        Symbol webmQ = createMockSymbol("webmQ", 10, false, false);
+        Symbol pacletName = createMockSymbol("pacletName", 5, false, false);
+
+        when(webmQ.getScope()).thenReturn(globalScope);
+        when(pacletName.getScope()).thenReturn(globalScope);
+
+        // Should NOT create circular dependency - comparison expression
+        SymbolReference assign = createMockReference(10, "webmQ = pacletName == \"webMathematica\"");
+        when(webmQ.getAssignments()).thenReturn(Collections.singletonList(assign));
+        when(pacletName.getAssignments()).thenReturn(Collections.emptyList());
+
+        when(symbolTable.getAllSymbols()).thenReturn(List.of(webmQ, pacletName));
+        when(symbolTable.getSymbolByName("webmQ")).thenReturn(webmQ);
+        when(symbolTable.getSymbolByName("pacletName")).thenReturn(pacletName);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)
+        );
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+        "a = b === c",
+        "a = b != c",
+        "a = b =!= c",
+        "a = b > c",
+        "a = b < c",
+        "a = b >= c",
+        "a = b <= c"
+    })
+    void testCircularDependenciesWithVariousComparisons(String assignmentCode) {
+        Scope globalScope = createMockScope(1, 100, ScopeType.GLOBAL);
+
+        Symbol symbolA = createMockSymbol("a", 10, false, false);
+        Symbol symbolB = createMockSymbol("b", 5, false, false);
+        Symbol symbolC = createMockSymbol("c", 3, false, false);
+
+        when(symbolA.getScope()).thenReturn(globalScope);
+        when(symbolB.getScope()).thenReturn(globalScope);
+        when(symbolC.getScope()).thenReturn(globalScope);
+
+        SymbolReference assign = createMockReference(10, assignmentCode);
+        when(symbolA.getAssignments()).thenReturn(Collections.singletonList(assign));
+        when(symbolB.getAssignments()).thenReturn(Collections.emptyList());
+        when(symbolC.getAssignments()).thenReturn(Collections.emptyList());
+
+        when(symbolTable.getAllSymbols()).thenReturn(List.of(symbolA, symbolB, symbolC));
+        when(symbolTable.getSymbolByName("a")).thenReturn(symbolA);
+        when(symbolTable.getSymbolByName("b")).thenReturn(symbolB);
+        when(symbolTable.getSymbolByName("c")).thenReturn(symbolC);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testCircularDependenciesWithNestedComments() {
+        Scope globalScope = createMockScope(1, 100, ScopeType.GLOBAL);
+
+        Symbol symbolA = createMockSymbol("a", 10, false, false);
+        when(symbolA.getScope()).thenReturn(globalScope);
+
+        // Nested comments should be handled correctly
+        SymbolReference assign = createMockReference(10, "a = (* outer (* nested *) outer *) 5");
+        when(symbolA.getAssignments()).thenReturn(Collections.singletonList(assign));
+
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbolA));
+        when(symbolTable.getSymbolByName("a")).thenReturn(symbolA);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testCircularDependenciesWithEscapedStrings() {
+        Scope globalScope = createMockScope(1, 100, ScopeType.GLOBAL);
+
+        Symbol symbolA = createMockSymbol("a", 10, false, false);
+        when(symbolA.getScope()).thenReturn(globalScope);
+
+        // Escaped quotes in strings should be handled
+        SymbolReference assign = createMockReference(10, "a = \"text with \\\"escaped\\\" quotes\"");
+        when(symbolA.getAssignments()).thenReturn(Collections.singletonList(assign));
+
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbolA));
+        when(symbolTable.getSymbolByName("a")).thenReturn(symbolA);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testCircularDependenciesWordBoundary() {
+        Scope globalScope = createMockScope(1, 100, ScopeType.GLOBAL);
+
+        Symbol sf = createMockSymbol("sf", 10, false, false);
+        Symbol transform = createMockSymbol("transform", 15, false, false);
+        Symbol staticFigure = createMockSymbol("StaticFigure", 20, false, false);
+
+        when(sf.getScope()).thenReturn(globalScope);
+        when(transform.getScope()).thenReturn(globalScope);
+        when(staticFigure.getScope()).thenReturn(globalScope);
+
+        // "sf" should not match "transform" or "StaticFigure" due to word boundaries
+        SymbolReference transformAssign = createMockReference(15, "transform = TransformData[x]");
+        SymbolReference sfAssign = createMockReference(10, "sf = StaticFigure[data]");
+
+        when(sf.getAssignments()).thenReturn(Collections.singletonList(sfAssign));
+        when(transform.getAssignments()).thenReturn(Collections.singletonList(transformAssign));
+        when(staticFigure.getAssignments()).thenReturn(Collections.emptyList());
+
+        when(symbolTable.getAllSymbols()).thenReturn(List.of(sf, transform, staticFigure));
+        when(symbolTable.getSymbolByName("sf")).thenReturn(sf);
+        when(symbolTable.getSymbolByName("transform")).thenReturn(transform);
+        when(symbolTable.getSymbolByName("StaticFigure")).thenReturn(staticFigure);
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectCircularVariableDependencies(context, inputFile, symbolTable)
+        );
+    }
+
+    @ParameterizedTest
+    @org.junit.jupiter.params.provider.ValueSource(strings = {
+        "Table",
+        "Select",
+        "Cases",
+        "DeleteCases",
+        "Range",
+        "Array",
+        "Join",
+        "Append",
+        "Prepend",
+        "Insert",
+        "Delete",
+        "Take",
+        "Drop",
+        "Partition",
+        "Split",
+        "GatherBy",
+        "SortBy",
+        "Sort",
+        "Reverse",
+        "Flatten",
+        "Union",
+        "Intersection",
+        "Complement",
+        "Transpose",
+        "Dimensions",
+        "Position",
+        "Extract",
+        "MapThread",
+        "MapIndexed",
+        "Scan",
+        "FoldList",
+        "NestList",
+        "Tuples",
+        "Permutations",
+        "Subsets",
+        "IntegerPartitions",
+        "CharacterRange",
+        "Keys",
+        "Values",
+        "Association",
+        "Normal",
+        "Thread",
+        "Outer",
+        "Inner"
+    })
+    void testTypeInconsistencyWithListReturningFunctions(String functionName) {
+        Symbol symbol = createMockSymbol("result", 10, false, false);
+        SymbolReference assign = createMockReference(10, "result = " + functionName + "[params]");
+
+        when(symbol.getAssignments()).thenReturn(Collections.singletonList(assign));
+        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(assign));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testTypeInconsistencyTwoSuspectedTypes() {
+        Symbol symbol = createMockSymbol("mixed", 10, false, false);
+        SymbolReference stringRef = createMockReference(15, "mixed + \"text\"");
+        SymbolReference numberRef = createMockReference(20, "mixed + 5");
+
+        // Only 2 types - should not report (needs 3+)
+        when(symbol.getAllReferencesSorted()).thenReturn(List.of(stringRef, numberRef));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testTypeInconsistencyWithNumericContext() {
+        Symbol symbol = createMockSymbol("var", 10, false, false);
+        SymbolReference addRef = createMockReference(15, "var + 1");
+        SymbolReference subRef = createMockReference(20, "var - 2");
+        SymbolReference mulRef = createMockReference(25, "var * 3");
+        SymbolReference divRef = createMockReference(30, "var / 4");
+
+        when(symbol.getAllReferencesSorted()).thenReturn(List.of(addRef, subRef, mulRef, divRef));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testTypeInconsistencyWithReverseArithmetic() {
+        Symbol symbol = createMockSymbol("var", 10, false, false);
+        SymbolReference addRef = createMockReference(15, "10 + var");
+        SymbolReference mulRef = createMockReference(20, "5 * var");
+
+        when(symbol.getAllReferencesSorted()).thenReturn(List.of(addRef, mulRef));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testTypeInconsistencyWithPartAccess() {
+        Symbol symbol = createMockSymbol("list", 10, false, false);
+        SymbolReference partRef1 = createMockReference(15, "Part[list, 1]");
+        SymbolReference partRef2 = createMockReference(20, "Part[list, 2, 3]");
+
+        when(symbol.getAllReferencesSorted()).thenReturn(List.of(partRef1, partRef2));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectTypeInconsistency(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testNamingConventionSingleCharParameter() {
+        Symbol param = createMockSymbol("x", 5, true, false);  // Parameter - should be skipped
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(param));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectNamingConventionViolations(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testRedundantAssignmentDuplicatePosition() {
+        Symbol symbol = createMockSymbol("x", 10, false, false);
+
+        // Same position - should be deduplicated
+        SymbolReference assign1 = createMockReference(10, "x = 5");
+        SymbolReference assign2 = createMockReference(10, "x = 5");
+        when(assign1.getColumn()).thenReturn(5);
+        when(assign2.getColumn()).thenReturn(5);
+
+        when(symbol.getAssignments()).thenReturn(List.of(assign1, assign2));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectRedundantAssignment(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testRedundantAssignmentSameLine() {
+        Symbol symbol = createMockSymbol("x", 10, false, false);
+
+        // Same line - should not report
+        SymbolReference assign1 = createMockReference(10, "x = 5; x = 5");
+        SymbolReference assign2 = createMockReference(10, "x = 5; x = 5");
+        when(assign1.getColumn()).thenReturn(1);
+        when(assign2.getColumn()).thenReturn(8);
+
+        when(symbol.getAssignments()).thenReturn(List.of(assign1, assign2));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectRedundantAssignment(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testRedundantAssignmentDifferentValues() {
+        Symbol symbol = createMockSymbol("x", 10, false, false);
+
+        // Different values - should not report
+        SymbolReference assign1 = createMockReference(10, "x = 5");
+        SymbolReference assign2 = createMockReference(15, "x = 10");
+        when(assign1.getColumn()).thenReturn(1);
+        when(assign2.getColumn()).thenReturn(1);
+
+        when(symbol.getAssignments()).thenReturn(List.of(assign1, assign2));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectRedundantAssignment(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testVariableInWrongScopeNonModuleVariable() {
+        Symbol symbol = createMockSymbol("global", 5, false, false);  // Not a module variable
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectVariableInWrongScope(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testVariableEscapesScopeNonModuleVariable() {
+        Symbol symbol = createMockSymbol("global", 5, false, false);  // Not a module variable
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectVariableEscapesScope(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testVariableEscapesScopeNonFunctionChild() {
+        Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
+        Scope blockScope = createMockScope(20, 30, ScopeType.BLOCK);  // BLOCK, not FUNCTION
+        when(moduleScope.getChildren()).thenReturn(Collections.singletonList(blockScope));
+
+        Symbol symbol = createMockSymbolWithScope("var", 5, false, true, moduleScope);
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectVariableEscapesScope(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testLifetimeExtendsBeyondScopeNonModuleVariable() {
+        Symbol symbol = createMockSymbol("global", 10, false, false);  // Not a module variable
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectLifetimeExtendsBeyondScope(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testConstantNotMarkedAsConstantNonModuleVariable() {
+        Symbol symbol = createMockSymbol("global", 10, false, false);  // Not a module variable
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectConstantNotMarkedAsConstant(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testConstantNotMarkedAsConstantMultipleAssignments() {
+        Symbol symbol = createMockSymbol("var", 10, false, true);
+        SymbolReference assign1 = createMockReference(10, "var = 1");
+        SymbolReference assign2 = createMockReference(20, "var = 2");
+
+        // Multiple assignments - not a constant
+        when(symbol.getAssignments()).thenReturn(List.of(assign1, assign2));
+        when(symbol.getReferences()).thenReturn(Collections.emptyList());
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectConstantNotMarkedAsConstant(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testIncorrectClosureCaptureNonModuleVariable() {
+        Symbol symbol = createMockSymbol("global", 5, false, false);  // Not a module variable
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectIncorrectClosureCapture(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testScopeLeakNonModuleVariable() {
+        Symbol symbol = createMockSymbol("global", 10, false, false);  // Not a module variable
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testScopeLeakNoReferences() {
+        Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
+        Symbol symbol = createMockSymbolWithScope("var", 10, false, true, moduleScope);
+
+        when(symbol.getAllReferencesSorted()).thenReturn(Collections.emptyList());
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable)
+        );
+    }
+
+    @Test
+    void testScopeLeakNoSymbolInReference() {
+        Scope moduleScope = createMockScope(1, 50, ScopeType.MODULE);
+        Symbol symbol = createMockSymbolWithScope("var", 10, false, true, moduleScope);
+
+        // Reference doesn't contain Symbol/ToExpression/Evaluate/ReleaseHold
+        SymbolReference ref = createMockReference(20, "var + 1");
+        when(symbol.getAllReferencesSorted()).thenReturn(Collections.singletonList(ref));
+        when(symbolTable.getAllSymbols()).thenReturn(Collections.singletonList(symbol));
+
+        assertDoesNotThrow(() ->
+            SymbolTableDetector.detectScopeLeakThroughDynamicEvaluation(context, inputFile, symbolTable)
+        );
+    }
 }

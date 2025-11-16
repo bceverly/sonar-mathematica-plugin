@@ -508,13 +508,16 @@ public class MathematicaRulesSensor implements Sensor {
         double filesPerSec = count / (elapsedMs / 1000.0);
         int remainingFiles = totalFiles - count;
         long estimatedRemainingMs = (long) (remainingFiles / filesPerSec * 1000);
+        int percentComplete = (int) ((count * 100.0) / totalFiles);
+        long estimatedRemainingMin = estimatedRemainingMs / 60000;
+        double filesPerSecRounded = Math.round(filesPerSec * 10.0) / 10.0;
 
         LOG.info("Progress: {}/{} files analyzed ({} %) | Speed: {} files/sec | Est. remaining: {} min",
             count,
             totalFiles,
-            (int) ((count * 100.0) / totalFiles),
-            String.format("%.1f", filesPerSec),
-            estimatedRemainingMs / 60000);
+            percentComplete,
+            filesPerSecRounded,
+            estimatedRemainingMin);
     }
 
     /**

@@ -12,7 +12,7 @@ class LiteralNodeTest {
     void testIntegerLiteralZero() {
         LiteralNode node = new LiteralNode(0, LiteralNode.LiteralType.INTEGER, 1, 1, 1, 2);
 
-        assertThat(node.getValue()).isEqualTo(0);
+        assertThat((Integer) node.getValue()).isZero();
         assertThat(node.getLiteralType()).isEqualTo(LiteralNode.LiteralType.INTEGER);
     }
 
@@ -92,7 +92,7 @@ class LiteralNodeTest {
     void testStringLiteralEmpty() {
         LiteralNode node = new LiteralNode("", LiteralNode.LiteralType.STRING, 1, 1, 1, 3);
 
-        assertThat(node.getValue()).isEqualTo("");
+        assertThat((String) node.getValue()).isEmpty();
         assertThat(node.getLiteralType()).isEqualTo(LiteralNode.LiteralType.STRING);
     }
 
@@ -140,7 +140,7 @@ class LiteralNodeTest {
     void testBooleanLiteralTrue() {
         LiteralNode node = new LiteralNode(true, LiteralNode.LiteralType.BOOLEAN, 1, 1, 1, 5);
 
-        assertThat(node.getValue()).isEqualTo(true);
+        assertThat((Boolean) node.getValue()).isTrue();
         assertThat(node.getLiteralType()).isEqualTo(LiteralNode.LiteralType.BOOLEAN);
     }
 
@@ -148,7 +148,7 @@ class LiteralNodeTest {
     void testBooleanLiteralFalse() {
         LiteralNode node = new LiteralNode(false, LiteralNode.LiteralType.BOOLEAN, 1, 1, 1, 6);
 
-        assertThat(node.getValue()).isEqualTo(false);
+        assertThat((Boolean) node.getValue()).isFalse();
         assertThat(node.getLiteralType()).isEqualTo(LiteralNode.LiteralType.BOOLEAN);
     }
 

@@ -895,4 +895,648 @@ class InitializationTrackingVisitorTest {
         assertFalse(uninitVars.contains("subdirsPatt"),
             "subdirsPatt should not be flagged even when Module is visited directly");
     }
+
+    // ===== ADDITIONAL EDGE CASE TESTS FOR 85%+ CONDITION COVERAGE =====
+
+    @Test
+    void testHandleScopingConstructWithLessThanTwoArguments() {
+        // Test scoping construct with only 1 argument (edge case)
+        setupFunctionContext();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(new IdentifierNode("x", 1, 10, 1, 11)),
+            1, 9, 1, 12
+        );
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList),  // Only 1 argument - missing body
+            1, 0, 1, 15
+        );
+
+        // Should not crash with missing second argument
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testHandleScopingConstructWithNonListFirstArgument() {
+        // Test scoping construct where first argument is not a ListNode
+        setupFunctionContext();
+
+        IdentifierNode nonListArg = new IdentifierNode("notAList", 1, 10, 1, 19);
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(nonListArg, body),
+            1, 0, 2, 1
+        );
+
+        // Should handle non-ListNode first argument gracefully
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testHandleScopingConstructWithNullBody() {
+        // Test scoping construct with null body
+        setupFunctionContext();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(new IdentifierNode("x", 1, 10, 1, 11)),
+            1, 9, 1, 12
+        );
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, null),  // Null body
+            1, 0, 1, 15
+        );
+
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testProcessDeclarationListWithLiteralNode() {
+        // Test declaration list containing a literal (unexpected but should handle gracefully)
+        setupFunctionContext();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new IdentifierNode("x", 1, 10, 1, 11),
+                new LiteralNode(42, LiteralNode.LiteralType.INTEGER, 1, 13, 1, 15),  // Literal in declaration list
+                new IdentifierNode("y", 1, 17, 1, 18)
+            ),
+            1, 9, 1, 19
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        // Should handle unexpected node types in declaration list
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testProcessInitializedVariableNullArguments() {
+        // Test initialized variable with null arguments
+        setupFunctionContext();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new FunctionCallNode(
+                    "Set",
+                    null,  // Null arguments
+                    1, 10, 1, 15
+                )
+            ),
+            1, 9, 1, 16
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testProcessInitializedVariableEmptyArguments() {
+        // Test initialized variable with empty arguments list
+        setupFunctionContext();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new FunctionCallNode(
+                    "Set",
+                    new ArrayList<>(),  // Empty arguments
+                    1, 10, 1, 15
+                )
+            ),
+            1, 9, 1, 16
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testProcessInitializedVariableNonIdentifierFirstArg() {
+        // Test initialized variable where first argument is not an identifier
+        setupFunctionContext();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new FunctionCallNode(
+                    "Set",
+                    Arrays.asList(
+                        new LiteralNode(42, LiteralNode.LiteralType.INTEGER, 1, 10, 1, 12),  // Not an identifier
+                        new LiteralNode(5, LiteralNode.LiteralType.INTEGER, 1, 15, 1, 16)
+                    ),
+                    1, 10, 1, 16
+                )
+            ),
+            1, 9, 1, 17
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testProcessInitializedVariableWithMultipleArguments() {
+        // Test initialized variable with more than 2 arguments (visit the value)
+        setupFunctionContext();
+
+        IdentifierNode varNode = new IdentifierNode("x", 1, 10, 1, 11);
+        IdentifierNode valueNode = new IdentifierNode("someOtherVar", 1, 14, 1, 26);
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(
+                new FunctionCallNode(
+                    "Set",
+                    Arrays.asList(varNode, valueNode),  // 2 arguments - should visit second one
+                    1, 10, 1, 26
+                )
+            ),
+            1, 9, 1, 27
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testVisitListNodeAlreadyProcessed() {
+        // Test that visiting an already-processed declaration list doesn't visit children again
+        setupFunctionContext();
+
+        IdentifierNode varNode = new IdentifierNode("x", 1, 10, 1, 11);
+        ListNode declarationList = new ListNode(
+            Arrays.asList(varNode),
+            1, 9, 1, 12
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        // Visit the module first (marks declaration list as processed)
+        visitor.visit(moduleNode);
+
+        // Now visit the declaration list directly - should skip children
+        assertDoesNotThrow(() -> visitor.visit(declarationList));
+    }
+
+    @Test
+    void testVisitListNodeRegularList() {
+        // Test visiting a regular list (not a declaration list)
+        setupFunctionContext();
+
+        ListNode regularList = new ListNode(
+            Arrays.asList(
+                new LiteralNode(1, LiteralNode.LiteralType.INTEGER, 1, 1, 1, 2),
+                new LiteralNode(2, LiteralNode.LiteralType.INTEGER, 1, 4, 1, 5),
+                new IdentifierNode("x", 1, 7, 1, 8)
+            ),
+            1, 0, 1, 9
+        );
+
+        // Should visit all children normally for non-declaration lists
+        assertDoesNotThrow(() -> visitor.visit(regularList));
+    }
+
+    @Test
+    void testIdentifierNodeOutsideFunctionContext() {
+        // Test visiting an identifier when currentFunction is null
+        IdentifierNode identifier = new IdentifierNode("globalVar", 1, 0, 1, 9);
+
+        // Create a fresh visitor (no function context)
+        InitializationTrackingVisitor freshVisitor = new InitializationTrackingVisitor();
+
+        // Should handle gracefully when currentFunction is null
+        assertDoesNotThrow(() -> freshVisitor.visit(identifier));
+    }
+
+    @Test
+    void testIdentifierNodeNotDeclared() {
+        // Test identifier that's not in the function's declared variables
+        setupFunctionContext();
+
+        IdentifierNode undeclaredVar = new IdentifierNode("undeclaredVar", 1, 0, 1, 13);
+
+        visitor.visit(undeclaredVar);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // Undeclared variables should not be flagged (they might be global)
+        assertFalse(uninitVars.contains("undeclaredVar"),
+            "Undeclared variables should not be flagged");
+    }
+
+    @Test
+    void testIsLikelyFalsePositiveNullVariable() {
+        // Test false positive check with null variable name
+        // This tests the defensive null check at line 138
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList(""),  // Empty string parameter
+            new IdentifierNode("", 1, 0, 1, 0),
+            false,
+            1, 0, 1, 10
+        );
+
+        // Should handle empty string variable name
+        assertDoesNotThrow(() -> visitor.visit(funcNode));
+    }
+
+    @Test
+    void testIsLikelyFalsePositiveLengthExactly15() {
+        // Test boundary: variable with exactly 15 characters (not > 15)
+        String var15Chars = "ExactlyFifteenC";  // Exactly 15 characters, starts with uppercase
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList(var15Chars),
+            new IdentifierNode(var15Chars, 1, 0, 1, 15),
+            false,
+            1, 0, 1, 20
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // Exactly 15 chars should NOT be filtered (only > 15)
+        // But it's a parameter, so it's pre-initialized anyway
+        assertFalse(uninitVars.contains(var15Chars),
+            "Parameters are pre-initialized");
+    }
+
+    @Test
+    void testIsLikelyFalsePositiveLengthExactly16UppercaseStart() {
+        // Test boundary: variable with exactly 16 characters and uppercase start
+        String var16Chars = "ExactlySixteenCh";  // Exactly 16 characters, starts with uppercase
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList(var16Chars),
+            new IdentifierNode(var16Chars, 1, 0, 1, 16),
+            false,
+            1, 0, 1, 20
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // 16 chars with uppercase start should be filtered
+        // But it's a parameter, so it's pre-initialized anyway
+        assertFalse(uninitVars.contains(var16Chars),
+            "Parameters are pre-initialized");
+    }
+
+    @Test
+    void testIsLikelyFalsePositiveLengthExactly16LowercaseStart() {
+        // Test boundary: variable with exactly 16 characters but lowercase start
+        String var16Chars = "exactlySixteenCh";  // Exactly 16 characters, starts with lowercase
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            Arrays.asList(var16Chars),
+            new IdentifierNode(var16Chars, 1, 0, 1, 16),
+            false,
+            1, 0, 1, 20
+        );
+
+        visitor.visit(funcNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // 16 chars with lowercase start should NOT be filtered based on length rule
+        // But it's a parameter, so it's pre-initialized anyway
+        assertFalse(uninitVars.contains(var16Chars),
+            "Parameters are pre-initialized");
+    }
+
+    @Test
+    void testFunctionCallNodeNotScopingConstructNotAssignment() {
+        // Test function call that is neither scoping construct nor assignment
+        setupFunctionContext();
+
+        FunctionCallNode printNode = new FunctionCallNode(
+            "Print",
+            Arrays.asList(new LiteralNode("Hello", LiteralNode.LiteralType.STRING, 1, 6, 1, 13)),
+            1, 0, 1, 14
+        );
+
+        // Should visit arguments normally
+        assertDoesNotThrow(() -> visitor.visit(printNode));
+    }
+
+    @Test
+    void testScopingConstructOutsideFunctionContext() {
+        // Test Module/Block/With outside function context (currentFunction is null)
+        InitializationTrackingVisitor freshVisitor = new InitializationTrackingVisitor();
+
+        ListNode declarationList = new ListNode(
+            Arrays.asList(new IdentifierNode("x", 1, 10, 1, 11)),
+            1, 9, 1, 12
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        // Should handle gracefully when currentFunction is null
+        assertDoesNotThrow(() -> freshVisitor.visit(moduleNode));
+    }
+
+    @Test
+    void testAssignmentOutsideFunctionContext() {
+        // Test assignment when currentFunction is null
+        InitializationTrackingVisitor freshVisitor = new InitializationTrackingVisitor();
+
+        IdentifierNode varNode = new IdentifierNode("x", 1, 0, 1, 1);
+        LiteralNode valueNode = new LiteralNode(42, LiteralNode.LiteralType.INTEGER, 1, 4, 1, 6);
+
+        FunctionCallNode setNode = new FunctionCallNode(
+            "Set",
+            Arrays.asList(varNode, valueNode),
+            1, 0, 1, 6
+        );
+
+        // Should handle gracefully when currentFunction is null
+        assertDoesNotThrow(() -> freshVisitor.visit(setNode));
+    }
+
+    @Test
+    void testGetAllVariablesUsedBeforeAssignmentWithOnlyEmptySets() {
+        // Test that functions with empty uninitialized sets don't appear in result
+        FunctionDefNode func1 = createFunctionWithAssignments("func1", "var1");
+        visitor.visit(func1);
+
+        FunctionDefNode func2 = createFunctionWithAssignments("func2", "var2");
+        visitor.visit(func2);
+
+        Map<String, Set<String>> allUninit = visitor.getAllVariablesUsedBeforeAssignment();
+
+        // All functions have only assigned variables - result should be empty
+        assertTrue(allUninit.isEmpty(),
+            "Functions with no uninitialized variables should not appear in result");
+    }
+
+    @Test
+    void testComplexNestedScoping() {
+        // Test nested Module/Block/With constructs
+        setupFunctionContext();
+
+        // Inner Module[{innerVar}, use innerVar]
+        ListNode innerDecl = new ListNode(
+            Arrays.asList(new IdentifierNode("innerVar", 3, 10, 3, 18)),
+            3, 9, 3, 19
+        );
+        IdentifierNode innerBody = new IdentifierNode("innerVar", 3, 21, 3, 29);
+        FunctionCallNode innerModule = new FunctionCallNode(
+            "Module",
+            Arrays.asList(innerDecl, innerBody),
+            3, 0, 3, 30
+        );
+
+        // Outer Module[{outerVar}, inner Module]
+        ListNode outerDecl = new ListNode(
+            Arrays.asList(new IdentifierNode("outerVar", 2, 10, 2, 18)),
+            2, 9, 2, 19
+        );
+        FunctionCallNode outerModule = new FunctionCallNode(
+            "Module",
+            Arrays.asList(outerDecl, innerModule),
+            2, 0, 3, 30
+        );
+
+        assertDoesNotThrow(() -> visitor.visit(outerModule));
+    }
+
+    @Test
+    void testDeclarationIdentifierIsSkipped() {
+        // Test that identifiers marked as declarations are skipped during visit
+        setupFunctionContext();
+
+        IdentifierNode declaredVar = new IdentifierNode("moduleVar", 1, 10, 1, 19);
+        ListNode declarationList = new ListNode(
+            Arrays.asList(declaredVar),
+            1, 9, 1, 20
+        );
+
+        // Use the same identifier in body
+        IdentifierNode usageVar = new IdentifierNode("moduleVar", 2, 0, 2, 9);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, usageVar),
+            1, 0, 2, 9
+        );
+
+        visitor.visit(moduleNode);
+
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+
+        // moduleVar is a Module variable, so it shouldn't be tracked in function's variables
+        assertFalse(uninitVars.contains("moduleVar"),
+            "Module variables should not be tracked in parent function");
+    }
+
+    @Test
+    void testVisitDeclarationIdentifier() {
+        // Test visiting an identifier that's marked as a declaration identifier
+        // This covers the branch where declarationIdentifiers.contains(node) is true
+        setupFunctionContext();
+
+        // Create the same IdentifierNode object that will be in declarationIdentifiers
+        IdentifierNode declId = new IdentifierNode("x", 1, 10, 1, 11);
+        ListNode declarationList = new ListNode(
+            Arrays.asList(declId),  // This identifier will be added to declarationIdentifiers
+            1, 9, 1, 12
+        );
+
+        IdentifierNode body = new IdentifierNode("y", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(declarationList, body),
+            1, 0, 2, 1
+        );
+
+        // Visit the module - this adds declId to declarationIdentifiers
+        visitor.visit(moduleNode);
+
+        // Now directly visit the same identifier object that's in declarationIdentifiers
+        // This should hit the early return on line 110
+        assertDoesNotThrow(() -> visitor.visit(declId));
+
+        // Verify that visiting the declaration identifier didn't flag it as used-before-assigned
+        Set<String> uninitVars = visitor.getVariablesUsedBeforeAssignment("testFunc");
+        assertFalse(uninitVars.contains("x"),
+            "Declaration identifiers should be skipped and not flagged");
+    }
+
+    @Test
+    void testVisitIdentifierWithNullDeclaredSet() {
+        // Test visiting an identifier when declaredVariables.get(currentFunction) returns null
+        // This can happen if we're in a function context but haven't set up declaredVariables
+        // Setup a minimal function context without properly initialized declaredVariables
+        FunctionDefNode funcNode = new FunctionDefNode(
+            "testFunc",
+            new ArrayList<>(),
+            null,
+            false,
+            1, 0, 1, 10
+        );
+
+        InitializationTrackingVisitor freshVisitor = new InitializationTrackingVisitor();
+        freshVisitor.visit(funcNode);
+
+        // Create an identifier and visit it
+        IdentifierNode identifier = new IdentifierNode("someVar", 1, 0, 1, 7);
+
+        // Should handle null declared set gracefully
+        assertDoesNotThrow(() -> freshVisitor.visit(identifier));
+    }
+
+    @Test
+    void testEmptyDeclarationList() {
+        // Test Module with empty declaration list
+        setupFunctionContext();
+
+        ListNode emptyDeclarationList = new ListNode(
+            new ArrayList<>(),  // Empty list
+            1, 9, 1, 10
+        );
+
+        IdentifierNode body = new IdentifierNode("x", 2, 0, 2, 1);
+
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            Arrays.asList(emptyDeclarationList, body),
+            1, 0, 2, 1
+        );
+
+        // Should handle empty declaration list without errors
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testNonScopingNonAssignmentFunctionCall() {
+        // Test a function call that's neither a scoping construct nor an assignment
+        setupFunctionContext();
+
+        IdentifierNode arg1 = new IdentifierNode("x", 1, 10, 1, 11);
+        IdentifierNode arg2 = new IdentifierNode("y", 1, 13, 1, 14);
+
+        FunctionCallNode printNode = new FunctionCallNode(
+            "Print",  // Not a scoping construct or assignment
+            Arrays.asList(arg1, arg2),
+            1, 0, 1, 15
+        );
+
+        // Should visit arguments normally without special handling
+        assertDoesNotThrow(() -> visitor.visit(printNode));
+    }
+
+    @Test
+    void testAssignmentWithNullArguments() {
+        // Test assignment function call with null arguments list
+        setupFunctionContext();
+
+        FunctionCallNode setNode = new FunctionCallNode(
+            "Set",
+            null,  // Null arguments
+            1, 0, 1, 5
+        );
+
+        // Should handle null arguments gracefully
+        assertDoesNotThrow(() -> visitor.visit(setNode));
+    }
+
+    @Test
+    void testScopingConstructWithNullArguments() {
+        // Test scoping construct with null arguments
+        FunctionCallNode moduleNode = new FunctionCallNode(
+            "Module",
+            null,  // Null arguments
+            1, 0, 1, 8
+        );
+
+        // Should handle null arguments gracefully (won't enter handleScopingConstruct)
+        assertDoesNotThrow(() -> visitor.visit(moduleNode));
+    }
+
+    @Test
+    void testAlternativeAssignmentOperators() {
+        // Test := and = operators in addition to Set/SetDelayed
+        setupFunctionContext();
+
+        IdentifierNode varNode1 = new IdentifierNode("x", 1, 0, 1, 1);
+        LiteralNode valueNode1 = new LiteralNode(5, LiteralNode.LiteralType.INTEGER, 1, 4, 1, 5);
+
+        FunctionCallNode assignNode1 = new FunctionCallNode(
+            "=",  // Alternative assignment operator
+            Arrays.asList(varNode1, valueNode1),
+            1, 0, 1, 5
+        );
+
+        visitor.visit(assignNode1);
+
+        IdentifierNode varNode2 = new IdentifierNode("y", 2, 0, 2, 1);
+        LiteralNode valueNode2 = new LiteralNode(10, LiteralNode.LiteralType.INTEGER, 2, 5, 2, 7);
+
+        FunctionCallNode assignNode2 = new FunctionCallNode(
+            ":=",  // Alternative delayed assignment operator
+            Arrays.asList(varNode2, valueNode2),
+            2, 0, 2, 7
+        );
+
+        visitor.visit(assignNode2);
+
+        // Verify both variables were marked as assigned
+        Map<String, Set<String>> allUninit = visitor.getAllVariablesUsedBeforeAssignment();
+        assertTrue(allUninit.isEmpty() || !allUninit.get("testFunc").contains("x"),
+            "x should be marked as assigned via = operator");
+        assertTrue(allUninit.isEmpty() || !allUninit.get("testFunc").contains("y"),
+            "y should be marked as assigned via := operator");
+    }
 }

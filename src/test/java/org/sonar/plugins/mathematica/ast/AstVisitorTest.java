@@ -613,7 +613,7 @@ class AstVisitorTest {
         minimalVisitor.visit(scopingNode);
 
         // Verify default implementations were called (by checking children were visited)
-        assertThat(minimalVisitor.visitCount).isGreaterThan(0);
+        assertThat(minimalVisitor.visitCount).isPositive();
     }
 
     /**

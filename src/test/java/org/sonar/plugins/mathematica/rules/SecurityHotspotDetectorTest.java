@@ -818,4 +818,424 @@ class SecurityHotspotDetectorTest {
         );
     }
 
+    // ===== TARGETED TESTS FOR LOW COVERAGE METHODS =====
+
+    @Test
+    void testDetectDefaultCredentialsPositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "password = \"admin\"",
+            "pwd = \"root\"",
+            "passwd = \"password\"",
+            "credential = \"123456\"",
+            "password = \"default\"",
+            "pwd = \"guest\""
+        };
+
+        for (String content : positiveCases) {
+            // Reset mocks
+            setUp();
+            detector.detectDefaultCredentials(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectDefaultCredentialsNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "message = \"The admin user is important\"",  // Not a password assignment
+            "text = \"Use root for testing\"",  // Not a password assignment
+            "(* password = \"admin\" *)",  // In comment
+            "\"password = \\\"admin\\\"\"",  // In string literal
+            "securePassword = \"ComplexP@ssw0rd123\"",  // Not a default credential
+            "normalVar = \"admin\""  // Not a password variable
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectDefaultCredentials(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectHardcodedCryptoKeyPositive() {
+        // Test cases that SHOULD trigger issues (hex strings 16+ chars)
+        String content1 = "Encrypt[data, \"ABCDEF1234567890ABCDEF12\"]";  // 24 hex chars
+        detector.detectHardcodedCryptoKey(context, inputFile, content1);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        String content2 = "Decrypt[ciphertext, \"FEDCBA9876543210FEDCBA98765432\"]";
+        detector.detectHardcodedCryptoKey(context, inputFile, content2);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        String content3 = "GenerateSymmetricKey[\"0123456789ABCDEF0123456789ABCDEF\"]";
+        detector.detectHardcodedCryptoKey(context, inputFile, content3);
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectHardcodedCryptoKeyNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "Encrypt[data, key]",  // Variable, not hardcoded
+            "(* Encrypt[data, \"ABCDEF1234567890\"] *)",  // In comment
+            "Encrypt[data, \"SHORT\"]",  // Too short (<16 hex chars)
+            "Encrypt[data, keyVariable]"
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectHardcodedCryptoKey(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectWeakSslProtocolPositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "URLRead[url, \"Method\" -> \"SSLv2\"]",
+            "URLRead[url, \"Method\" -> \"SSLv3\"]",
+            "URLRead[url, \"Method\" -> \"TLSv1.0\"]",
+            "URLRead[url, \"Method\" -> \"TLSv1\"]"
+        };
+
+        for (String content : positiveCases) {
+            setUp();
+            detector.detectWeakSslProtocol(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectWeakSslProtocolNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "URLRead[url, \"Method\" -> \"TLSv1.2\"]",  // Strong protocol
+            "URLRead[url, \"Method\" -> \"TLSv1.3\"]",  // Strong protocol
+            "(* URLRead[url, \"Method\" -> \"SSLv3\"] *)",  // In comment
+            "URLRead[url]"  // No protocol specified
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectWeakSslProtocol(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectCertificateValidationDisabledPositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "URLRead[url, \"VerifyPeer\" -> False]",
+            "data = URLRead[\"https://api.com\", \"VerifyPeer\" -> False]"
+        };
+
+        for (String content : positiveCases) {
+            setUp();
+            detector.detectCertificateValidationDisabled(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectCertificateValidationDisabledNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "URLRead[url, \"VerifyPeer\" -> True]",  // Validation enabled
+            "URLRead[url]",  // Default (validation enabled)
+            "(* URLRead[url, \"VerifyPeer\" -> False] *)"  // In comment
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectCertificateValidationDisabled(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectCorsPermissivePositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "APIFunction[func, \"AllowedOrigins\" -> {\"*\"}]",
+            "api = APIFunction[{}, func, \"AllowedOrigins\" -> {\"*\"}]"
+        };
+
+        for (String content : positiveCases) {
+            setUp();
+            detector.detectCorsPermissive(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectCorsPermissiveNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "APIFunction[func, \"AllowedOrigins\" -> {\"https://example.com\"}]",  // Specific origin
+            "APIFunction[func]",  // No CORS config
+            "(* APIFunction[func, \"AllowedOrigins\" -> {\"*\"}] *)",  // In comment
+            "APIFunction[func, \"AllowedOrigins\" -> All]"  // Different wildcard (still tested but different pattern)
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectCorsPermissive(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectInsecureWebsocketPositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "SocketConnect[\"ws://example.com/socket\"]",
+            "sock = SocketConnect[\"ws://server.com:8080\"]",
+            "SocketConnect[\"ws://localhost/ws\"]"
+        };
+
+        for (String content : positiveCases) {
+            setUp();
+            detector.detectInsecureWebsocket(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectInsecureWebsocketNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "SocketConnect[\"wss://example.com/socket\"]",  // Secure WebSocket
+            "SocketConnect[\"localhost\", 8080]",  // Not WebSocket
+            "(* SocketConnect[\"ws://example.com/socket\"] *)",  // In comment
+            "url = \"ws://example.com\""  // Just a string, not used with SocketConnect
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectInsecureWebsocket(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectWeakHashingPositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "Hash[data, \"MD5\"]",
+            "Hash[data, \"SHA1\"]",
+            "Hash[data, \"MD2\"]",
+            "Hash[data, \"MD4\"]",
+            "Hash[data, \"SHA-1\"]"
+        };
+
+        for (String content : positiveCases) {
+            setUp();
+            detector.detectWeakHashing(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectWeakHashingNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "Hash[data, \"SHA256\"]",  // Strong hash
+            "Hash[data, \"SHA-256\"]",  // Strong hash
+            "Hash[data, \"SHA3-256\"]",  // Strong hash
+            "(* Hash[data, \"MD5\"] *)",  // In comment
+            "Hash[data]"  // No algorithm specified
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectWeakHashing(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectHttpWithoutTlsPositive() {
+        // Test cases that SHOULD trigger issues
+        String[] positiveCases = {
+            "URLRead[\"http://api.example.com/data\"]",
+            "URLFetch[\"http://insecure.com\"]",
+            "URLExecute[\"http://example.com/api\"]",
+            "URLSubmit[\"http://service.com/job\"]"
+        };
+
+        for (String content : positiveCases) {
+            setUp();
+            detector.detectHttpWithoutTls(context, inputFile, content);
+            verify(context, atLeastOnce()).newIssue();
+        }
+    }
+
+    @Test
+    void testDetectHttpWithoutTlsNegative() {
+        // Test cases that should NOT trigger issues
+        String[] negativeCases = {
+            "URLRead[\"https://api.example.com/data\"]",  // HTTPS (secure)
+            "URLRead[url]",  // Variable
+            "(* URLRead[\"http://example.com\"] *)",  // In comment
+            "url = \"http://example.com\""  // Just a string, not used with URL functions
+        };
+
+        for (String content : negativeCases) {
+            setUp();
+            detector.detectHttpWithoutTls(context, inputFile, content);
+            verify(context, never()).newIssue();
+        }
+    }
+
+    @Test
+    void testExceptionHandlingInDetectors() {
+        // Test that exceptions are caught and logged, not thrown
+        String malformedContent = "Encrypt[data, \"INCOMPLETE";
+
+        assertDoesNotThrow(() -> {
+            detector.detectDefaultCredentials(context, inputFile, malformedContent);
+            detector.detectHardcodedCryptoKey(context, inputFile, malformedContent);
+            detector.detectWeakSslProtocol(context, inputFile, malformedContent);
+            detector.detectCertificateValidationDisabled(context, inputFile, malformedContent);
+            detector.detectCorsPermissive(context, inputFile, malformedContent);
+            detector.detectInsecureWebsocket(context, inputFile, malformedContent);
+            detector.detectWeakHashing(context, inputFile, malformedContent);
+            detector.detectHttpWithoutTls(context, inputFile, malformedContent);
+        });
+    }
+
+    @Test
+    void testMultipleMatchesInSameFile() {
+        // Test that multiple issues of the same type can be detected
+        String content = "password = \"admin\"\n"
+                        + "pwd = \"root\"\n"
+                        + "credential = \"password\"";
+
+        detector.detectDefaultCredentials(context, inputFile, content);
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testContextWindowInWeakAuthentication() {
+        // Test the context window logic in detectWeakAuthentication
+        String withoutAuth = "FormFunction[fields, function]";
+        String withAuth = "FormFunction[fields, function, Authentication -> \"OAuth\"]";
+        String withPermissions = "APIFunction[{}, func, Permissions -> \"Private\"]";
+
+        setUp();
+        detector.detectWeakAuthentication(context, inputFile, withoutAuth);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectWeakAuthentication(context, inputFile, withAuth);
+        verify(context, never()).newIssue();
+
+        setUp();
+        detector.detectWeakAuthentication(context, inputFile, withPermissions);
+        verify(context, never()).newIssue();
+    }
+
+    @Test
+    void testMissingAuthorizationWithPermissions() {
+        String withoutPermissions = "APIFunction[{\"x\" -> \"Integer\"}, #x + 1 &]";
+        String withPermissions = "APIFunction[{\"x\" -> \"Integer\"}, #x + 1 &, Permissions -> \"Private\"]";
+        String withRequesterAddress = "APIFunction[{\"x\" -> \"Integer\"}, If[$RequesterAddress == \"127.0.0.1\", #x, $Failed] &]";
+
+        setUp();
+        detector.detectMissingAuthorization(context, inputFile, withoutPermissions);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectMissingAuthorization(context, inputFile, withPermissions);
+        verify(context, never()).newIssue();
+
+        setUp();
+        detector.detectMissingAuthorization(context, inputFile, withRequesterAddress);
+        verify(context, never()).newIssue();
+    }
+
+    @Test
+    void testMissingAccessControlVariations() {
+        String cloudDeployNoPermissions = "CloudDeploy[myFunc]";
+        String cloudDeployWithPermissions = "CloudDeploy[myFunc, Permissions -> \"Private\"]";
+        String cloudDeployWithDollarPermissions = "CloudDeploy[myFunc, $Permissions -> \"Private\"]";
+        String apiFunctionNoPermissions = "APIFunction[{}, func]";
+        String apiFunctionWithPermissions = "APIFunction[{}, func, Permissions -> \"Private\"]";
+
+        setUp();
+        detector.detectMissingAccessControl(context, inputFile, cloudDeployNoPermissions);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectMissingAccessControl(context, inputFile, cloudDeployWithPermissions);
+        verify(context, never()).newIssue();
+
+        setUp();
+        detector.detectMissingAccessControl(context, inputFile, cloudDeployWithDollarPermissions);
+        verify(context, never()).newIssue();
+
+        setUp();
+        detector.detectMissingAccessControl(context, inputFile, apiFunctionNoPermissions);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectMissingAccessControl(context, inputFile, apiFunctionWithPermissions);
+        verify(context, never()).newIssue();
+    }
+
+    @Test
+    void testMissingSecurityHeadersVariations() {
+        String apiFunctionNoHeaders = "APIFunction[{\"x\" -> \"Integer\"}, #x + 1 &]";
+        String apiFunctionWithHeaders = "APIFunction[{\"x\" -> \"Integer\"}, HTTPResponse[#x, Headers -> {\"X-Frame-Options\" -> \"DENY\"}] &]";
+        String formPageNoHeaders = "FormPage[{\"name\" -> \"String\"}, func]";
+        String withHTTPResponse = "APIFunction[{}, HTTPResponse[data] &]";
+
+        setUp();
+        detector.detectMissingSecurityHeaders(context, inputFile, apiFunctionNoHeaders);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectMissingSecurityHeaders(context, inputFile, apiFunctionWithHeaders);
+        verify(context, never()).newIssue();
+
+        setUp();
+        detector.detectMissingSecurityHeaders(context, inputFile, formPageNoHeaders);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectMissingSecurityHeaders(context, inputFile, withHTTPResponse);
+        verify(context, never()).newIssue();
+    }
+
+    @Test
+    void testDnsRebindingVariations() {
+        String localhostURL = "URLRead[\"http://localhost:8080/api\"]";
+        String ipURL = "SocketConnect[\"127.0.0.1\", 8080]";
+        String remoteURL = "URLRead[\"https://api.example.com\"]";
+        String both = "URLRead[\"http://localhost:8080/api\"]\\nSocketConnect[\"127.0.0.1\", 8080]";
+
+        setUp();
+        detector.detectDnsRebinding(context, inputFile, localhostURL);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectDnsRebinding(context, inputFile, ipURL);
+        verify(context, atLeastOnce()).newIssue();
+
+        setUp();
+        detector.detectDnsRebinding(context, inputFile, remoteURL);
+        verify(context, never()).newIssue();
+
+        setUp();
+        detector.detectDnsRebinding(context, inputFile, both);
+        verify(context, atLeastOnce()).newIssue();
+    }
+
 }

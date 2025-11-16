@@ -65,13 +65,20 @@ class CodeSmellDetectorTest {
 
                         // ===== PERFORMANCE DETECTION TESTS =====
 
-                                                        @Test
-    void testDetectUncompiledNumericalWithCompileNearby() {
-        String content = "f = Compile[{{x, _Real}}, Do[sum += x, {i, 100}]]";
-
+    @ParameterizedTest
+    @MethodSource("detectUncompiledNumericalSimpleTestData")
+    void testDetectUncompiledNumericalSimple(String testName, String content) {
         assertThatCode(() ->
             detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
+    }
+
+    private static Stream<Arguments> detectUncompiledNumericalSimpleTestData() {
+        return Stream.of(
+            Arguments.of("WithCompileNearby", "f = Compile[{{x, _Real}}, Do[sum += x, {i, 100}]]"),
+            Arguments.of("InComment", "(* Do[sum += x, {i, 1000}] *)"),
+            Arguments.of("InString", "note = \"Do[total = total + i, {i, n}];\"")
+        );
     }
 
                         @Test
@@ -244,21 +251,24 @@ class CodeSmellDetectorTest {
         ).doesNotThrowAnyException();
     }
 
-                    @Test
-    void testDetectMissingDocumentationWithDocumentation() {
-        String content = "(* This function does complex stuff *)\nComplexFunction[x_, y_] := Module[{},\n"
-            + String.join("\n", java.util.Collections.nCopies(25, "  step;")) + "\n]";
+    @ParameterizedTest
+    @MethodSource("detectMissingDocumentationSimpleTestData")
+    void testDetectMissingDocumentationSimple(String testName, String content) {
         assertThatCode(() ->
             detector.detectMissingDocumentation(mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectMissingDocumentationShortFunction() {
-        String content = "SimpleFunc[x_] := x + 1";
-        assertThatCode(() ->
-            detector.detectMissingDocumentation(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> detectMissingDocumentationSimpleTestData() {
+        return Stream.of(
+            Arguments.of("WithDocumentation", "(* This function does complex stuff *)\nComplexFunction[x_, y_] := Module[{},\n"
+                + String.join("\n", java.util.Collections.nCopies(25, "  step;")) + "\n]"),
+            Arguments.of("ShortFunction", "SimpleFunc[x_] := x + 1"),
+            Arguments.of("NoCommentBeforeFunction", "LongFunction[x_] := Module[{},\n"
+                + String.join("\n", java.util.Collections.nCopies(25, "  step;")) + "\n]"),
+            Arguments.of("InComment", "(* ComplexFunc[x_, y_] := Module[{}, body] *)"),
+            Arguments.of("InString", "code = \"BigFunction[x_, y_, z_] := implementation\";")
+        );
     }
 
     @ParameterizedTest
@@ -817,18 +827,29 @@ class CodeSmellDetectorTest {
         );
     }
 
-    @Test
-    void testDetectMagicNumbersSkipsTestFiles() {
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("testFileDetectionData")
+    void testDetectMagicNumbersSkipsTestFiles(String testName, String filename, String uriPath) {
         // Test files should be skipped - they legitimately use literal values for testing
         InputFile testFile = Mockito.mock(InputFile.class);
-        Mockito.when(testFile.filename()).thenReturn("axonf_test.m");
-        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create("file:///path/to/tests/axonf_test.m"));
+        Mockito.when(testFile.filename()).thenReturn(filename);
+        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create(uriPath));
 
-        String content = "Print@getFunVector[10]\\nPrint@getFunVector[15]\\nPrint@getFunVector[20]";
+        String content = "result = MyFunction[100, 200, 300];";
         List<int[]> commentRanges = new ArrayList<>();
 
         assertDoesNotThrow(() ->
             detector.detectMagicNumbers(mockContext, testFile, content, commentRanges)
+        );
+    }
+
+    private static Stream<Arguments> testFileDetectionData() {
+        return Stream.of(
+            Arguments.of("TestFileSuffix", "axonf_test.m", "file:///path/to/tests/axonf_test.m"),
+            Arguments.of("UnixTestPath", "myfile.m", "file:///home/user/project/tests/myfile.m"),
+            Arguments.of("WindowsTestPath", "myfile.m", "file:///C:/Users/dev/project/test/myfile.m"),
+            Arguments.of("WindowsTestsPath", "myfile.m", "file:///C:/project/tests/myfile.m"),
+            Arguments.of("TestPrefix", "test_myfunction.m", "file:///home/user/project/test_myfunction.m")
         );
     }
 
@@ -1409,252 +1430,174 @@ class CodeSmellDetectorTest {
 
     // ===== TESTS FOR UNCOVERED LINES (PATTERNS IN COMMENTS/STRINGS) =====
 
-    @Test
-    void testDetectEmptyBlocksInComment() {
-        String content = "(* Module[{}, ] *)";
+    @ParameterizedTest
+    @MethodSource("inCommentOrStringTestData")
+    void testDetectorsInCommentOrString(String testName, String content, DetectorMethod method) {
         assertThatCode(() ->
-            detector.detectEmptyBlocks(mockContext, mockInputFile, content)
+            method.execute(detector, mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectEmptyBlocksInString() {
-        String content = "msg = \"Module[{}, ]\";";
-        assertThatCode(() ->
-            detector.detectEmptyBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> inCommentOrStringTestData() {
+        return Stream.concat(
+            inCommentOrStringTestDataPart1(),
+            inCommentOrStringTestDataPart2()
+        );
     }
 
-    @Test
-    void testDetectLongFunctionsInComment() {
-        String content = "(* func[x_] := x + 1 *)";
-        assertThatCode(() ->
-            detector.detectLongFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> inCommentOrStringTestDataPart1() {
+        return Stream.of(
+            Arguments.of("EmptyBlocksInComment", "(* Module[{}, ] *)",
+                (DetectorMethod) CodeSmellDetector::detectEmptyBlocks),
+            Arguments.of("EmptyBlocksInString", "msg = \"Module[{}, ]\";",
+                (DetectorMethod) CodeSmellDetector::detectEmptyBlocks),
+            Arguments.of("LongFunctionsInComment", "(* func[x_] := x + 1 *)",
+                (DetectorMethod) CodeSmellDetector::detectLongFunctions),
+            Arguments.of("LongFunctionsInString", "code = \"func[x_] := x + 1\";",
+                (DetectorMethod) CodeSmellDetector::detectLongFunctions),
+            Arguments.of("EmptyCatchBlocksInComment", "(* Check[expr] *) (* Quiet[expr] *)",
+                (DetectorMethod) CodeSmellDetector::detectEmptyCatchBlocks),
+            Arguments.of("EmptyCatchBlocksInString", "code = \"Check[expr]\"; code2 = \"Quiet[expr]\";",
+                (DetectorMethod) CodeSmellDetector::detectEmptyCatchBlocks),
+            Arguments.of("DebugCodeInComment", "(* Print[x]; Echo[y]; *)",
+                (DetectorMethod) CodeSmellDetector::detectDebugCode),
+            Arguments.of("DebugCodeInString", "msg = \"Print[x]; Echo[y];\";",
+                (DetectorMethod) CodeSmellDetector::detectDebugCode),
+            Arguments.of("DeeplyNestedInComment", "(* If[a, If[b, If[c, If[d, If[e, x]]]]] *)",
+                (DetectorMethod) CodeSmellDetector::detectDeeplyNested),
+            Arguments.of("DeeplyNestedInString", "code = \"If[a, If[b, If[c, If[d, If[e, x]]]]]\";",
+                (DetectorMethod) CodeSmellDetector::detectDeeplyNested),
+            Arguments.of("TooManyParametersInComment", "(* func[a_, b_, c_, d_, e_, f_] := a + b *)",
+                (DetectorMethod) CodeSmellDetector::detectTooManyParameters),
+            Arguments.of("TooManyParametersInString", "code = \"func[a_, b_, c_, d_, e_, f_] := a + b\";",
+                (DetectorMethod) CodeSmellDetector::detectTooManyParameters),
+            Arguments.of("DuplicateFunctionsInComment", "(* x = 1; x = 1; *)",
+                (DetectorMethod) CodeSmellDetector::detectDuplicateFunctions),
+            Arguments.of("DuplicateFunctionsInString", "code = \"x = 1; x = 1;\";",
+                (DetectorMethod) CodeSmellDetector::detectDuplicateFunctions),
+            Arguments.of("InconsistentNamingInComment", "(* myVar = 1; my_other_var = 2; *)",
+                (DetectorMethod) CodeSmellDetector::detectInconsistentNaming),
+            Arguments.of("InconsistentNamingInString", "code = \"myVar = 1; my_other_var = 2;\";",
+                (DetectorMethod) CodeSmellDetector::detectInconsistentNaming)
+        );
     }
 
-    @Test
-    void testDetectLongFunctionsInString() {
-        String content = "code = \"func[x_] := x + 1\";";
-        assertThatCode(() ->
-            detector.detectLongFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> inCommentOrStringTestDataPart2() {
+        return Stream.of(
+            Arguments.of("EmptyCatchBlocksSimpleCheckInComment", "(* Check[expr, $Failed] *)",
+                (DetectorMethod) CodeSmellDetector::detectEmptyCatchBlocks),
+            Arguments.of("EmptyCatchBlocksSimpleCheckInString", "help = \"Use Check[expr, Null] for error handling\";",
+                (DetectorMethod) CodeSmellDetector::detectEmptyCatchBlocks),
+            Arguments.of("EmptyCatchBlocksQuietInComment", "(* Quiet[expression] suppresses messages *)",
+                (DetectorMethod) CodeSmellDetector::detectEmptyCatchBlocks),
+            Arguments.of("EmptyCatchBlocksQuietInString", "doc = \"Quiet[expr] is used here\";",
+                (DetectorMethod) CodeSmellDetector::detectEmptyCatchBlocks),
+            Arguments.of("IdenticalBranchesInComment", "(* If[condition, result, result] *)",
+                (DetectorMethod) CodeSmellDetector::detectIdenticalBranches),
+            Arguments.of("IdenticalBranchesInString", "code = \"If[x > 0, True, True]\";",
+                (DetectorMethod) CodeSmellDetector::detectIdenticalBranches),
+            Arguments.of("StringConcatInLoopInComment", "(* Do[str = str <> \"x\", {i, 100}] *)",
+                (DetectorMethod) CodeSmellDetector::detectStringConcatInLoop),
+            Arguments.of("StringConcatInLoopInString", "example = \"While[True, result = result <> val]\";",
+                (DetectorMethod) CodeSmellDetector::detectStringConcatInLoop),
+            Arguments.of("PackedArrayBreakingInComment", "(* AppendTo[arr, Symbol[]] *)",
+                (DetectorMethod) CodeSmellDetector::detectPackedArrayBreaking),
+            Arguments.of("PackedArrayBreakingInString", "warning = \"Append[data, Symbol[]] may unpack\";",
+                (DetectorMethod) CodeSmellDetector::detectPackedArrayBreaking),
+            Arguments.of("NestedMapTableInComment", "(* Map[Table[x, {x, 10}], data] *)",
+                (DetectorMethod) CodeSmellDetector::detectNestedMapTable),
+            Arguments.of("NestedMapTableInString", "example = \"Table[Map[f, list], {i, 10}]\";",
+                (DetectorMethod) CodeSmellDetector::detectNestedMapTable),
+            Arguments.of("PlotInLoopInComment", "(* Do[Plot[x^2, {x, 0, 10}], {i, 5}] *)",
+                (DetectorMethod) CodeSmellDetector::detectPlotInLoop),
+            Arguments.of("PlotInLoopInString", "code = \"Table[ListPlot[data[[i]]], {i, n}]\";",
+                (DetectorMethod) CodeSmellDetector::detectPlotInLoop),
+            Arguments.of("GenericVariableNamesInComment", "(* temp = Calculate[x] *)",
+                (DetectorMethod) CodeSmellDetector::detectGenericVariableNames),
+            Arguments.of("GenericVariableNamesInString", "example = \"data = ProcessInput[]\";",
+                (DetectorMethod) CodeSmellDetector::detectGenericVariableNames),
+            Arguments.of("MissingUsageMessageInComment", "(* MyPublicFunc[x_] := x + 1 *)",
+                (DetectorMethod) CodeSmellDetector::detectMissingUsageMessage),
+            Arguments.of("MissingUsageMessageInString", "sig = \"PublicAPI[x_] := implementation\";",
+                (DetectorMethod) CodeSmellDetector::detectMissingUsageMessage),
+            Arguments.of("MissingOptionsPatternInComment", "(* Func[x_, a_:1, b_:2, c_:3, d_:4] := body *)",
+                (DetectorMethod) CodeSmellDetector::detectMissingOptionsPattern),
+            Arguments.of("MissingOptionsPatternInString",
+                "code = \"MyFunc[x_, opt1_:1, opt2_:2, opt3_:3, opt4_:4] := ...\";",
+                (DetectorMethod) CodeSmellDetector::detectMissingOptionsPattern),
+            Arguments.of("SideEffectsNamingInComment", "(* ProcessData[x_] := (globalVar = x; result) *)",
+                (DetectorMethod) CodeSmellDetector::detectSideEffectsNaming),
+            Arguments.of("SideEffectsNamingInString", "example = \"ComputeValue[x_] := (state += x; x^2)\";",
+                (DetectorMethod) CodeSmellDetector::detectSideEffectsNaming),
+            Arguments.of("ComplexBooleanInComment", "(* If[a && b || c && d || e && f || g && h, True, False] *)",
+                (DetectorMethod) CodeSmellDetector::detectComplexBoolean),
+            Arguments.of("ComplexBooleanInString", "code = \"If[x && y || z && w || a && b || c && d, 1, 0]\";",
+                (DetectorMethod) CodeSmellDetector::detectComplexBoolean),
+            Arguments.of("UnprotectedSymbolsInComment", "(* PublicFunction[x_] := x^2 *)",
+                (DetectorMethod) CodeSmellDetector::detectUnprotectedSymbols),
+            Arguments.of("UnprotectedSymbolsInString", "doc = \"MyAPI[x_] := implementation\";",
+                (DetectorMethod) CodeSmellDetector::detectUnprotectedSymbols),
+            Arguments.of("MissingReturnInComment", "(* Module[{x}, If[condition, x, y]] *)",
+                (DetectorMethod) CodeSmellDetector::detectMissingReturn),
+            Arguments.of("MissingReturnInString", "code = \"Block[{}, Which[a, 1, b, 2, True, 3]]\";",
+                (DetectorMethod) CodeSmellDetector::detectMissingReturn),
+            Arguments.of("OvercomplexPatternsInComment", "(* MatchFunc[x_|y_|z_|w_|v_|u_|t_] := body *)",
+                (DetectorMethod) CodeSmellDetector::detectOvercomplexPatterns),
+            Arguments.of("OvercomplexPatternsInString", "pattern = \"func[a_|b_|c_|d_|e_|f_|g_] := ...\";",
+                (DetectorMethod) CodeSmellDetector::detectOvercomplexPatterns),
+            Arguments.of("InconsistentRuleTypesInComment", "(* rules = {a -> 1, b :> 2} *)",
+                (DetectorMethod) CodeSmellDetector::detectInconsistentRuleTypes),
+            Arguments.of("InconsistentRuleTypesInString", "code = \"associations = {x -> val, y :> expr}\";",
+                (DetectorMethod) CodeSmellDetector::detectInconsistentRuleTypes),
+            Arguments.of("EmptyStatementInComment", "(* ;; *)",
+                (DetectorMethod) CodeSmellDetector::detectEmptyStatement),
+            Arguments.of("EmptyStatementInString", "str = \"x = 1;;\";",
+                (DetectorMethod) CodeSmellDetector::detectEmptyStatement),
+            Arguments.of("AppendInLoopInComment", "(* Do[result = AppendTo[result, i], {i, 100}] *)",
+                (DetectorMethod) CodeSmellDetector::detectAppendInLoop),
+            Arguments.of("AppendInLoopInString", "code = \"Do[result = AppendTo[result, i], {i, 100}]\";",
+                (DetectorMethod) CodeSmellDetector::detectAppendInLoop)
+        );
     }
 
-    @Test
-    void testDetectEmptyCatchBlocksInComment() {
-        String content = "(* Check[expr] *) (* Quiet[expr] *)";
-        assertThatCode(() ->
-            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectEmptyCatchBlocksInString() {
-        String content = "code = \"Check[expr]\"; code2 = \"Quiet[expr]\";";
-        assertThatCode(() ->
-            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDebugCodeInComment() {
-        String content = "(* Print[x]; Echo[y]; *)";
-        assertThatCode(() ->
-            detector.detectDebugCode(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDebugCodeInString() {
-        String content = "msg = \"Print[x]; Echo[y];\";";
-        assertThatCode(() ->
-            detector.detectDebugCode(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDeeplyNestedInComment() {
-        String content = "(* If[a, If[b, If[c, If[d, If[e, x]]]]] *)";
-        assertThatCode(() ->
-            detector.detectDeeplyNested(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDeeplyNestedInString() {
-        String content = "code = \"If[a, If[b, If[c, If[d, If[e, x]]]]]\";";
-        assertThatCode(() ->
-            detector.detectDeeplyNested(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectTooManyParametersInComment() {
-        String content = "(* func[a_, b_, c_, d_, e_, f_] := a + b *)";
-        assertThatCode(() ->
-            detector.detectTooManyParameters(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectTooManyParametersInString() {
-        String content = "code = \"func[a_, b_, c_, d_, e_, f_] := a + b\";";
-        assertThatCode(() ->
-            detector.detectTooManyParameters(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDuplicateFunctionsInComment() {
-        String content = "(* x = 1; x = 1; *)";
-        assertThatCode(() ->
-            detector.detectDuplicateFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDuplicateFunctionsInString() {
-        String content = "code = \"x = 1; x = 1;\";";
-        assertThatCode(() ->
-            detector.detectDuplicateFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectInconsistentNamingInComment() {
-        String content = "(* myVar = 1; my_other_var = 2; *)";
-        assertThatCode(() ->
-            detector.detectInconsistentNaming(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectInconsistentNamingInString() {
-        String content = "code = \"myVar = 1; my_other_var = 2;\";";
-        assertThatCode(() ->
-            detector.detectInconsistentNaming(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDeprecatedFunctionsInComment() {
-        String content = "(* $RecursionLimit = 100; *)";
+    @ParameterizedTest
+    @MethodSource("detectDeprecatedFunctionsInCommentOrStringTestData")
+    void testDetectDeprecatedFunctionsInCommentOrString(String testName, String content) {
         assertThatCode(() ->
             detector.detectDeprecatedFunctions(mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectDeprecatedFunctionsInString() {
-        String content = "code = \"$RecursionLimit = 100;\";";
-        assertThatCode(() ->
-            detector.detectDeprecatedFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> detectDeprecatedFunctionsInCommentOrStringTestData() {
+        return Stream.of(
+            Arguments.of("InComment", "(* $RecursionLimit = 100; *)"),
+            Arguments.of("InString", "code = \"$RecursionLimit = 100;\";"),
+            Arguments.of("InCommentActual", "(* Use $RecursionLimit here *)"),
+            Arguments.of("InStringActual", "help = \"Set $RecursionLimit to control recursion\";")
+        );
     }
 
     // ===== ADDITIONAL COVERAGE TESTS FOR UNCOVERED LINES =====
 
-    @Test
-    void testDetectMagicNumbersCommonIdiomZero() {
-        String content = "result = calculate(0);";
+    @ParameterizedTest
+    @MethodSource("detectMagicNumbersCommonIdiomsTestData")
+    void testDetectMagicNumbersCommonIdioms(String testName, String content) {
         List<int[]> commentRanges = new ArrayList<>();
         assertThatCode(() ->
             detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
         ).doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectMagicNumbersCommonIdiomBase3Exponentiation() {
-        String content = "result = 3^Last[#]";
-        List<int[]> commentRanges = new ArrayList<>();
-        assertThatCode(() ->
-            detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMagicNumbersListRangeIdiom() {
-        String content = "range = {42, 100}";
-        List<int[]> commentRanges = new ArrayList<>();
-        assertThatCode(() ->
-            detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMagicNumbersRoundingFunction() {
-        String content = "rounded = Round[value, 5]";
-        List<int[]> commentRanges = new ArrayList<>();
-        assertThatCode(() ->
-            detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMagicNumbersArrayIndexing() {
-        String content = "value = Part[array, 42]";
-        List<int[]> commentRanges = new ArrayList<>();
-        assertThatCode(() ->
-            detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testIsTestFileWithUnixTestPath() {
-        InputFile testFile = Mockito.mock(InputFile.class);
-        Mockito.when(testFile.filename()).thenReturn("myfile.m");
-        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create("file:///home/user/project/tests/myfile.m"));
-
-        String content = "result = MyFunction[100, 200, 300];";
-        List<int[]> commentRanges = new ArrayList<>();
-
-        assertDoesNotThrow(() ->
-            detector.detectMagicNumbers(mockContext, testFile, content, commentRanges)
+    private static Stream<Arguments> detectMagicNumbersCommonIdiomsTestData() {
+        return Stream.of(
+            Arguments.of("Zero", "result = calculate(0);"),
+            Arguments.of("Base3Exponentiation", "result = 3^Last[#]"),
+            Arguments.of("ListRangeIdiom", "range = {42, 100}"),
+            Arguments.of("RoundingFunction", "rounded = Round[value, 5]"),
+            Arguments.of("ArrayIndexing", "value = Part[array, 42]")
         );
     }
 
-    @Test
-    void testIsTestFileWithWindowsTestPath() {
-        InputFile testFile = Mockito.mock(InputFile.class);
-        Mockito.when(testFile.filename()).thenReturn("myfile.m");
-        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create("file:///C:/Users/dev/project/test/myfile.m"));
-
-        String content = "result = MyFunction[100, 200, 300];";
-        List<int[]> commentRanges = new ArrayList<>();
-
-        assertDoesNotThrow(() ->
-            detector.detectMagicNumbers(mockContext, testFile, content, commentRanges)
-        );
-    }
-
-    @Test
-    void testIsTestFileWithTestsInWindowsPath() {
-        InputFile testFile = Mockito.mock(InputFile.class);
-        Mockito.when(testFile.filename()).thenReturn("myfile.m");
-        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create("file:///C:/project/tests/myfile.m"));
-
-        String content = "result = MyFunction[100, 200, 300];";
-        List<int[]> commentRanges = new ArrayList<>();
-
-        assertDoesNotThrow(() ->
-            detector.detectMagicNumbers(mockContext, testFile, content, commentRanges)
-        );
-    }
-
-    @Test
-    void testIsTestFileWithTestPrefix() {
-        InputFile testFile = Mockito.mock(InputFile.class);
-        Mockito.when(testFile.filename()).thenReturn("test_myfunction.m");
-        Mockito.when(testFile.uri()).thenReturn(java.net.URI.create("file:///home/user/project/test_myfunction.m"));
-
-        String content = "result = MyFunction[100, 200, 300];";
-        List<int[]> commentRanges = new ArrayList<>();
-
-        assertDoesNotThrow(() ->
-            detector.detectMagicNumbers(mockContext, testFile, content, commentRanges)
-        );
-    }
 
     @Test
     void testDetectUnusedVariablesWithMultipleFunctions() {
@@ -1692,14 +1635,6 @@ class CodeSmellDetectorTest {
         ).doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectMissingDocumentationNoCommentBeforeFunction() {
-        String content = "LongFunction[x_] := Module[{},\n"
-            + String.join("\n", java.util.Collections.nCopies(25, "  step;")) + "\n]";
-        assertThatCode(() ->
-            detector.detectMissingDocumentation(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
 
     // ===== TESTS FOR EXPRESSION COMPLEXITY WITH OPERATORS =====
 
@@ -1733,380 +1668,21 @@ class CodeSmellDetectorTest {
 
     // ===== TESTS FOR REPEATED FUNCTION CALLS =====
 
-    @Test
-    void testDetectRepeatedFunctionCallsWithExpensiveFunctions() {
-        String content = "x = Solve[eq]; y = Solve[eq]; z = Solve[eq]; w = Solve[eq];";
+    @ParameterizedTest
+    @MethodSource("detectRepeatedFunctionCallsVariousTestData")
+    void testDetectRepeatedFunctionCallsVarious(String testName, String content) {
         assertThatCode(() ->
             detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
         ).doesNotThrowAnyException();
     }
 
-    @Test
-    void testDetectRepeatedFunctionCallsInComment() {
-        String content = "(* Solve[eq]; Solve[eq]; Solve[eq]; *)";
-        assertThatCode(() ->
-            detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectRepeatedFunctionCallsWithNIntegrate() {
-        String content = "a = NIntegrate[f, {x, 0, 1}]; b = NIntegrate[f, {x, 0, 1}]; c = NIntegrate[f, {x, 0, 1}];";
-        assertThatCode(() ->
-            detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    // ===== TESTS FOR EMPTY STATEMENT DETECTION =====
-
-    @Test
-    void testDetectEmptyStatementInComment() {
-        String content = "(* ;; *)";
-        assertThatCode(() ->
-            detector.detectEmptyStatement(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectEmptyStatementInString() {
-        String content = "str = \"x = 1;;\";";
-        assertThatCode(() ->
-            detector.detectEmptyStatement(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    // ===== TESTS FOR DEPRECATED FUNCTIONS IN COMMENT/STRING =====
-
-    @Test
-    void testDetectDeprecatedFunctionsInCommentActual() {
-        String content = "(* Use $RecursionLimit here *)";
-        assertThatCode(() ->
-            detector.detectDeprecatedFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectDeprecatedFunctionsInStringActual() {
-        String content = "help = \"Set $RecursionLimit to control recursion\";";
-        assertThatCode(() ->
-            detector.detectDeprecatedFunctions(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    // ===== TESTS FOR APPEND IN LOOP IN COMMENT/STRING =====
-
-    @Test
-    void testDetectAppendInLoopInComment() {
-        String content = "(* Do[result = AppendTo[result, i], {i, 100}] *)";
-        assertThatCode(() ->
-            detector.detectAppendInLoop(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectAppendInLoopInString() {
-        String content = "code = \"Do[result = AppendTo[result, i], {i, 100}]\";";
-        assertThatCode(() ->
-            detector.detectAppendInLoop(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    // ===== COMPREHENSIVE TESTS FOR ALL UNCOVERED COMMENT/STRING BRANCHES =====
-
-    @Test
-    void testDetectEmptyCatchBlocksSimpleCheckInComment() {
-        String content = "(* Check[expr, $Failed] *)";
-        assertThatCode(() ->
-            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectEmptyCatchBlocksSimpleCheckInString() {
-        String content = "help = \"Use Check[expr, Null] for error handling\";";
-        assertThatCode(() ->
-            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectEmptyCatchBlocksQuietInComment() {
-        String content = "(* Quiet[expression] suppresses messages *)";
-        assertThatCode(() ->
-            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectEmptyCatchBlocksQuietInString() {
-        String content = "doc = \"Quiet[expr] is used here\";";
-        assertThatCode(() ->
-            detector.detectEmptyCatchBlocks(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingDocumentationInComment() {
-        String content = "(* ComplexFunc[x_, y_] := Module[{}, body] *)";
-        assertThatCode(() ->
-            detector.detectMissingDocumentation(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingDocumentationInString() {
-        String content = "code = \"BigFunction[x_, y_, z_] := implementation\";";
-        assertThatCode(() ->
-            detector.detectMissingDocumentation(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectIdenticalBranchesInComment() {
-        String content = "(* If[condition, result, result] *)";
-        assertThatCode(() ->
-            detector.detectIdenticalBranches(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectIdenticalBranchesInString() {
-        String content = "code = \"If[x > 0, True, True]\";";
-        assertThatCode(() ->
-            detector.detectIdenticalBranches(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectRepeatedFunctionCallsInString() {
-        String content = "code = \"a = Integrate[f]; b = Integrate[f]; c = Integrate[f];\";";
-        assertThatCode(() ->
-            detector.detectRepeatedFunctionCalls(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectStringConcatInLoopInComment() {
-        String content = "(* Do[str = str <> \"x\", {i, 100}] *)";
-        assertThatCode(() ->
-            detector.detectStringConcatInLoop(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectStringConcatInLoopInString() {
-        String content = "example = \"While[True, result = result <> val]\";";
-        assertThatCode(() ->
-            detector.detectStringConcatInLoop(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectUncompiledNumericalInComment() {
-        String content = "(* Do[sum += x, {i, 1000}] *)";
-        assertThatCode(() ->
-            detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectUncompiledNumericalInString() {
-        String content = "note = \"Do[total = total + i, {i, n}]\";";
-        assertThatCode(() ->
-            detector.detectUncompiledNumerical(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectPackedArrayBreakingInComment() {
-        String content = "(* AppendTo[arr, Symbol[]] *)";
-        assertThatCode(() ->
-            detector.detectPackedArrayBreaking(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectPackedArrayBreakingInString() {
-        String content = "warning = \"Append[data, Symbol[]] may unpack\";";
-        assertThatCode(() ->
-            detector.detectPackedArrayBreaking(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectNestedMapTableInComment() {
-        String content = "(* Map[Table[x, {x, 10}], data] *)";
-        assertThatCode(() ->
-            detector.detectNestedMapTable(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectNestedMapTableInString() {
-        String content = "example = \"Table[Map[f, list], {i, 10}]\";";
-        assertThatCode(() ->
-            detector.detectNestedMapTable(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectPlotInLoopInComment() {
-        String content = "(* Do[Plot[x^2, {x, 0, 10}], {i, 5}] *)";
-        assertThatCode(() ->
-            detector.detectPlotInLoop(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectPlotInLoopInString() {
-        String content = "code = \"Table[ListPlot[data[[i]]], {i, n}]\";";
-        assertThatCode(() ->
-            detector.detectPlotInLoop(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectGenericVariableNamesInComment() {
-        String content = "(* temp = Calculate[x] *)";
-        assertThatCode(() ->
-            detector.detectGenericVariableNames(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectGenericVariableNamesInString() {
-        String content = "example = \"data = ProcessInput[]\";";
-        assertThatCode(() ->
-            detector.detectGenericVariableNames(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingUsageMessageInComment() {
-        String content = "(* MyPublicFunc[x_] := x + 1 *)";
-        assertThatCode(() ->
-            detector.detectMissingUsageMessage(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingUsageMessageInString() {
-        String content = "sig = \"PublicAPI[x_] := implementation\";";
-        assertThatCode(() ->
-            detector.detectMissingUsageMessage(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingOptionsPatternInComment() {
-        String content = "(* Func[x_, a_:1, b_:2, c_:3, d_:4] := body *)";
-        assertThatCode(() ->
-            detector.detectMissingOptionsPattern(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingOptionsPatternInString() {
-        String content = "code = \"MyFunc[x_, opt1_:1, opt2_:2, opt3_:3, opt4_:4] := ...\";";
-        assertThatCode(() ->
-            detector.detectMissingOptionsPattern(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectSideEffectsNamingInComment() {
-        String content = "(* ProcessData[x_] := (globalVar = x; result) *)";
-        assertThatCode(() ->
-            detector.detectSideEffectsNaming(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectSideEffectsNamingInString() {
-        String content = "example = \"ComputeValue[x_] := (state += x; x^2)\";";
-        assertThatCode(() ->
-            detector.detectSideEffectsNaming(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectComplexBooleanInComment() {
-        String content = "(* If[a && b || c && d || e && f || g && h, True, False] *)";
-        assertThatCode(() ->
-            detector.detectComplexBoolean(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectComplexBooleanInString() {
-        String content = "code = \"If[x && y || z && w || a && b || c && d, 1, 0]\";";
-        assertThatCode(() ->
-            detector.detectComplexBoolean(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectUnprotectedSymbolsInComment() {
-        String content = "(* PublicFunction[x_] := x^2 *)";
-        assertThatCode(() ->
-            detector.detectUnprotectedSymbols(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectUnprotectedSymbolsInString() {
-        String content = "doc = \"MyAPI[x_] := implementation\";";
-        assertThatCode(() ->
-            detector.detectUnprotectedSymbols(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingReturnInComment() {
-        String content = "(* Module[{x}, If[condition, x, y]] *)";
-        assertThatCode(() ->
-            detector.detectMissingReturn(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectMissingReturnInString() {
-        String content = "code = \"Block[{}, Which[a, 1, b, 2, True, 3]]\";";
-        assertThatCode(() ->
-            detector.detectMissingReturn(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectOvercomplexPatternsInComment() {
-        String content = "(* MatchFunc[x_|y_|z_|w_|v_|u_|t_] := body *)";
-        assertThatCode(() ->
-            detector.detectOvercomplexPatterns(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectOvercomplexPatternsInString() {
-        String content = "pattern = \"func[a_|b_|c_|d_|e_|f_|g_] := ...\";";
-        assertThatCode(() ->
-            detector.detectOvercomplexPatterns(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectInconsistentRuleTypesInComment() {
-        String content = "(* rules = {a -> 1, b :> 2} *)";
-        assertThatCode(() ->
-            detector.detectInconsistentRuleTypes(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
-    }
-
-    @Test
-    void testDetectInconsistentRuleTypesInString() {
-        String content = "code = \"associations = {x -> val, y :> expr}\";";
-        assertThatCode(() ->
-            detector.detectInconsistentRuleTypes(mockContext, mockInputFile, content)
-        ).doesNotThrowAnyException();
+    private static Stream<Arguments> detectRepeatedFunctionCallsVariousTestData() {
+        return Stream.of(
+            Arguments.of("WithExpensiveFunctions", "x = Solve[eq]; y = Solve[eq]; z = Solve[eq]; w = Solve[eq];"),
+            Arguments.of("InComment", "(* Solve[eq]; Solve[eq]; Solve[eq]; *)"),
+            Arguments.of("WithNIntegrate", "a = NIntegrate[f, {x, 0, 1}]; b = NIntegrate[f, {x, 0, 1}]; c = NIntegrate[f, {x, 0, 1}];"),
+            Arguments.of("InString", "code = \"a = Integrate[f]; b = Integrate[f]; c = Integrate[f];\"")
+        );
     }
 
 }

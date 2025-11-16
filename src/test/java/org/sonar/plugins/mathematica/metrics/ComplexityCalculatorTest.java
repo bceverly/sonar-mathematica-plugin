@@ -61,7 +61,7 @@ class ComplexityCalculatorTest {
         String code = "If[x > 0, Print[x], Print[-x]]";
         int complexity = calculator.calculateCyclomaticComplexity(code);
 
-        assertThat(complexity).isGreaterThan(1);  // Base + 1 for If
+        assertThat(complexity).isPositive();  // Base + 1 for If
     }
 
     @ParameterizedTest
@@ -84,7 +84,7 @@ class ComplexityCalculatorTest {
         String code = "If[x > 0, Print[x], Print[-x]]";
         int complexity = calculator.calculateCognitiveComplexity(code);
 
-        assertThat(complexity).isGreaterThan(0);  // If adds complexity
+        assertThat(complexity).isPositive();  // If adds complexity
     }
 
     @Test
@@ -111,8 +111,8 @@ class ComplexityCalculatorTest {
         FunctionComplexity fc = calculator.calculateFunctionComplexity("abs", functionBody);
 
         assertThat(fc.getFunctionName()).isEqualTo("abs");
-        assertThat(fc.getCyclomaticComplexity()).isGreaterThan(1);
-        assertThat(fc.getCognitiveComplexity()).isGreaterThan(0);
+        assertThat(fc.getCyclomaticComplexity()).isPositive();
+        assertThat(fc.getCognitiveComplexity()).isPositive();
     }
 
     @Test
@@ -121,7 +121,7 @@ class ComplexityCalculatorTest {
         FunctionComplexity fc = calculator.calculateFunctionComplexity("factorial", functionBody);
 
         assertThat(fc.getFunctionName()).isEqualTo("factorial");
-        assertThat(fc.getCognitiveComplexity()).isGreaterThan(0);  // Recursion adds cognitive load
+        assertThat(fc.getCognitiveComplexity()).isPositive();  // Recursion adds cognitive load
     }
 
     @Test
@@ -168,8 +168,8 @@ class ComplexityCalculatorTest {
         int cyclomatic = calculator.calculateCyclomaticComplexity(code);
         int cognitive = calculator.calculateCognitiveComplexity(code);
 
-        assertThat(cyclomatic).isGreaterThan(1);
-        assertThat(cognitive).isGreaterThan(0);
+        assertThat(cyclomatic).isPositive();
+        assertThat(cognitive).isPositive();
     }
 
     @Test

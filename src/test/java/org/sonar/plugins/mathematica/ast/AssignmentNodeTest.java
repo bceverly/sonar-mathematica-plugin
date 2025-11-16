@@ -346,7 +346,7 @@ class AssignmentNodeTest {
         LiteralNode rhs = new LiteralNode(true, LiteralNode.LiteralType.BOOLEAN, 1, 9, 1, 13);
         AssignmentNode node = new AssignmentNode("=", lhs, rhs, 1, 1, 1, 13);
 
-        assertThat(((LiteralNode) node.getRhs()).getValue()).isEqualTo(true);
+        assertThat((Boolean) ((LiteralNode) node.getRhs()).getValue()).isTrue();
     }
 
     @Test

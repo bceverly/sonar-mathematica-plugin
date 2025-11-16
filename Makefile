@@ -41,8 +41,11 @@ help:
 	@echo ""
 	@echo "  make build                                  # Build the plugin"
 	@echo "  make clean build                            # Clean and build"
+	@echo "  make build && make install                  # Build then install"
 	@echo "  SONARQUBE_HOME=/opt/sonarqube make install  # Install to SonarQube"
 	@echo "  make self-scan                              # Analyze plugin code with SonarQube"
+	@echo ""
+	@echo "Note: 'make install' requires the plugin to be built first with 'make build'"
 	@echo ""
 
 # Build the plugin JAR
@@ -218,7 +221,20 @@ check-sonarqube-home:
 	fi
 
 # Install plugin to SonarQube
-install: check-sonarqube-home build
+install: check-sonarqube-home
+	@# Verify JAR exists before proceeding
+	@VERSION=$$(git describe --tags --abbrev=0 2>/dev/null | sed 's/^v//'); \
+	test -n "$$VERSION" || VERSION="0.1.0-SNAPSHOT"; \
+	JAR_FILE="build/libs/wolfralyze-$$VERSION.jar"; \
+	if [ ! -f "$$JAR_FILE" ]; then \
+		echo ""; \
+		echo "ERROR: Plugin JAR not found: $$JAR_FILE"; \
+		echo ""; \
+		echo "Please build the plugin first:"; \
+		echo "  make build"; \
+		echo ""; \
+		exit 1; \
+	fi
 	@echo "Installing plugin to SonarQube..."
 	@echo "  Source: build/libs/"
 	@echo "  Target: $(SONARQUBE_HOME)/extensions/plugins/"
@@ -448,16 +464,6 @@ self-scan: build
 	@echo "Self-Scanning Java Code with SonarQube"
 	@echo "=========================================="
 	@echo ""
-	@# Check if sonar-scanner is available
-	@if ! command -v sonar-scanner >/dev/null 2>&1; then \
-		echo "ERROR: sonar-scanner not found in PATH"; \
-		echo ""; \
-		echo "Please install sonar-scanner:"; \
-		echo "  - macOS: brew install sonar-scanner"; \
-		echo "  - Linux: Download from https://docs.sonarqube.org/latest/analysis/scan/sonarscanner/"; \
-		echo ""; \
-		exit 1; \
-	fi
 	@# Check if SONAR_TOKEN is set
 	@if [ -z "$$SONAR_TOKEN" ]; then \
 		echo "ERROR: SONAR_TOKEN environment variable is not set"; \
@@ -485,19 +491,19 @@ self-scan: build
 	@echo "✓ SonarQube is running"
 	@echo "✓ SONAR_TOKEN is set"
 	@echo ""
-	@# Run the scan
-	@echo "Running sonar-scanner..."
+	@# Run the scan using Gradle plugin (includes library configuration)
+	@echo "Running SonarQube analysis via Gradle..."
 	@echo "Project: wolfralyze"
 	@echo "Server: http://localhost:9000"
 	@echo ""
-	@sonar-scanner -Dsonar.host.url=http://localhost:9000
+	@./gradlew sonar -Dsonar.host.url=http://localhost:9000 -Dsonar.token=$$SONAR_TOKEN
 	@echo ""
 	@echo "=========================================="
 	@echo "✓ Self-scan complete!"
 	@echo "=========================================="
 	@echo ""
 	@echo "View results at:"
-	@echo "  http://localhost:9000/dashboard?id=wolfralyze"
+	@echo "  http://localhost:9000/dashboard?id=bceverly_wolfralyze"
 	@echo ""
 
 # Update GitHub Wiki with latest documentation

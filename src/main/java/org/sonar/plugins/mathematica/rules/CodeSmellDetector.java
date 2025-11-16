@@ -172,11 +172,10 @@ public class CodeSmellDetector extends BaseDetector {
         // Check for mathematical base in exponentiation (10^x, 2^x, etc.)
         // Common in log/exponential conversions: 10^x converts log10 to linear scale
         int afterNumberPos = position + number.length();
-        if (afterNumberPos < content.length() && content.charAt(afterNumberPos) == '^') {
+        if (afterNumberPos < content.length() && content.charAt(afterNumberPos) == '^'
+            && ("10".equals(number) || "2".equals(number) || "3".equals(number))) {
             // This is base^exponent - numbers like 10 are mathematical constants here
-            if ("10".equals(number) || "2".equals(number) || "3".equals(number)) {
-                return true;
-            }
+            return true;
         }
 
         // Check for list/range idioms where number starts a list
