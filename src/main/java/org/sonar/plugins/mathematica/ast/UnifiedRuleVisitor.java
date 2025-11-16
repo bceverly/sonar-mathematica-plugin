@@ -703,8 +703,29 @@ public class UnifiedRuleVisitor implements AstVisitor {
     }
 
     private void checkHardcodedCredentials(LiteralNode node, String value) {
+        // Skip strings that are clearly UI text or documentation
+        // UI text contains spaces, newlines, common punctuation, or sentence-like patterns
+        if (value.contains(" ") || value.contains("\n") || value.contains("\t")) {
+            return;
+        }
+
+        // Skip strings with common UI punctuation patterns
+        // But allow underscores and hyphens which are common in credentials
+        if (value.contains(",") || value.contains(".") || value.contains(":")
+            || value.contains(";") || value.contains("!") || value.contains("?")
+            || value.contains("+") || value.contains("/") || value.contains("\\")) {
+            return;
+        }
+
+        // Check for credential keywords in the string value
         String lower = value.toLowerCase();
-        if ((lower.contains("password") || lower.contains("secret") || lower.contains("key")) && value.length() > 8) {
+
+        // Flag strings that contain credential keywords AND are long enough
+        // Note: This checks the string content, not variable names
+        // For variable-based detection, see VulnerabilityDetector.java
+        if ((lower.contains("password") || lower.contains("secret") || lower.contains("key")
+            || lower.contains("token") || lower.contains("auth"))
+            && value.length() > 8) {
             reportIssue(node.getStartLine(), MathematicaRulesDefinition.HARDCODED_CREDENTIALS_KEY,
                 "Avoid hardcoding credentials. Use SystemCredential[] or environment variables.");
         }

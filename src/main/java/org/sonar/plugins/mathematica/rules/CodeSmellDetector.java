@@ -155,6 +155,8 @@ public class CodeSmellDetector extends BaseDetector {
      * - 1 in {1, Length[x]} (list start index)
      * - Small integers in Round, Ceiling, Floor precision arguments
      * - -1 (common sentinel value)
+     * - 10 in 10^x (base-10 exponentiation for log conversion)
+     * - 2 in 2^x (base-2 exponentiation)
      */
     private boolean isCommonIdiom(String content, int position, String number) {
         // Skip 0, 1, 2, -1 (extremely common, almost never "magic")
@@ -166,6 +168,16 @@ public class CodeSmellDetector extends BaseDetector {
         int contextStart = Math.max(0, position - 20);
         int contextEnd = Math.min(content.length(), position + number.length() + 20);
         String context = content.substring(contextStart, contextEnd).toLowerCase();
+
+        // Check for mathematical base in exponentiation (10^x, 2^x, etc.)
+        // Common in log/exponential conversions: 10^x converts log10 to linear scale
+        int afterNumberPos = position + number.length();
+        if (afterNumberPos < content.length() && content.charAt(afterNumberPos) == '^') {
+            // This is base^exponent - numbers like 10 are mathematical constants here
+            if ("10".equals(number) || "2".equals(number) || "3".equals(number)) {
+                return true;
+            }
+        }
 
         // Check for list/range idioms where number starts a list
         if (context.matches(".*\\{\\s*" + number + "\\s*,.*")) {
