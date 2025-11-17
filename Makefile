@@ -614,23 +614,25 @@ release-notes:
 	PATCH=$$(echo "$$LATEST_TAG" | sed 's/^v//' | cut -d. -f3); \
 	NEXT_PATCH=$$((PATCH + 1)); \
 	NEXT_VERSION="$$MAJOR.$$MINOR.$$NEXT_PATCH"; \
-	UNRELEASED_COMMITS=$$(git log $$LATEST_TAG..HEAD --pretty=format:"- %s" --no-merges); \
-	if [ -z "$$UNRELEASED_COMMITS" ]; then \
+	git log $$LATEST_TAG..HEAD --pretty=format:"- %s" --no-merges > .commits.tmp; \
+	if [ ! -s .commits.tmp ]; then \
 		echo "✓ No unreleased commits since $$LATEST_TAG"; \
+		rm -f .commits.tmp; \
 		exit 0; \
 	fi; \
-	COMMIT_COUNT=$$(echo "$$UNRELEASED_COMMITS" | wc -l | tr -d ' '); \
+	COMMIT_COUNT=$$(wc -l < .commits.tmp | tr -d ' '); \
 	if [ -f "RELEASE_NOTES.md" ]; then \
 		echo "Checking for existing v$$NEXT_VERSION section..."; \
 		if grep -q "^## Version $$NEXT_VERSION$$" RELEASE_NOTES.md; then \
 			echo "Found existing section - updating in place..."; \
-			awk -v version="$$NEXT_VERSION" -v commits="$$UNRELEASED_COMMITS" -v tag="$$LATEST_TAG" ' \
+			awk -v version="$$NEXT_VERSION" -v tag="$$LATEST_TAG" ' \
 				BEGIN { in_target=0; printed=0; } \
 				/^## Version/ { \
 					if ($$3 == version && !printed) { \
 						print; \
 						print ""; \
-						print commits; \
+						while ((getline line < ".commits.tmp") > 0) { print line; } \
+						close(".commits.tmp"); \
 						print ""; \
 						print ""; \
 						print "**Commits since " tag "**"; \
@@ -648,14 +650,15 @@ release-notes:
 			echo "✅ Updated existing v$$NEXT_VERSION section ($$COMMIT_COUNT commits)"; \
 		else \
 			echo "Section not found - inserting new v$$NEXT_VERSION section..."; \
-			awk -v version="$$NEXT_VERSION" -v commits="$$UNRELEASED_COMMITS" -v tag="$$LATEST_TAG" ' \
+			awk -v version="$$NEXT_VERSION" -v tag="$$LATEST_TAG" ' \
 				BEGIN { inserted=0; } \
 				/^# Release Notes$$/ { \
 					print; \
 					print ""; \
 					print "## Version " version; \
 					print ""; \
-					print commits; \
+					while ((getline line < ".commits.tmp") > 0) { print line; } \
+					close(".commits.tmp"); \
 					print ""; \
 					print ""; \
 					print "**Commits since " tag "**"; \
@@ -674,10 +677,11 @@ release-notes:
 		echo "" >> RELEASE_NOTES.md; \
 		echo "## Version $$NEXT_VERSION" >> RELEASE_NOTES.md; \
 		echo "" >> RELEASE_NOTES.md; \
-		echo "$$UNRELEASED_COMMITS" >> RELEASE_NOTES.md; \
+		cat .commits.tmp >> RELEASE_NOTES.md; \
 		echo "" >> RELEASE_NOTES.md; \
 		echo "" >> RELEASE_NOTES.md; \
 		echo "**Commits since $$LATEST_TAG**" >> RELEASE_NOTES.md; \
 		echo "" >> RELEASE_NOTES.md; \
 		echo "✅ Created RELEASE_NOTES.md with v$$NEXT_VERSION section ($$COMMIT_COUNT commits)"; \
-	fi
+	fi; \
+	rm -f .commits.tmp
