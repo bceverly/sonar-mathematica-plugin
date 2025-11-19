@@ -325,7 +325,7 @@ jobs:
           cat > pr_body.txt << EOF
           Release Wolfralyze v${VERSION}
 
-          - Release notes: https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}
+          - Release notes: https://github.com/bceverly/wolfralyze/blob/main/RELEASE_NOTES.md#version-${VERSION//./-}
           - SonarCloud: https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze
           - Add to the marketplace
 
@@ -374,7 +374,7 @@ jobs:
 
           **Version:** ${VERSION}
           **Download:** [wolfralyze-${VERSION}.jar](https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar)
-          **Release Notes:** [View on GitHub](https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG})
+          **Release Notes:** [View on GitHub](https://github.com/bceverly/wolfralyze/blob/main/RELEASE_NOTES.md#version-${VERSION//./-})
 
           ### About Wolfralyze
 
@@ -420,7 +420,7 @@ jobs:
           cat > pr_body.txt << EOF
           Release Wolfralyze v${VERSION}
 
-          - Release notes: https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}
+          - Release notes: https://github.com/bceverly/wolfralyze/blob/main/RELEASE_NOTES.md#version-${VERSION//./-}
           - SonarCloud: https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze
           - Add to the marketplace
 

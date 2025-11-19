@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 1.1.4
+
+- Fixed release notes in PR to point to `RELEASE_NOTES.md`
+
 ## Version 1.1.3
 
 - Added additional enhancements to SonarQube Marketplace workflow
