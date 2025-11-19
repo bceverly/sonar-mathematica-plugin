@@ -123,9 +123,9 @@ jobs:
               # Append to existing archivedVersions
               sed -i.bak "s/^archivedVersions=\(.*\)/archivedVersions=\1,$PREV_VERSIONS/" $PROPS_FILE
             else
-              # Insert archivedVersions after publicVersions line
-              sed -i.bak "/^publicVersions=/a\\
-archivedVersions=$PREV_VERSIONS" $PROPS_FILE
+              # Insert archivedVersions after publicVersions line using a temp file
+              awk -v prev="$PREV_VERSIONS" '/^publicVersions=/ {print; print "archivedVersions=" prev; next} {print}' $PROPS_FILE > ${PROPS_FILE}.tmp
+              mv ${PROPS_FILE}.tmp $PROPS_FILE
             fi
           fi
 
