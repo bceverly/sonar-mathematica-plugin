@@ -1,5 +1,20 @@
 # Release Notes
 
+## Version 1.1.0
+
+- Updated workflow for release to marketplace
+- Added link to SonarCloud status in pull request for a new version
+- Fixed several false positives and added more unit tests
+- Fixed slash operator issues with Mathematica parser
+- Enhanced parser to better understand locally scoped module variables
+- Fixed SonarPlugins deploy step
+- Fixed git clone in release workflow
+- Fixed issues with deploy workflow and release notes generation
+
+
+**Commits since v1.0.3**
+
+
 ## Version 1.0.3
 
 - Switched to simplified release notes
