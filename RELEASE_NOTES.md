@@ -1,5 +1,9 @@
 # Release Notes
 
+## Version 1.1.3
+
+- Added additional enhancements to SonarQube Marketplace workflow
+
 ## Version 1.1.2
 
 - Automated deployment of new release to SonarQube Marketplace
