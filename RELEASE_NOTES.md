@@ -1,5 +1,17 @@
 # Release Notes
 
+## Version 1.1.2
+
+- Automated deployment of new release to SonarQube Marketplace
+
+**Commits since v1.1.1**
+
+## Version 1.1.1
+
+- Fixed GitHub workflow syntax issue
+
+**Commits since v1.1.0**
+
 ## Version 1.1.0
 
 - Updated workflow for release to marketplace
@@ -11,9 +23,7 @@
 - Fixed git clone in release workflow
 - Fixed issues with deploy workflow and release notes generation
 
-
 **Commits since v1.0.3**
-
 
 ## Version 1.0.3
 
@@ -26,7 +36,6 @@
 - Fixed multi-line escaping issue
 - Fixed some rules that were missing builtins and added deploy workflow
 - Cleaned up some overaly strict rules
-
 
 **Commits since v1.0.2**
 

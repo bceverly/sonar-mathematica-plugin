@@ -221,3 +221,218 @@ jobs:
           prerelease: false
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # Marketplace Deployment Steps
+      - name: Clone sonar-update-center-properties
+        uses: actions/checkout@v4
+        with:
+          repository: SonarSource/sonar-update-center-properties
+          path: sonar-update-center-properties
+          persist-credentials: false
+
+      - name: Update wolfralyze.properties
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          cd sonar-update-center-properties
+          TODAY=$(date +%Y-%m-%d)
+          PROPS_FILE="wolfralyze.properties"
+
+          # Get current year and month for wildcards
+          CURRENT_YEAR=$(date +%Y)
+          CURRENT_MONTH=$(date +%-m)
+
+          # Step 1: Find all versions currently using LATEST and replace with wildcards
+          # This ensures only ONE version ever targets LATEST (per SonarSource rules)
+          sed -i.bak "s/\.sqs=\[\([^,]*\),LATEST\]/.sqs=[\1,${CURRENT_YEAR}.*]/g" $PROPS_FILE
+          sed -i.bak "s/\.sqcb=\[\([^,]*\),LATEST\]/.sqcb=[\1,${CURRENT_YEAR}.${CURRENT_MONTH}.*]/g" $PROPS_FILE
+
+          # Step 2: Move current publicVersions to archivedVersions
+          PREV_VERSIONS=$(grep "^publicVersions=" $PROPS_FILE | sed 's/publicVersions=//')
+          if [ ! -z "$PREV_VERSIONS" ]; then
+            # Update archivedVersions line if it exists, or create it
+            if grep -q "^archivedVersions=" $PROPS_FILE; then
+              # Append to existing archivedVersions
+              sed -i.bak "s/^archivedVersions=\(.*\)/archivedVersions=\1,$PREV_VERSIONS/" $PROPS_FILE
+            else
+              # Insert archivedVersions after publicVersions line using a temp file
+              awk -v prev="$PREV_VERSIONS" '/^publicVersions=/ {print; print "archivedVersions=" prev; next} {print}' $PROPS_FILE > ${PROPS_FILE}.tmp
+              mv ${PROPS_FILE}.tmp $PROPS_FILE
+            fi
+          fi
+
+          # Step 3: Replace publicVersions with ONLY the new version
+          sed -i.bak "s/^publicVersions=.*/publicVersions=$VERSION/" $PROPS_FILE
+
+          # Step 4: Add version-specific properties for NEW version with LATEST
+          echo "" >> $PROPS_FILE
+          echo "$VERSION.description=Bug fixes and improvements" >> $PROPS_FILE
+          echo "$VERSION.sqs=[2025.1,LATEST]" >> $PROPS_FILE
+          echo "$VERSION.sqcb=[24.12,LATEST]" >> $PROPS_FILE
+          echo "$VERSION.downloadUrl=https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar" >> $PROPS_FILE
+          echo "$VERSION.changelogUrl=https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}" >> $PROPS_FILE
+          echo "$VERSION.date=${TODAY}" >> $PROPS_FILE
+
+          # Clean up backup files
+          rm -f $PROPS_FILE.bak
+
+          echo "✅ Updated wolfralyze.properties"
+          echo "📄 Changes:"
+          git diff $PROPS_FILE
+
+      - name: Create PR for sonar-update-center-properties
+        env:
+          GH_TOKEN: ${{ secrets.SONAR_MARKETPLACE_PAT }}
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.version.outputs.tag }}
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+        run: |
+          cd sonar-update-center-properties
+
+          # Configure git with user's identity and credentials
+          git config user.name "bceverly"
+          git config user.email "$USER_EMAIL"
+          git config --local credential.helper ""
+          git config --local --unset-all http.https://github.com/.extraheader || true
+
+          # Create branch and commit
+          BRANCH="wolfralyze-${VERSION}"
+          git checkout -b $BRANCH
+          git add wolfralyze.properties
+          git commit -m "Add wolfralyze ${VERSION}"
+
+          # Push to fork (user must fork the repo first)
+          git remote add fork https://x-access-token:${GH_TOKEN}@github.com/bceverly/sonar-update-center-properties.git
+          git push fork $BRANCH
+
+          # Create PR body (following approved SonarDelphi format)
+          cat > pr_body.txt << EOF
+          Release Wolfralyze v${VERSION}
+
+          - Release notes: https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}
+          - SonarCloud: https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze
+          - Add to the marketplace
+
+          Thanks!
+          EOF
+
+          # Create PR using GitHub CLI
+          gh pr create \
+            --repo SonarSource/sonar-update-center-properties \
+            --head bceverly:$BRANCH \
+            --title "Release Wolfralyze v${VERSION}" \
+            --body-file pr_body.txt
+
+          echo "✅ Created PR for sonar-update-center-properties"
+
+      - name: Clone sonarplugins.github.io
+        uses: actions/checkout@v4
+        with:
+          repository: sonarplugins/sonarplugins.github.io
+          path: sonarplugins.github.io
+          persist-credentials: false
+
+      - name: Create Jekyll post
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          cd sonarplugins.github.io
+
+          TODAY=$(date +%Y-%m-%d)
+          POST_FILE="_posts/${TODAY}-wolfralyze-${VERSION}.md"
+
+          # Create Jekyll post with front matter
+          cat > $POST_FILE << EOF
+          ---
+          layout: post
+          title: Wolfralyze ${VERSION}
+          date: ${TODAY}
+          categories: plugin release
+          tags: [mathematica, wolfram, code-quality]
+          ---
+
+          ## Wolfralyze ${VERSION} Released
+
+          Professional Code Quality Analysis for Wolfram Mathematica™
+
+          **Version:** ${VERSION}
+          **Download:** [wolfralyze-${VERSION}.jar](https://github.com/bceverly/wolfralyze/releases/download/${LATEST_TAG}/wolfralyze-${VERSION}.jar)
+          **Release Notes:** [View on GitHub](https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG})
+
+          ### About Wolfralyze
+
+          Wolfralyze is a Tier 1 SonarQube® plugin that brings enterprise-grade code quality analysis to Wolfram Mathematica™. With 559 analysis rules, it provides the same depth of analysis available for mainstream languages like Java and Python.
+
+          ### Release Highlights
+
+          See full release notes on GitHub for details.
+          EOF
+
+          echo "✅ Created Jekyll post"
+          echo "📄 Post location: $POST_FILE"
+
+      - name: Create PR for sonarplugins.github.io
+        env:
+          GH_TOKEN: ${{ secrets.SONAR_MARKETPLACE_PAT }}
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.version.outputs.tag }}
+          USER_EMAIL: ${{ secrets.USER_EMAIL }}
+        run: |
+          cd sonarplugins.github.io
+
+          TODAY=$(date +%Y-%m-%d)
+          POST_FILE="_posts/${TODAY}-wolfralyze-${VERSION}.md"
+
+          # Configure git with user's identity and credentials
+          git config user.name "bceverly"
+          git config user.email "$USER_EMAIL"
+          git config --local credential.helper ""
+          git config --local --unset-all http.https://github.com/.extraheader || true
+
+          # Create branch and commit
+          BRANCH="wolfralyze-${VERSION}"
+          git checkout -b $BRANCH
+          git add $POST_FILE
+          git commit -m "Add wolfralyze ${VERSION} release post"
+
+          # Push to fork (user must fork the repo first)
+          git remote add fork https://x-access-token:${GH_TOKEN}@github.com/bceverly/sonarplugins.github.io.git
+          git push fork $BRANCH
+
+          # Create PR body
+          cat > pr_body.txt << EOF
+          Release Wolfralyze v${VERSION}
+
+          - Release notes: https://github.com/bceverly/wolfralyze/releases/tag/${LATEST_TAG}
+          - SonarCloud: https://sonarcloud.io/summary/new_code?id=bceverly_wolfralyze
+          - Add to the marketplace
+
+          Thanks!
+          EOF
+
+          # Create PR using GitHub CLI
+          gh pr create \
+            --repo sonarplugins/sonarplugins.github.io \
+            --head bceverly:$BRANCH \
+            --title "Add wolfralyze ${VERSION} release post" \
+            --body-file pr_body.txt
+
+          echo "✅ Created PR for sonarplugins.github.io"
+
+      - name: Deployment Summary
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          LATEST_TAG: ${{ steps.version.outputs.tag }}
+        run: |
+          echo "## 🎉 Release Deployment Complete" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** $VERSION" >> $GITHUB_STEP_SUMMARY
+          echo "**Tag:** $LATEST_TAG" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Actions Completed:**" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Built plugin JAR" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Created GitHub release" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Created PR to sonar-update-center-properties" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Created PR to sonarplugins.github.io" >> $GITHUB_STEP_SUMMARY
