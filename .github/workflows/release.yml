@@ -267,8 +267,15 @@ jobs:
           if [ ! -z "$PREV_VERSIONS" ]; then
             # Update archivedVersions line if it exists, or create it
             if grep -q "^archivedVersions=" $PROPS_FILE; then
-              # Append to existing archivedVersions
-              sed -i.bak "s/^archivedVersions=\(.*\)/archivedVersions=\1,$PREV_VERSIONS/" $PROPS_FILE
+              # Check if archivedVersions is empty
+              EXISTING_ARCHIVED=$(grep "^archivedVersions=" $PROPS_FILE | sed 's/archivedVersions=//')
+              if [ -z "$EXISTING_ARCHIVED" ]; then
+                # Empty archivedVersions - replace instead of append
+                sed -i.bak "s/^archivedVersions=.*/archivedVersions=$PREV_VERSIONS/" $PROPS_FILE
+              else
+                # Has existing archived versions - append with comma
+                sed -i.bak "s/^archivedVersions=\(.*\)/archivedVersions=\1,$PREV_VERSIONS/" $PROPS_FILE
+              fi
             else
               # Insert archivedVersions after publicVersions line using a temp file
               awk -v prev="$PREV_VERSIONS" '/^publicVersions=/ {print; print "archivedVersions=" prev; next} {print}' $PROPS_FILE > ${PROPS_FILE}.tmp

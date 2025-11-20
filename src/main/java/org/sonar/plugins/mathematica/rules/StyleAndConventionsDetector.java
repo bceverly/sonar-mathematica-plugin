@@ -275,14 +275,18 @@ public class StyleAndConventionsDetector extends BaseDetector {
 
     /**
      * Detect multiple semicolons like ";;".
+     * Note: Excludes Span operator (;;) inside Part expressions [[ ]].
      */
     public void detectSemicolonStyle(SensorContext context, InputFile inputFile, String content) {
         try {
             Matcher matcher = MULTIPLE_SEMICOLON_PATTERN.matcher(content);
             while (matcher.find()) {
                 int position = matcher.start();
-                // Skip matches inside comments or string literals
-                if (isInsideComment(content, position) || isInsideStringLiteral(content, position)) {
+                // Skip matches inside comments, string literals, or Part expressions [[...]]
+                // The ;; inside [[;;, 1]] is Mathematica's Span operator, not a double semicolon
+                if (isInsideComment(content, position)
+                    || isInsideStringLiteral(content, position)
+                    || isInsidePartExpression(content, position)) {
                     continue;
                 }
                 int lineNumber = calculateLineNumber(content, matcher.start());

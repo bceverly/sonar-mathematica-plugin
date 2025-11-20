@@ -133,8 +133,10 @@ public class InitializationTrackingVisitor implements AstVisitor {
      * - Common Mathematica built-in symbols that might be shadowed as parameters
      * - Variables with pattern syntax (e.g., file_ might create "file" parameter)
      * - Very short variable names that are likely iterators with implicit initialization
+     *
+     * Package-private for testing.
      */
-    private boolean isLikelyFalsePositive(String varName) {
+    boolean isLikelyFalsePositive(String varName) {
         if (varName == null || varName.isEmpty()) {
             return true;
         }

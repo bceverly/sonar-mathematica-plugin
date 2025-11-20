@@ -1592,6 +1592,8 @@ class CodeSmellDetectorTest {
         return Stream.of(
             Arguments.of("Zero", "result = calculate(0);"),
             Arguments.of("Base3Exponentiation", "result = 3^Last[#]"),
+            Arguments.of("Base10Exponentiation", "result = 10^x"),
+            Arguments.of("Base2Exponentiation", "result = 2^power"),
             Arguments.of("ListRangeIdiom", "range = {42, 100}"),
             Arguments.of("RoundingFunction", "rounded = Round[value, 5]"),
             Arguments.of("ArrayIndexing", "value = Part[array, 42]")
@@ -1633,6 +1635,29 @@ class CodeSmellDetectorTest {
         assertThatCode(() ->
             detector.detectMagicNumbers(mockContext, mockInputFile, content, commentRanges)
         ).doesNotThrowAnyException();
+    }
+
+    @ParameterizedTest
+    @MethodSource("magicNumberExponentiationTestData")
+    void testDetectMagicNumbersExponentiation(String testName, String filename, String content) {
+        InputFile nonTestFile = Mockito.mock(InputFile.class);
+        Mockito.when(nonTestFile.filename()).thenReturn(filename);
+        Mockito.when(nonTestFile.uri()).thenReturn(java.net.URI.create("file:///" + filename));
+
+        List<int[]> commentRanges = new ArrayList<>();
+        assertThatCode(() ->
+            detector.detectMagicNumbers(mockContext, nonTestFile, content, commentRanges)
+        ).doesNotThrowAnyException();
+    }
+
+    private static Stream<Arguments> magicNumberExponentiationTestData() {
+        return Stream.of(
+            Arguments.of("Base10Exponentiation", "analysis.m", "result = 10^exponent"),
+            Arguments.of("Base2Exponentiation", "calculation.m", "value = 2^power"),
+            Arguments.of("Base3Exponentiation", "compute.m", "calculation = 3^index"),
+            Arguments.of("NotExponentiation", "script.m", "value = 42 + x"),
+            Arguments.of("NonSpecialBaseExponentiation", "power.m", "result = 5^exponent")
+        );
     }
 
 

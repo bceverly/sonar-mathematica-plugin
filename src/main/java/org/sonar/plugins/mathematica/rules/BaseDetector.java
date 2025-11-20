@@ -557,6 +557,40 @@ public abstract class BaseDetector {
     }
 
     /**
+     * Checks if a position is inside a Part expression [[ ... ]].
+     * This is used to distinguish Span (;;) from double semicolons.
+     * @param content The file content
+     * @param position The position to check
+     * @return true if position is inside [[ ... ]]
+     */
+    protected boolean isInsidePartExpression(String content, int position) {
+        if (position >= content.length() || position < 0) {
+            return false;
+        }
+
+        // Track depth of [[ ... ]] nesting
+        int depth = 0;
+        int i = 0;
+
+        while (i < position) {
+            if (i < content.length() - 1) {
+                if (content.charAt(i) == '[' && content.charAt(i + 1) == '[') {
+                    depth++;
+                    i += 2; // Skip both '['
+                } else if (content.charAt(i) == ']' && content.charAt(i + 1) == ']') {
+                    depth--;
+                    i += 2; // Skip both ']'
+                } else {
+                    i++;
+                }
+            } else {
+                i++;
+            }
+        }
+        return depth > 0;
+    }
+
+    /**
      * Check if a function definition has non-numeric parameter types.
      * Useful for rules that should only apply to numeric functions.
      *

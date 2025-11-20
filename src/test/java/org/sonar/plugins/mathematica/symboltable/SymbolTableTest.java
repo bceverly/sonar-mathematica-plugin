@@ -174,4 +174,79 @@ class SymbolTableTest {
         // Line 60 is in global only
         assertEquals(globalScope, globalScope.getScopeAtLine(60));
     }
+
+    @Test
+    void testGetReadButNeverAssignedSymbols() {
+        InputFile file = createMockFile("test.m");
+        SymbolTable table = new SymbolTable(file, 100);
+        Scope globalScope = table.getGlobalScope();
+
+        // Create a symbol that is read but never assigned
+        Symbol uninit = new Symbol("uninit", 10, globalScope, false, false);
+        uninit.addReference(new SymbolReference(15, 0, ReferenceType.READ, "Print[uninit]"));
+        globalScope.addSymbol(uninit);
+        table.addSymbol(uninit);
+
+        // Create a normal symbol (read and assigned)
+        Symbol normal = new Symbol("normal", 20, globalScope, false, false);
+        normal.addAssignment(new SymbolReference(20, 0, ReferenceType.WRITE, "normal = 5"));
+        normal.addReference(new SymbolReference(25, 0, ReferenceType.READ, "Print[normal]"));
+        globalScope.addSymbol(normal);
+        table.addSymbol(normal);
+
+        List<Symbol> uninitialized = table.getReadButNeverAssignedSymbols();
+        assertEquals(1, uninitialized.size());
+        assertEquals(uninit, uninitialized.get(0));
+    }
+
+    @Test
+    void testGetSymbolByName() {
+        InputFile file = createMockFile("test.m");
+        SymbolTable table = new SymbolTable(file, 100);
+        Scope globalScope = table.getGlobalScope();
+
+        Symbol x = new Symbol("x", 10, globalScope, false, false);
+        globalScope.addSymbol(x);
+        table.addSymbol(x);
+
+        // Test when symbol exists
+        assertEquals(x, table.getSymbolByName("x"));
+
+        // Test when symbol doesn't exist
+        assertNull(table.getSymbolByName("nonexistent"));
+    }
+
+    @Test
+    void testGetSymbolAtLocationReturnsNull() {
+        InputFile file = createMockFile("test.m");
+        SymbolTable table = new SymbolTable(file, 100);
+
+        // Test with a line outside the scope (e.g., line 200 when file has 100 lines)
+        assertNull(table.getSymbolAtLocation("x", 200));
+    }
+
+    @Test
+    void testToStringMethods() {
+        InputFile file = createMockFile("test.m");
+        SymbolTable table = new SymbolTable(file, 100);
+        Scope globalScope = table.getGlobalScope();
+
+        Symbol x = new Symbol("x", 10, globalScope, false, false);
+        globalScope.addSymbol(x);
+        table.addSymbol(x);
+
+        // Test SymbolTable.toString()
+        String tableStr = table.toString();
+        assertTrue(tableStr.contains("test.m"));
+        assertTrue(tableStr.contains("symbols=1"));
+
+        // Test ShadowingPair.toString()
+        Scope moduleScope = new Scope(ScopeType.MODULE, 20, 50, globalScope);
+        Symbol moduleX = new Symbol("x", 25, moduleScope, false, true);
+        SymbolTable.ShadowingPair pair = new SymbolTable.ShadowingPair(moduleX, x);
+
+        String pairStr = pair.toString();
+        assertTrue(pairStr.contains("Shadowing"));
+        assertTrue(pairStr.contains("x"));
+    }
 }

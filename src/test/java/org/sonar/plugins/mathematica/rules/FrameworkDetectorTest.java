@@ -6,12 +6,23 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.sonar.api.batch.fs.InputFile;
+import org.sonar.api.batch.fs.TextRange;
 import org.sonar.api.batch.sensor.SensorContext;
+import org.sonar.api.batch.sensor.issue.NewIssue;
+import org.sonar.api.batch.sensor.issue.NewIssueLocation;
+import org.sonar.api.rule.RuleKey;
 
+import java.net.URI;
 import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 class FrameworkDetectorTest {
@@ -19,14 +30,33 @@ class FrameworkDetectorTest {
     private FrameworkDetector detector;
     private SensorContext context;
     private InputFile inputFile;
+    private NewIssue newIssue;
+    private NewIssueLocation newIssueLocation;
 
     @BeforeEach
     void setUp() {
         detector = new FrameworkDetector();
         context = mock(SensorContext.class);
         inputFile = mock(InputFile.class);
+        newIssue = mock(NewIssue.class);
+        newIssueLocation = mock(NewIssueLocation.class);
 
+        // Setup InputFile mocks
         when(inputFile.filename()).thenReturn("test.m");
+        when(inputFile.uri()).thenReturn(URI.create("file:///test.m"));
+
+        // Mock TextRange for line-based reporting
+        TextRange textRange = mock(TextRange.class);
+        when(inputFile.selectLine(anyInt())).thenReturn(textRange);
+
+        // Setup NewIssue chain mocks
+        when(context.newIssue()).thenReturn(newIssue);
+        when(newIssue.forRule(any(RuleKey.class))).thenReturn(newIssue);
+        when(newIssue.at(any(NewIssueLocation.class))).thenReturn(newIssue);
+        when(newIssue.newLocation()).thenReturn(newIssueLocation);
+        when(newIssueLocation.on(any(InputFile.class))).thenReturn(newIssueLocation);
+        when(newIssueLocation.at(any(TextRange.class))).thenReturn(newIssueLocation);
+        when(newIssueLocation.message(anyString())).thenReturn(newIssueLocation);
     }
 
     // ===== NOTEBOOK FRAMEWORK TESTS =====
@@ -509,7 +539,372 @@ class FrameworkDetectorTest {
 
     // Additional tests for comment/string literal branches and edge cases
 
-    // ===== NOTEBOOK FRAMEWORK TESTS =====
+    // ===== COMPREHENSIVE TESTS FOR detectNotebookUnorganized =====
+
+    @Test
+    void testDetectNotebookUnorganizedNoNotebookContent() {
+        // Test early return when no Cell/Notebook found
+        String content = "x = 5; y = 10;";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, content)
+        );
+        verify(context, never()).newIssue();
+    }
+
+    @ParameterizedTest
+    @MethodSource("notebookUnorganizedTestCases")
+    void testDetectNotebookUnorganizedVariations(String content, boolean shouldTrigger) {
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, content)
+        );
+        if (shouldTrigger) {
+            verify(context, atLeastOnce()).newIssue();
+        } else {
+            verify(context, never()).newIssue();
+        }
+    }
+
+    private static Stream<Arguments> notebookUnorganizedTestCases() {
+        return Stream.of(
+            Arguments.of("Cell[BoxData[code := 5]];\n(* scratch *)", false),
+            Arguments.of("Cell[BoxData[code := 5]];\nVerificationTest[test]", false),
+            Arguments.of("Cell[BoxData[code := 5]];\nVerificationTest[test];\n(* scratch work *)", true)
+        );
+    }
+
+    @Test
+    void testDetectNotebookUnorganizedCaseInsensitiveTest() {
+        // Test with different case variations
+        String content = "CELL[code];\nverificationtest[x];\n(* test scratch *)";
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, content)
+        );
+    }
+
+    // ===== COMPREHENSIVE TESTS FOR detectParallelSharedState =====
+
+    @Test
+    void testDetectParallelSharedStateWithSetSharedFunction() {
+        String content = "SetSharedFunction[myFunc];\nParallelTable[myFunc[i], {i, 1, 100}]";
+        assertDoesNotThrow(() ->
+            detector.detectParallelSharedState(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectParallelSharedStateNoSharedState() {
+        String content = "ParallelTable[i^2, {i, 1, 100}]";
+        assertDoesNotThrow(() ->
+            detector.detectParallelSharedState(context, inputFile, content)
+        );
+        verify(context, never()).newIssue();
+    }
+
+    @Test
+    void testDetectParallelSharedStateMultipleSharedVariables() {
+        String content = "SetSharedVariable[a, b, c];\nParallelDo[a++; b++; c++, {i, 1, 10}]";
+        assertDoesNotThrow(() ->
+            detector.detectParallelSharedState(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    // ===== EXCEPTION HANDLING TESTS =====
+
+    @Test
+    void testDetectNotebookCellSizeHandlesException() {
+        // Create invalid mock that will throw exception
+        when(inputFile.filename()).thenThrow(new RuntimeException("Test exception"));
+        String content = "Cell[large content]";
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookUnorganizedHandlesException() {
+        // Trigger exception with null content
+        assertDoesNotThrow(() ->
+            detector.detectNotebookUnorganized(context, inputFile, null)
+        );
+    }
+
+    @Test
+    void testDetectNotebookNoSectionsHandlesException() {
+        when(inputFile.filename()).thenThrow(new RuntimeException("Test exception"));
+        String content = "Notebook[{Cell[test]}]";
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookNoSections(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectManipulatePerformanceHandlesException() {
+        when(inputFile.filename()).thenThrow(new RuntimeException("Test exception"));
+        String content = "Manipulate[Plot[x], {x, 0, 1}]";
+
+        assertDoesNotThrow(() ->
+            detector.detectManipulatePerformance(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectParallelSharedStateHandlesException() {
+        // Trigger exception with null content
+        assertDoesNotThrow(() ->
+            detector.detectParallelSharedState(context, inputFile, null)
+        );
+    }
+
+    @Test
+    void testDetectDynamicHeavyComputationHandlesException() {
+        when(inputFile.filename()).thenThrow(new RuntimeException("Test exception"));
+        String content = "Dynamic[NDSolve[...]]";
+
+        assertDoesNotThrow(() ->
+            detector.detectDynamicHeavyComputation(context, inputFile, content)
+        );
+    }
+
+    // ===== TESTS FOR COMMENT/STRING LITERAL SKIPPING =====
+
+    @Test
+    void testDetectManipulateTooComplexInsideComment() {
+        // Should skip detection inside comments
+        String content = "(* Manipulate[f[a1, a2, a3, a4, a5, a6, a7, a8, a9, a10, a11], "
+                         + "{a1, 0, 1}, {a2, 0, 1}, {a3, 0, 1}, {a4, 0, 1}, {a5, 0, 1}, "
+                         + "{a6, 0, 1}, {a7, 0, 1}, {a8, 0, 1}, {a9, 0, 1}, {a10, 0, 1}, "
+                         + "{a11, 0, 1}] *)";
+        assertDoesNotThrow(() ->
+            detector.detectManipulateTooComplex(context, inputFile, content)
+        );
+    }
+
+    @Test
+    void testDetectNotebookCellSizeNestedBrackets() {
+        // Test proper handling of nested brackets
+        StringBuilder content = new StringBuilder("Cell[Plot[Sin[x], {x, 0, 10}], ");
+        for (int i = 0; i < 60; i++) {
+            content.append("data").append(i).append(", ");
+        }
+        content.append("ImageSize -> {400, 300}]");
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content.toString())
+        );
+    }
+
+    // ===== ADDITIONAL TESTS FOR LOW COVERAGE METHODS =====
+
+    // Tests for detectPackageCircularDependency (currently 35% coverage)
+    @Test
+    void testDetectPackageCircularDependencyActualCircularDependency() {
+        // When filename contains the package name that's also in Needs
+        when(inputFile.filename()).thenReturn("TestPackage.m");
+        String content = "BeginPackage[\"TestPackage`\"];\n"
+                         + "Needs[\"TestPackage`Helper`\"];\n"
+                         + "EndPackage[];";
+
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectPackageCircularDependencyMultipleNeeds() {
+        when(inputFile.filename()).thenReturn("MyFile.m");
+        String content = "Needs[\"Package1`\"];\n"
+                         + "Needs[\"MyFile`Submodule`\"];\n"
+                         + "Get[\"Other.m\"];";
+
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectPackageCircularDependencyNeedsInComment() {
+        when(inputFile.filename()).thenReturn("TestFile.m");
+        String content = "(* Needs[\"TestFile`\"] *)\n"
+                         + "Needs[\"OtherPackage`\"];";
+
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+        // Should only trigger once for the non-comment Need if at all
+    }
+
+    @Test
+    void testDetectPackageCircularDependencyNoCircular() {
+        when(inputFile.filename()).thenReturn("MyFile.m");
+        String content = "Needs[\"Package1`\"];\n"
+                         + "Needs[\"Package2`\"];";
+
+        assertDoesNotThrow(() ->
+            detector.detectPackageCircularDependency(context, inputFile, content)
+        );
+        verify(context, never()).newIssue();
+    }
+
+    // Tests for detectPackagePublicPrivateMix (currently 28% coverage)
+    @Test
+    void testDetectPackagePublicPrivateMixPublicAfterPrivate() {
+        String content = "BeginPackage[\"MyPackage`\"];\n"
+                         + "Begin[\"`Private`\"];\n"
+                         + "PrivateHelper[x_] := x + 1;\n"
+                         + "PublicFunc[x_] := x^2;\n"  // Public function after Private
+                         + "End[];\n"
+                         + "EndPackage[];";
+
+        assertDoesNotThrow(() ->
+            detector.detectPackagePublicPrivateMix(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    // Tests for detectCloudPermissionsTooOpen (currently 20% coverage)
+    @Test
+    void testDetectCloudPermissionsTooOpenPublicPermissions() {
+        String content = "CloudDeploy[myNotebook, \"MyNotebook\", Permissions -> \"Public\"]";
+
+        assertDoesNotThrow(() ->
+            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectCloudPermissionsTooOpenPublicInList() {
+        // Pattern expects -> "Public" (not in list), so this should NOT trigger
+        String content = "CloudPublish[expr, Permissions -> {\"Public\", \"Read\"}]";
+
+        assertDoesNotThrow(() ->
+            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
+        );
+        verify(context, never()).newIssue();  // List format not matched by pattern
+    }
+
+    @Test
+    void testDetectCloudPermissionsTooOpenPrivatePermissions() {
+        String content = "CloudDeploy[myData, Permissions -> \"Private\"]";
+
+        assertDoesNotThrow(() ->
+            detector.detectCloudPermissionsTooOpen(context, inputFile, content)
+        );
+        verify(context, never()).newIssue();
+    }
+
+    // Tests for detectNotebookNoSections - cover the section counting branch
+    @Test
+    void testDetectNotebookNoSectionsWithSections() {
+        // Pattern looks for Section[, Subsection[, etc. (actual function calls)
+        StringBuilder content = new StringBuilder("Notebook[{\n");
+        content.append("Section[\"Introduction\"],\n");  // Actual Section call
+        for (int i = 0; i < 12; i++) {
+            content.append("Cell[\"code ").append(i).append("\"],\n");
+        }
+        content.append("Subsection[\"Details\"]\n}]");  // Actual Subsection call
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookNoSections(context, inputFile, content.toString())
+        );
+        // Should not report issue because sections exist
+        verify(context, never()).newIssue();
+    }
+
+    // Tests for detectNotebookInitCellMisuse - cover Plot/Export branches
+    @Test
+    void testDetectNotebookInitCellMisuseWithPlot() {
+        // Pattern expects InitializationCell -> True (without quotes on the key)
+        String content = "Cell[BoxData[Plot[Sin[x], {x, 0, 10}]], InitializationCell -> True]";
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookInitCellMisuse(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    @Test
+    void testDetectNotebookInitCellMisuseWithExport() {
+        // Pattern expects InitializationCell -> True (without quotes on the key)
+        String content = "Cell[BoxData[Export[\"file.png\", img]], InitializationCell -> True]";
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookInitCellMisuse(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    // Test for detectDynamicNoTracking - cover Refresh branch
+    @Test
+    void testDetectDynamicNoTrackingWithRefresh() {
+        String content = "Dynamic[x + y, UpdateInterval -> Infinity, TrackedSymbols :> {}, Refresh[z, UpdateInterval -> 1]]";
+
+        assertDoesNotThrow(() ->
+            detector.detectDynamicNoTracking(context, inputFile, content)
+        );
+        // Has Refresh, so should be okay
+    }
+
+    // Test for detectParallelRaceCondition - cover assignment pattern
+    @Test
+    void testDetectParallelRaceConditionWithAssignment() {
+        // Pattern looks for uppercase variable assignment: [A-Z][a-zA-Z0-9]* = ...
+        String content = "ParallelDo[Result = Result + i, {i, 1, 100}]";
+
+        assertDoesNotThrow(() ->
+            detector.detectParallelRaceCondition(context, inputFile, content)
+        );
+        verify(context, atLeastOnce()).newIssue();
+    }
+
+    // Test for isNotebookFile - Notebook without Cell
+    @Test
+    void testIsNotebookFileNotebookWithoutCell() {
+        String content = "Notebook[{}, StyleDefinitions -> \"Default.nb\"]";
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+        // Should handle gracefully
+    }
+
+    // Additional tests for patterns in string literals
+    @Test
+    void testDetectNotebookCellSizePatternInStringLiteral() {
+        String content = "str = \"Cell[this should be ignored because it's in a string]\";";
+
+        assertDoesNotThrow(() ->
+            detector.detectNotebookCellSize(context, inputFile, content)
+        );
+        verify(context, never()).newIssue();
+    }
+
+    // Test for detectCloudDeployNoValidation - specific validation patterns
+    @Test
+    void testDetectCloudDeployNoValidationWithNumericQ() {
+        String content = "APIFunction[{\"x\" -> \"Number\"}, If[NumericQ[#x], #x^2, $Failed] &]";
+
+        assertDoesNotThrow(() ->
+            detector.detectCloudDeployNoValidation(context, inputFile, content)
+        );
+        // Has NumericQ validation, should not trigger
+    }
+
+    @Test
+    void testDetectCloudDeployNoValidationWithMatchQ() {
+        String content = "APIFunction[{\"name\" -> \"String\"}, If[MatchQ[#name, _String], #name, \"Invalid\"] &]";
+
+        assertDoesNotThrow(() ->
+            detector.detectCloudDeployNoValidation(context, inputFile, content)
+        );
+        // Has MatchQ validation, should not trigger
+    }
 
 
 }

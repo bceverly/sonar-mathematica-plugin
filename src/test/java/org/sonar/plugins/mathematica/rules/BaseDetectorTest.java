@@ -64,6 +64,10 @@ class BaseDetectorTest {
         public boolean publicIsInsideComment(String content, int position) {
             return isInsideComment(content, position);
         }
+
+        public boolean publicIsInsidePartExpression(String content, int position) {
+            return isInsidePartExpression(content, position);
+        }
     }
 
     @BeforeEach
@@ -754,5 +758,106 @@ class BaseDetectorTest {
         String content = sb.toString();
 
         assertThat(detector.publicIsIdiomaticStringUsage(content, 200, "\"test\"")).isFalse();
+    }
+
+    // Tests for isInsidePartExpression
+    @Test
+    void testIsInsidePartExpressionPositionOutOfBounds() {
+        // Test line 567-568: position >= content.length()
+        String content = "list[[1]]";
+        assertThat(detector.publicIsInsidePartExpression(content, content.length())).isFalse();
+        assertThat(detector.publicIsInsidePartExpression(content, content.length() + 10)).isFalse();
+    }
+
+    @Test
+    void testIsInsidePartExpressionNegativePosition() {
+        // Test line 567-568: position < 0
+        String content = "list[[1]]";
+        assertThat(detector.publicIsInsidePartExpression(content, -1)).isFalse();
+        assertThat(detector.publicIsInsidePartExpression(content, -100)).isFalse();
+    }
+
+    @Test
+    void testIsInsidePartExpressionInsidePart() {
+        // Test position inside [[ ... ]]
+        String content = "list[[index]]";
+        assertThat(detector.publicIsInsidePartExpression(content, 6)).isTrue();  // Inside [[
+        assertThat(detector.publicIsInsidePartExpression(content, 10)).isTrue(); // Inside ]]
+    }
+
+    @Test
+    void testIsInsidePartExpressionOutsidePart() {
+        // Test position outside [[ ... ]]
+        String content = "list[[index]] + x";
+        assertThat(detector.publicIsInsidePartExpression(content, 0)).isFalse();  // Before [[
+        assertThat(detector.publicIsInsidePartExpression(content, 14)).isFalse(); // After ]]
+    }
+
+    @Test
+    void testIsInsidePartExpressionNestedPart() {
+        // Test nested [[ ... ]]
+        String content = "data[[i]][[j]]";
+        assertThat(detector.publicIsInsidePartExpression(content, 6)).isTrue();   // In first [[
+        assertThat(detector.publicIsInsidePartExpression(content, 11)).isTrue();  // In second [[
+        assertThat(detector.publicIsInsidePartExpression(content, 9)).isFalse();  // Between parts
+    }
+
+    @Test
+    void testIsInsidePartExpressionAtEndOfContent() {
+        // Test line 576-587: else branch when i >= content.length() - 1
+        String content = "x[[i]";  // Incomplete Part expression
+        assertThat(detector.publicIsInsidePartExpression(content, 4)).isTrue();  // Still inside
+    }
+
+    @Test
+    void testIsInsidePartExpressionElseBranch() {
+        // Test line 587: i++ in else branch (when i == content.length() - 1)
+        String content = "[[ax";  // Last char is 'x', checking at position 3
+        assertThat(detector.publicIsInsidePartExpression(content, 3)).isTrue();  // Inside unclosed [[
+    }
+
+    @Test
+    void testIsInsidePartExpressionBeyondLastChar() {
+        // Test the else branch when we need to check at the end
+        String content = "x[[y";  // Position 3 (at 'y')
+        assertThat(detector.publicIsInsidePartExpression(content, 3)).isTrue();  // Still inside [[
+    }
+
+    @Test
+    void testIsInsidePartExpressionForcesElseBranch() {
+        // Specifically designed to hit line 587: else branch when i == content.length() - 1
+        // Need: i jumps to content.length()-1 via [[, then tries to continue to position
+        // Example: "a[[" (length 3), position 2 (at second '[')
+        // Trace: i=0 'a' i++; i=1 see [[ depth++ i=3; but i=3 > position=2, so we exit
+        // That doesn't work.
+
+        // Different approach: "a[[b" (length 4), position 3 (at 'b')
+        // Trace: i=0 'a' i++; i=1 see [[ depth++ i=3; i=3 < 4 so continue; i=3<4-1? 3<3 false, else i++
+        String content = "a[[b";  // length=4, position=3
+        assertThat(detector.publicIsInsidePartExpression(content, 3)).isTrue();
+    }
+
+    @Test
+    void testIsInsidePartExpressionSingleCharAtEnd() {
+        // Test line 587: i++ in else branch
+        String content = "a[[b]]x";  // Character after completed Part expression
+        assertThat(detector.publicIsInsidePartExpression(content, 6)).isFalse();  // After ]]
+        assertThat(detector.publicIsInsidePartExpression(content, 4)).isTrue();   // Inside [[]]
+    }
+
+    @Test
+    void testIsInsidePartExpressionEmptyPart() {
+        // Test empty Part expression
+        String content = "list[[]]";
+        assertThat(detector.publicIsInsidePartExpression(content, 6)).isTrue();
+    }
+
+    @Test
+    void testIsInsidePartExpressionMultipleParts() {
+        // Test multiple separate Part expressions
+        String content = "a[[1]] + b[[2]]";
+        assertThat(detector.publicIsInsidePartExpression(content, 3)).isTrue();   // In first
+        assertThat(detector.publicIsInsidePartExpression(content, 7)).isFalse();  // Between
+        assertThat(detector.publicIsInsidePartExpression(content, 12)).isTrue();  // In second
     }
 }

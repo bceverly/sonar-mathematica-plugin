@@ -1523,6 +1523,14 @@ class StyleAndConventionsDetectorTest {
     }
 
     @Test
+    void testDetectSemicolonStyleInPartExpression() {
+        // The ;; inside [[;;, 1]] is Mathematica's Span operator, not double semicolon
+        String content = "Domain :> $This[CoordinateBounds][[;;,1]],\n"
+                         + "Range :> $This[CoordinateBounds][[;;,2]]";
+        assertDoesNotThrow(() -> detector.detectSemicolonStyle(context, inputFile, content));
+    }
+
+    @Test
     void testDetectAlignmentInconsistentInComment() {
         String content = "(* longList = {veryLongItemName1, veryLongItemName2, veryLongItemName3, veryLongItemName4}; *)";
         assertDoesNotThrow(() -> detector.detectAlignmentInconsistent(context, inputFile, content));

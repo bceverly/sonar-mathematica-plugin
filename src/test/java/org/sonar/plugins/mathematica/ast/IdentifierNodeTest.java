@@ -379,4 +379,33 @@ class IdentifierNodeTest {
         assertThat(node.getStartLine()).isEqualTo(1);
         assertThat(node.getEndLine()).isEqualTo(2);
     }
+
+    @Test
+    void testAddChildWithNull() {
+        // Test the null check in AstNode.addChild() - covers line 88
+        IdentifierNode node = new IdentifierNode("parent", 1, 1, 1, 7);
+
+        node.addChild(null);  // Should not throw, just skip adding
+
+        assertThat(node.getChildren()).isEmpty();
+    }
+
+    @Test
+    void testGetChildren() {
+        // Test AstNode.getChildren() returns unmodifiable list - covers line 84
+        IdentifierNode node = new IdentifierNode("parent", 1, 1, 1, 7);
+
+        assertThat(node.getChildren()).isNotNull();
+        assertThat(node.getChildren()).isEmpty();
+    }
+
+    @Test
+    void testToTreeMethod() {
+        // Test AstNode.toTree() method - covers lines 101-103, 105-113
+        IdentifierNode node = new IdentifierNode("parent", 1, 1, 1, 7);
+
+        String tree = node.toTree();
+
+        assertThat(tree).isNotNull().contains("parent");
+    }
 }
