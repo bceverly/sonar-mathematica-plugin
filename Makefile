@@ -545,6 +545,12 @@ update-wiki:
 			echo "  ✓ $$filename"; \
 		fi; \
 	done; \
+	if [ -d "docs/images" ]; then \
+		echo "  Copying images directory..."; \
+		cp -r docs/images "$(WIKI_DIR)/"; \
+		IMAGE_COUNT=$$(find docs/images -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.gif" -o -name "*.svg" \) | wc -l | tr -d ' '); \
+		echo "  ✓ $$IMAGE_COUNT image(s) copied"; \
+	fi; \
 	echo ""; \
 	echo "Step 3/5: Checking for changes..."; \
 	cd $(WIKI_DIR); \
@@ -569,6 +575,7 @@ update-wiki:
 	echo ""; \
 	echo "Step 4/5: Committing changes..."; \
 	git add *.md; \
+	if [ -d "images" ]; then git add images/; fi; \
 	git commit -m "Update documentation (automated via make update-wiki)" -m "- Updated from docs/ directory" -m "- Generated: $$(date '+%Y-%m-%d %H:%M:%S')"; \
 	echo "✓ Changes committed"; \
 	echo ""; \
@@ -596,6 +603,10 @@ update-wiki:
 	echo "Documentation published:"; \
 	WIKI_PAGES=$$(ls -1 docs/*.md | grep -v README.md | wc -l | tr -d ' '); \
 	echo "  $$WIKI_PAGES wiki pages updated"; \
+	if [ -d "docs/images" ]; then \
+		IMAGE_COUNT=$$(find docs/images -type f \( -name "*.png" -o -name "*.jpg" -o -name "*.gif" -o -name "*.svg" \) | wc -l | tr -d ' '); \
+		echo "  $$IMAGE_COUNT images synced"; \
+	fi; \
 	echo ""; \
 	echo "View wiki at:"; \
 	echo "  https://github.com/bceverly/wolfralyze/wiki"; \
